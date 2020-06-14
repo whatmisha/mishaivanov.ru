@@ -125,6 +125,10 @@ input:active {
     color: #fff;
 }
 
+.contacts:active {
+    color: red;
+}
+
 .dagger {
     font-family: "Times New Roman", serif;
 }
