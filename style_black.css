@@ -1,5 +1,5 @@
 @keyframes redd{
-100% {rotate3d(1, 1, 1, 45deg);}
+100% {transform: rotate(360deg);}
 }	
 
 body {
