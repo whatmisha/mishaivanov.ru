@@ -122,8 +122,7 @@ input:active {
 }
 
 .contacts:hover {
-    border-bottom: rosybrown;
-
+    color: #fff;
 }
 
 .dagger {
