@@ -1,3 +1,7 @@
+@keyframes redd{
+100% {transform: rotate(360deg);}
+}	
+
 body {
     font-family: "Suisse Int'l", Helvetica, Arial, sans-serif;
     font-size: 18px;
@@ -53,6 +57,7 @@ strong {
 
 img {
     max-width: 50%;
+    animation: redd 4s linear infinite;
 }
 
 .years {
