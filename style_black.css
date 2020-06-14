@@ -121,6 +121,10 @@ input:active {
     line-height: 2;
 }
 
+.contacts:hover {
+    color: red;
+}
+
 .dagger {
     font-family: "Times New Roman", serif;
 }
