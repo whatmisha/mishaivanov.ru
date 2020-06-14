@@ -143,6 +143,8 @@ img {
     .me {
         max-width: 50%;
         animation: redd 60s linear infinite;
+        position:relative;
+        z-index:3;
     }
 }
 
@@ -150,5 +152,8 @@ img {
 
     .me {
         max-width: 100%;
+        animation: redd 60s linear infinite;
+        position:relative;
+        z-index:3;
     }
 }
