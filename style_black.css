@@ -103,6 +103,7 @@ input:active {
     color: #fff;
     background-color: rosybrown;
     margin-left: -3px;
+    margin-right: 18px;
 }
 
 .btn:hover {
