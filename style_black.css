@@ -143,6 +143,7 @@ img {
 
     .me {
         max-width: 50%;
+        opacity: 50%;
         animation: redd 0.01s linear infinite;
     }
 }
@@ -151,6 +152,7 @@ img {
 
     .me {
         max-width: 100%;
+        opacity: 50%;
         animation: redd 0.01s linear infinite;
     }
 }
