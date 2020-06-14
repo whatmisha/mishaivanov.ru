@@ -142,8 +142,8 @@ img {
 @media screen and (min-width: 601px) {
 
     .me {
-        max-width: 50%;
-        opacity: 50%;
+        max-width: 30%;
+        opacity: 30%;
         animation: redd 0.01s linear infinite;
     }
 }
@@ -152,7 +152,7 @@ img {
 
     .me {
         max-width: 100%;
-        opacity: 50%;
+        opacity: 30%;
         animation: redd 0.01s linear infinite;
     }
 }
