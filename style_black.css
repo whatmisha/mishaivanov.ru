@@ -11,6 +11,7 @@ body {
     padding: 20px;
     background-color: black;
     color: aliceblue;
+    z-index:2;
 }
 
 h1,
@@ -143,7 +144,7 @@ img {
     .me {
         max-width: 50%;
         animation: redd 60s linear infinite;
-        z-index:-1;
+        z-index:1;
     }
 }
 
@@ -152,6 +153,6 @@ img {
     .me {
         max-width: 100%;
         animation: redd 60s linear infinite;
-        z-index:-1;
+        z-index:1;
     }
 }
