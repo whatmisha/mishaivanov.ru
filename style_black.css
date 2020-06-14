@@ -29,7 +29,6 @@ h6 {
 
 h1 {
     font-size: 3em;
-    z-index:1;
 }
 
 h2 {
@@ -154,6 +153,5 @@ img {
     .me {
         max-width: 100%;
         animation: redd 60s linear infinite;
-        z-index:-1;
     }
 }
