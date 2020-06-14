@@ -25,11 +25,11 @@ h6 {
     font-weight: 500;
     line-height: 1.0;
     width: 60%;
-    z-index:1;
 }
 
 h1 {
     font-size: 3em;
+    z-index:1;
 }
 
 h2 {
@@ -145,7 +145,7 @@ img {
     .me {
         max-width: 50%;
         animation: redd 60s linear infinite;
-        z-index:2;
+        z-index:-1;
     }
 }
 
@@ -154,6 +154,6 @@ img {
     .me {
         max-width: 100%;
         animation: redd 60s linear infinite;
-        z-index:2;
+        z-index:-1;
     }
 }
