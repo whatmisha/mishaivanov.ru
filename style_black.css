@@ -149,14 +149,14 @@ section {
 
 @media screen and (min-width: 601px) {
 
-    .me {
+    .cover {
         max-width: 33%;
     }
 }
 
 @media screen and (max-width: 600px) {
 
-    .me {
+    .cover {
         max-width: 100%;
     }
 }
