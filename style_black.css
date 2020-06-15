@@ -130,7 +130,8 @@ section {
     h3,
     h4,
     h5,
-    h6 {
+    h6,
+    .cover {
         width: 33%;
     }
 }
@@ -143,21 +144,8 @@ section {
     h3,
     h4,
     h5,
-    h6 {
+    h6,
+    .cover {
         width: 100%;
-    }
-}
-
-@media screen and (min-width: 601px) {
-
-    .cover {
-        max-width: 33%;
-    }
-}
-
-@media screen and (max-width: 600px) {
-
-    .cover {
-        max-width: 100%;
     }
 }
