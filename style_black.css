@@ -105,7 +105,7 @@ section {
 .contacts {
     font-size: 1.5em;
     line-height: 2;
-    margin-right: 1em;
+    margin-right: 0.5em;
 }
 
 .contacts:hover {
