@@ -108,12 +108,10 @@ section {
     margin-right: 0.5em;
     padding: 0px 30px 2px 30px;
     border-radius: 60px;
-    
+    border-style: solid;
     color: #fff;
     background-color: #000;
     border: 1px rosybrown;
-    margin-left: -3px;
-    margin-right: 1em;
     
 }
 
