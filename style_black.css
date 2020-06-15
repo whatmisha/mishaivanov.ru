@@ -142,14 +142,3 @@ section {
     }
 }
 
-@media screen and (min-width: 601px) {
-    .cover {
-        width: 50%;
-    }
-}
-
-@media screen and (max-width: 600px) {
-    .cover {
-        width: 100%;
-    }
-}
