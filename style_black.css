@@ -20,7 +20,7 @@ h6 {
     color: aliceblue;
     font-weight: 500;
     line-height: 1.0;
-    width: 60%;
+    width: 50%;
 }
 
 h1 {
@@ -28,6 +28,7 @@ h1 {
     letter-spacing: 1px;
     text-transform: uppercase;
     color: rosybrown;
+}
 
 h2 {
     font-size: 2em;
@@ -141,3 +142,16 @@ section {
     }
 }
 
+@media screen and (min-width: 601px) {
+
+    .cover {
+        width: 50%;
+    }
+}
+
+@media screen and (max-width: 600px) {
+
+    .cover {
+        width: 100%;
+    }
+}
