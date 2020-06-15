@@ -124,6 +124,7 @@ img {
     h5,
     h6 {
         width: 50%;
+        margin: inherit;
     }
 }
 
@@ -137,6 +138,7 @@ img {
     h5,
     h6 {
         width: 100%;
+        margin: unset;
     }
 }
 
