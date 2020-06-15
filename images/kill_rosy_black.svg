@@ -5,18 +5,18 @@
 <style type="text/css">
 	.st0{fill:url(#SVGID_1_);}
 </style>
-<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="0.775" y1="-796.775" x2="280.575" y2="-516.975" gradientTransform="matrix(1 0 0 -1 0 -516)">
-	<stop  offset="0" style="stop-color:#BB8F90"/>
-	<stop  offset="0.1" style="stop-color:#000000"/>
-	<stop  offset="0.2" style="stop-color:#BB8F90"/>
-	<stop  offset="0.3" style="stop-color:#000000"/>
-	<stop  offset="0.4" style="stop-color:#BB8F90"/>
-	<stop  offset="0.5" style="stop-color:#000000"/>
-	<stop  offset="0.6" style="stop-color:#BB8F90"/>
-	<stop  offset="0.7" style="stop-color:#000000"/>
-	<stop  offset="0.8" style="stop-color:#BB8F90"/>
-	<stop  offset="0.9" style="stop-color:#000000"/>
-	<stop  offset="1" style="stop-color:#BB8F90"/>
+<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="0.775" y1="1078.775" x2="280.575" y2="798.975" gradientTransform="matrix(1 0 0 1 0 -798)">
+	<stop  offset="0" style="stop-color:#000000"/>
+	<stop  offset="9.952463e-02" style="stop-color:#BB8F90"/>
+	<stop  offset="0.2" style="stop-color:#000000"/>
+	<stop  offset="0.2995" style="stop-color:#BB8F90"/>
+	<stop  offset="0.4" style="stop-color:#000000"/>
+	<stop  offset="0.5" style="stop-color:#BB8F90"/>
+	<stop  offset="0.6" style="stop-color:#000000"/>
+	<stop  offset="0.7" style="stop-color:#BB8F90"/>
+	<stop  offset="0.8" style="stop-color:#000000"/>
+	<stop  offset="0.9" style="stop-color:#BB8F90"/>
+	<stop  offset="1" style="stop-color:#000000"/>
 </linearGradient>
 <path class="st0" d="M213.1,112h-21.7l11.2-18.7h21.7L213.1,112z M233.5,186.8h-21.7l-11.2,18.6h21.7L233.5,186.8z M155.8,280h21.7
 	l33.5-55.9h-21.7L155.8,280z M203.8,18.6L215,0h-21.7l-11.2,18.6H203.8z M146.6,186.5h21.7l33.5-55.9h-21.7L146.6,186.5z M246,93.3
