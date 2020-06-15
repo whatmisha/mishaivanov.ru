@@ -31,8 +31,11 @@ h1 {
     color: rosybrown;
 =======
     font-size: 3em;
+<<<<<<< HEAD
     color: red;
 >>>>>>> parent of c2439b0... Revert "Update style_black.css"
+=======
+>>>>>>> parent of f370798... Updating styles
 }
 
 h2 {
