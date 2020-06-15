@@ -28,7 +28,8 @@ h6 {
 }
 
 h1 {
-    font-size: 3em;
+    font-size: 2em;
+    text-transform: uppercase;
 }
 
 h2 {
