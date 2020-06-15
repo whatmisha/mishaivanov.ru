@@ -61,6 +61,10 @@ img {
     max-width: 33%;
 }
 
+section {
+    margin: 0 0 1em 0;
+}
+
 .years {
     font-size: 12px;
     letter-spacing: 1px;
