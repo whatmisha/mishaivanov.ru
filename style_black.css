@@ -59,7 +59,7 @@ strong {
 }
 
 img {
-    width: auto;
+    max-width: 50%;
 }
 
 section {
