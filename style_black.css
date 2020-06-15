@@ -1,6 +1,8 @@
-@keyframes redd{
-100% {transform: rotate(360deg);}
-}	
+@keyframes redd {
+    100% {
+        transform: rotate(360deg);
+    }
+}
 
 body {
     font-family: "Suisse Int'l", Helvetica, Arial, sans-serif;
@@ -11,7 +13,7 @@ body {
     padding: 20px;
     background-color: black;
     color: aliceblue;
-    
+
 }
 
 h1,
@@ -132,7 +134,7 @@ section {
     h5,
     h6,
     .cover {
-        width: 33%;
+        width: 100%;
     }
 }
 
@@ -146,6 +148,6 @@ section {
     h5,
     h6,
     .cover {
-        width: 100%;
+        width: 33%;
     }
 }
