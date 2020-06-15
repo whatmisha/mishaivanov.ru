@@ -57,7 +57,7 @@ strong {
 }
 
 img {
-    max-width: 33%;
+    max-width: 50%;
 }
 
 section {
@@ -138,16 +138,4 @@ section {
     }
 }
 
-@media screen and (min-width: 601px) {
 
-    .cover {
-        width: 100%;
-    }
-}
-
-@media screen and (max-width: 600px) {
-
-    .cover {
-        width: 100%;
-    }
-}
