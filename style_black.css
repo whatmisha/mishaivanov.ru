@@ -24,19 +24,10 @@ h6 {
 }
 
 h1 {
-<<<<<<< HEAD
     font-size: 0.66em;
     letter-spacing: 1px;
     text-transform: uppercase;
     color: rosybrown;
-=======
-    font-size: 3em;
-<<<<<<< HEAD
-    color: red;
->>>>>>> parent of c2439b0... Revert "Update style_black.css"
-=======
->>>>>>> parent of f370798... Updating styles
-}
 
 h2 {
     font-size: 2em;
