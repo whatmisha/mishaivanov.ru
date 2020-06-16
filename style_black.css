@@ -59,7 +59,8 @@ strong {
 }
 
 img {
-    width: 600px;
+    max-width: 450px;
+    max-height: 450px;
 }
 
 section {
