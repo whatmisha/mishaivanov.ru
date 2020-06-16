@@ -140,3 +140,9 @@ section {
         width: 100%;
     }
 }
+
+.alt {
+  -moz-font-feature-settings: "salt";
+  -webkit-font-feature-settings: "salt";
+  font-feature-settings: "salt";
+}
