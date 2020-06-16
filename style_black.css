@@ -111,8 +111,7 @@ section {
     h3,
     h4,
     h5,
-    h6,
-    img {
+    h6 {
         width: 33%;
     }
 }
@@ -124,8 +123,7 @@ section {
     h3,
     h4,
     h5,
-    h6,
-    img {
+    h6 {
         width: 100%;
     }
 }
