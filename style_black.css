@@ -114,8 +114,7 @@ section {
     h4,
     h5,
     h6,
-    img,
-    .contacts {
+    img {
         width: 33%;
     }
 }
@@ -128,8 +127,7 @@ section {
     h4,
     h5,
     h6,
-    img,
-    .contacts {
+    img {
         width: 100%;
     }
 }
