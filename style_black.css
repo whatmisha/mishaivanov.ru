@@ -1,10 +1,10 @@
 @font-face {
-    font-family: Suisse Intl;
+    font-family: Suisse Int'l;
     src: url(Suisse Int'l Medium.woff2);
    }
 
 body {
-    font-family: "Suisse Intl", Helvetica, Arial, sans-serif;
+    font-family: "Suisse Int'l", Helvetica, Arial, sans-serif;
     font-size: 18px;
     font-weight: 500;
     line-height: 1.5;
