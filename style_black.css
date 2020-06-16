@@ -102,8 +102,6 @@ section {
     background-color: red;
 }
 
-}
-
 @media screen and (min-width: 601px) {
 
     p,
@@ -112,8 +110,8 @@ section {
     h4,
     h5,
     h6,
-    .contacts {
-        width: 50%;
+    img {
+        width: 33%;
     }
 }
 
@@ -125,7 +123,6 @@ section {
     h4,
     h5,
     h6,
-    .contacts {
+    img {
         width: 100%;
     }
-}
