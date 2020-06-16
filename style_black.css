@@ -105,9 +105,17 @@ section {
 }
 
 .contacts {
+    padding: 0px 30px 2px 30px;
+    border-radius: 60px;
     font-size: 1.5em;
-    line-height: 2;
+    color: #000;
+    background-color: rosybrown;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+    margin-left: -3px;
     margin-right: 0.5em;
+    border-color: rosybrown;
+    border-style: solid;
 }
 
 .contacts:hover {
