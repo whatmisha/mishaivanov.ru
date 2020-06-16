@@ -109,8 +109,7 @@ section {
     h3,
     h4,
     h5,
-    h6,
-    img {
+    h6 {
         width: 50%;
     }
 }
@@ -122,7 +121,21 @@ section {
     h3,
     h4,
     h5,
-    h6,
+    h6 {
+        width: 100%;
+    }
+}
+
+@media screen and (min-width: 601px) {
+
+    img {
+        width: 33%;
+    }
+}
+
+@media screen and (max-width: 600px) {
+
     img {
         width: 100%;
     }
+}
