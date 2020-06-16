@@ -113,7 +113,7 @@ section {
     h4,
     h5,
     h6,
-    .contacts {
+    contacts {
         width: 50%;
     }
 }
@@ -126,7 +126,7 @@ section {
     h4,
     h5,
     h6,
-    .contacts {
+    contacts {
         width: 100%;
     }
 }
