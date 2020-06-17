@@ -3,8 +3,8 @@
     src: url("fonts/Suisse Int'l.woff2") format("woff2")
             url("fonts/Suisse Int'l.woff") format("woff")
             url("fonts/Suisse Int'l.ttf") format("truetype");
-    font-weight: normal;
-    font-style: normal;
+    font-weight: medium;
+    font-style: medium;
    }
 
 body {
