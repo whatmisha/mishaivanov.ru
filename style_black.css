@@ -1,14 +1,14 @@
 @font-face {
-    font-family: "Suisse Intl";
-    src: url("fonts/Suisse Intl.woff2") format("woff2")
-            url("fonts/Suisse Intl.woff") format("woff")
-            url("fonts/Suisse Intl.ttf") format("truetype");
-    font-weight: medium;
-    font-style: medium;
+    font-family: "Suisse Int'l";
+    src: url("fonts/Suisse Int'l.woff2") format("woff2")
+            url("fonts/Suisse Int'l.woff") format("woff")
+            url("fonts/Suisse Int'l.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
    }
 
 body {
-    font-family: "Suisse Intl", Helvetica, Arial, sans-serif;
+    font-family: "Suisse Int'l", Helvetica, Arial, sans-serif;
     font-size: 18px;
     font-weight: 500;
     line-height: 1.5;
@@ -25,7 +25,7 @@ h3,
 h4,
 h5,
 h6 {
-    font-family: "Suisse Intl", Helvetica, Arial, sans-serif;
+    font-family: "Suisse Int'l", Helvetica, Arial, sans-serif;
     color: aliceblue;
     font-weight: 500;
     line-height: 1.0;
