@@ -2,11 +2,21 @@
     font-family: Suisse Intl;
     src: url("fonts/Suisse Intl.woff2") format("woff2")
             url("fonts/Suisse Intl.woff") format("woff")
-            url("fonts/Suisse Intl.ttf") format("ttf");
+            url("fonts/Suisse Intl.ttf") format("truetype");
     font-weight: medium;
     font-style: medium;
    }
 
+/*@font-face {
+  font-family: "Suisse Intl";
+  src: url("../fonts/RobotoRegular/RobotoRegular.eot");
+  src: url("../fonts/RobotoRegular/RobotoRegular.eot?#iefix")format("embedded-opentype"),
+   url("fonts/Suisse Intl.woff") format("woff"), 
+   url("../fonts/RobotoRegular/RobotoRegular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: normal;
+}
+*/
 body {
     font-family: "Suisse Intl", Helvetica, Arial, sans-serif;
     font-size: 18px;
