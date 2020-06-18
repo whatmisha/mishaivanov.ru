@@ -1,7 +1,7 @@
 @font-face {
     font-family: "Suisse Int'l";
-    src: url("fonts/Suisse Int'l.woff2") format("woff2")
-            url("fonts/Suisse Int'l.woff") format("woff")
+    src: url("fonts/Suisse Int'l.woff2") format("woff2"),
+            url("fonts/Suisse Int'l.woff") format("woff"),
             url("fonts/Suisse Int'l.ttf") format("truetype");
     font-weight: medium;
     font-style: medium;
