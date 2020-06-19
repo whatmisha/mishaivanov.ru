@@ -82,7 +82,8 @@ td {
 }
 
 .table-head {
-    font-size: 0.67em;
+    font-size: 0.66em;
+    text-transform: uppercase;
 }
 
 .years {
