@@ -71,12 +71,12 @@ section {
 
 table {
     border-collapse: collapse;
-    border: 1px solid;
+    border: 0px solid;
 }
 
 td {
     border-bottom: 1px rgba(187, 134, 144, .3) solid;
-    border-right: 1em;
+    padding-right: 1em;
 }
 
 .years {
