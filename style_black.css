@@ -81,8 +81,9 @@ td {
     padding-right: 1em;
 }
 
-.table-head {
+th {
     font-size: 0.66em;
+    text-align: left;
     text-transform: uppercase;
     letter-spacing: 1.5px;
     color: dimgrey;
