@@ -80,7 +80,7 @@ table {
 
 tr:hover {
     color: #fff;
-    background-color: rgba(187, 134, 144, .1);
+    background-color: rgba(187, 134, 144, .15);
 }
 
 td {
