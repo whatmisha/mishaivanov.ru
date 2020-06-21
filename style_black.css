@@ -182,6 +182,10 @@ th {
     }
 }
 
+@media screen and (max-width: 601px) {
+  table td {display: block;}
+}
+
 .alt {
   -moz-font-feature-settings: "salt";
   -webkit-font-feature-settings: "salt";
