@@ -1,11 +1,11 @@
 @font-face {
     font-family: "Suisse Int'l";
     src: url("fonts/Suisse Int'l.woff2") format("woff2"),
-            url("fonts/Suisse Int'l.woff") format("woff"),
-            url("fonts/Suisse Int'l.ttf") format("truetype");
+        url("fonts/Suisse Int'l.woff") format("woff"),
+        url("fonts/Suisse Int'l.ttf") format("truetype");
     font-weight: medium;
     font-style: medium;
-   }
+}
 
 body {
     font-family: "Suisse Int'l", Helvetica, Arial, sans-serif;
@@ -88,7 +88,7 @@ td {
     border-top: 1px rgba(187, 134, 144, .15) solid;
     border-bottom: 0px;
     padding: 0.5em 1em 0.5em 0;
-    vertical-align: top;    
+    vertical-align: top;
 }
 
 th {
@@ -182,12 +182,8 @@ th {
     }
 }
 
-@media screen and (max-width: 601px) {
-  table td {display: block;}
-}
-
 .alt {
-  -moz-font-feature-settings: "salt";
-  -webkit-font-feature-settings: "salt";
-  font-feature-settings: "salt";
+    -moz-font-feature-settings: "salt";
+    -webkit-font-feature-settings: "salt";
+    font-feature-settings: "salt";
 }
