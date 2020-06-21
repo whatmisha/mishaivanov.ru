@@ -78,15 +78,11 @@ table {
     line-height: 120%;
 }
 
-tr:hover {
+tr:hover:active {
     color: #fff;
     background-color: rgba(187, 134, 144, .15);
 }
 
-tr:active {
-    color: #fff;
-    background-color: rgba(187, 134, 144, .3);
-}
 
 td {
     border-top: 1px rgba(187, 134, 144, .15) solid;
