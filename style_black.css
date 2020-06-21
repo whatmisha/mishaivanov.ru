@@ -80,7 +80,7 @@ table {
 
 tr:hover {
     color: #fff;
-    background-color: rgba(187, 134, 144, .15);
+    background-color: rgba(187, 134, 144, .1);
 }
 
 td {
@@ -97,6 +97,10 @@ th {
     letter-spacing: 1.5px;
     color: dimgrey;
     padding-right: 1em;
+}
+
+th:hover {
+    background-color: black;
 }
 
 .years {
