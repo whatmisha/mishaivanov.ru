@@ -79,6 +79,8 @@ table {
 td {
     border-bottom: 1px rgba(187, 134, 144, .3) solid;
     padding-right: 1em;
+    text-align: top left;
+    
 }
 
 th {
