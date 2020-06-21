@@ -78,7 +78,7 @@ table {
     line-height: 120%;
 }
 
-.table-header:hover {
+tr:hover {
     color: #fff;
     background-color: rgba(187, 134, 144, .1);
 }
@@ -99,7 +99,7 @@ th {
     padding-right: 1em;
 }
 
-th:hover {
+.table-header:hover {
     background-color: black;
 }
 
