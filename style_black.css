@@ -70,7 +70,7 @@ section {
 }
 
 table {
-    border-collapse: separate;
+    border-collapse: collapse;
     border: 0px solid;
     margin-top: 2em;
     margin-bottom: 3em;
@@ -79,7 +79,7 @@ table {
 }
 
 td {
-    border-bottom: 1px rgba(187, 134, 144, .3) solid;
+    border-bottom: 2px rgba(187, 134, 144, .3) solid;
     padding: 0.5em 1em 0.5em 0;
     vertical-align: top;    
 }
