@@ -70,7 +70,7 @@ section {
 }
 
 table {
-    border-collapse: collapse;
+    border-collapse: separate;
     border: 0px solid;
     margin-top: 2em;
     margin-bottom: 3em;
