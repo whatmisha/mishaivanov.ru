@@ -71,7 +71,7 @@ section {
 
 table {
     border-collapse: collapse;
-    border: 0px solid;
+    border: 0px;
     margin-top: 2em;
     margin-bottom: 3em;
     width: 66%;
@@ -79,7 +79,8 @@ table {
 }
 
 td {
-    border-bottom: 2px rgba(187, 134, 144, .3) solid;
+    border-top: 1px rgba(187, 134, 144, .3) solid;
+    border-bottom: 0px;
     padding: 0.5em 1em 0.5em 0;
     vertical-align: top;    
 }
