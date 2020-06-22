@@ -101,15 +101,6 @@ th {
     padding-right: 1em;
 }
 
-aside {
-    float: right;
-    position: fixed;
-    top: 1em;
-    right: 1em;
-    width: 30%;
-}
-
-
 .table-header:hover {
     background-color: black;
 }
@@ -190,6 +181,23 @@ aside {
         width: 100%;
     }
 }
+
+@media screen and (min-width: 601px) {
+    aside {
+        float: right;
+        position: fixed;
+        top: 1em;
+        right: 1em;
+        width: 30%;
+    }
+}
+
+@media screen and (max-width: 600px) {
+    aside {
+        width: 100%;
+    }
+}
+
 
 .alt {
     -moz-font-feature-settings: "salt";
