@@ -101,6 +101,11 @@ th {
     padding-right: 1em;
 }
 
+aside {
+  float: right;
+}
+
+
 .table-header:hover {
     background-color: black;
 }
