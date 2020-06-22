@@ -103,6 +103,7 @@ th {
 
 aside {
   float: right;
+  position: fixed;
   margin: 0 1.5%;
   width: 30%;
 }
