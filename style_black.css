@@ -102,12 +102,9 @@ th {
 }
 
 aside {
-    float: right;
     position: fixed;
     top: 0;
     right: 0;
-    margin: 0 1.5%;
-    width: 30%;
 }
 
 
