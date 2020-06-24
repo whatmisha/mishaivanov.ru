@@ -5,7 +5,7 @@
         url("fonts/Suisse Int'l.ttf") format("truetype");
     font-weight: medium;
     font-style: medium;
-    font-feature-settings: "ss02";
+    font-feature-settings: "ss01";
 }
 
 body {
@@ -31,7 +31,7 @@ h6 {
     font-weight: 500;
     line-height: 1.0;
     width: 50%;
-    font-feature-settings: "ss02";
+    font-feature-settings: "ss01";
 }
 
 h1 {
@@ -198,11 +198,4 @@ th {
     aside {
         width: 100%;
     }
-}
-
-
-.alt {
-    -moz-font-feature-settings: "salt";
-    -webkit-font-feature-settings: "salt";
-    font-feature-settings: "salt";
 }
