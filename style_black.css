@@ -125,7 +125,7 @@ th {
 
 .stroke {
     -webkit-text-fill-color: rgba(0, 0, 0, 0.0);;
-    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-width: 0.5px;
     -webkit-text-stroke-color: white;
 }
 
