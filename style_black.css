@@ -45,10 +45,6 @@ h2 {
     font-size: 2em;
     line-height: 1.2;
     margin: 0.5em 0 0.5em 0;
-    -webkit-text-fill-color: black;
-    /* Will override color (regardless of order) */
-    -webkit-text-stroke-width: 1px;
-    -webkit-text-stroke-color: white;
 }
 
 h3 {
@@ -125,6 +121,12 @@ th {
     margin-top: 3em;
     color: dimgrey;
     font-size: 0.75em;
+}
+
+.stroke {
+    -webkit-text-fill-color: rgba(0, 0, 0, 0.0);;
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: white;
 }
 
 .btn {
