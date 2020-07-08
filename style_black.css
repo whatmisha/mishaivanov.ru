@@ -208,5 +208,5 @@ th {
 
 .wow:hover {
     background-image: url(images/hover/occama_razor.png);
-    image-resolution: snap;
+    padding: 200px;
 }
