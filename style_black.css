@@ -205,9 +205,3 @@ th {
         width: 100%;
     }
 }
-
-.wow:hover {
-    background-image: url(images/hover/occama_razor.png);
-    image-resolution: from-image;
-    object-position: center;
-}
