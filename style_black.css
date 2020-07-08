@@ -207,5 +207,5 @@ th {
 }
 
 .wow:hover {
-    background-image: url(images/hover/occama_razor.png);
+    border-image: url(images/hover/occama_razor.png);
 }
