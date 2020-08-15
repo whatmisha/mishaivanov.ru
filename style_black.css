@@ -159,8 +159,8 @@ th {
 }
 
 .item {
-    min-height: 24%;
-    min-width: 24%;
+    width: 24%;
+    min-height: 400px;
     background-color: red;
     border: 1px solid white;
 }
