@@ -161,6 +161,7 @@ th {
 .item {
     min-height: 100px;
     min-width: 100px;
+    background-color: red;
 }
 
 @media screen and (min-width: 601px) {
