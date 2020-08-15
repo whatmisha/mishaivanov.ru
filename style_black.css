@@ -155,7 +155,7 @@ th {
     flex-wrap: wrap;
     align-content: stretch;
     align-items: stretch;
-    height: auto;
+    height: 1000px;
 }
 
 .item {
