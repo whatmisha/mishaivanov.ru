@@ -153,8 +153,8 @@ th {
 .flex {
     display: flex;
     flex-wrap: wrap;
-    align-content: stretch;
-    align-items: stretch;
+    align-content: space-between;
+    align-items: flex-start;
     height: 1000px;
 }
 
