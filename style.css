@@ -166,7 +166,7 @@ th {
 .low-flex {
     display: flex;
     align-items: center;
-    align-content: center;
+    justify-content: center;
 }
 
 .low-flex-a a{
