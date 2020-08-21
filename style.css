@@ -166,15 +166,12 @@ th {
 .low-flex {
     display: flex;
     align-items: center;
-    justify-content: center;
     align-content: center;
 }
 
 .low-flex-a a{
-    width: 100%;
     font-size: 2em;
     margin: 1em 1em;
-    align-self: center;
 }
 
 
