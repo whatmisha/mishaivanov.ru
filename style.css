@@ -168,11 +168,35 @@ th {
     flex-wrap: wrap;
     align-content: stretch;
     align-items: stretch;
+}
+
+.low-flex-a {
     font-size: 2em;
     letter-spacing: 1.5px;
-    color: rosybrown;
+    color: white;
     color: black;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 @media screen and (min-width: 601px) {
 
