@@ -167,9 +167,11 @@ th {
     display: flex;
     align-items: center;
     justify-content: center;
+    align-content: center;
 }
 
 .low-flex .low-flex-a {
+    
     font-size: 2em;
     color: white;
     color: black;
