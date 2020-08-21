@@ -169,7 +169,7 @@ th {
     justify-content: center;
 }
 
-.low-flex-a {
+.low-flex .low-flex-a {
     width: 100%;
     height: 100%;
     font-size: 2em;
