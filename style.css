@@ -171,6 +171,7 @@ th {
 }
 
 .low-flex-a a{
+    width: auto;
     font-size: 2em;
     margin: 1em 1em;
 }
