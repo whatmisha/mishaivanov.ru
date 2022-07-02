@@ -70,9 +70,7 @@ strong {
     overflow: auto;
 }
 
-.block {
-    background: #000;
-    
+.block {    
     img {
         display: block;
         border: none;
