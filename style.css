@@ -71,8 +71,6 @@ strong {
 }
 
 .block {    
-    img {
-        display: block;
-        border: none;
-    }
+    display: block;
+    border: none;
 }
