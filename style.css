@@ -48,6 +48,10 @@ a {
     border-bottom: 1px rgba(187, 134, 144, .3) solid;
 }
 
+a:hover {
+    font-weight: 50;
+}
+
 b,
 strong {
     font-weight: 50;
