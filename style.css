@@ -19,11 +19,6 @@ body {
 
 }
 
-misha, {
-    font-size: 3em;
-    text-align: center;
-}
-
 h1,
 h2,
 h3,
@@ -38,11 +33,12 @@ h6 {
 }
 
 h1 {
-    font-size: 1em;
+    font-size: 5em;
     letter-spacing: 1px;
     line-height: 1.2;
     text-transform: uppercase;
     color: red;
+    text-align: center;
 }
 
 h2 {
