@@ -10,7 +10,7 @@
 body {
     font-family: "Angst", Times New Roman, serif;
     font-size: 18px;
-    font-weight: 500;
+    font-weight: 0;
     line-height: 1.5;
     margin: 0 auto;
     padding: 20px;
@@ -26,7 +26,7 @@ h4,
 h5,
 h6 {
     font-family: "Angst", Times New Roman, serif;
-    color: aliceblue;
+    color: rosybrown;
     text-transform: uppercase;
     font-weight: 100;
     line-height: 1.0;
@@ -37,44 +37,4 @@ h1 {
     font-size: 3em;
     line-height: 1.2;
     text-align: center;
-}
-
-h2 {
-    font-size: 2em;
-    line-height: 1.2;
-}
-
-h3 {
-    font-size: 1.5em;
-    line-height: 1.2;
-}
-
-misha {
-    font-size: 3em;
-    color: red;
-}
-
-wrapper {
-    height : 100%;
-    width : 100%;
-    padding: 20px;
-}
-
-p {
-    width: 100%;
-}
-
-a {
-    color: rosybrown;
-    text-decoration: none;
-    border-bottom: 1px rgba(187, 134, 144, .3) solid;
-}
-
-b,
-strong {
-    font-weight: 50;
-}
-
-section {
-    margin: 0 0 1em 0;
 }
