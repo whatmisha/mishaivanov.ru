@@ -33,7 +33,7 @@ h6 {
 }
 
 h1 {
-    font-size: 5em;
+    font-size: 3em;
     letter-spacing: 1px;
     line-height: 1.2;
     text-transform: uppercase;
@@ -51,6 +51,12 @@ h3 {
     font-size: 1.5em;
     line-height: 1.2;
 }
+
+misha, {
+    font-size: 3em;
+    text-align: center;
+}
+
 
 p {
     width: 100%;
