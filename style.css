@@ -16,6 +16,9 @@ body {
     padding: 20px;
     background-color: black;
     color: aliceblue;
+    height : 100%;
+    width : 100%;
+    overflow : hidden;
 
 }
 
@@ -29,21 +32,14 @@ h6 {
     color: aliceblue;
     text-transform: uppercase;
     font-weight: 100;
-    line-height: 1.0;
+    line-height: 10.0;
     width: 100%;
 }
 
 h1 {
-    font-size: 3em;
+    font-size: 2em;
     line-height: 1.2;
     text-align: center;
-}
-
-
-wrapper {
-    height : 100%;
-    width : 100%;
-    padding: 20px;
 }
 
 p {
