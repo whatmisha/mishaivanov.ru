@@ -1,14 +1,14 @@
 @font-face {
-    font-family: "Suisse Int'l";
-    src: url("fonts/Suisse Int'l.woff2") format("woff2"),
-        url("fonts/Suisse Int'l.woff") format("woff"),
-        url("fonts/Suisse Int'l.ttf") format("truetype");
-    font-weight: medium;
-    font-style: medium;
+    font-family: "Angst";
+    src: url("fonts/Angst-VariableVF.woff2") format("woff2"),
+        url("fonts/Angst-VariableVF.woff") format("woff"),
+        url("fonts/Angst-VariableVF.ttf") format("truetype");
+    font-weight: 100;
+    font-style: 100;
 }
 
 body {
-    font-family: "Suisse Int'l", Helvetica, Arial, sans-serif;
+    font-family: "Angst", Times New Roman, serif;
     font-size: 18px;
     font-weight: 500;
     line-height: 1.5;
@@ -25,7 +25,7 @@ h3,
 h4,
 h5,
 h6 {
-    font-family: "Suisse Int'l", Helvetica, Arial, sans-serif;
+    font-family: "Angst", Times New Roman, serif;
     color: aliceblue;
     font-weight: 500;
     line-height: 1.0;
