@@ -36,6 +36,7 @@ h6 {
 h1 {
     font-size: 3em;
     line-height: 1.2;
+    text-align: center;
 }
 
 h2 {
@@ -50,7 +51,6 @@ h3 {
 
 misha {
     font-size: 3em;
-    text-align: center;
     color: red;
 }
 
