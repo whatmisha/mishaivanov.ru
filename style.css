@@ -27,6 +27,7 @@ h5,
 h6 {
     font-family: "Angst", Times New Roman, serif;
     color: aliceblue;
+    text-transform: uppercase;
     font-weight: 100;
     line-height: 1.0;
     width: 100%;
@@ -34,17 +35,12 @@ h6 {
 
 h1 {
     font-size: 3em;
-    letter-spacing: 1px;
     line-height: 1.2;
-    text-transform: uppercase;
-    color: red;
-    text-align: center;
 }
 
 h2 {
     font-size: 2em;
     line-height: 1.2;
-    margin: 0.5em 0 0.5em 0;
 }
 
 h3 {
@@ -55,7 +51,7 @@ h3 {
 misha {
     font-size: 3em;
     text-align: center;
-    vertical-align: middle;
+    color: red;
 }
 
 wrapper {
@@ -76,101 +72,9 @@ a {
 
 b,
 strong {
-    font-weight: 600;
+    font-weight: 50;
 }
 
 section {
     margin: 0 0 1em 0;
-}
-
-table {
-    border-collapse: collapse;
-    border: 0px;
-    margin-top: 2em;
-    margin-bottom: 3em;
-    width: 66%;
-    line-height: 120%;
-}
-
-tr:hover {
-    color: #fff;
-    background-color: rgba(187, 134, 144, .15);
-}
-
-
-td {
-    border-top: 1px rgba(187, 134, 144, .15) solid;
-    border-bottom: 0px;
-    padding: 0.5em 1em 0.5em 0;
-    vertical-align: top;
-}
-
-th {
-    font-size: 0.66em;
-    font-weight: normal;
-    text-align: left;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: dimgrey;
-    padding-right: 1em;
-}
-
-.table-header:hover {
-    background-color: black;
-}
-
-.years {
-    font-size: 12px;
-    letter-spacing: 1px;
-    color: rosybrown;
-}
-
-.note {
-    margin-top: -18px;
-}
-
-.dark {
-    margin-top: 3em;
-    color: dimgrey;
-    font-size: 0.75em;
-}
-
-.stroke {
-    -webkit-text-fill-color: rgba(0, 0, 0, 0.0);;
-    -webkit-text-stroke-width: 0.5px;
-    -webkit-text-stroke-color: white;
-}
-
-.btn {
-    padding: 0 0.6em 2px 0.6em;
-    border-radius: 60px;
-    font-size: 1.5em;
-    line-height: 1.6;
-    color: #000;
-    background-color: rosybrown;
-    margin-left: -0.1em;
-    margin-right: 0.1em;
-}
-
-.btn:hover {
-    color: #000;
-    background-color: aliceblue;
-}
-
-.btn:active {
-    color: #000;
-    background-color: red;
-}
-
-.flex {
-    display: flex;
-    flex-wrap: wrap;
-    align-content: stretch;
-    align-items: stretch;
-    height: 800px;
-}
-
-.item {
-    width: 24%;
-    background-color: red;
 }
