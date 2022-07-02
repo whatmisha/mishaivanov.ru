@@ -16,10 +16,6 @@ body {
     padding: 20px;
     background-color: black;
     color: aliceblue;
-    height : 100%;
-    width : 100%;
-    overflow : hidden;
-
 }
 
 h1,
@@ -55,8 +51,4 @@ a {
 b,
 strong {
     font-weight: 50;
-}
-
-center {
-    vertical-align:middle
 }
