@@ -52,12 +52,17 @@ h3 {
     line-height: 1.2;
 }
 
-misha, {
+misha {
     font-size: 3em;
     text-align: center;
     vertical-align: middle;
 }
 
+wrapper {
+    height : 100%;
+    width : 100%;
+    padding: 20px;
+}
 
 p {
     width: 100%;
