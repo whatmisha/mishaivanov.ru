@@ -10,7 +10,7 @@
 body {
     font-family: "Angst", Times New Roman, serif;
     font-size: 18px;
-    font-weight: normal;
+    font-weight: 0;
     line-height: 1.5;
     margin: 0 auto;
     padding: 20px;
@@ -27,7 +27,7 @@ h6 {
     font-family: "Angst", Times New Roman, serif;
     color: aliceblue;
     text-transform: uppercase;
-    font-weight: 100;
+    font-weight: normal;
     line-height: 10.0;
     width: 100%;
 }
