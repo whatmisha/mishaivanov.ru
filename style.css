@@ -27,7 +27,7 @@ h6 {
     font-family: "Angst", Times New Roman, serif;
     color: aliceblue;
     text-transform: uppercase;
-    font-weight: normal;
+    font-weight: 0;
     line-height: 10.0;
     width: 100%;
 }
