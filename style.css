@@ -50,6 +50,7 @@ a {
 
 a:hover {
     font-variation-settings: 'wght' 50;
+    border-bottom: 0px rgba(187, 134, 144, .3) solid;
 }
 
 b,
