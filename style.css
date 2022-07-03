@@ -50,6 +50,7 @@ a {
 
 a:hover {
     color: aliceblue;
+    font-weight: 50;
 }
 
 b,
