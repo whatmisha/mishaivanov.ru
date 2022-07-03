@@ -49,8 +49,8 @@ a {
 }
 
 a:hover {
-    color: aliceblue;
-    font-variation-settings: 'wght' 50;}
+    font-variation-settings: 'wght' 50;
+}
 
 b,
 strong {
