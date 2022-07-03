@@ -49,7 +49,7 @@ a {
 }
 
 a:hover {
-    font-variation-settings: 'wght' 50;
+    font-variation-settings: 'wght' 0;
     border-bottom: none;
 }
 
