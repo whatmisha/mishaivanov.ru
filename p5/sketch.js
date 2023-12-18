@@ -4,13 +4,6 @@ function setup() {
     createCanvas(windowWidth, windowHeight);
     x = width / 2;
     y = height / 2;
-    window.addEventListener("keydown", function(e) {
-        // Если это стрелка вверх или вниз
-        if(["ArrowUp", "ArrowDown"].includes(e.key)) {
-            e.preventDefault();
-        }
-    }, false);
-}
 }
 
 function draw() {
