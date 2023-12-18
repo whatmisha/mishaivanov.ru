@@ -67,7 +67,6 @@ function handleGamepad() {
         // Левый стик контроллера
         let leftStickX = gp.axes[0];
         let leftStickY = gp.axes[1];
-        let stickPressed = gp.buttons[10].pressed; // L3 кнопка (нажатие левого стика)
 
         if (Math.abs(leftStickX) > 0.1) {
             x += leftStickX * step;
@@ -75,19 +74,5 @@ function handleGamepad() {
         if (Math.abs(leftStickY) > 0.1) {
             y += leftStickY * step;
         }
-
-        if (stickPressed) {
-            drawCircleAtCurrentPosition();
-        }
     }
-}
-
-function drawCircleAtCurrentPosition() {
-    fill(255); // Белый цвет для рисованных кругов
-    ellipse(x, y, 30, 30);
-    noLoop(); // Остановить непрерывный вызов функции draw()
-}
-
-function mousePressed() {
-    loop(); // Возобновить вызов функции draw(), когда пользователь кликает мышью
 }
