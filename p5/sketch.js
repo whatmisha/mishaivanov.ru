@@ -1,6 +1,6 @@
 let x, y;
 let diameter = 30; // Начальный диаметр круга
-const step = 2;
+const step = 4; // Удвоенная скорость перемещения
 const sizeChangeStep = 5; // Увеличенный шаг изменения размера
 let movingLeft = false;
 let movingRight = false;
