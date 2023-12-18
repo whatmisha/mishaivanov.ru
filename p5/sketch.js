@@ -1,5 +1,9 @@
 let x, y;
 const step = 2;
+let movingLeft = false;
+let movingRight = false;
+let movingUp = false;
+let movingDown = false;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -10,9 +14,49 @@ function setup() {
 
 function draw() {
     handleGamepad();
+    handleKeyboard();
 
     fill(255); // Белый цвет основного круга
     ellipse(x, y, 30, 30);
+}
+
+function keyPressed() {
+    if (keyCode === LEFT_ARROW) {
+        movingLeft = true;
+    } else if (keyCode === RIGHT_ARROW) {
+        movingRight = true;
+    } else if (keyCode === UP_ARROW) {
+        movingUp = true;
+    } else if (keyCode === DOWN_ARROW) {
+        movingDown = true;
+    }
+}
+
+function keyReleased() {
+    if (keyCode === LEFT_ARROW) {
+        movingLeft = false;
+    } else if (keyCode === RIGHT_ARROW) {
+        movingRight = false;
+    } else if (keyCode === UP_ARROW) {
+        movingUp = false;
+    } else if (keyCode === DOWN_ARROW) {
+        movingDown = false;
+    }
+}
+
+function handleKeyboard() {
+    if (movingLeft) {
+        x -= step;
+    }
+    if (movingRight) {
+        x += step;
+    }
+    if (movingUp) {
+        y -= step;
+    }
+    if (movingDown) {
+        y += step;
+    }
 }
 
 function handleGamepad() {
@@ -41,4 +85,9 @@ function handleGamepad() {
 function drawCircleAtCurrentPosition() {
     fill(255); // Белый цвет для рисованных кругов
     ellipse(x, y, 30, 30);
+    noLoop(); // Остановить непрерывный вызов функции draw()
+}
+
+function mousePressed() {
+    loop(); // Возобновить вызов функции draw(), когда пользователь кликает мышью
 }
