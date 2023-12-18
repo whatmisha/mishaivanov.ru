@@ -1,5 +1,5 @@
 let x, y;
-const step = 2; // Меньшее значение для более плавного управления
+const step = 2;
 let movingLeft = false;
 let movingRight = false;
 let movingUp = false;
@@ -12,7 +12,7 @@ function setup() {
 }
 
 function draw() {
-    background(220);
+    background(0); // Черный фон
 
     handleGamepad();
 
@@ -29,7 +29,7 @@ function draw() {
         y += step;
     }
 
-    fill(255, 0, 0);
+    fill(255); // Белый цвет круга
     ellipse(x, y, 30, 30);
 }
 
