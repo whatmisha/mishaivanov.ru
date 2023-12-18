@@ -60,7 +60,7 @@ function handleGamepad() {
             diameter = max(10, diameter - L2 * sizeChangeStep); // Не уменьшать диаметр меньше 10
         }
         if (R2 > 0.1) {
-            diameter = min(100, diameter + R2 * sizeChangeStep); // Не увеличивать диаметр больше 100
+            diameter = min(2000, diameter + R2 * sizeChangeStep); // Максимальный размер - 2000 пикселей
         }
     }
 }
