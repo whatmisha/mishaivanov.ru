@@ -1,3 +1,12 @@
+function preventDefaultArrows(e) {
+    if ([37, 38, 39, 40].includes(e.keyCode)) {
+        e.preventDefault();
+    }
+}
+
+document.addEventListener('keydown', preventDefaultArrows);
+
+
 let x, y;
 
 function setup() {
