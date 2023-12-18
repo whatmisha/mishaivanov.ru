@@ -1,9 +1,9 @@
 let x, y;
+const step = 2; // Меньшее значение для более плавного управления
 let movingLeft = false;
 let movingRight = false;
 let movingUp = false;
 let movingDown = false;
-const step = 5;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -12,7 +12,9 @@ function setup() {
 }
 
 function draw() {
-    background(220);
+    background(0);
+
+    handleGamepad();
 
     if (movingLeft) {
         x -= step;
@@ -27,7 +29,7 @@ function draw() {
         y += step;
     }
 
-    fill(255, 0, 0);
+    fill(255, 255, 255);
     ellipse(x, y, 30, 30);
 }
 
@@ -55,9 +57,20 @@ function keyReleased() {
     }
 }
 
-// Блокировка скроллинга при нажатии клавиш вверх/вниз
-window.addEventListener("keydown", function(e) {
-    if(["ArrowUp", "ArrowDown"].includes(e.key)) {
-        e.preventDefault();
+function handleGamepad() {
+    let gamepads = navigator.getGamepads();
+    if (gamepads[0]) {
+        let gp = gamepads[0];
+
+        // Левый стик контроллера
+        let leftStickX = gp.axes[0];
+        let leftStickY = gp.axes[1];
+
+        if (Math.abs(leftStickX) > 0.1) {
+            x += leftStickX * step;
+        }
+        if (Math.abs(leftStickY) > 0.1) {
+            y += leftStickY * step;
+        }
     }
-}, false);
+}
