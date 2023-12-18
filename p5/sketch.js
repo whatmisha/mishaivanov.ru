@@ -1,18 +1,16 @@
-function preventDefaultArrows(e) {
-    if ([37, 38, 39, 40].includes(e.keyCode)) {
-        e.preventDefault();
-    }
-}
-
-document.addEventListener('keydown', preventDefaultArrows);
-
-
 let x, y;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
     x = width / 2;
     y = height / 2;
+    window.addEventListener("keydown", function(e) {
+        // Если это стрелка вверх или вниз
+        if(["ArrowUp", "ArrowDown"].includes(e.key)) {
+            e.preventDefault();
+        }
+    }, false);
+}
 }
 
 function draw() {
