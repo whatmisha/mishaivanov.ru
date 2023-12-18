@@ -20,7 +20,10 @@ function keyPressed() {
         x += step;
     } else if (keyCode === UP_ARROW) {
         y -= step;
+        return false; // Предотвращает скролл
     } else if (keyCode === DOWN_ARROW) {
         y += step;
+        return false; // Предотвращает скролл
     }
 }
+
