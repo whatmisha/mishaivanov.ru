@@ -1,5 +1,5 @@
 let x, y;
-const step = 2;
+const step = 2; // Меньшее значение для более плавного управления
 let movingLeft = false;
 let movingRight = false;
 let movingUp = false;
@@ -9,14 +9,27 @@ function setup() {
     createCanvas(windowWidth, windowHeight);
     x = width / 2;
     y = height / 2;
-    background(0); // Черный фон
 }
 
 function draw() {
-    handleGamepad();
-    handleKeyboard();
+    background(220);
 
-    fill(255); // Белый цвет основного круга
+    handleGamepad();
+
+    if (movingLeft) {
+        x -= step;
+    }
+    if (movingRight) {
+        x += step;
+    }
+    if (movingUp) {
+        y -= step;
+    }
+    if (movingDown) {
+        y += step;
+    }
+
+    fill(255, 0, 0);
     ellipse(x, y, 30, 30);
 }
 
@@ -41,21 +54,6 @@ function keyReleased() {
         movingUp = false;
     } else if (keyCode === DOWN_ARROW) {
         movingDown = false;
-    }
-}
-
-function handleKeyboard() {
-    if (movingLeft) {
-        x -= step;
-    }
-    if (movingRight) {
-        x += step;
-    }
-    if (movingUp) {
-        y -= step;
-    }
-    if (movingDown) {
-        y += step;
     }
 }
 
