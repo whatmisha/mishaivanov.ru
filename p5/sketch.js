@@ -1,11 +1,12 @@
 let x, y;
-let diameter = 30; // Начальный диаметр круга
-const step = 4; // Удвоенная скорость перемещения
-const sizeChangeStep = 5; // Увеличенный шаг изменения размера
+let diameter = 30;
+const step = 4;
+const sizeChangeStep = 5;
 let movingLeft = false;
 let movingRight = false;
 let movingUp = false;
 let movingDown = false;
+let trailEnabled = false; // Переменная для отслеживания состояния шлейфа
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -14,7 +15,9 @@ function setup() {
 }
 
 function draw() {
-    background(0); // Черный фон
+    if (!trailEnabled) {
+        background(0); // Очищаем фон, если шлейф отключен
+    }
 
     handleGamepad();
 
@@ -31,7 +34,7 @@ function draw() {
         y += step;
     }
 
-    fill(255); // Белый цвет круга
+    fill(255);
     ellipse(x, y, diameter, diameter);
 }
 
@@ -40,13 +43,9 @@ function handleGamepad() {
     if (gamepads[0]) {
         let gp = gamepads[0];
 
-        // Левый стик контроллера
+        // Обработка движения
         let leftStickX = gp.axes[0];
         let leftStickY = gp.axes[1];
-
-        // Кнопки L2 и R2
-        let L2 = gp.buttons[6].value; // Значение от 0 до 1
-        let R2 = gp.buttons[7].value; // Значение от 0 до 1
 
         if (Math.abs(leftStickX) > 0.1) {
             x += leftStickX * step;
@@ -55,12 +54,20 @@ function handleGamepad() {
             y += leftStickY * step;
         }
 
-        // Изменение размера круга
+        // Обработка изменения размера
+        let L2 = gp.buttons[6].value;
+        let R2 = gp.buttons[7].value;
+
         if (L2 > 0.1) {
-            diameter = max(10, diameter - L2 * sizeChangeStep); // Не уменьшать диаметр меньше 10
+            diameter = max(10, diameter - L2 * sizeChangeStep);
         }
         if (R2 > 0.1) {
-            diameter = min(2000, diameter + R2 * sizeChangeStep); // Максимальный размер - 2000 пикселей
+            diameter = min(2000, diameter + R2 * sizeChangeStep);
+        }
+
+        // Включение/выключение шлейфа
+        if (gp.buttons[0].pressed) {
+            trailEnabled = !trailEnabled;
         }
     }
 }
