@@ -1,6 +1,5 @@
 let x, y;
 const step = 2;
-let drawing = false;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -11,11 +10,6 @@ function setup() {
 
 function draw() {
     handleGamepad();
-
-    if (drawing) {
-        fill(255); // Белый цвет для рисования
-        ellipse(x, y, 30, 30);
-    }
 
     fill(255); // Белый цвет основного круга
     ellipse(x, y, 30, 30);
@@ -38,6 +32,13 @@ function handleGamepad() {
             y += leftStickY * step;
         }
 
-        drawing = stickPressed;
+        if (stickPressed) {
+            drawCircleAtCurrentPosition();
+        }
     }
+}
+
+function drawCircleAtCurrentPosition() {
+    fill(255); // Белый цвет для рисованных кругов
+    ellipse(x, y, 30, 30);
 }
