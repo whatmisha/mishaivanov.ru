@@ -4,7 +4,6 @@ const step = 4; // Скорость перемещения для контрол
 const sizeChangeStep = 5;
 let smoothContour = true; // Плавность контура
 let trailEnabled = false;
-let squareButtonPressed = false; // Состояние кнопки "Квадрат"
 let numSides = 6; // Количество сторон угловатого круга
 let sidesChangeStep = 1 / 8; // Шаг изменения сторон (делаем его в 8 раз меньше)
 let rotationAngle = 0; // Угол вращения фигуры
