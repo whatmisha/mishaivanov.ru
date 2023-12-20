@@ -72,8 +72,3 @@ function handleGamepad() {
         }
     }
 }
-
-function mouseMoved() {
-    x = mouseX;
-    y = mouseY;
-}
