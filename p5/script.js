@@ -1,5 +1,5 @@
-const repoOwner = 'имя_пользователя'; // Замените на ваше имя пользователя на GitHub
-const repoName = 'имя_репозитория';  // Замените на название вашего репозитория
+const repoOwner = 'whatmisha'; // Замените на ваше имя пользователя на GitHub
+const repoName = 'mishaivanov.ru';  // Замените на название вашего репозитория
 const path = 'p5'; // Путь к папке в вашем репозитории
 
 fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`)
