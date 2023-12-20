@@ -2,6 +2,8 @@ let x, y;
 let diameter = 30;
 const step = 4; // Скорость перемещения для контроллера
 const sizeChangeStep = 5;
+const distortionStep = 0.01; // Более плавное изменение искажения
+let distortion = 0; // Степень искажения круга
 let trailEnabled = false;
 
 function setup() {
@@ -19,27 +21,16 @@ function draw() {
     handleGamepad();
 
     fill(255);
-    noFill(); // Не заполняем кривые Безье
-    stroke(255); // Цвет линии
 
-    // Радиус для кривых Безье
-    let radius = diameter / 2;
-    let handleDistance = radius * 0.552284749831; // Коэффициент для круга
+    // Рассчитываем ширину и высоту с учетом искажения
+    let ellipseWidth = diameter * (1 + distortion);
+    let ellipseHeight = diameter * (1 - distortion);
 
-    // Рисуем круг с помощью кривых Безье
-    beginShape();
-    for (let i = 0; i < 2 * PI; i += PI / 2) {
-        let sx = x + cos(i) * radius;
-        let sy = y + sin(i) * radius;
-        let ex = x + cos(i + PI / 2) * radius;
-        let ey = y + sin(i + PI / 2) * radius;
-        let cx1 = sx + cos(i - PI / 2) * handleDistance;
-        let cy1 = sy + sin(i - PI / 2) * handleDistance;
-        let cx2 = ex + cos(i + PI) * handleDistance;
-        let cy2 = ey + sin(i + PI) * handleDistance;
-        bezierVertex(cx1, cy1, cx2, cy2, ex, ey);
-    }
-    endShape(CLOSE);
+    // Ограничиваем минимальный размер
+    ellipseWidth = max(30, ellipseWidth);
+    ellipseHeight = max(30, ellipseHeight);
+
+    ellipse(x, y, ellipseWidth, ellipseHeight);
 }
 
 function handleGamepad() {
@@ -67,6 +58,17 @@ function handleGamepad() {
         }
         if (R2 > 0.1) {
             diameter = min(2000, diameter + R2 * sizeChangeStep);
+        }
+
+        // Обработка кнопок L1 и R1 для изменения искажения
+        let L1 = gp.buttons[4].pressed;
+        let R1 = gp.buttons[5].pressed;
+
+        if (L1) {
+            distortion = max(-1, distortion - distortionStep);
+        }
+        if (R1) {
+            distortion = min(1, distortion + distortionStep);
         }
 
         // Переключение трейла кнопкой "Крестик"
