@@ -4,6 +4,7 @@ const step = 4; // Скорость перемещения для контрол
 const sizeChangeStep = 5;
 let smoothContour = true; // Плавность контура
 let trailEnabled = false;
+let squareButtonPressed = false; // Состояние кнопки "Квадрат"
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -89,9 +90,12 @@ function handleGamepad() {
             diameter = min(2000, diameter + R2 * sizeChangeStep);
         }
 
-        // Кнопка "Квадрат" для переключения стиля контура
-        if (gp.buttons[2].pressed) {
+        // Обработка кнопки "Квадрат"
+        if (gp.buttons[2].pressed && !squareButtonPressed) {
             smoothContour = !smoothContour;
+            squareButtonPressed = true;
+        } else if (!gp.buttons[2].pressed) {
+            squareButtonPressed = false;
         }
 
         // Кнопка "Крестик" для включения/выключения шлейфа
