@@ -10,8 +10,8 @@ fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`)
 
         data.forEach(item => {
             if (item.type === 'dir') {
-                // Ссылка на подпапку в вашем репозитории
-                const projectUrl = `https://${repoOwner}.github.io/${repoName}/${path}/${item.name}/`;
+                // Обновленная ссылка, ведущая на ваш собственный домен
+                const projectUrl = `https://mishaivanov.ru/${path}/${item.name}/`;
 
                 const link = document.createElement('a');
                 link.href = projectUrl;
