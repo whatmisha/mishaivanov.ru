@@ -22,20 +22,27 @@ function draw() {
 }
 
 function drawBezierCircle(cx, cy, r) {
+    const numPoints = 16; // Увеличиваем количество точек
+    const angleStep = TWO_PI / numPoints;
     const handleLength = r * 0.552284749831;
 
     fill(255);
-    noStroke();
+    stroke(0); // Черная обводка
+    strokeWeight(2); // Толщина обводки
     beginShape();
-    // Верхняя правая часть
-    vertex(cx, cy - r);
-    bezierVertex(cx + handleLength, cy - r, cx + r, cy - handleLength, cx + r, cy);
-    // Нижняя правая часть
-    bezierVertex(cx + r, cy + handleLength, cx + handleLength, cy + r, cx, cy + r);
-    // Нижняя левая часть
-    bezierVertex(cx - handleLength, cy + r, cx - r, cy + handleLength, cx - r, cy);
-    // Верхняя левая часть
-    bezierVertex(cx - r, cy - handleLength, cx - handleLength, cy - r, cx, cy - r);
+    for (let i = 0; i < TWO_PI; i += angleStep) {
+        let px = cx + cos(i) * r;
+        let py = cy + sin(i) * r;
+        let nx = cx + cos(i + angleStep) * r;
+        let ny = cy + sin(i + angleStep) * r;
+
+        let c1x = px + cos(i - HALF_PI) * handleLength;
+        let c1y = py + sin(i - HALF_PI) * handleLength;
+        let c2x = nx + cos(i + HALF_PI) * handleLength;
+        let c2y = ny + sin(i + HALF_PI) * handleLength;
+
+        bezierVertex(c1x, c1y, c2x, c2y, nx, ny);
+    }
     endShape(CLOSE);
 }
 
@@ -71,9 +78,4 @@ function handleGamepad() {
             trailEnabled = !trailEnabled;
         }
     }
-}
-
-function mouseMoved() {
-    x = mouseX;
-    y = mouseY;
 }
