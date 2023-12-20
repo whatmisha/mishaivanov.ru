@@ -2,7 +2,7 @@ let x, y;
 let diameter = 30;
 const step = 4; // Скорость перемещения для контроллера
 const sizeChangeStep = 5;
-const distortionStep = 0.05; // Шаг изменения искажения
+const distortionStep = 0.01; // Более плавное изменение искажения
 let distortion = 0; // Степень искажения круга
 let trailEnabled = false;
 
@@ -21,7 +21,16 @@ function draw() {
     handleGamepad();
 
     fill(255);
-    ellipse(x, y, diameter * (1 + distortion), diameter * (1 - distortion));
+
+    // Рассчитываем ширину и высоту с учетом искажения
+    let ellipseWidth = diameter * (1 + distortion);
+    let ellipseHeight = diameter * (1 - distortion);
+
+    // Ограничиваем минимальный размер
+    ellipseWidth = max(30, ellipseWidth);
+    ellipseHeight = max(30, ellipseHeight);
+
+    ellipse(x, y, ellipseWidth, ellipseHeight);
 }
 
 function handleGamepad() {
