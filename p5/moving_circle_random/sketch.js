@@ -1,7 +1,7 @@
 let x, y;
-let diameter = 30;
+const diameter = 30; // Фиксированный диаметр круга
+const radius = diameter / 2;
 const step = 4; // Скорость перемещения для контроллера
-const sizeChangeStep = 5;
 let trailEnabled = false;
 
 function setup() {
@@ -18,12 +18,9 @@ function draw() {
 
     handleGamepad();
 
-    fill(255);
     noFill(); // Не заполняем кривые Безье
     stroke(255); // Цвет линии
 
-    // Радиус для кривых Безье
-    let radius = diameter / 2;
     let handleDistance = radius * 0.552284749831; // Коэффициент для круга
 
     // Рисуем круг с помощью кривых Безье
@@ -56,17 +53,6 @@ function handleGamepad() {
         }
         if (Math.abs(leftStickY) > 0.1) {
             y += leftStickY * step;
-        }
-
-        // Обработка кнопок L2 и R2 для изменения размера
-        let L2 = gp.buttons[6].value;
-        let R2 = gp.buttons[7].value;
-
-        if (L2 > 0.1) {
-            diameter = max(10, diameter - L2 * sizeChangeStep);
-        }
-        if (R2 > 0.1) {
-            diameter = min(2000, diameter + R2 * sizeChangeStep);
         }
 
         // Переключение трейла кнопкой "Крестик"
