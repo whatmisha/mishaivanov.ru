@@ -3,7 +3,6 @@ let diameter = 30;
 const step = 4; // Скорость перемещения для контроллера
 const sizeChangeStep = 5;
 let trailEnabled = false;
-let noiseScale = 0.1; // Масштаб шума
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -19,33 +18,24 @@ function draw() {
 
     handleGamepad();
 
-    drawNoiseDistortedCircle(x, y, diameter / 2); // Используем функцию для рисования искаженного круга
+    drawBezierCircle(x, y, diameter / 2); // Используем функцию для рисования круга
 }
 
-function drawNoiseDistortedCircle(cx, cy, r) {
+function drawBezierCircle(cx, cy, r) {
     const handleLength = r * 0.552284749831;
 
     fill(255);
-    stroke(0); // Черная обводка
-    strokeWeight(1); // Толщина обводки в 1 пиксель
+    noStroke();
     beginShape();
-    // Рисуем круг с помощью восьми точек, разделенных на четыре сегмента
-    for (let i = 0; i < TWO_PI; i += PI / 2) {
-        let px = cx + cos(i) * r;
-        let py = cy + sin(i) * r;
-        let nx = cx + cos(i + PI / 2) * r;
-        let ny = cy + sin(i + PI / 2) * r;
-
-        // Применяем шум Перлина для создания искажения
-        let offset = noise(px * noiseScale, py * noiseScale) * 10;
-        let c1x = px + cos(i - PI / 2) * handleLength + offset;
-        let c1y = py + sin(i - PI / 2) * handleLength + offset;
-        offset = noise(nx * noiseScale, ny * noiseScale) * 10;
-        let c2x = nx + cos(i + PI) * handleLength + offset;
-        let c2y = ny + sin(i + PI) * handleLength + offset;
-
-        bezierVertex(c1x, c1y, c2x, c2y, nx, ny);
-    }
+    // Верхняя правая часть
+    vertex(cx, cy - r);
+    bezierVertex(cx + handleLength, cy - r, cx + r, cy - handleLength, cx + r, cy);
+    // Нижняя правая часть
+    bezierVertex(cx + r, cy + handleLength, cx + handleLength, cy + r, cx, cy + r);
+    // Нижняя левая часть
+    bezierVertex(cx - handleLength, cy + r, cx - r, cy + handleLength, cx - r, cy);
+    // Верхняя левая часть
+    bezierVertex(cx - r, cy - handleLength, cx - handleLength, cy - r, cx, cy - r);
     endShape(CLOSE);
 }
 
@@ -81,4 +71,9 @@ function handleGamepad() {
             trailEnabled = !trailEnabled;
         }
     }
+}
+
+function mouseMoved() {
+    x = mouseX;
+    y = mouseY;
 }
