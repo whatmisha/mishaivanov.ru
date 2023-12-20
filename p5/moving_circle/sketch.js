@@ -3,7 +3,6 @@ let diameter = 30;
 const step = 4; // Скорость перемещения для контроллера
 const sizeChangeStep = 5;
 let trailEnabled = false;
-let usingGamepad = false;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -18,38 +17,19 @@ function draw() {
     }
 
     handleGamepad();
-    handleKeyboard();
 
     fill(255);
     ellipse(x, y, diameter, diameter);
 }
 
-function handleKeyboard() {
-    if (keyIsDown(49)) { // Клавиша "1"
-        diameter = max(10, diameter - sizeChangeStep);
-    }
-    if (keyIsDown(50)) { // Клавиша "2"
-        diameter = min(2000, diameter + sizeChangeStep);
-    }
-}
-
-function keyPressed() {
-    if (keyCode === 32) { // Пробел
-        trailEnabled = !trailEnabled;
-    }
-}
-
 function mouseMoved() {
-    if (!usingGamepad) {
-        x = mouseX;
-        y = mouseY;
-    }
+    x = mouseX;
+    y = mouseY;
 }
 
 function handleGamepad() {
     let gamepads = navigator.getGamepads();
     if (gamepads[0]) {
-        usingGamepad = true;
         let gp = gamepads[0];
 
         // Левый стик контроллера
@@ -78,7 +58,5 @@ function handleGamepad() {
         if (gp.buttons[0].pressed) {
             trailEnabled = !trailEnabled;
         }
-    } else {
-        usingGamepad = false;
     }
 }
