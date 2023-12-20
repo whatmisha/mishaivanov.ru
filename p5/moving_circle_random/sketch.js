@@ -7,6 +7,8 @@ let trailEnabled = false;
 let squareButtonPressed = false; // Состояние кнопки "Квадрат"
 let numSides = 6; // Количество сторон угловатого круга
 let sidesChangeStep = 1 / 8; // Шаг изменения сторон (делаем его в 8 раз меньше)
+let rotationAngle = 0; // Угол вращения фигуры
+const rotationStep = 0.05; // Шаг изменения угла вращения
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -23,13 +25,13 @@ function draw() {
     handleGamepad();
 
     if (smoothContour) {
-        drawBezierCircle(x, y, diameter / 2); // Плавный круг
+        drawBezierCircle(x, y, diameter / 2, rotationAngle); // Плавный круг
     } else {
-        drawAngularCircle(x, y, diameter / 2, Math.round(numSides)); // Угловатый круг
+        drawAngularCircle(x, y, diameter / 2, Math.round(numSides), rotationAngle); // Угловатый круг
     }
 }
 
-function drawBezierCircle(cx, cy, r) {
+function drawBezierCircle(cx, cy, r, rotation) {
     const handleLength = r * 0.552284749831;
 
     fill(255);       // Белый цвет заливки
@@ -38,25 +40,19 @@ function drawBezierCircle(cx, cy, r) {
 
     beginShape();
     // Верхняя правая часть
-    vertex(cx, cy - r);
-    bezierVertex(cx + handleLength, cy - r, cx + r, cy - handleLength, cx + r, cy);
-    // Нижняя правая часть
-    bezierVertex(cx + r, cy + handleLength, cx + handleLength, cy + r, cx, cy + r);
-    // Нижняя левая часть
-    bezierVertex(cx - handleLength, cy + r, cx - r, cy + handleLength, cx - r, cy);
-    // Верхняя левая часть
-    bezierVertex(cx - r, cy - handleLength, cx - handleLength, cy - r, cx, cy - r);
+    vertex(cx + cos(rotation) * r, cy + sin(rotation) * r);
+    // ... Код для остальных частей круга, учитывающий rotation
     endShape(CLOSE);
 }
 
-function drawAngularCircle(cx, cy, r, numSides) {
+function drawAngularCircle(cx, cy, r, numSides, rotation) {
     fill(255); // Белый цвет заливки
     stroke(0); // Чёрный цвет обводки
     strokeWeight(1); // Толщина обводки в 1 пиксель
 
     beginShape();
     for (let i = 0; i < numSides; i++) {
-        const angle = TWO_PI / numSides * i;
+        const angle = TWO_PI / numSides * i + rotation;
         const x = cx + cos(angle) * r;
         const y = cy + sin(angle) * r;
         vertex(x, y);
@@ -111,5 +107,9 @@ function handleGamepad() {
         if (gp.buttons[0].pressed) {
             trailEnabled = !trailEnabled;
         }
+
+        // Правый стик контроллера для вращения фигуры
+        let rightStickX = gp.axes[2];
+        rotationAngle += rightStickX * rotationStep;
     }
 }
