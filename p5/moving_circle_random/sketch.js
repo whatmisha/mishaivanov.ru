@@ -6,6 +6,7 @@ let smoothContour = true; // Плавность контура
 let trailEnabled = false;
 let squareButtonPressed = false; // Состояние кнопки "Квадрат"
 let numSides = 6; // Количество сторон угловатого круга
+let sidesChangeStep = 1 / 8; // Шаг изменения сторон (делаем его в 8 раз меньше)
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -24,7 +25,7 @@ function draw() {
     if (smoothContour) {
         drawBezierCircle(x, y, diameter / 2); // Плавный круг
     } else {
-        drawAngularCircle(x, y, diameter / 2, numSides); // Угловатый круг
+        drawAngularCircle(x, y, diameter / 2, Math.round(numSides)); // Угловатый круг
     }
 }
 
@@ -92,10 +93,10 @@ function handleGamepad() {
 
         // Обработка кнопок L1 и R1 для изменения количества сторон
         if (gp.buttons[4].pressed) {
-            numSides = max(3, numSides - 1);
+            numSides = max(3, numSides - sidesChangeStep);
         }
         if (gp.buttons[5].pressed) {
-            numSides++;
+            numSides += sidesChangeStep;
         }
 
         // Обработка кнопки "Квадрат"
