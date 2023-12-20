@@ -3,6 +3,7 @@ let diameter = 30;
 const step = 4; // Скорость перемещения для контроллера
 const sizeChangeStep = 5;
 let trailEnabled = false;
+let noiseOffset = 0; // Начальное смещение для функции noise
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -19,6 +20,7 @@ function draw() {
     handleGamepad();
 
     drawBezierCircle(x, y, diameter / 2); // Используем функцию для рисования круга
+    noiseOffset += 0.01; // Увеличиваем смещение для создания эффекта движения
 }
 
 function drawBezierCircle(cx, cy, r) {
@@ -29,11 +31,20 @@ function drawBezierCircle(cx, cy, r) {
     strokeWeight(1); // Толщина обводки в 1 пиксель
     beginShape();
     // Рисуем круг с помощью восьми точек, разделенных на четыре сегмента
-    vertex(cx, cy - r);
-    bezierVertex(cx + handleLength, cy - r, cx + r, cy - handleLength, cx + r, cy);
-    bezierVertex(cx + r, cy + handleLength, cx + handleLength, cy + r, cx, cy + r);
-    bezierVertex(cx - handleLength, cy + r, cx - r, cy + handleLength, cx - r, cy);
-    bezierVertex(cx - r, cy - handleLength, cx - handleLength, cy - r, cx, cy - r);
+    for (let i = 0; i < TWO_PI; i += PI / 2) {
+        let px = cx + cos(i) * r;
+        let py = cy + sin(i) * r;
+        let nx = cx + cos(i + PI / 2) * r;
+        let ny = cy + sin(i + PI / 2) * r;
+
+        // Применяем функцию noise для создания искажения
+        let c1x = px + cos(i - PI / 2) * handleLength * (1 + noise(noiseOffset) * 0.1);
+        let c1y = py + sin(i - PI / 2) * handleLength * (1 + noise(noiseOffset + 5) * 0.1);
+        let c2x = nx + cos(i + PI) * handleLength * (1 + noise(noiseOffset + 10) * 0.1);
+        let c2y = ny + sin(i + PI) * handleLength * (1 + noise(noiseOffset + 15) * 0.1);
+
+        bezierVertex(c1x, c1y, c2x, c2y, nx, ny);
+    }
     endShape(CLOSE);
 }
 
