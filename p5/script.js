@@ -1,5 +1,5 @@
-const repoOwner = 'whatmisha'; // Замените на ваше имя пользователя на GitHub
-const repoName = 'mishaivanov.ru';  // Замените на название вашего репозитория
+const repoOwner = 'whatmisha'; // Ваше имя пользователя на GitHub
+const repoName = 'mishaivanov.ru';  // Название вашего репозитория
 const path = 'p5'; // Путь к папке в вашем репозитории
 
 fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`)
@@ -10,8 +10,11 @@ fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`)
 
         data.forEach(item => {
             if (item.type === 'dir') {
+                // Ссылка на подпапку в вашем репозитории
+                const projectUrl = `https://${repoOwner}.github.io/${repoName}/${path}/${item.name}/`;
+
                 const link = document.createElement('a');
-                link.href = item.html_url;
+                link.href = projectUrl;
                 link.textContent = item.name;
                 link.target = '_blank'; // Открывать в новой вкладке
 
