@@ -2,9 +2,6 @@ let x, y;
 let diameter = 30;
 const step = 4; // Скорость перемещения для контроллера
 const sizeChangeStep = 5;
-let blobbiness = 1; // Уровень "блобности"
-const blobChangeStep = 0.01; // Шаг изменения "блобности"
-let noiseScale = 0.05; // Масштаб шума
 let trailEnabled = false;
 
 function setup() {
@@ -12,7 +9,6 @@ function setup() {
     x = width / 2;
     y = height / 2;
     background(0);
-    noiseDetail(2, 0.5); // Настройка качества шума
 }
 
 function draw() {
@@ -22,24 +18,26 @@ function draw() {
 
     handleGamepad();
 
-    drawBlob(x, y, diameter / 2, blobbiness); // Используем функцию для рисования "блоба"
+    drawBezierCircle(x, y, diameter / 2); // Используем функцию для рисования круга
 }
 
-function drawBlob(cx, cy, r, blobbiness) {
+function drawBezierCircle(cx, cy, r) {
+    const handleLength = r * 0.552284749831;
+
     fill(255);       // Белый цвет заливки
     stroke(0);       // Чёрный цвет обводки
     strokeWeight(1); // Толщина обводки в 1 пиксель
 
     beginShape();
-    let noiseOffset = frameCount * 0.1; // Непрерывное изменение шума
-    for (let angle = 0; angle < TWO_PI; angle += TWO_PI / 100) {
-        let xoff = map(cos(angle), -1, 1, 0, noiseScale) + noiseOffset;
-        let yoff = map(sin(angle), -1, 1, 0, noiseScale) + noiseOffset;
-        let rOffset = noise(xoff, yoff) * blobbiness * r;
-        let x = rOffset * cos(angle) + cx;
-        let y = rOffset * sin(angle) + cy;
-        vertex(x, y);
-    }
+    // Верхняя правая часть
+    vertex(cx, cy - r);
+    bezierVertex(cx + handleLength, cy - r, cx + r, cy - handleLength, cx + r, cy);
+    // Нижняя правая часть
+    bezierVertex(cx + r, cy + handleLength, cx + handleLength, cy + r, cx, cy + r);
+    // Нижняя левая часть
+    bezierVertex(cx - handleLength, cy + r, cx - r, cy + handleLength, cx - r, cy);
+    // Верхняя левая часть
+    bezierVertex(cx - r, cy - handleLength, cx - handleLength, cy - r, cx, cy - r);
     endShape(CLOSE);
 }
 
@@ -47,6 +45,17 @@ function handleGamepad() {
     let gamepads = navigator.getGamepads();
     if (gamepads[0]) {
         let gp = gamepads[0];
+
+        // Левый стик контроллера
+        let leftStickX = gp.axes[0];
+        let leftStickY = gp.axes[1];
+
+        if (Math.abs(leftStickX) > 0.1) {
+            x += leftStickX * step;
+        }
+        if (Math.abs(leftStickY) > 0.1) {
+            y += leftStickY * step;
+        }
 
         // Кнопки L2 и R2
         let L2 = gp.buttons[6].value;
@@ -57,14 +66,6 @@ function handleGamepad() {
         }
         if (R2 > 0.1) {
             diameter = min(2000, diameter + R2 * sizeChangeStep);
-        }
-
-        // Кнопки L1 и R1 для изменения "блобности"
-        if (gp.buttons[4].pressed) {
-            blobbiness = max(0, blobbiness - blobChangeStep);
-        }
-        if (gp.buttons[5].pressed) {
-            blobbiness = min(5, blobbiness + blobChangeStep);
         }
 
         // Кнопка "Крестик"
