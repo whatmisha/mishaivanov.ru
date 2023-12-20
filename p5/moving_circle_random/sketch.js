@@ -2,9 +2,8 @@ let x, y;
 let diameter = 30;
 const step = 4; // Скорость перемещения для контроллера
 const sizeChangeStep = 5;
-let smoothContour = true; // Плавность контура
 let trailEnabled = false;
-let numSides = 6; // Количество сторон угловатого круга
+let numSides = 6; // Количество сторон многоугольника
 let sidesChangeStep = 1 / 8; // Шаг изменения сторон (делаем его в 8 раз меньше)
 let rotationAngle = 0; // Угол вращения фигуры
 const rotationStep = 0.05; // Шаг изменения угла вращения
@@ -22,26 +21,7 @@ function draw() {
     }
 
     handleGamepad();
-
-    if (smoothContour) {
-        drawBezierCircle(x, y, diameter / 2, rotationAngle); // Плавный круг
-    } else {
-        drawAngularCircle(x, y, diameter / 2, Math.round(numSides), rotationAngle); // Угловатый круг
-    }
-}
-
-function drawBezierCircle(cx, cy, r, rotation) {
-    const handleLength = r * 0.552284749831;
-
-    fill(255);       // Белый цвет заливки
-    stroke(0);       // Чёрный цвет обводки
-    strokeWeight(1); // Толщина обводки в 1 пиксель
-
-    beginShape();
-    // Верхняя правая часть
-    vertex(cx + cos(rotation) * r, cy + sin(rotation) * r);
-    // ... Код для остальных частей круга, учитывающий rotation
-    endShape(CLOSE);
+    drawAngularCircle(x, y, diameter / 2, Math.round(numSides), rotationAngle); // Многоугольник
 }
 
 function drawAngularCircle(cx, cy, r, numSides, rotation) {
@@ -93,7 +73,6 @@ function handleGamepad() {
         if (gp.buttons[5].pressed) {
             numSides = min(32, numSides + sidesChangeStep);
         }
-
 
         // Кнопка "Крестик" для включения/выключения шлейфа
         if (gp.buttons[0].pressed) {
