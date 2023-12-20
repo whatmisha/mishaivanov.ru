@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <title>P5.js projects</title>
     <style>
+        @font-face {
+            font-family: 'CoFoSans-Medium';
+            src: url('https://mishaivanov.ru/fonts/CoFoSans-Medium.woff2') format('woff2');
+        }
+
         html, body {
             height: 100%;
             margin: 0;
@@ -17,14 +22,15 @@
         }
 
         h1 {
+            font-family: 'CoFoSans-Medium', sans-serif;
             color: white;
             font-size: 72px;
-            margin: 0 0 20px 0; /* Добавьте отступ снизу, чтобы отделить заголовок от списка */
+            margin: 0 0 20px 0;
         }
 
         #project-list {
-            text-align: center; /* Выравнивание текста внутри блока по центру */
-            width: 100%; /* Ширина блока со списком */
+            text-align: center;
+            width: 100%;
         }
 
         a {
