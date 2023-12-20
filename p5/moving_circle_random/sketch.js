@@ -96,7 +96,7 @@ function handleGamepad() {
             numSides = max(5, numSides - sidesChangeStep);
         }
         if (gp.buttons[5].pressed) {
-            numSides = min(128, numSides + sidesChangeStep);
+            numSides = min(32, numSides + sidesChangeStep);
         }
 
         // Обработка кнопки "Квадрат"
