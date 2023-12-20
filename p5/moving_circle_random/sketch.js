@@ -24,8 +24,10 @@ function draw() {
 function drawBezierCircle(cx, cy, r) {
     const handleLength = r * 0.552284749831;
 
-    fill(255);
-    noStroke();
+    fill(255);       // Белый цвет заливки
+    stroke(0);       // Чёрный цвет обводки
+    strokeWeight(1); // Толщина обводки в 1 пиксель
+
     beginShape();
     // Верхняя правая часть
     vertex(cx, cy - r);
