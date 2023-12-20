@@ -1,15 +1,23 @@
 function setup() {
     createCanvas(400, 400);
     background(0);
+    drawBezierCircle(200, 200, 15); // Центр круга (200, 200) и радиус 15
 }
 
-function draw() {
-    noFill();
-    stroke(255);
+function drawBezierCircle(cx, cy, r) {
+    const handleLength = r * 0.552284749831;
+
+    fill(255);
+    noStroke();
     beginShape();
-    bezierVertex(100, 100, 150, 50, 200, 100);
-    bezierVertex(250, 150, 250, 250, 200, 300);
-    bezierVertex(150, 350, 100, 350, 50, 300);
-    bezierVertex(0, 250, 0, 150, 50, 100);
+    // Верхняя правая часть
+    vertex(cx, cy - r);
+    bezierVertex(cx + handleLength, cy - r, cx + r, cy - handleLength, cx + r, cy);
+    // Нижняя правая часть
+    bezierVertex(cx + r, cy + handleLength, cx + handleLength, cy + r, cx, cy + r);
+    // Нижняя левая часть
+    bezierVertex(cx - handleLength, cy + r, cx - r, cy + handleLength, cx - r, cy);
+    // Верхняя левая часть
+    bezierVertex(cx - r, cy - handleLength, cx - handleLength, cy - r, cx, cy - r);
     endShape(CLOSE);
 }
