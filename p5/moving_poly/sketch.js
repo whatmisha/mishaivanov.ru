@@ -9,7 +9,7 @@ let rotationAngle = 0; // Угол вращения фигуры
 const rotationStep = 0.05; // Шаг изменения угла вращения
 
 function setup() {
-    createCanvas(windowWidth, windowHeight);
+    createCanvas(windowWidth, windowHeight, SVG); // Установка рендера SVG
     x = width / 2;
     y = height / 2;
     background(0);
@@ -82,5 +82,11 @@ function handleGamepad() {
         // Правый стик контроллера для вращения фигуры
         let rightStickX = gp.axes[2];
         rotationAngle += rightStickX * rotationStep;
+    }
+}
+
+function keyPressed() {
+    if (keyCode === 32) { // 32 - код клавиши пробела
+        save(); // Сохраняем рисунок в SVG
     }
 }
