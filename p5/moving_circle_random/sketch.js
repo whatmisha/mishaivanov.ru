@@ -2,6 +2,8 @@ let x, y;
 let diameter = 30;
 const step = 4; // Скорость перемещения для контроллера
 const sizeChangeStep = 5;
+let distortionLevel = 0; // Уровень искажения контура
+const distortionStep = 0.1; // Шаг изменения искажения
 let trailEnabled = false;
 
 function setup() {
@@ -18,11 +20,12 @@ function draw() {
 
     handleGamepad();
 
-    drawBezierCircle(x, y, diameter / 2); // Используем функцию для рисования круга
+    drawDistortedBezierCircle(x, y, diameter / 2, distortionLevel); // Используем функцию для рисования искаженного круга
 }
 
-function drawBezierCircle(cx, cy, r) {
+function drawDistortedBezierCircle(cx, cy, r, distortion) {
     const handleLength = r * 0.552284749831;
+    const distortedHandleLength = handleLength + distortion * random(-1, 1);
 
     fill(255);       // Белый цвет заливки
     stroke(0);       // Чёрный цвет обводки
@@ -31,13 +34,13 @@ function drawBezierCircle(cx, cy, r) {
     beginShape();
     // Верхняя правая часть
     vertex(cx, cy - r);
-    bezierVertex(cx + handleLength, cy - r, cx + r, cy - handleLength, cx + r, cy);
+    bezierVertex(cx + distortedHandleLength, cy - r, cx + r, cy - distortedHandleLength, cx + r, cy);
     // Нижняя правая часть
-    bezierVertex(cx + r, cy + handleLength, cx + handleLength, cy + r, cx, cy + r);
+    bezierVertex(cx + r, cy + distortedHandleLength, cx + distortedHandleLength, cy + r, cx, cy + r);
     // Нижняя левая часть
-    bezierVertex(cx - handleLength, cy + r, cx - r, cy + handleLength, cx - r, cy);
+    bezierVertex(cx - distortedHandleLength, cy + r, cx - r, cy + distortedHandleLength, cx - r, cy);
     // Верхняя левая часть
-    bezierVertex(cx - r, cy - handleLength, cx - handleLength, cy - r, cx, cy - r);
+    bezierVertex(cx - r, cy - distortedHandleLength, cx - distortedHandleLength, cy - r, cx, cy - r);
     endShape(CLOSE);
 }
 
@@ -57,7 +60,7 @@ function handleGamepad() {
             y += leftStickY * step;
         }
 
-        // Кнопки L2 и R2
+        // Кнопки L2 и R2 для изменения размера
         let L2 = gp.buttons[6].value;
         let R2 = gp.buttons[7].value;
 
@@ -66,6 +69,14 @@ function handleGamepad() {
         }
         if (R2 > 0.1) {
             diameter = min(2000, diameter + R2 * sizeChangeStep);
+        }
+
+        // Кнопки L1 и R1 для изменения искажения
+        if (gp.buttons[4].pressed) {
+            distortionLevel = max(0, distortionLevel - distortionStep);
+        }
+        if (gp.buttons[5].pressed) {
+            distortionLevel = min(50, distortionLevel + distortionStep);
         }
 
         // Кнопка "Крестик"
