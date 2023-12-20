@@ -3,7 +3,7 @@ let diameter = 30;
 const step = 4; // Скорость перемещения для контроллера
 const sizeChangeStep = 5;
 let blobbiness = 10; // Уровень "блобности"
-const blobChangeStep = 1; // Шаг изменения "блобности"
+const blobChangeStep = 0.5; // Шаг изменения "блобности"
 let trailEnabled = false;
 
 function setup() {
@@ -31,12 +31,11 @@ function drawBlob(cx, cy, r, blobbiness) {
     strokeWeight(1); // Толщина обводки в 1 пиксель
 
     beginShape();
-    // Создаем "блоб" путем случайного изменения длины ручек Безье
+    // Создаем "блоб" путем изменения длины ручек Безье
     for (let angle = 0; angle < TWO_PI; angle += TWO_PI / 4) {
         let px = cos(angle) * r + cx;
         let py = sin(angle) * r + cy;
-        let offset = random(-blobbiness, blobbiness);
-        let handleOffset = handleLength + offset;
+        let handleOffset = handleLength + blobbiness * random(-1, 1);
 
         if (angle === 0) {
             vertex(px, py);
@@ -54,7 +53,27 @@ function handleGamepad() {
     if (gamepads[0]) {
         let gp = gamepads[0];
 
-        // Оставляем обработку стика и кнопок L2/R2 без изменений
+        // Левый стик контроллера для управления положением
+        let leftStickX = gp.axes[0];
+        let leftStickY = gp.axes[1];
+
+        if (Math.abs(leftStickX) > 0.1) {
+            x += leftStickX * step;
+        }
+        if (Math.abs(leftStickY) > 0.1) {
+            y += leftStickY * step;
+        }
+
+        // Кнопки L2 и R2 для изменения размера
+        let L2 = gp.buttons[6].value;
+        let R2 = gp.buttons[7].value;
+
+        if (L2 > 0.1) {
+            diameter = max(10, diameter - L2 * sizeChangeStep);
+        }
+        if (R2 > 0.1) {
+            diameter = min(2000, diameter + R2 * sizeChangeStep);
+        }
 
         // Кнопки L1 и R1 для изменения "блобности"
         if (gp.buttons[4].pressed) {
@@ -64,6 +83,9 @@ function handleGamepad() {
             blobbiness = min(100, blobbiness + blobChangeStep);
         }
 
-        // Обработка кнопки "Крестик" остается без изменений
+        // Кнопка "Крестик" для включения/выключения шлейфа
+        if (gp.buttons[0].pressed) {
+            trailEnabled = !trailEnabled;
+        }
     }
 }
