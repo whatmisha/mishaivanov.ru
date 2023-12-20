@@ -22,27 +22,18 @@ function draw() {
 }
 
 function drawBezierCircle(cx, cy, r) {
-    const numPoints = 16; // Увеличиваем количество точек
-    const angleStep = TWO_PI / numPoints;
     const handleLength = r * 0.552284749831;
 
     fill(255);
     stroke(0); // Черная обводка
-    strokeWeight(2); // Толщина обводки
+    strokeWeight(1); // Толщина обводки в 1 пиксель
     beginShape();
-    for (let i = 0; i < TWO_PI; i += angleStep) {
-        let px = cx + cos(i) * r;
-        let py = cy + sin(i) * r;
-        let nx = cx + cos(i + angleStep) * r;
-        let ny = cy + sin(i + angleStep) * r;
-
-        let c1x = px + cos(i - HALF_PI) * handleLength;
-        let c1y = py + sin(i - HALF_PI) * handleLength;
-        let c2x = nx + cos(i + HALF_PI) * handleLength;
-        let c2y = ny + sin(i + HALF_PI) * handleLength;
-
-        bezierVertex(c1x, c1y, c2x, c2y, nx, ny);
-    }
+    // Рисуем круг с помощью восьми точек, разделенных на четыре сегмента
+    vertex(cx, cy - r);
+    bezierVertex(cx + handleLength, cy - r, cx + r, cy - handleLength, cx + r, cy);
+    bezierVertex(cx + r, cy + handleLength, cx + handleLength, cy + r, cx, cy + r);
+    bezierVertex(cx - handleLength, cy + r, cx - r, cy + handleLength, cx - r, cy);
+    bezierVertex(cx - r, cy - handleLength, cx - handleLength, cy - r, cx, cy - r);
     endShape(CLOSE);
 }
 
