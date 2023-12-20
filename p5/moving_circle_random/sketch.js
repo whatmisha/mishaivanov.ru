@@ -24,11 +24,6 @@ function draw() {
     ellipse(x, y, diameter * (1 + distortion), diameter * (1 - distortion));
 }
 
-function mouseMoved() {
-    x = mouseX;
-    y = mouseY;
-}
-
 function handleGamepad() {
     let gamepads = navigator.getGamepads();
     if (gamepads[0]) {
