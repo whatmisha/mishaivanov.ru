@@ -93,10 +93,10 @@ function handleGamepad() {
 
         // Обработка кнопок L1 и R1 для изменения количества сторон
         if (gp.buttons[4].pressed) {
-            numSides = max(3, numSides - sidesChangeStep);
+            numSides = max(5, numSides - sidesChangeStep);
         }
         if (gp.buttons[5].pressed) {
-            numSides += sidesChangeStep;
+            numSides = min(128, numSides + sidesChangeStep);
         }
 
         // Обработка кнопки "Квадрат"
