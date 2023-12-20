@@ -3,7 +3,7 @@ let diameter = 30;
 const step = 4; // Скорость перемещения для контроллера
 const sizeChangeStep = 5;
 let trailEnabled = false;
-let noiseOffset = 0; // Начальное смещение для функции noise
+let noiseScale = 0.1; // Масштаб шума
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -19,11 +19,10 @@ function draw() {
 
     handleGamepad();
 
-    drawBezierCircle(x, y, diameter / 2); // Используем функцию для рисования круга
-    noiseOffset += 0.01; // Увеличиваем смещение для создания эффекта движения
+    drawNoiseDistortedCircle(x, y, diameter / 2); // Используем функцию для рисования искаженного круга
 }
 
-function drawBezierCircle(cx, cy, r) {
+function drawNoiseDistortedCircle(cx, cy, r) {
     const handleLength = r * 0.552284749831;
 
     fill(255);
@@ -37,11 +36,13 @@ function drawBezierCircle(cx, cy, r) {
         let nx = cx + cos(i + PI / 2) * r;
         let ny = cy + sin(i + PI / 2) * r;
 
-        // Применяем функцию noise для создания искажения
-        let c1x = px + cos(i - PI / 2) * handleLength * (1 + noise(noiseOffset) * 0.1);
-        let c1y = py + sin(i - PI / 2) * handleLength * (1 + noise(noiseOffset + 5) * 0.1);
-        let c2x = nx + cos(i + PI) * handleLength * (1 + noise(noiseOffset + 10) * 0.1);
-        let c2y = ny + sin(i + PI) * handleLength * (1 + noise(noiseOffset + 15) * 0.1);
+        // Применяем шум Перлина для создания искажения
+        let offset = noise(px * noiseScale, py * noiseScale) * 10;
+        let c1x = px + cos(i - PI / 2) * handleLength + offset;
+        let c1y = py + sin(i - PI / 2) * handleLength + offset;
+        offset = noise(nx * noiseScale, ny * noiseScale) * 10;
+        let c2x = nx + cos(i + PI) * handleLength + offset;
+        let c2y = ny + sin(i + PI) * handleLength + offset;
 
         bezierVertex(c1x, c1y, c2x, c2y, nx, ny);
     }
