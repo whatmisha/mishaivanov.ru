@@ -21,20 +21,28 @@ function draw() {
     noFill(); // Не заполняем кривые Безье
     stroke(255); // Цвет линии
 
-    let handleDistance = radius * 0.552284749831; // Коэффициент для круга
-
     // Рисуем круг с помощью кривых Безье
+    drawBezierCircle(x, y, radius);
+}
+
+function drawBezierCircle(cx, cy, r) {
+    const numPoints = 8;
+    const angleStep = TWO_PI / numPoints;
+    const handleLength = r * 0.552284749831;
+
     beginShape();
-    for (let i = 0; i < 2 * PI; i += PI / 2) {
-        let sx = x + cos(i) * radius;
-        let sy = y + sin(i) * radius;
-        let ex = x + cos(i + PI / 2) * radius;
-        let ey = y + sin(i + PI / 2) * radius;
-        let cx1 = sx + cos(i - PI / 2) * handleDistance;
-        let cy1 = sy + sin(i - PI / 2) * handleDistance;
-        let cx2 = ex + cos(i + PI) * handleDistance;
-        let cy2 = ey + sin(i + PI) * handleDistance;
-        bezierVertex(cx1, cy1, cx2, cy2, ex, ey);
+    for (let i = 0; i < TWO_PI; i += angleStep) {
+        let px = cx + cos(i) * r;
+        let py = cy + sin(i) * r;
+        let nx = cx + cos(i + angleStep) * r;
+        let ny = cy + sin(i + angleStep) * r;
+
+        let c1x = px + cos(i - HALF_PI) * handleLength;
+        let c1y = py + sin(i - HALF_PI) * handleLength;
+        let c2x = nx + cos(i + HALF_PI) * handleLength;
+        let c2y = ny + sin(i + HALF_PI) * handleLength;
+
+        bezierVertex(c1x, c1y, c2x, c2y, nx, ny);
     }
     endShape(CLOSE);
 }
