@@ -95,13 +95,6 @@ function handleGamepad() {
             numSides = min(32, numSides + sidesChangeStep);
         }
 
-        // Обработка кнопки "Квадрат"
-        if (gp.buttons[2].pressed && !squareButtonPressed) {
-            smoothContour = !smoothContour;
-            squareButtonPressed = true;
-        } else if (!gp.buttons[2].pressed) {
-            squareButtonPressed = false;
-        }
 
         // Кнопка "Крестик" для включения/выключения шлейфа
         if (gp.buttons[0].pressed) {
