@@ -4,24 +4,37 @@
     <meta charset="UTF-8">
     <title>P5.js projects</title>
     <style>
-        body {
+        html, body {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             background-color: black;
             font-family: 'CoFoSans', sans-serif;
             color: white;
-            font-size: 32px;
+        }
+
+        h1 {
+            color: white;
+            font-size: 72px;
+            margin: 0 0 20px 0; /* Добавьте отступ снизу, чтобы отделить заголовок от списка */
+        }
+
+        #project-list {
+            text-align: center; /* Выравнивание текста внутри блока по центру */
+            width: 100%; /* Ширина блока со списком */
         }
 
         a {
             color: white;
             text-decoration: none;
+            font-size: 32px;
         }
 
         a:hover {
             color: darkgrey;
-        }
-
-        #project-list {
-            margin: 0px;
         }
     </style>
     <link href="https://mishaivanov.ru/fonts/CoFoSans-Regular.woff2" rel="stylesheet">
