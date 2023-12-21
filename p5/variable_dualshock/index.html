@@ -1,7 +1,66 @@
-<style>
-  @font-face {
-    font-family: 'Angst';
-    src: url('https://mishaivanov.ru/fonts/AngstVF.woff2') format('woff2-variations');
-    font-weight: 100 900;
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Variable Font Control with DualShock</title>
+  <style>
+    @font-face {
+      font-family: 'Angst';
+      src: url('https://mishaivanov.ru/fonts/AngstVF.woff2') format('woff2-variations');
+      font-weight: 100 900;
+      font-stretch: 25% 151%;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: black;
+    }
+
+    canvas {
+      display: block;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+</head>
+<body>
+<script>
+  let wght = 50; // Начальное значение жирности
+  let srff = 50; // Начальное значение длины засечек
+
+  function setup() {
+    createCanvas(windowWidth, windowHeight);
+    textFont('Angst');
+    textSize(100);
+    textAlign(CENTER, CENTER);
+    fill(255);
   }
-</style>
+
+  function draw() {
+    background(0);
+
+    // Получение данных с контроллера
+    const gamepads = navigator.getGamepads();
+    if (gamepads[0]) {
+      wght = map(gamepads[0].axes[0], -1, 1, 0, 100); // Левый стик для wght
+      srff = map(gamepads[0].axes[2], -1, 1, 0, 100); // Правый стик для srff
+    }
+
+    // Обновление стилей шрифта
+    push(); // Начало нового стиля
+    textFont('Angst');
+    textStyle(NORMAL);
+    text('HELL WORD', width / 2, height / 2);
+    let vProperties = {
+      'font-variation-settings': `'wght' ${wght}, 'srff' ${srff}`
+    };
+    drawingContext.font = `${vProperties['font-variation-settings']} 100px Angst`;
+    pop(); // Восстановление предыдущего стиля
+  }
+</script>
+</body>
+</html>
