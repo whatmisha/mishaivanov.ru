@@ -14,20 +14,19 @@
       padding: 0;
       height: 100vh;
       background-color: black;
-      display: flex;
-      justify-content: center;
-      align-items: center;
       color: white;
-      overflow: visible; /* Скрыть любой текст, выходящий за пределы экрана */
+      overflow: hidden; /* Скрыть контент, выходящий за пределы экрана */
     }
 
     #text {
       font-family: 'Angst';
-      font-size: 240px; /* Уменьшен для лучшего помещения текста */
+      font-size: 100px; /* Продолжайте регулировать, если текст все еще слишком большой */
       line-height: 1; /* Убрать лишнее пространство между строками */
       text-align: center;
-      overflow: visible; /* Убедиться, что текст не обрезается */
-      position: relative; /* Для корректного позиционирования */
+      position: absolute; /* Полное контролирование позиционирования */
+      top: 50%; /* Центрирование по вертикали */
+      left: 50%; /* Центрирование по горизонтали */
+      transform: translate(-50%, -50%); /* Точное центрирование */
       white-space: nowrap; /* Запрет переноса текста на новую строку */
     }
   </style>
