@@ -47,8 +47,8 @@ function readGamepad() {
 
     const dpadLeft = 14;
     const dpadRight = 15;
-    if (gamepad.buttons[dpadLeft].pressed && fontSize > 60) fontSize -= 2;
-    if (gamepad.buttons[dpadRight].pressed && fontSize < 1200) fontSize += 2; // Удвоенный максимальный размер шрифта
+    if (gamepad.buttons[dpadLeft].pressed && fontSize > 60) fontSize -= 4; // Удвоенная скорость изменения размера
+    if (gamepad.buttons[dpadRight].pressed && fontSize < 1200) fontSize += 4; // Удвоенная скорость изменения размера
 
     const circleButtonIndex = 1;
     if (gamepad.buttons[circleButtonIndex].pressed && !circlePressed) {
