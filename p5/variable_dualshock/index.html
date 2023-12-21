@@ -47,9 +47,9 @@
       const gamepad = navigator.getGamepads()[0];
       if (gamepad) {
         // Левый стик: горизонтальное движение для засечек, вертикальное для жирности
-        // Диапазон изменяется от -50 до 50 для соответствия условиям 0 при центральном положении
-        const targetWght = map(gamepad.axes[1], -1, 1, -50, 50);
-        const targetSrff = map(gamepad.axes[0], -1, 1, -50, 50);
+        // Диапазон изменяется от 0 до 100 для соответствия условиям 100 при крайних положениях
+        const targetWght = map(gamepad.axes[1], -1, 1, 0, 100);
+        const targetSrff = map(gamepad.axes[0], -1, 1, 0, 100);
 
         updateFontStyles(targetWght, targetSrff);
       }
