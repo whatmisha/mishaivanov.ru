@@ -4,13 +4,6 @@
   <meta charset="UTF-8">
   <title>Variable Font Control with Mouse</title>
   <style>
-    @font-face {
-      font-family: 'Angst';
-      src: url('https://mishaivanov.ru/fonts/AngstVF.woff2') format('woff2-variations');
-      font-weight: 100 900;
-      font-stretch: 25% 151%;
-    }
-
     body {
       margin: 0;
       padding: 0;
@@ -21,40 +14,42 @@
       background-color: black;
     }
 
-    #text {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-family: 'Angst';
-      font-size: 100px;
-      color: white;
-      text-align: center;
+    canvas {
+      display: block;
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
 </head>
 <body>
-  <div id="text">HELL WORD</div>
-
   <script>
-    // Получаем элемент текста
-    const textElement = document.getElementById('text');
+    let fontRegular;
 
-    function updateTextStyles() {
-      // Вычисляем параметры на основе положения мыши
-      let wght = map(mouseY, 0, window.innerHeight, 100, 900); // Жирность от 100 до 900
-      let srff = map(mouseX, 0, window.innerWidth, 25, 151);  // Размер засечек от 25% до 151%
-
-      // Обновляем стили шрифта
-      textElement.style.fontVariationSettings = `'wght' ${wght}, 'srff' ${srff}`;
+    function preload() {
+      // Предварительная загрузка шрифта
+      fontRegular = loadFont('https://mishaivanov.ru/fonts/AngstVF.woff2');
     }
 
-    // Обработчик движения мыши
-    window.onmousemove = function (e) {
-      updateTextStyles();
-    };
+    function setup() {
+      createCanvas(windowWidth, windowHeight);
+      textFont(fontRegular);
+      textSize(100);
+      fill(255);
+      noStroke();
+    }
 
-    // Вспомогательная функция для преобразования диапазона значений
+    function draw() {
+      background(0);
+
+      // Получение координат мыши для управления параметрами шрифта
+      let wght = map(mouseY, 0, height, 100, 900); // Жирность от 100 до 900
+      let srff = map(mouseX, 0, width, 25, 151);   // Размер засечек от 25% до 151%
+
+      // Обновление стилей шрифта
+      textFont(fontRegular, 100, { 'wght': wght, 'srff': srff });
+      text('HELL WORD', width / 2 - textWidth('HELL WORD') / 2, height / 2);
+    }
+
+    // Функция для преобразования диапазона значений
     function map(value, in_min, in_max, out_min, out_max) {
       return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
