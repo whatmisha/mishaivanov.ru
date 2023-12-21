@@ -1,6 +1,6 @@
 let cursorX;
 let cursorY;
-let sensitivity = 3; // Чувствительность движения курсора
+let sensitivity = 6; // Удвоенная чувствительность для более быстрого движения курсора
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
