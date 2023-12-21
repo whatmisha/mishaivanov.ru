@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Variable Font Control with DualShock</title>
+  <title>Управление переменными шрифтами с DualShock</title>
   <style>
     @font-face {
       font-family: 'Angst';
@@ -22,9 +22,11 @@
 
     #text {
       font-family: 'Angst';
-      font-size: 240px;
-        line-height:210px;
+      font-size: 240px; /* Уменьшите, если текст слишком большой */
+      line-height: 1; /* Можно регулировать для лучшего отображения */
       text-align: center;
+      white-space: nowrap; /* Запрещаем перенос текста на новую строку */
+      overflow: visible; /* Убедитесь, что текст не обрезается */
     }
   </style>
 </head>
@@ -38,8 +40,8 @@
 
     function updateFontStyles(targetWght, targetSrff) {
       // Плавное изменение значений с помощью линейной интерполяции (lerping)
-      currentWght += (targetWght - currentWght) * 0.1;
-      currentSrff += (targetSrff - currentSrff) * 0.1;
+      currentWght += (targetWght - currentWght) * 0.2; // Изменено для более быстрого отклика
+      currentSrff += (targetSrff - currentSrff) * 0.2; // Изменено для более быстрого отклика
 
       textElement.style.fontVariationSettings = `'wght' ${currentWght}, 'srff' ${currentSrff}`;
     }
@@ -47,19 +49,19 @@
     function readGamepad() {
       const gamepad = navigator.getGamepads()[0];
       if (gamepad) {
-        // Определение индексов кнопок для L1, R1, L2 и R2 (индексы могут варьироваться в зависимости от контроллера)
+        // Определение индексов кнопок для L1, R1, L2 и R2
         const L1 = 4; // Обычно L1 это кнопка с индексом 4
         const R1 = 5; // Обычно R1 это кнопка с индексом 5
         const L2 = 6; // Обычно L2 это кнопка с индексом 6
         const R2 = 7; // Обычно R2 это кнопка с индексом 7
 
         // Изменение жирности при нажатии L2 и R2, двигаемся на 2 единицы за нажатие
-        if (gamepad.buttons[L2].pressed && currentWght > 0) currentWght -= 2; // Уменьшить на 2, если L2 нажата
-        if (gamepad.buttons[R2].pressed && currentWght < 100) currentWght += 2; // Увеличить на 2, если R2 нажата
+        if (gamepad.buttons[L2].pressed && currentWght > 0) currentWght -= 2; 
+        if (gamepad.buttons[R2].pressed && currentWght < 100) currentWght += 2; 
 
         // Изменение размера засечек при нажатии L1 и R1, двигаемся на 2 единицы за нажатие
-        if (gamepad.buttons[L1].pressed && currentSrff > 0) currentSrff -= 2; // Уменьшить на 2, если L1 нажата
-        if (gamepad.buttons[R1].pressed && currentSrff < 100) currentSrff += 2; // Увеличить на 2, если R1 нажата
+        if (gamepad.buttons[L1].pressed && currentSrff > 0) currentSrff -= 2; 
+        if (gamepad.buttons[R1].pressed && currentSrff < 100) currentSrff += 2; 
 
         updateFontStyles(currentWght, currentSrff);
       }
