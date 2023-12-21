@@ -1,14 +1,14 @@
 const textElement = document.getElementById('text');
-let posX = 50; // Центр по горизонтали (изменено на 50)
-let posY = 50; // Центр по вертикали (изменено на 50)
+let posX = window.innerWidth / 2; // Начальное горизонтальное положение - середина экрана
+let posY = window.innerHeight / 2; // Начальное вертикальное положение - середина экрана
 let rotation = 0;
 let currentWght = 0;
 let currentSrff = 0;
 let fontSize = 240; // Начальный размер шрифта
 
 function updateStyles() {
-  // Обновлено смещение для translate, учитывая начальное положение элемента
-  textElement.style.transform = `translate(calc(${posX}% - 50%), calc(${posY}% - 50%)) rotate(${rotation}deg)`;
+  // Используем пиксельное смещение для translate
+  textElement.style.transform = `translate(-50%, -50%) translate(${posX}px, ${posY}px) rotate(${rotation}deg)`;
   textElement.style.fontVariationSettings = `'wght' ${currentWght}, 'srff' ${currentSrff}`;
   textElement.style.fontSize = `${fontSize}px`; // Обновляем размер шрифта
 }
@@ -19,12 +19,12 @@ function readGamepad() {
     // Управление позицией буквы с помощью левого стика
     const leftStickX = gamepad.axes[0]; // Горизонтальное движение левого стика
     const leftStickY = gamepad.axes[1]; // Вертикальное движение левого стика
-    posX += leftStickX * 5; // Увеличена скорость изменения X позиции
-    posY += leftStickY * 5; // Увеличена скорость изменения Y позиции
+    posX += leftStickX * 10; // Изменение X позиции
+    posY += leftStickY * 10; // Изменение Y позиции
 
     // Управление вращением буквы с помощью правого стика
     const rightStickX = gamepad.axes[2]; // Горизонтальное движение правого стика
-    rotation += rightStickX * 2; // Увеличена скорость вращения
+    rotation += rightStickX * 2; // Изменение угла вращения
 
     // Управление параметрами 'wght' и 'srff' с помощью кнопок L1, L2, R1, R2
     const L1 = 4;
