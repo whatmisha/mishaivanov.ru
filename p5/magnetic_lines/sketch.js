@@ -1,7 +1,10 @@
 function setup() {
   createCanvas(windowWidth, windowHeight);
   background(0);
-  cursor('none'); // Используем строковое значение напрямую
+  cursor('none'); // Скрываем системный курсор
+  // Устанавливаем начальное положение курсора в центре экрана
+  mouseX = windowWidth / 2;
+  mouseY = windowHeight / 2;
 }
 
 function draw() {
