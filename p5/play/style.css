@@ -1,6 +1,7 @@
 @font-face {
     font-family: 'Angst';
     src: url('https://mishaivanov.ru/fonts/AngstVF.woff2') format('woff2');
+    font-variation-settings: 'wght' 0, 'srff' 100;
 }
 
 body {
@@ -11,9 +12,5 @@ body {
     align-items: center;
     height: 100vh;
     background-color: black;
-}
-
-.canvas {
     font-family: 'Angst', sans-serif;
-    font-variation-settings: 'wght' 0, 'srff' 100;
 }
