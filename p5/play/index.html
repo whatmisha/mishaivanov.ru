@@ -20,7 +20,7 @@
 
     #text {
       font-family: 'Angst';
-      font-size: 100px;
+      font-size: 240px; /* Установлен размер шрифта 240 пикселей */
       position: absolute;
       top: 50%; /* Начальное положение по вертикали */
       left: 50%; /* Начальное положение по горизонтали */
@@ -51,23 +51,23 @@
         // Управление положением буквы с помощью левого стика
         const leftStickX = gamepad.axes[0]; // Горизонтальное движение левого стика
         const leftStickY = gamepad.axes[1]; // Вертикальное движение левого стика
-        posX += leftStickX * 5; // Изменяем X позицию
-        posY += leftStickY * 5; // Изменяем Y позицию
+        posX += leftStickX * 10; // Увеличена скорость изменения X позиции
+        posY += leftStickY * 10; // Увеличена скорость изменения Y позиции
 
         // Управление вращением буквы с помощью правого стика
         const rightStickX = gamepad.axes[2]; // Горизонтальное движение правого стика
-        rotation += rightStickX * 2; // Изменяем угол вращения
+        rotation += rightStickX * 4; // Увеличена скорость вращения
 
-        // Возвращение функциональности кнопок L1, L2, R1, R2
+        // Возвращение функциональности кнопок L1, L2, R1, R2 с удвоенной скоростью изменения параметров
         const L1 = 4; // Обычно L1 это кнопка с индексом 4
         const R1 = 5; // Обычно R1 это кнопка с индексом 5
         const L2 = 6; // Обычно L2 это кнопка с индексом 6
         const R2 = 7; // Обычно R2 это кнопка с индексом 7
 
-        if (gamepad.buttons[L1].pressed && currentWght > 0) currentWght -= 2; 
-        if (gamepad.buttons[R1].pressed && currentWght < 100) currentWght += 2; 
-        if (gamepad.buttons[L2].pressed && currentSrff > 0) currentSrff -= 2; 
-        if (gamepad.buttons[R2].pressed && currentSrff < 100) currentSrff += 2; 
+        if (gamepad.buttons[L1].pressed && currentWght > 0) currentWght -= 4; 
+        if (gamepad.buttons[R1].pressed && currentWght < 100) currentWght += 4; 
+        if (gamepad.buttons[L2].pressed && currentSrff > 0) currentSrff -= 4; 
+        if (gamepad.buttons[R2].pressed && currentSrff < 100) currentSrff += 4; 
 
         updateStyles();
       }
