@@ -6,10 +6,7 @@ function setup() {
   canvas.style('display', 'block'); // Устраняем стандартные отступы
 
   // Настройки текста
-  textFont('Angst') // Указываем имя шрифта, определенного в CSS
-    .then(() => console.log("Шрифт Angst загружен успешно"))
-    .catch(err => console.error("Ошибка при загрузке шрифта: ", err));
-
+  textFont('Angst'); // Указываем имя шрифта, определенного в CSS
   textSize(240);
   textAlign(CENTER, CENTER);
   fill(255); // Устанавливаем белый цвет текста
@@ -28,7 +25,11 @@ function draw() {
   background(0); // Устанавливаем черный фон
 
   // Отрисовка буквы "A" в текущей позиции (x, y)
-  text('A', x, y);
+  try {
+    text('A', x, y);
+  } catch (err) {
+    console.error("Ошибка при отображении текста: ", err);
+  }
 
   // Обрабатываем ввод с геймпада безопасным образом
   try {
