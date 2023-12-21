@@ -34,26 +34,34 @@
   <script>
     const textElement = document.getElementById('text');
     let currentWght = 0; // Изначально жирность равна 0
+    let currentSrff = 0; // Изначально размер засечек равен 0
 
-    function updateFontStyles(targetWght) {
-      // Плавное изменение значения жирности с помощью линейной интерполяции (lerping)
+    function updateFontStyles(targetWght, targetSrff) {
+      // Плавное изменение значений с помощью линейной интерполяции (lerping)
       currentWght += (targetWght - currentWght) * 0.1;
+      currentSrff += (targetSrff - currentSrff) * 0.1;
 
-      textElement.style.fontVariationSettings = `'wght' ${currentWght}`;
+      textElement.style.fontVariationSettings = `'wght' ${currentWght}, 'srff' ${currentSrff}`;
     }
 
     function readGamepad() {
       const gamepad = navigator.getGamepads()[0];
       if (gamepad) {
-        // Определение индексов кнопок для L2 и R2 (индексы могут варьироваться в зависимости от контроллера)
+        // Определение индексов кнопок для L1, R1, L2 и R2 (индексы могут варьироваться в зависимости от контроллера)
+        const L1 = 4; // Обычно L1 это кнопка с индексом 4
+        const R1 = 5; // Обычно R1 это кнопка с индексом 5
         const L2 = 6; // Обычно L2 это кнопка с индексом 6
         const R2 = 7; // Обычно R2 это кнопка с индексом 7
 
         // Изменение жирности при нажатии L2 и R2
-        if (gamepad.buttons[L2].pressed && currentWght > 0) currentWght -= 1; // Уменьшить, если L2 нажата и currentWght > 0
-        if (gamepad.buttons[R2].pressed && currentWght < 100) currentWght += 1; // Увеличить, если R2 нажата и currentWght < 100
+        if (gamepad.buttons[L2].pressed && currentWght > 0) currentWght -= 1; // Уменьшить, если L2 нажата
+        if (gamepad.buttons[R2].pressed && currentWght < 100) currentWght += 1; // Увеличить, если R2 нажата
 
-        updateFontStyles(currentWght);
+        // Изменение размера засечек при нажатии L1 и R1
+        if (gamepad.buttons[L1].pressed && currentSrff > 0) currentSrff -= 1; // Уменьшить, если L1 нажата
+        if (gamepad.buttons[R1].pressed && currentSrff < 100) currentSrff += 1; // Увеличить, если R1 нажата
+
+        updateFontStyles(currentWght, currentSrff);
       }
       requestAnimationFrame(readGamepad); // Обновляем в каждом кадре анимации для плавности
     }
