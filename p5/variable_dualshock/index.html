@@ -1,36 +1,42 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <title>HELL WORD</title>
-  <style>
-    /* Подключение шрифта Angst */
-    @font-face {
-      font-family: 'Angst';
-      src: url('https://mishaivanov.ru/fonts/AngstVF.woff2') format('woff2');
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <title>Variable Font Control</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+  </head>
+  <body>
+    <script>
+      let myFont;
+      let wght = 50; // Начальное значение жирности
+      let srff = 50; // Начальное значение длины засечек
 
-    /* Стили для body */
-    body {
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: black; /* Черный фон */
-    }
+      function preload() {
+        // Подключение шрифта Angst
+        myFont = loadFont('https://mishaivanov.ru/fonts/AngstVF.woff2');
+      }
 
-    /* Стили для текста */
-    .text {
-      font-family: 'Angst', serif; /* Шрифт Angst с засечками */
-      font-size: 240px; /* Размер текста */
-      color: white; /* Белый цвет текста */
-      text-align: center; /* Выравнивание текста по центру */
-    }
-  </style>
-</head>
-<body>
-  <div class="text">HELL WORD</div>
-</body>
+      function setup() {
+        createCanvas(windowWidth, windowHeight);
+        textFont(myFont);
+        textSize(100);
+        fill(255);
+      }
+
+      function draw() {
+        background(0);
+
+        // Получение данных с контроллера
+        const gamepads = navigator.getGamepads();
+        if (gamepads[0]) {
+          wght = map(gamepads[0].axes[0], -1, 1, 0, 100); // Левый стик для wght
+          srff = map(gamepads[0].axes[2], -1, 1, 0, 100); // Правый стик для srff
+        }
+
+        // Применение переменных шрифта
+        textFont(myFont, undefined, { wght, srff });
+        text('HELL WORD', 50, height / 2);
+      }
+    </script>
+  </body>
 </html>
