@@ -1,43 +1,36 @@
 <!DOCTYPE html>
 <html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <title>HELL WORD</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-    <style>
-      body {
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-      }
-    </style>
-  </head>
-  <body>
-    <script>
-      let myFont;
+<head>
+  <meta charset="UTF-8">
+  <title>HELL WORD</title>
+  <style>
+    /* Подключение шрифта Angst */
+    @font-face {
+      font-family: 'Angst';
+      src: url('https://mishaivanov.ru/fonts/AngstVF.woff2') format('woff2');
+    }
 
-      function preload() {
-        // Предварительная загрузка шрифта Angst
-        myFont = loadFont('https://mishaivanov.ru/fonts/AngstVF.woff2');
-      }
+    /* Стили для body */
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: black; /* Черный фон */
+    }
 
-      function setup() {
-        // Создаем холст размером с окно браузера
-        createCanvas(windowWidth, windowHeight);
-        // Цвет фона
-        background(0);
-      }
-
-      function draw() {
-        // Настройки текста
-        fill(255); // Белый цвет текста
-        textSize(240); // Размер текста
-        textFont(myFont); // Установка шрифта
-        textAlign(CENTER, CENTER); // Выравнивание текста по центру
-
-        // Рисование текста по центру экрана
-        text('HELL WORD', width / 2, height / 2);
-      }
-    </script>
-  </body>
+    /* Стили для текста */
+    .text {
+      font-family: 'Angst', serif; /* Шрифт Angst с засечками */
+      font-size: 240px; /* Размер текста */
+      color: white; /* Белый цвет текста */
+      text-align: center; /* Выравнивание текста по центру */
+    }
+  </style>
+</head>
+<body>
+  <div class="text">HELL WORD</div>
+</body>
 </html>
