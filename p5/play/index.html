@@ -34,34 +34,28 @@
   <script>
     const textElement = document.getElementById('text');
     let currentWght = 0; // Изначально жирность равна 0
-    let currentSrff = 0; // Изначально размер засечек равен 0
 
-    function updateFontStyles(targetWght, targetSrff) {
-      // Плавное изменение значений с помощью линейной интерполяции (lerping)
+    function updateFontStyles(targetWght) {
+      // Плавное изменение значения жирности с помощью линейной интерполяции (lerping)
       currentWght += (targetWght - currentWght) * 0.1;
-      currentSrff += (targetSrff - currentSrff) * 0.1;
 
-      textElement.style.fontVariationSettings = `'wght' ${currentWght}, 'srff' ${currentSrff}`;
+      textElement.style.fontVariationSettings = `'wght' ${currentWght}`;
     }
 
     function readGamepad() {
       const gamepad = navigator.getGamepads()[0];
       if (gamepad) {
-        // Левый стик: горизонтальное движение для засечек, вертикальное для жирности
-        // Диапазон изменяется от 0 до 100 для соответствия условиям 100 при крайних положениях
-        const targetWght = map(gamepad.axes[1], -1, 1, 0, 100);
-        const targetSrff = map(gamepad.axes[0], -1, 1, 0, 100);
+        // Определение индексов кнопок для L2 и R2 (индексы могут варьироваться в зависимости от контроллера)
+        const L2 = 6; // Обычно L2 это кнопка с индексом 6
+        const R2 = 7; // Обычно R2 это кнопка с индексом 7
 
-        // Место для реализации дополнительного управления с помощью L1, L2, R1, R2
-        // Пример: if (gamepad.buttons[buttonIndex].pressed) { /* Измените targetWght или targetSrff */ }
+        // Изменение жирности при нажатии L2 и R2
+        if (gamepad.buttons[L2].pressed && currentWght > 0) currentWght -= 1; // Уменьшить, если L2 нажата и currentWght > 0
+        if (gamepad.buttons[R2].pressed && currentWght < 100) currentWght += 1; // Увеличить, если R2 нажата и currentWght < 100
 
-        updateFontStyles(targetWght, targetSrff);
+        updateFontStyles(currentWght);
       }
       requestAnimationFrame(readGamepad); // Обновляем в каждом кадре анимации для плавности
-    }
-
-    function map(value, in_min, in_max, out_min, out_max) {
-      return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
     window.addEventListener("load", readGamepad);
