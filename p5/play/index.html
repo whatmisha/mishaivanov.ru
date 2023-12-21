@@ -1,13 +1,70 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>p5.js с Dualshock</title>
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-    <script src="sketch.js"></script>
+  <meta charset="UTF-8">
+  <title>Variable Font Control with DualShock</title>
+  <style>
+    @font-face {
+      font-family: 'Angst';
+      src: url('https://mishaivanov.ru/fonts/AngstVF.woff2') format('woff2');
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background-color: black;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+    }
+
+    #text {
+      font-family: 'Angst';
+      font-size: 240px;
+        line-height:210px;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-    <div id="canvas-container"></div> <!-- Контейнер для холста -->
+  <div id="text">A</div>
+
+  <script>
+    const textElement = document.getElementById('text');
+    let currentWght = 0; // Изначально жирность равна 0
+    let currentSrff = 0; // Изначально размер засечек равен 0
+
+    function updateFontStyles(targetWght, targetSrff) {
+      // Плавное изменение значений с помощью линейной интерполяции (lerping)
+      currentWght += (targetWght - currentWght) * 0.1;
+      currentSrff += (targetSrff - currentSrff) * 0.1;
+
+      textElement.style.fontVariationSettings = `'wght' ${currentWght}, 'srff' ${currentSrff}`;
+    }
+
+    function readGamepad() {
+      const gamepad = navigator.getGamepads()[0];
+      if (gamepad) {
+        // Левый стик: горизонтальное движение для засечек, вертикальное для жирности
+        // Диапазон изменяется от 0 до 100 для соответствия условиям 100 при крайних положениях
+        const targetWght = map(gamepad.axes[1], -1, 1, 0, 100);
+        const targetSrff = map(gamepad.axes[0], -1, 1, 0, 100);
+
+        // Место для реализации дополнительного управления с помощью L1, L2, R1, R2
+        // Пример: if (gamepad.buttons[buttonIndex].pressed) { /* Измените targetWght или targetSrff */ }
+
+        updateFontStyles(targetWght, targetSrff);
+      }
+      requestAnimationFrame(readGamepad); // Обновляем в каждом кадре анимации для плавности
+    }
+
+    function map(value, in_min, in_max, out_min, out_max) {
+      return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+    }
+
+    window.addEventListener("load", readGamepad);
+  </script>
 </body>
 </html>
