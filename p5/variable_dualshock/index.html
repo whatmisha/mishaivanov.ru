@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Variable Font Control with DualShock</title>
+  <title>Variable Font Control with Mouse</title>
   <style>
     @font-face {
       font-family: 'Angst';
@@ -29,12 +29,8 @@
 </head>
 <body>
 <script>
-  let wght = 50; // Начальное значение жирности
-  let srff = 50; // Начальное значение длины засечек
-
   function setup() {
     createCanvas(windowWidth, windowHeight);
-    textFont('Angst');
     textSize(100);
     textAlign(CENTER, CENTER);
     fill(255);
@@ -43,22 +39,18 @@
   function draw() {
     background(0);
 
-    // Получение данных с контроллера
-    const gamepads = navigator.getGamepads();
-    if (gamepads[0]) {
-      wght = map(gamepads[0].axes[0], -1, 1, 0, 100); // Левый стик для wght
-      srff = map(gamepads[0].axes[2], -1, 1, 0, 100); // Правый стик для srff
-    }
+    // Получение координат мыши для управления вариативными параметрами
+    let wght = map(mouseY, 0, height, 100, 0); // Вертикальное положение для жирности
+    let srff = map(mouseX, 0, width, 0, 100);  // Горизонтальное положение для размера засечек
 
     // Обновление стилей шрифта
     push(); // Начало нового стиля
-    textFont('Angst');
-    textStyle(NORMAL);
-    text('HELL WORD', width / 2, height / 2);
     let vProperties = {
       'font-variation-settings': `'wght' ${wght}, 'srff' ${srff}`
     };
-    drawingContext.font = `${vProperties['font-variation-settings']} 100px Angst`;
+    drawingContext.font = `100px 'Angst'`;
+    drawingContext.textAlign = 'center';
+    drawingContext.fillText('HELL WORD', width / 2, height / 2);
     pop(); // Восстановление предыдущего стиля
   }
 </script>
