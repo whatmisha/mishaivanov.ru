@@ -3,10 +3,10 @@ let cursorY;
 let sensitivity = 12; // Учетверенная чувствительность для быстрого движения курсора
 let squareSize = 30; // Начальный размер квадрата
 let baseAngle = 0; // Исходный угол наклона линии
+let invertColors = false; // Флаг для инвертирования цветов
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  background(0);
   cursor('none'); // Скрываем системный курсор
   // Устанавливаем начальное положение курсора в центре экрана
   cursorX = windowWidth / 2;
@@ -14,7 +14,8 @@ function setup() {
 }
 
 function draw() {
-  background(0);
+  // Установка цвета фона в зависимости от инверсии
+  background(invertColors ? 255 : 0);
   handleGamepad(); // Обрабатываем ввод с контроллера
   drawGrid(squareSize);
   drawCustomCursor();
@@ -29,7 +30,7 @@ function handleGamepad() {
     cursorX += sensitivity * gp.axes[0];
     cursorY += sensitivity * gp.axes[1];
 
-    // Вращаем исходное положение линий с помощью правого стика (обычно axes[2] и axes[3])
+    // Вращаем исходное положение линий с помощью правого стика
     let rotationSensitivity = 0.05; // Чувствительность вращения
     baseAngle += rotationSensitivity * gp.axes[2]; // Добавляем к углу наклона
 
@@ -40,20 +41,25 @@ function handleGamepad() {
     if (gp.buttons[7].value > 0) {
       squareSize = max(10, squareSize - 1);
     }
+
+    // Инвертируем цвета при нажатии кнопки крестика (gp.buttons[0])
+    if (gp.buttons[0].pressed) {
+      invertColors = !invertColors;
+    }
   }
 }
 
 function drawGrid(squareSize) {
-  stroke(255);
+  // Установка цвета линий в зависимости от инверсии
+  stroke(invertColors ? 0 : 255);
   strokeWeight(1);
 
   for (let x = 0; x < windowWidth; x += squareSize) {
     for (let y = 0; y < windowHeight; y += squareSize) {
-      // Угол между курсором и центром квадрата
-      let cursorAngle = atan2(cursorY - (y + squareSize / 2), cursorX - (x + squareSize / 2));
+      let angle = atan2(cursorY - (y + squareSize / 2), cursorX - (x + squareSize / 2));
       push();
       translate(x + squareSize / 2, y + squareSize / 2);
-      rotate(baseAngle + cursorAngle); // Применяем оба угла
+      rotate(baseAngle + angle);
       line(-squareSize / 2, 0, squareSize / 2, 0);
       pop();
     }
@@ -61,7 +67,7 @@ function drawGrid(squareSize) {
 }
 
 function drawCustomCursor() {
+  fill(invertColors ? 0 : 255);
   noStroke();
-  fill(255);
   ellipse(cursorX, cursorY, 20, 20);
 }
