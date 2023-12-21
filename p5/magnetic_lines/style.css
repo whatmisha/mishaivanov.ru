@@ -1,0 +1,9 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Убедитесь, что полотно не превышает размер окна */
+}
+
+canvas {
+    display: block; /* Убирает полосу прокрутки */
+}
