@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Variable Font Control with Mouse</title>
+  <title>Variable Font Control with DualShock</title>
   <style>
     @font-face {
       font-family: 'Angst';
@@ -17,12 +17,12 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      color: white;
     }
 
     #text {
       font-family: 'Angst';
-      font-size: 100px;
-      color: white;
+      font-size: 240px; /* Updated font size */
       text-align: center;
     }
   </style>
@@ -33,19 +33,33 @@
   <script>
     const textElement = document.getElementById('text');
 
-    document.onmousemove = function(e) {
-      // Получение значений для жирности и размера засечек в диапазоне от 0 до 100
-      const wght = map(e.clientY, 0, window.innerHeight, 0, 100); // Изменение по вертикали
-      const srff = map(e.clientX, 0, window.innerWidth, 0, 100);   // Изменение по горизонтали
-
-      // Обновление стилей шрифта
+    // Функция для обновления стилей шрифта
+    function updateFontStyles(wght, srff) {
       textElement.style.fontVariationSettings = `'wght' ${wght}, 'srff' ${srff}`;
-    };
+    }
+
+    // Функция для чтения состояния контроллера DualShock
+    function readGamepad() {
+      const gamepad = navigator.getGamepads()[0];
+      if (gamepad) {
+        // Левый стик для жирности (ось Y)
+        const wght = map(gamepad.axes[1], -1, 1, 0, 100);
+        // Правый стик для засечек (ось Y)
+        const srff = map(gamepad.axes[3], -1, 1, 0, 100);
+
+        updateFontStyles(wght, srff);
+      }
+      // Обновляем состояние каждые 100ms
+      setTimeout(readGamepad, 100);
+    }
 
     // Функция для преобразования диапазона значений
     function map(value, in_min, in_max, out_min, out_max) {
       return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
+
+    // Запускаем чтение данных с контроллера
+    window.addEventListener("load", readGamepad);
   </script>
 </body>
 </html>
