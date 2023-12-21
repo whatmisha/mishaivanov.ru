@@ -1,7 +1,7 @@
 function setup() {
   createCanvas(windowWidth, windowHeight);
   background(0);
-  cursor(NONE); // Скрываем системный курсор сразу
+  cursor(NONE); // Скрываем системный курсор
 }
 
 function draw() {
@@ -12,7 +12,7 @@ function draw() {
   // Определяем размер квадрата
   let squareSize = 30;
 
-  // Вычисляем угол вращения относительно положения курсора
+  // Создаем сетку из квадратов с вращающимися линиями
   for (let x = 0; x < windowWidth; x += squareSize) {
     for (let y = 0; y < windowHeight; y += squareSize) {
       // Вычисляем угол для каждого квадрата
