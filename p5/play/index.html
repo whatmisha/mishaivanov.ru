@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Управление буквой с помощью контроллера</title>
+  <title>Управление буквой и стилем шрифта с помощью контроллера</title>
   <style>
     @font-face {
       font-family: 'Angst';
@@ -34,24 +34,42 @@
 
   <script>
     const textElement = document.getElementById('text');
+    let posX = 0; // Изначально смещение по X равно 0
     let posY = 0; // Изначально смещение по Y равно 0
     let rotation = 0; // Изначально угол вращения равен 0
+    let currentWght = 0; // Изначально жирность равна 0
+    let currentSrff = 0; // Изначально размер засечек равен 0
 
-    function updatePositionAndRotation() {
-      textElement.style.top = `calc(50% + ${posY}px)`; // Обновляем вертикальное положение
-      textElement.style.transform = `rotate(${rotation}deg)`; // Обновляем угол вращения
+    function updateStyles() {
+      textElement.style.transform = `translate(${posX}px, ${posY}px) rotate(${rotation}deg)`;
+      textElement.style.fontVariationSettings = `'wght' ${currentWght}, 'srff' ${currentSrff}`;
     }
 
     function readGamepad() {
       const gamepad = navigator.getGamepads()[0];
       if (gamepad) {
-        const leftStickY = gamepad.axes[1]; // Обычно вертикальное движение левого стика
-        const rightStickX = gamepad.axes[2]; // Обычно горизонтальное движение правого стика
+        // Управление положением буквы с помощью левого стика
+        const leftStickX = gamepad.axes[0]; // Горизонтальное движение левого стика
+        const leftStickY = gamepad.axes[1]; // Вертикальное движение левого стика
+        posX += leftStickX * 5; // Изменяем X позицию
+        posY += leftStickY * 5; // Изменяем Y позицию
 
-        posY += leftStickY * 5; // Изменяем позицию на значение стика, умноженное на скорость
+        // Управление вращением буквы с помощью правого стика
+        const rightStickX = gamepad.axes[2]; // Горизонтальное движение правого стика
         rotation += rightStickX * 2; // Изменяем угол вращения
 
-        updatePositionAndRotation();
+        // Возвращение функциональности кнопок L1, L2, R1, R2
+        const L1 = 4; // Обычно L1 это кнопка с индексом 4
+        const R1 = 5; // Обычно R1 это кнопка с индексом 5
+        const L2 = 6; // Обычно L2 это кнопка с индексом 6
+        const R2 = 7; // Обычно R2 это кнопка с индексом 7
+
+        if (gamepad.buttons[L1].pressed && currentWght > 0) currentWght -= 2; 
+        if (gamepad.buttons[R1].pressed && currentWght < 100) currentWght += 2; 
+        if (gamepad.buttons[L2].pressed && currentSrff > 0) currentSrff -= 2; 
+        if (gamepad.buttons[R2].pressed && currentSrff < 100) currentSrff += 2; 
+
+        updateStyles();
       }
       requestAnimationFrame(readGamepad); // Обновляем в каждом кадре анимации для плавности
     }
