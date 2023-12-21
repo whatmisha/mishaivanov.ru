@@ -8,26 +8,29 @@ function draw() {
   stroke(255);
   strokeWeight(1);
 
-  // Определяем координаты и размер квадрата
+  // Определяем размер квадрата
   let squareSize = 30;
-  let x = (windowWidth - squareSize) / 2;
-  let y = (windowHeight - squareSize) / 2;
 
-  // Вычисляем угол между центром квадрата и положением курсора
-  let angle = atan2(mouseY - (y + squareSize / 2), mouseX - (x + squareSize / 2));
+  // Вычисляем угол вращения относительно положения курсора
+  for (let x = 0; x < windowWidth; x += squareSize) {
+    for (let y = 0; y < windowHeight; y += squareSize) {
+      // Вычисляем угол для каждого квадрата
+      let angle = atan2(mouseY - (y + squareSize / 2), mouseX - (x + squareSize / 2));
 
-  // Сохраняем текущее состояние матрицы трансформации и перемещаем начало координат в центр квадрата
-  push();
-  translate(x + squareSize / 2, y + squareSize / 2);
+      // Сохраняем текущее состояние матрицы трансформации и перемещаем начало координат в центр текущего квадрата
+      push();
+      translate(x + squareSize / 2, y + squareSize / 2);
 
-  // Вращаем канвас на вычисленный угол
-  rotate(angle);
+      // Вращаем канвас на вычисленный угол
+      rotate(angle);
 
-  // Рисуем линию от центра квадрата
-  line(-squareSize / 2, 0, squareSize / 2, 0);
+      // Рисуем линию от центра квадрата
+      line(-squareSize / 2, 0, squareSize / 2, 0);
 
-  // Восстанавливаем состояние матрицы трансформации
-  pop();
+      // Восстанавливаем состояние матрицы трансформации
+      pop();
+    }
+  }
 
   // Рисуем курсор
   drawCustomCursor();
