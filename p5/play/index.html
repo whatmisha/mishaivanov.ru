@@ -53,13 +53,13 @@
         const L2 = 6; // Обычно L2 это кнопка с индексом 6
         const R2 = 7; // Обычно R2 это кнопка с индексом 7
 
-        // Изменение жирности при нажатии L2 и R2
-        if (gamepad.buttons[L2].pressed && currentWght > 0) currentWght -= 1; // Уменьшить, если L2 нажата
-        if (gamepad.buttons[R2].pressed && currentWght < 100) currentWght += 1; // Увеличить, если R2 нажата
+        // Изменение жирности при нажатии L2 и R2, двигаемся на 2 единицы за нажатие
+        if (gamepad.buttons[L2].pressed && currentWght > 0) currentWght -= 2; // Уменьшить на 2, если L2 нажата
+        if (gamepad.buttons[R2].pressed && currentWght < 100) currentWght += 2; // Увеличить на 2, если R2 нажата
 
-        // Изменение размера засечек при нажатии L1 и R1
-        if (gamepad.buttons[L1].pressed && currentSrff > 0) currentSrff -= 1; // Уменьшить, если L1 нажата
-        if (gamepad.buttons[R1].pressed && currentSrff < 100) currentSrff += 1; // Увеличить, если R1 нажата
+        // Изменение размера засечек при нажатии L1 и R1, двигаемся на 2 единицы за нажатие
+        if (gamepad.buttons[L1].pressed && currentSrff > 0) currentSrff -= 2; // Уменьшить на 2, если L1 нажата
+        if (gamepad.buttons[R1].pressed && currentSrff < 100) currentSrff += 2; // Увеличить на 2, если R1 нажата
 
         updateFontStyles(currentWght, currentSrff);
       }
