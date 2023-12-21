@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Управление переменными шрифтами с DualShock</title>
+  <title>Управление буквой с помощью контроллера</title>
   <style>
     @font-face {
       font-family: 'Angst';
@@ -20,14 +20,12 @@
 
     #text {
       font-family: 'Angst';
-      font-size: 240px; /* Продолжайте регулировать, если текст все еще слишком большой */
-      line-height: 1; /* Убрать лишнее пространство между строками */
-      text-align: center;
-      position: absolute; /* Полное контролирование позиционирования */
-      top: 50%; /* Центрирование по вертикали */
-      left: 50%; /* Центрирование по горизонтали */
-      transform: translate(-50%, -50%); /* Точное центрирование */
-      white-space: nowrap; /* Запрет переноса текста на новую строку */
+      font-size: 100px;
+      position: absolute;
+      top: 50%; /* Начальное положение по вертикали */
+      left: 50%; /* Начальное положение по горизонтали */
+      transform-origin: center; /* Центр вращения */
+      white-space: nowrap;
     }
   </style>
 </head>
@@ -36,35 +34,24 @@
 
   <script>
     const textElement = document.getElementById('text');
-    let currentWght = 0; // Изначально жирность равна 0
-    let currentSrff = 0; // Изначально размер засечек равен 0
+    let posY = 0; // Изначально смещение по Y равно 0
+    let rotation = 0; // Изначально угол вращения равен 0
 
-    function updateFontStyles(targetWght, targetSrff) {
-      // Плавное изменение значений с помощью линейной интерполяции (lerping)
-      currentWght += (targetWght - currentWght) * 0.2; // Изменено для более быстрого отклика
-      currentSrff += (targetSrff - currentSrff) * 0.2; // Изменено для более быстрого отклика
-
-      textElement.style.fontVariationSettings = `'wght' ${currentWght}, 'srff' ${currentSrff}`;
+    function updatePositionAndRotation() {
+      textElement.style.top = `calc(50% + ${posY}px)`; // Обновляем вертикальное положение
+      textElement.style.transform = `rotate(${rotation}deg)`; // Обновляем угол вращения
     }
 
     function readGamepad() {
       const gamepad = navigator.getGamepads()[0];
       if (gamepad) {
-        // Определение индексов кнопок для L1, R1, L2 и R2
-        const L1 = 4; // Обычно L1 это кнопка с индексом 4
-        const R1 = 5; // Обычно R1 это кнопка с индексом 5
-        const L2 = 6; // Обычно L2 это кнопка с индексом 6
-        const R2 = 7; // Обычно R2 это кнопка с индексом 7
+        const leftStickY = gamepad.axes[1]; // Обычно вертикальное движение левого стика
+        const rightStickX = gamepad.axes[2]; // Обычно горизонтальное движение правого стика
 
-        // Изменение жирности при нажатии L2 и R2, двигаемся на 2 единицы за нажатие
-        if (gamepad.buttons[L2].pressed && currentWght > 0) currentWght -= 2; 
-        if (gamepad.buttons[R2].pressed && currentWght < 100) currentWght += 2; 
+        posY += leftStickY * 5; // Изменяем позицию на значение стика, умноженное на скорость
+        rotation += rightStickX * 2; // Изменяем угол вращения
 
-        // Изменение размера засечек при нажатии L1 и R1, двигаемся на 2 единицы за нажатие
-        if (gamepad.buttons[L1].pressed && currentSrff > 0) currentSrff -= 2; 
-        if (gamepad.buttons[R1].pressed && currentSrff < 100) currentSrff += 2; 
-
-        updateFontStyles(currentWght, currentSrff);
+        updatePositionAndRotation();
       }
       requestAnimationFrame(readGamepad); // Обновляем в каждом кадре анимации для плавности
     }
