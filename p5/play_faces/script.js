@@ -1,14 +1,18 @@
 const textElement = document.getElementById('text');
-let posX = window.innerWidth / 2; // Начальное горизонтальное положение - середина экрана в пикселях
-let posY = window.innerHeight / 2; // Начальное вертикальное положение - середина экрана в пикселях
+let posX = window.innerWidth / 2;
+let posY = window.innerHeight / 2;
 let rotation = 0;
 let currentWght = 0;
 let currentSrff = 0;
-let fontSize = 240; // Начальный размер шрифта
+let fontSize = 240;
 let printRequested = false;
 
+// Создаем массив букв и переменную для индекса
+const letters = ["P", "L", "A", "Y", "F", "A", "C", "E", "S"];
+let currentLetterIndex = 0;
+
 function updateStyles() {
-  // Используем абсолютное позиционирование для translate
+  textElement.textContent = letters[currentLetterIndex];
   textElement.style.transform = `translate(-50%, -50%) translate(${posX}px, ${posY}px) rotate(${rotation}deg)`;
   textElement.style.fontVariationSettings = `'wght' ${currentWght}, 'srff' ${currentSrff}`;
   textElement.style.fontSize = `${fontSize}px`;
@@ -25,11 +29,11 @@ function readGamepad() {
   if (gamepad) {
     const leftStickX = gamepad.axes[0];
     const leftStickY = gamepad.axes[1];
-    posX += leftStickX * 5; // Медленное изменение X позиции
-    posY += leftStickY * 5; // Медленное изменение Y позиции
+    posX += leftStickX * 5;
+    posY += leftStickY * 5;
 
     const rightStickX = gamepad.axes[2];
-    rotation += rightStickX * 2; // Изменение угла вращения
+    rotation += rightStickX * 2;
 
     const L1 = 4;
     const R1 = 5;
@@ -45,8 +49,13 @@ function readGamepad() {
     if (gamepad.buttons[dpadLeft].pressed && fontSize > 60) fontSize -= 2;
     if (gamepad.buttons[dpadRight].pressed && fontSize < 600) fontSize += 2;
 
-    const crossButtonIndex = 0;
-    if (gamepad.buttons[crossButtonIndex].pressed) {
+    const circleButtonIndex = 1;
+    if (gamepad.buttons[circleButtonIndex].pressed) {
+      currentLetterIndex = (currentLetterIndex + 1) % letters.length;
+      updateStyles();
+    }
+
+    if (gamepad.buttons[0].pressed) {
       if (!printRequested) {
         createPrint();
         printRequested = true;
@@ -61,6 +70,6 @@ function readGamepad() {
 }
 
 window.addEventListener("load", () => {
-  updateStyles(); // Обновляем стили при первой загрузке
+  updateStyles();
   readGamepad();
 });

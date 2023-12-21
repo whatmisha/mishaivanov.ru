@@ -9,15 +9,15 @@ body {
   height: 100vh;
   background-color: black;
   color: white;
-  overflow: hidden; /* Скрыть контент, выходящий за пределы экрана */
+  overflow: hidden;
 }
 
 #text {
   font-family: 'Angst';
   position: absolute;
-  top: 50%; /* Начальное положение по вертикали */
-  left: 50%; /* Начальное положение по горизонтали */
-  font-size: 240px; /* Начальный размер шрифта */
-  transform-origin: center; /* Центр вращения */
+  top: 50%;
+  left: 50%;
+  font-size: 240px;
+  transform-origin: center;
   white-space: nowrap;
 }
