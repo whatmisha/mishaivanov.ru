@@ -3,10 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <title>Управление буквой и стилем шрифта с помощью контроллера</title>
-  <link rel="stylesheet" href="styles.css">
+  <style>
+    @font-face {
+      font-family: 'Angst';
+      src: url('https://mishaivanov.ru/fonts/AngstVF.woff2') format('woff2');
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background-color: black;
+      color: white;
+      overflow: hidden; /* Скрыть контент, выходящий за пределы экрана */
+    }
+
+    #text {
+      font-family: 'Angst';
+      position: absolute;
+      top: 50%; /* Начальное положение по вертикали */
+      left: 50%; /* Начальное положение по горизонтали */
+      font-size: 240px; /* Начальный размер шрифта */
+      transform-origin: center; /* Центр вращения */
+      white-space: nowrap;
+    }
+  </style>
 </head>
 <body>
   <div id="text">A</div>
-  <script src="script.js"></script>
+
+  <script>
+    const textElement = document.getElementById('text');
+    let posX = 0;
+    let posY = 0;
+    let rotation = 0;
+    let currentWght = 0;
+    let currentSrff = 0;
+    let fontSize = 240; // Начальный размер шрифта
+
+    function updateStyles() {
+      textElement.style.transform = `translate(${posX}px, ${posY}px) rotate(${rotation}deg)`;
+      textElement.style.fontVariationSettings = `'wght' ${currentWght}, 'srff' ${currentSrff}`;
+      textElement.style.fontSize = `${fontSize}px`; // Обновляем размер шрифта
+    }
+
+    function readGamepad() {
+      const gamepad = navigator.getGamepads()[0];
+      if (gamepad) {
+        // Управление позицией и вращением...
+
+        // Управление параметрами 'wght' и 'srff'...
+
+        // Изменение кегля шрифта с помощью стрелок D-pad влево и вправо
+        const dpadLeft = 14; // Индекс кнопки D-pad влево
+        const dpadRight = 15; // Индекс кнопки D-pad вправо
+        if (gamepad.buttons[dpadLeft].pressed && fontSize > 60) fontSize -= 2; // Уменьшаем шрифт, ограничив минимальный размер 60px
+        if (gamepad.buttons[dpadRight].pressed && fontSize < 600) fontSize += 2; // Увеличиваем шрифт, ограничив максимальный размер 600px
+
+        updateStyles();
+      }
+      requestAnimationFrame(readGamepad); // Обновляем в каждом кадре анимации для плавности
+    }
+
+    window.addEventListener("load", readGamepad);
+  </script>
 </body>
 </html>
