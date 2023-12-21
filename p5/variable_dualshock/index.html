@@ -32,33 +32,33 @@
 
   <script>
     const textElement = document.getElementById('text');
+    let currentWght = 50; // Начальное значение жирности
+    let currentSrff = 50; // Начальное значение засечек
 
-    // Функция для обновления стилей шрифта
-    function updateFontStyles(wght, srff) {
-      textElement.style.fontVariationSettings = `'wght' ${wght}, 'srff' ${srff}`;
+    function updateFontStyles(targetWght, targetSrff) {
+      // Плавное изменение значений с помощью линейной интерполяции (lerping)
+      currentWght += (targetWght - currentWght) * 0.1;
+      currentSrff += (targetSrff - currentSrff) * 0.1;
+
+      textElement.style.fontVariationSettings = `'wght' ${currentWght}, 'srff' ${currentSrff}`;
     }
 
-    // Функция для чтения состояния контроллера DualShock
     function readGamepad() {
       const gamepad = navigator.getGamepads()[0];
       if (gamepad) {
-        // Левый стик для жирности (ось Y)
-        const wght = map(gamepad.axes[1], -1, 1, 0, 100);
-        // Правый стик для засечек (ось Y)
-        const srff = map(gamepad.axes[3], -1, 1, 0, 100);
+        // Левый стик: горизонтальное движение для засечек, вертикальное для жирности
+        const targetWght = map(gamepad.axes[1], -1, 1, 0, 100);
+        const targetSrff = map(gamepad.axes[0], -1, 1, 0, 100);
 
-        updateFontStyles(wght, srff);
+        updateFontStyles(targetWght, targetSrff);
       }
-      // Обновляем состояние каждые 100ms
-      setTimeout(readGamepad, 100);
+      requestAnimationFrame(readGamepad); // Обновляем в каждом кадре анимации для плавности
     }
 
-    // Функция для преобразования диапазона значений
     function map(value, in_min, in_max, out_min, out_max) {
       return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
-    // Запускаем чтение данных с контроллера
     window.addEventListener("load", readGamepad);
   </script>
 </body>
