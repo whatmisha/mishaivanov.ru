@@ -1,7 +1,7 @@
 function setup() {
   createCanvas(windowWidth, windowHeight);
   background(0);
-  cursor(NONE); // Скрываем системный курсор
+  cursor('none'); // Используем строковое значение напрямую
 }
 
 function draw() {
