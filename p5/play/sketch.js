@@ -4,6 +4,7 @@ function setup() {
   // Создаем холст и размещаем его в теле документа
   let canvas = createCanvas(windowWidth, windowHeight);
   canvas.style('display', 'block'); // Устраняем стандартные отступы
+  canvas.parent('canvas-container'); // Связываем холст с контейнером
 
   // Настройки текста
   textFont('Angst'); // Указываем имя шрифта, определенного в CSS
@@ -25,11 +26,7 @@ function draw() {
   background(0); // Устанавливаем черный фон
 
   // Отрисовка буквы "A" в текущей позиции (x, y)
-  try {
-    text('A', x, y);
-  } catch (err) {
-    console.error("Ошибка при отображении текста: ", err);
-  }
+  text('A', x, y);
 
   // Обрабатываем ввод с геймпада безопасным образом
   try {
