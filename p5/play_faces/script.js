@@ -10,6 +10,7 @@ let printRequested = false;
 // Создаем массив букв и переменную для индекса
 const letters = ["P", "L", "A", "Y", "F", "A", "C", "E", "S"];
 let currentLetterIndex = 0;
+let circlePressed = false; // Флаг для отслеживания нажатия кружочка
 
 function updateStyles() {
   textElement.textContent = letters[currentLetterIndex];
@@ -50,9 +51,12 @@ function readGamepad() {
     if (gamepad.buttons[dpadRight].pressed && fontSize < 600) fontSize += 2;
 
     const circleButtonIndex = 1;
-    if (gamepad.buttons[circleButtonIndex].pressed) {
+    if (gamepad.buttons[circleButtonIndex].pressed && !circlePressed) {
       currentLetterIndex = (currentLetterIndex + 1) % letters.length;
       updateStyles();
+      circlePressed = true; // Установка флага при нажатии
+    } else if (!gamepad.buttons[circleButtonIndex].pressed && circlePressed) {
+      circlePressed = false; // Сброс флага при отпускании кнопки
     }
 
     if (gamepad.buttons[0].pressed) {
