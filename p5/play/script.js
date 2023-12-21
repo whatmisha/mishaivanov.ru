@@ -1,22 +1,22 @@
 const textElement = document.getElementById('text');
-let posX = window.innerWidth / 2;
-let posY = window.innerHeight / 2;
+let posX = 50; // Проценты от ширины окна
+let posY = 50; // Проценты от высоты окна
 let rotation = 0;
 let currentWght = 0;
 let currentSrff = 0;
 let fontSize = 240;
-let printRequested = false; // Флаг, указывающий на запрос создания отпечатка
+let printRequested = false;
 
 function updateStyles() {
-  textElement.style.transform = `translate(-50%, -50%) translate(${posX}px, ${posY}px) rotate(${rotation}deg)`;
+  // Используем проценты для translate, чтобы буква всегда оставалась в центре
+  textElement.style.transform = `translate(-50%, -50%) translate(${posX}vw, ${posY}vh) rotate(${rotation}deg)`;
   textElement.style.fontVariationSettings = `'wght' ${currentWght}, 'srff' ${currentSrff}`;
   textElement.style.fontSize = `${fontSize}px`;
 }
 
 function createPrint() {
-  // Создаем новый элемент для отпечатка буквы
   const print = textElement.cloneNode(true);
-  print.style.transform = `translate(${posX}px, ${posY}px) rotate(${rotation}deg)`;
+  print.style.transform = `translate(-50%, -50%) translate(${posX}vw, ${posY}vh) rotate(${rotation}deg)`;
   document.body.appendChild(print);
 }
 
@@ -25,11 +25,12 @@ function readGamepad() {
   if (gamepad) {
     const leftStickX = gamepad.axes[0];
     const leftStickY = gamepad.axes[1];
-    posX += leftStickX * 10;
-    posY += leftStickY * 10;
+    // Изменяем проценты положения, а не пиксели
+    posX += leftStickX * 0.1; // Изменение posX в процентах от ширины окна
+    posY += leftStickY * 0.1; // Изменение posY в процентах от высоты окна
 
     const rightStickX = gamepad.axes[2];
-    rotation += rightStickX * 2;
+    rotation += rightStickX * 2; // Изменение угла вращения
 
     const L1 = 4;
     const R1 = 5;
@@ -47,7 +48,7 @@ function readGamepad() {
 
     const crossButtonIndex = 0; 
     if (gamepad.buttons[crossButtonIndex].pressed) {
-      if (!printRequested) { // Проверка, чтобы отпечаток создавался один раз за нажатие
+      if (!printRequested) {
         createPrint();
         printRequested = true;
       }
