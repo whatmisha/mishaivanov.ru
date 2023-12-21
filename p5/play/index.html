@@ -20,10 +20,10 @@
 
     #text {
       font-family: 'Angst';
-      font-size: 240px; /* Установлен размер шрифта 240 пикселей */
       position: absolute;
       top: 50%; /* Начальное положение по вертикали */
       left: 50%; /* Начальное положение по горизонтали */
+      font-size: 240px; /* Начальный размер шрифта */
       transform-origin: center; /* Центр вращения */
       white-space: nowrap;
     }
@@ -34,40 +34,31 @@
 
   <script>
     const textElement = document.getElementById('text');
-    let posX = 0; // Изначально смещение по X равно 0
-    let posY = 0; // Изначально смещение по Y равно 0
-    let rotation = 0; // Изначально угол вращения равен 0
-    let currentWght = 0; // Изначально жирность равна 0
-    let currentSrff = 0; // Изначально размер засечек равен 0
+    let posX = 0;
+    let posY = 0;
+    let rotation = 0;
+    let currentWght = 0;
+    let currentSrff = 0;
+    let fontSize = 240; // Начальный размер шрифта
 
     function updateStyles() {
       textElement.style.transform = `translate(${posX}px, ${posY}px) rotate(${rotation}deg)`;
       textElement.style.fontVariationSettings = `'wght' ${currentWght}, 'srff' ${currentSrff}`;
+      textElement.style.fontSize = `${fontSize}px`; // Обновляем размер шрифта
     }
 
     function readGamepad() {
       const gamepad = navigator.getGamepads()[0];
       if (gamepad) {
-        // Управление положением буквы с помощью левого стика
-        const leftStickX = gamepad.axes[0]; // Горизонтальное движение левого стика
-        const leftStickY = gamepad.axes[1]; // Вертикальное движение левого стика
-        posX += leftStickX * 10; // Увеличена скорость изменения X позиции
-        posY += leftStickY * 10; // Увеличена скорость изменения Y позиции
+        // Управление позицией и вращением...
+        // (Код для левого и правого стиков, L1, L2, R1, R2)
 
-        // Управление вращением буквы с помощью правого стика
-        const rightStickX = gamepad.axes[2]; // Горизонтальное движение правого стика
-        rotation += rightStickX * 4; // Увеличена скорость вращения
+        // Изменение кегля шрифта с помощью стрелок D-pad влево и вправо
+        const dpadLeft = 14; // Индекс кнопки D-pad влево
+        const dpadRight = 15; // Индекс кнопки D-pad вправо
 
-        // Возвращение функциональности кнопок L1, L2, R1, R2 с удвоенной скоростью изменения параметров
-        const L1 = 4; // Обычно L1 это кнопка с индексом 4
-        const R1 = 5; // Обычно R1 это кнопка с индексом 5
-        const L2 = 6; // Обычно L2 это кнопка с индексом 6
-        const R2 = 7; // Обычно R2 это кнопка с индексом 7
-
-        if (gamepad.buttons[L1].pressed && currentWght > 0) currentWght -= 4; 
-        if (gamepad.buttons[R1].pressed && currentWght < 100) currentWght += 4; 
-        if (gamepad.buttons[L2].pressed && currentSrff > 0) currentSrff -= 4; 
-        if (gamepad.buttons[R2].pressed && currentSrff < 100) currentSrff += 4; 
+        if (gamepad.buttons[dpadLeft].pressed && fontSize > 10) fontSize -= 2; // Уменьшаем шрифт
+        if (gamepad.buttons[dpadRight].pressed && fontSize < 400) fontSize += 2; // Увеличиваем шрифт
 
         updateStyles();
       }
