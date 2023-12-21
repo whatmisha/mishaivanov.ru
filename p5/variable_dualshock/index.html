@@ -34,11 +34,15 @@
     const textElement = document.getElementById('text');
 
     document.onmousemove = function(e) {
-      const wght = map(e.clientY, 0, window.innerHeight, 100, 900);
-      const srff = map(e.clientX, 0, window.innerWidth, 25, 151);
+      // Получение значений для жирности и размера засечек в диапазоне от 0 до 100
+      const wght = map(e.clientY, 0, window.innerHeight, 0, 100); // Изменение по вертикали
+      const srff = map(e.clientX, 0, window.innerWidth, 0, 100);   // Изменение по горизонтали
+
+      // Обновление стилей шрифта
       textElement.style.fontVariationSettings = `'wght' ${wght}, 'srff' ${srff}`;
     };
 
+    // Функция для преобразования диапазона значений
     function map(value, in_min, in_max, out_min, out_max) {
       return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
