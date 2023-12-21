@@ -1,32 +1,36 @@
 const textElement = document.getElementById('text');
-let posX = window.innerWidth / 2; // Начальное горизонтальное положение - середина экрана
-let posY = window.innerHeight / 2; // Начальное вертикальное положение - середина экрана
+let posX = window.innerWidth / 2;
+let posY = window.innerHeight / 2;
 let rotation = 0;
 let currentWght = 0;
 let currentSrff = 0;
-let fontSize = 240; // Начальный размер шрифта
+let fontSize = 240;
+let printRequested = false; // Флаг, указывающий на запрос создания отпечатка
 
 function updateStyles() {
-  // Используем пиксельное смещение для translate
   textElement.style.transform = `translate(-50%, -50%) translate(${posX}px, ${posY}px) rotate(${rotation}deg)`;
   textElement.style.fontVariationSettings = `'wght' ${currentWght}, 'srff' ${currentSrff}`;
-  textElement.style.fontSize = `${fontSize}px`; // Обновляем размер шрифта
+  textElement.style.fontSize = `${fontSize}px`;
+}
+
+function createPrint() {
+  // Создаем новый элемент для отпечатка буквы
+  const print = textElement.cloneNode(true);
+  print.style.transform = `translate(${posX}px, ${posY}px) rotate(${rotation}deg)`;
+  document.body.appendChild(print);
 }
 
 function readGamepad() {
   const gamepad = navigator.getGamepads()[0];
   if (gamepad) {
-    // Управление позицией буквы с помощью левого стика
-    const leftStickX = gamepad.axes[0]; // Горизонтальное движение левого стика
-    const leftStickY = gamepad.axes[1]; // Вертикальное движение левого стика
-    posX += leftStickX * 10; // Изменение X позиции
-    posY += leftStickY * 10; // Изменение Y позиции
+    const leftStickX = gamepad.axes[0];
+    const leftStickY = gamepad.axes[1];
+    posX += leftStickX * 10;
+    posY += leftStickY * 10;
 
-    // Управление вращением буквы с помощью правого стика
-    const rightStickX = gamepad.axes[2]; // Горизонтальное движение правого стика
-    rotation += rightStickX * 2; // Изменение угла вращения
+    const rightStickX = gamepad.axes[2];
+    rotation += rightStickX * 2;
 
-    // Управление параметрами 'wght' и 'srff' с помощью кнопок L1, L2, R1, R2
     const L1 = 4;
     const R1 = 5;
     const L2 = 6;
@@ -36,15 +40,24 @@ function readGamepad() {
     if (gamepad.buttons[L2].pressed && currentSrff > 0) currentSrff -= 2;
     if (gamepad.buttons[R2].pressed && currentSrff < 100) currentSrff += 2;
 
-    // Изменение кегля шрифта с помощью стрелок D-pad влево и вправо
-    const dpadLeft = 14; // Индекс кнопки D-pad влево
-    const dpadRight = 15; // Индекс кнопки D-pad вправо
-    if (gamepad.buttons[dpadLeft].pressed && fontSize > 60) fontSize -= 2; // Уменьшаем шрифт, ограничив минимальный размер 60px
-    if (gamepad.buttons[dpadRight].pressed && fontSize < 600) fontSize += 2; // Увеличиваем шрифт, ограничив максимальный размер 600px
+    const dpadLeft = 14;
+    const dpadRight = 15;
+    if (gamepad.buttons[dpadLeft].pressed && fontSize > 60) fontSize -= 2;
+    if (gamepad.buttons[dpadRight].pressed && fontSize < 600) fontSize += 2;
+
+    const crossButtonIndex = 0; 
+    if (gamepad.buttons[crossButtonIndex].pressed) {
+      if (!printRequested) { // Проверка, чтобы отпечаток создавался один раз за нажатие
+        createPrint();
+        printRequested = true;
+      }
+    } else {
+      printRequested = false;
+    }
 
     updateStyles();
   }
-  requestAnimationFrame(readGamepad); // Обновляем в каждом кадре анимации для плавности
+  requestAnimationFrame(readGamepad);
 }
 
 window.addEventListener("load", readGamepad);
