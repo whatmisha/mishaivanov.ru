@@ -2,7 +2,8 @@ let font;
 let x, y;
 
 function preload() {
-  font = loadFont('http://mishaivanov.ru/fonts/AngstVF.woff2');
+  // Загружаем шрифт напрямую с указанного URL
+  font = loadFont('https://mishaivanov.ru/fonts/AngstVF.woff2');
 }
 
 function setup() {
