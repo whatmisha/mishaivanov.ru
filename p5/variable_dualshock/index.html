@@ -22,7 +22,7 @@
 
     #text {
       font-family: 'Angst';
-      font-size: 240px; /* Updated font size */
+      font-size: 240px;
       text-align: center;
     }
   </style>
@@ -32,8 +32,8 @@
 
   <script>
     const textElement = document.getElementById('text');
-    let currentWght = 50; // Начальное значение жирности
-    let currentSrff = 50; // Начальное значение засечек
+    let currentWght = 0; // Изначально жирность равна 0
+    let currentSrff = 0; // Изначально размер засечек равен 0
 
     function updateFontStyles(targetWght, targetSrff) {
       // Плавное изменение значений с помощью линейной интерполяции (lerping)
@@ -47,8 +47,9 @@
       const gamepad = navigator.getGamepads()[0];
       if (gamepad) {
         // Левый стик: горизонтальное движение для засечек, вертикальное для жирности
-        const targetWght = map(gamepad.axes[1], -1, 1, 0, 100);
-        const targetSrff = map(gamepad.axes[0], -1, 1, 0, 100);
+        // Диапазон изменяется от -50 до 50 для соответствия условиям 0 при центральном положении
+        const targetWght = map(gamepad.axes[1], -1, 1, -50, 50);
+        const targetSrff = map(gamepad.axes[0], -1, 1, -50, 50);
 
         updateFontStyles(targetWght, targetSrff);
       }
