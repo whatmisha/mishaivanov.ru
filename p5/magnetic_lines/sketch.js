@@ -1,6 +1,7 @@
 function setup() {
   createCanvas(windowWidth, windowHeight);
   background(0);
+  cursor(NONE); // Скрываем системный курсор сразу
 }
 
 function draw() {
@@ -40,9 +41,4 @@ function drawCustomCursor() {
   noStroke();
   fill(255);
   ellipse(mouseX, mouseY, 20, 20);
-}
-
-// Скрываем стандартный курсор
-function mouseMoved() {
-  cursor(NONE);
 }
