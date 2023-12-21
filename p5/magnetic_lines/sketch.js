@@ -1,6 +1,7 @@
 let cursorX;
 let cursorY;
-let sensitivity = 6; // Удвоенная чувствительность для более быстрого движения курсора
+let sensitivity = 12; // Учетверенная чувствительность для еще более быстрого движения курсора
+let squareSize = 30; // Начальный размер квадрата
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -14,25 +15,32 @@ function setup() {
 function draw() {
   background(0);
   handleGamepad(); // Обрабатываем ввод с контроллера
-  drawGrid();
+  drawGrid(squareSize);
   drawCustomCursor();
 }
 
 function handleGamepad() {
-  // Получаем данные от первого подключенного контроллера
   let gamepads = navigator.getGamepads();
   if (gamepads[0]) {
     let gp = gamepads[0];
-    // Обновляем положение курсора на основе левого стика контроллера (обычно axes[0] и axes[1])
+
+    // Обновляем положение курсора на основе левого стика контроллера
     cursorX += sensitivity * gp.axes[0];
     cursorY += sensitivity * gp.axes[1];
+
+    // Изменяем размер квадратов с помощью кнопок L2 (gp.buttons[6].value) и R2 (gp.buttons[7].value)
+    if (gp.buttons[6].value > 0) {
+      squareSize += 1; // Увеличиваем размер квадратов
+    }
+    if (gp.buttons[7].value > 0) {
+      squareSize = max(10, squareSize - 1); // Уменьшаем размер квадратов, но не меньше 10
+    }
   }
 }
 
-function drawGrid() {
+function drawGrid(squareSize) {
   stroke(255);
   strokeWeight(1);
-  let squareSize = 30;
 
   for (let x = 0; x < windowWidth; x += squareSize) {
     for (let y = 0; y < windowHeight; y += squareSize) {
