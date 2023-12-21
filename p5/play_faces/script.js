@@ -30,8 +30,8 @@ function readGamepad() {
   if (gamepad) {
     const leftStickX = gamepad.axes[0];
     const leftStickY = gamepad.axes[1];
-    posX += leftStickX * 5;
-    posY += leftStickY * 5;
+    posX += leftStickX * 10; // Увеличиваем скорость передвижения в два раза
+    posY += leftStickY * 10; // Увеличиваем скорость передвижения в два раза
 
     const rightStickX = gamepad.axes[2];
     rotation += rightStickX * 2;
@@ -48,15 +48,15 @@ function readGamepad() {
     const dpadLeft = 14;
     const dpadRight = 15;
     if (gamepad.buttons[dpadLeft].pressed && fontSize > 60) fontSize -= 2;
-    if (gamepad.buttons[dpadRight].pressed && fontSize < 600) fontSize += 2;
+    if (gamepad.buttons[dpadRight].pressed && fontSize < 1200) fontSize += 2; // Удвоенный максимальный размер шрифта
 
     const circleButtonIndex = 1;
     if (gamepad.buttons[circleButtonIndex].pressed && !circlePressed) {
       currentLetterIndex = (currentLetterIndex + 1) % letters.length;
       updateStyles();
-      circlePressed = true; // Установка флага при нажатии
+      circlePressed = true;
     } else if (!gamepad.buttons[circleButtonIndex].pressed && circlePressed) {
-      circlePressed = false; // Сброс флага при отпускании кнопки
+      circlePressed = false;
     }
 
     if (gamepad.buttons[0].pressed) {
