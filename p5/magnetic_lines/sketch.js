@@ -8,8 +8,13 @@ function draw() {
   stroke(255);
   strokeWeight(1);
 
-  // Рисуем простую диагональную линию слева-направо снизу-вверх
-  line(0, windowHeight, windowWidth, 0);
+  // Определяем координаты для квадрата 30x30 пикселей по центру экрана
+  let squareSize = 30;
+  let x = (windowWidth - squareSize) / 2;
+  let y = (windowHeight - squareSize) / 2;
+
+  // Рисуем линию в пределах квадрата
+  line(x, y + squareSize, x + squareSize, y);
 
   // Рисуем курсор
   drawCustomCursor();
