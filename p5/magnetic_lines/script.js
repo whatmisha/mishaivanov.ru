@@ -9,21 +9,23 @@ function draw() {
     clear();
     background(0);
 
-    // Рассчитываем угол поворота относительно позиции курсора
-    let angle = atan2(mouseY - height / 2, mouseX - width / 2);
-
-    // Сохраняем состояние холста
-    push();
-    // Перемещаем начало координат в центр холста
-    translate(width / 2, height / 2);
-    // Вращаем холст на вычисленный угол
-    rotate(angle);
-    // Устанавливаем белый цвет линии
+    // Задаем белый цвет линии
     stroke(255);
-    // Рисуем кривую Безье
-    bezier(-15, -15, 30, 30, -30, 30, 15, 15);
-    // Восстанавливаем состояние холста
-    pop();
+
+    // Рассчитываем координаты центра холста
+    let centerX = width / 2;
+    let centerY = height / 2;
+
+    // Рассчитываем координаты углов квадрата 30x30 пикселей
+    let squareSize = 30;
+    let halfSquare = squareSize / 2;
+    let x1 = centerX - halfSquare;
+    let y1 = centerY - halfSquare;
+    let x2 = centerX + halfSquare;
+    let y2 = centerY + halfSquare;
+
+    // Рисуем диагональную линию внутри квадрата
+    line(x1, y1, x2, y2);
 }
 
 function windowResized() {
