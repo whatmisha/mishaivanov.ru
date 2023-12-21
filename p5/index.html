@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>P5.js+DualShock</title>
+    <title>P5.js projects</title>
     <style>
         @font-face {
             font-family: 'CoFoSans-Medium';
@@ -19,6 +19,7 @@
         html, body {
             height: 100%;
             margin: 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -29,17 +30,28 @@
         }
 
         h1 {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
             font-family: 'CoFoSans-Medium', sans-serif;
             font-weight: normal;
             color: white;
-            font-size: 32px;
-            margin: 0 0 20px 0;
+            font-size: 8vw; /* Adjust the size as needed */
+            margin: 0;
+            padding: 10px 0; /* Add some padding to ensure it doesn't touch the very edge */
+            box-sizing: border-box;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         #project-list {
             text-align: center;
             width: 100%;
-            margin: 0 0 60px 0;
+            max-width: 600px; /* Adjust as needed */
+            margin: 100px 0 60px; /* Increase top margin to push it down */
         }
 
         a {
@@ -54,7 +66,7 @@
     </style>
 </head>
 <body>
-    <h1>P5.js+DualShock</h1>
+    <h1>P5.js projects</h1>
     <div id="project-list">Loading...</div>
     <script src="script.js"></script>
 </body>
