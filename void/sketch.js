@@ -1,10 +1,20 @@
+// Определение цветов для разных модулей
+const colors = {
+    straight: [255, 0, 0], // Красный
+    central: [0, 255, 0], // Зеленый
+    joint: [0, 0, 255], // Синий
+    link: [255, 255, 0], // Желтый
+    round: [0, 255, 255], // Голубой
+    bend: [255, 0, 255], // Фиолетовый
+    empty: [255, 255, 255] // Белый
+};
+
 // Параметры дизайна шрифта
 let cols = 5;
 let rows = 5;
 let alphabet = {"A": "E0R1S1R2E0R1B3E0B0R2S0E0E0E0S2L1S1S1S1L2S0E0E0E0S2"};
 let letterSize = 200; // размер буквы
 let stem = 24; // толщина штриха
-let altMode = false; // режим отображения
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
@@ -58,7 +68,7 @@ function drawLetter(letter, x, y, letW, letH) {
 // Определение модульных функций для рисования частей буквы
 function drawStraight_alt(x, y, w, h, a) {
     push();
-    fill(255);
+    fill(...colors.straight);
     noStroke();
     translate(x + w / 2, y + h / 2);
     rotate(a);
@@ -69,7 +79,7 @@ function drawStraight_alt(x, y, w, h, a) {
 
 function drawCentral_alt(x, y, w, h, a) {
     push();
-    fill(255);
+    fill(...colors.central);
     noStroke();
     translate(x + w / 2, y + h / 2);
     rotate(a);
@@ -80,7 +90,7 @@ function drawCentral_alt(x, y, w, h, a) {
 
 function drawJoint_alt(x, y, w, h, a) {
     push();
-    fill(255);
+    fill(...colors.joint);
     noStroke();
     translate(x + w / 2, y + h / 2);
     rotate(a);
@@ -92,7 +102,7 @@ function drawJoint_alt(x, y, w, h, a) {
 
 function drawLink_alt(x, y, w, h, a) {
     push();
-    fill(255);
+    fill(...colors.link);
     noStroke();
     translate(x + w / 2, y + h / 2);
     rotate(a);
@@ -107,16 +117,14 @@ function drawRound_alt(x, y, w, h, a) {
     noStroke();
     translate(x + w / 2, y + h / 2);
     rotate(a);
-    fill(255);
+    fill(...colors.round);
     arc(0, -h / 2, w, h, HALF_PI, PI);
-    fill(0);
-    arc(0, -h / 2, w - stem, h - stem, HALF_PI, PI);
     pop();
 }
 
 function drawBend_alt(x, y, w, h, a) {
     push();
-    fill(255);
+    fill(...colors.bend);
     noStroke();
     translate(x + w / 2, y + h / 2);
     rotate(a);
@@ -125,11 +133,13 @@ function drawBend_alt(x, y, w, h, a) {
 }
 
 function drawEmpty_alt(x, y, w, h, a) {
-    // Эта функция оставлена пустой, так как drawEmpty_alt не рисует ничего в данной реализации
-}
-
-// Сделайте шрифт интерактивным, если хотите (например, меняйте altMode по клику мыши)
-function mousePressed() {
-    altMode = !altMode;
-    redraw(); // Перерисовка при изменении режима
+    push();
+    noFill();
+    stroke(...colors.empty);
+    strokeWeight(2);
+    translate(x + w / 2, y + h / 2);
+    rotate(a);
+    rectMode(CENTER);
+    rect(0, 0, stem, stem);
+    pop();
 }
