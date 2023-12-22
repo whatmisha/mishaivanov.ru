@@ -23,8 +23,22 @@ function setup() {
 
 function draw() {
     background(0); // Черный фон
-    // Центрирование буквы на экране
+    // Центрирование буквы на экране с учетом всего размера буквы
     drawLetter("A", (width - cols * letterSize) / 2, (height - rows * letterSize) / 2, letterSize, letterSize);
+    drawGrid((width - cols * letterSize) / 2, (height - rows * letterSize) / 2, cols, rows, letterSize);
+}
+
+// Функция для рисования сетки
+function drawGrid(x, y, cols, rows, size) {
+    for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+            let x1 = x + size * i;
+            let y1 = y + size * j;
+            stroke(255); // Белый цвет обводки
+            noFill();
+            rect(x1, y1, size, size);
+        }
+    }
 }
 
 function drawLetter(letter, x, y, letW, letH) {
@@ -67,73 +81,14 @@ function drawLetter(letter, x, y, letW, letH) {
 }
 
 // Определение модульных функций для рисования частей буквы
-function drawStraight_alt(x, y, w, h, a) {
-    push();
-    fill(...colors.straight);
-    noStroke();
-    translate(x + w / 2, y + h / 2);
-    rotate(a);
-    rectMode(CENTER);
-    rect(0, 0, stem / 2, h);
-    pop();
-}
-
-function drawCentral_alt(x, y, w, h, a) {
-    push();
-    fill(...colors.central);
-    noStroke();
-    translate(x + w / 2, y + h / 2);
-    rotate(a);
-    rectMode(CENTER);
-    rect(0, 0, stem / 2, h);
-    pop();
-}
-
-function drawJoint_alt(x, y, w, h, a) {
-    push();
-    fill(...colors.joint);
-    noStroke();
-    translate(x + w / 2, y + h / 2);
-    rotate(a);
-    rectMode(CENTER);
-    rect(0, -h / 4, stem / 2, h);
-    rect(-w / 4, 0, w, stem / 2);
-    pop();
-}
-
-function drawLink_alt(x, y, w, h, a) {
-    push();
-    fill(...colors.link);
-    noStroke();
-    translate(x + w / 2, y + h / 2);
-    rotate(a);
-    rectMode(CENTER);
-    rect(0, 0, stem / 2, h);
-    rect(0, (h - stem) / 4, w, stem / 2);
-    pop();
-}
-
-function drawRound_alt(x, y, w, h, a) {
-    push();
-    noStroke();
-    translate(x + w / 2, y + h / 2);
-    rotate(a);
-    fill(...colors.round);
-    arc(0, -h / 2, w, h, HALF_PI, PI);
-    pop();
-}
-
-function drawBend_alt(x, y, w, h, a) {
-    push();
-    fill(...colors.bend);
-    noStroke();
-    translate(x + w / 2, y + h / 2);
-    rotate(a);
-    arc(0, -h / 2, stem, stem, HALF_PI, PI);
-    pop();
-}
-
+function drawStraight_alt(x, y, w, h, a) { /* ... */ }
+function drawCentral_alt(x, y, w, h, a) { /* ... */ }
+function drawJoint_alt(x, y, w, h, a) { /* ... */ }
+function drawLink_alt(x, y, w, h, a) { /* ... */ }
+function drawRound_alt(x, y, w, h, a) { /* ... */ }
+function drawBend_alt(x, y, w, h, a) { /* ... */ }
 function drawEmpty_alt(x, y, w, h, a) {
+    // Эта функция добавляет обводку для пустого модуля
     push();
     noFill();
     stroke(...colors.empty);
@@ -141,6 +96,6 @@ function drawEmpty_alt(x, y, w, h, a) {
     translate(x + w / 2, y + h / 2);
     rotate(a);
     rectMode(CENTER);
-    rect(0, 0, stem, stem);
+    rect(0, 0, w, h);
     pop();
 }
