@@ -23,7 +23,8 @@ function setup() {
 
 function draw() {
     background(0); // Черный фон
-    drawLetter("A", width / 2 - letterSize * cols / 2, height / 2 - letterSize * rows / 2, letterSize, letterSize);
+    // Центрирование буквы на экране
+    drawLetter("A", (width - cols * letterSize) / 2, (height - rows * letterSize) / 2, letterSize, letterSize);
 }
 
 function drawLetter(letter, x, y, letW, letH) {
