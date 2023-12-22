@@ -9,6 +9,7 @@ function draw() {
     const cols = 5;
     const rows = 5;
     const moduleSize = 12;
+    const stem = moduleSize / 2;  // Толщина штриха
     const gridWidth = cols * moduleSize;
     const gridHeight = rows * moduleSize;
     
@@ -18,7 +19,7 @@ function draw() {
     drawGrid(startX, startY, cols, rows, moduleSize);
     
     const letterA = "E0R1S1R2E0R1B3E0B0R2S0E0E0E0S2L1S1S1S1L2S0E0E0E0S2";
-    drawLetter(letterA, startX, startY, cols, rows, moduleSize);
+    drawLetter(letterA, startX, startY, cols, rows, moduleSize, stem);
 }
 
 function drawGrid(x, y, cols, rows, size) {
@@ -34,107 +35,72 @@ function drawGrid(x, y, cols, rows, size) {
     }
 }
 
-function drawLetter(code, x, y, cols, rows, size) {
+function drawLetter(code, x, y, cols, rows, size, stem) {
     for (let i = 0; i < cols * rows; i++) {
         const moduleType = code.charAt(i * 2);
-        const rotation = parseInt(code.charAt(i * 2 + 1));
+        const rotation = parseInt(code.charAt(i * 2 + 1)) * HALF_PI; // Умножаем на HALF_PI для поворота
         
         const moduleX = x + (i % cols) * size;
         const moduleY = y + Math.floor(i / cols) * size;
         
         switch (moduleType) {
             case 'S':
-                drawStraight(moduleX, moduleY, size, rotation);
+                drawStraight(moduleX, moduleY, size, size, rotation, stem);
                 break;
             case 'C':
-                drawCentral(moduleX, moduleY, size, rotation);
+                drawCentral(moduleX, moduleY, size, size, rotation, stem);
                 break;
             case 'J':
-                drawJoint(moduleX, moduleY, size, rotation);
+                drawJoint(moduleX, moduleY, size, size, rotation, stem);
                 break;
             case 'L':
-                drawLink(moduleX, moduleY, size, rotation);
+                drawLink(moduleX, moduleY, size, size, rotation, stem);
                 break;
             case 'R':
-                drawRound(moduleX, moduleY, size, rotation);
+                drawRound(moduleX, moduleY, size, size, rotation, stem);
                 break;
             case 'B':
-                drawBend(moduleX, moduleY, size, rotation);
+                drawBend(moduleX, moduleY, size, size, rotation, stem);
                 break;
             case 'E':
-                drawEmpty(moduleX, moduleY, size, rotation);
+                drawEmpty(moduleX, moduleY, size, size, rotation, stem);
                 break;
         }
     }
 }
 
-function drawStraight(x, y, size, rotation) {
+function drawStraight(x, y, w, h, a, stem) {
     push();
-    translate(x + size / 2, y + size / 2);
-    rotate(rotation * PI / 2);
-    fill(255);
+    fill(255);  // Белый цвет заливки
     noStroke();
+    translate(x + w / 2, y + h / 2);
+    rotate(a);
     rectMode(CENTER);
-    rect(0, 0, size, size / 3);
+    rect(-w / 2, -h / 2, stem, h);
     pop();
 }
 
-function drawCentral(x, y, size, rotation) {
-    push();
-    translate(x + size / 2, y + size / 2);
-    rotate(rotation * PI / 2);
-    fill(255);
-    noStroke();
-    rectMode(CENTER);
-    rect(0, 0, size / 3, size / 3);
-    pop();
+function drawCentral(x, y, w, h, a, stem) {
+    // Ваш код для модуля "Central"
 }
 
-function drawJoint(x, y, size, rotation) {
-    push();
-    translate(x + size / 2, y + size / 2);
-    rotate(rotation * PI / 2);
-    fill(255);
-    noStroke();
-    rectMode(CENTER);
-    rect(0, 0, size, size / 3);
-    rect(0, 0, size / 3, size);
-    pop();
+function drawJoint(x, y, w, h, a, stem) {
+    // Ваш код для модуля "Joint"
 }
 
-function drawLink(x, y, size, rotation) {
-    push();
-    translate(x + size / 2, y + size / 2);
-    rotate(rotation * PI / 2);
-    fill(255);
-    noStroke();
-    rectMode(CENTER);
-    rect(0, 0, size, size / 3);
-    rect(0, size / 3, size / 3, size / 3);
-    pop();
+function drawLink(x, y, w, h, a, stem) {
+    // Ваш код для модуля "Link"
 }
 
-function drawRound(x, y, size, rotation) {
-    push();
-    translate(x + size / 2, y + size / 2);
-    rotate(rotation * PI / 2);
-    fill(255);
-    noStroke();
-    arc(-size / 6, 0, size / 3, size / 3, 0, PI);
-    pop();
+function drawRound(x, y, w, h, a, stem) {
+    // Ваш код для модуля "Round"
 }
 
-function drawBend(x, y, size, rotation) {
-    push();
-    translate(x + size / 2, y + size / 2);
-    rotate(rotation * PI / 2);
-    fill(255);
-    noStroke();
-    arc(0, -size / 6, size / 3, size / 3, PI / 2, PI);
-    pop();
+function drawBend(x, y, w, h, a, stem) {
+    // Ваш код для модуля "Bend"
 }
 
-function drawEmpty(x, y, size, rotation) {
-    // Пустой модуль, только контур
+function drawEmpty(x, y, w, h, a, stem) {
+    // Ваш код для модуля "Empty"
 }
 
