@@ -101,18 +101,14 @@ function drawLetter(code, x, y, cols, rows, size, stem) {
 
 function drawStraight(x, y, w, h, a, stem) {
     push();
-    translate(x, y); // Перемещаем начало координат в левый верхний угол модуля
-    rotate(a); // Поворачиваем холст на угол a
-
-    fill(255); // Устанавливаем цвет заливки
-    noStroke(); // Убираем обводку
-    rectMode(CORNER); // Устанавливаем режим рисования прямоугольников от левого верхнего угла
-
-    // Рисуем прямоугольник. Он всегда начинается с левого края модуля.
-    rect(0, 0, stem, h); // Прямоугольник занимает левую половину модуля
+    translate(x + w / 2, y + h / 2);
+    rotate(a);
+    fill(255);
+    noStroke();
+    rectMode(CENTER);
+    rect(-w / 2, -h / 2, stem, h);
     pop();
 }
-
 
 function drawCentral(x, y, w, h, a, stem) {
     push();
