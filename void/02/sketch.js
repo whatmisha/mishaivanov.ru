@@ -79,8 +79,8 @@ let alphabet = {
 
 let words = [
     "ABCDEFGHIJ",
-    "KLMNOPQRS",
-    "TUVWXYZ",
+    "KLMNOPQRST",
+    "UVWXYZ",
     "1234567890",
 ];
 
