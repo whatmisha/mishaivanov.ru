@@ -78,15 +78,10 @@ let alphabet = {
 };
 
 let words = [
-    "ABCD",
-    "EFGH",
-    "IJKL",
-    "MNOP",
-    "QRST",
-    "UVWX",
-    "YZ12",
-    "3456",
-    "7890",
+    "ABCDEFGHI",
+    "JKLMNOPQ",
+    "RSTUVWXYZ",
+    "1234567890",
 ];
 
 
