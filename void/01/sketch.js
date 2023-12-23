@@ -28,15 +28,13 @@ let alphabet = {
 };
 
 let words = [
-    "ABC",
-    "DEF",
-    "GHI",
-    "JKL",
-    "MNO",
-    "PQR",
-    "STU",
-    "VWX",
-    "YZ ",    
+    "ABCD",
+    "EFGH",
+    "IJKL",
+    "MNOP",
+    "QRST",
+    "UVWX",
+    "YZ  ",    
 ];
 
 
