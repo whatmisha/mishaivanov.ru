@@ -29,6 +29,14 @@ let alphabet = {
 
 let words = [
     "ABC",
+    "DEF",
+    "GHI",
+    "JKL",
+    "MNO",
+    "PQR",
+    "STU",
+    "VWX",
+    "YZ ",    
 ];
 
 function setup() {
@@ -45,38 +53,40 @@ function draw() {
     const stem = moduleSize / 2;  // Толщина штриха
     const letterSpacing = moduleSize; // Отступ между группами модулей
     
-    const gridWidth = cols * moduleSize * words[0].length + letterSpacing * (words[0].length - 1);
-    const gridHeight = rows * moduleSize * words.length;
+    const startX = (width - (cols * moduleSize + letterSpacing) * words[0].length) / 2;
+    const startY = (height - (rows * moduleSize + letterSpacing) * words.length) / 2;
     
-    const startX = (width - gridWidth) / 2;
-    const startY = (height - gridHeight) / 2;
+    drawGrid(startX, startY, cols, rows, moduleSize, letterSpacing, words);
     
-    drawGrid(startX, startY, cols, rows, moduleSize, letterSpacing, words[0].length);
-    
-    for (let w = 0; w < words.length; w++) {
-        for (let l = 0; l < words[w].length; l++) {
-            let letterCode = alphabet[words[w][l]] || alphabet[" "]; // Default to space if undefined
+    for (let line = 0; line < words.length; line++) {
+        for (let l = 0; l < words[line].length; l++) {
+            let letterCode = alphabet[words[line][l]] || alphabet[" "]; // Default to space if undefined
             let x = startX + l * (cols * moduleSize + letterSpacing); // Adjusted for letter spacing
-            let y = startY + w * rows * moduleSize;
+            let y = startY + line * (rows * moduleSize + letterSpacing); // Adjusted for line spacing
             drawLetter(letterCode, x, y, cols, rows, moduleSize, stem);
         }
     }
 }
 
-function drawGrid(x, y, cols, rows, size, spacing, numLetters) {
-    for (let l = 0; l < numLetters; l++) {
-        for (let i = 0; i < cols; i++) {
-            for (let j = 0; j < rows; j++) {
-                const x1 = x + i * size + l * (cols * size + spacing);
-                const y1 = y + j * size;
-                stroke(64);
-                strokeWeight(1);
-                noFill();
-                rect(x1, y1, size, size);
+function drawGrid(x, y, cols, rows, size, spacing, words) {
+    for (let line = 0; line < words.length; line++) {
+        for (let l = 0; l < words[line].length; l++) {
+            let letterX = x + l * (cols * size + spacing);
+            let letterY = y + line * (rows * size + spacing);
+            for (let i = 0; i < cols; i++) {
+                for (let j = 0; j < rows; j++) {
+                    const x1 = letterX + i * size;
+                    const y1 = letterY + j * size;
+                    stroke(64);
+                    strokeWeight(1);
+                    noFill();
+                    rect(x1, y1, size, size);
+                }
             }
         }
     }
 }
+
 
 function drawLetter(code, x, y, cols, rows, size, stem) {
     for (let i = 0; i < cols * rows; i++) {
@@ -136,27 +146,11 @@ function drawCentral(x, y, w, h, a, stem) {
     noStroke();
     translate(x + w / 2, y + h / 2);
     rotate(a);
-
-    // Рисуем прямоугольник. Изменяем координаты начала отрисовки,
-    // чтобы прямоугольник был по центру модуля
     rectMode(CORNER); // Устанавливаем режим отрисовки от угла
     rect(-stem / 2, -h / 2, stem, h); // Смещаем прямоугольник к центру
 
     pop();
 }
-
-
-//function drawLink(x, y, w, h, a, stem) {
-//    push();
-//    translate(x + w / 2, y + h / 2);
-//    rotate(a);
-//    fill(255);
-//    noStroke();
-//    rectMode(CENTER);
-//    rect(-w / 2, -h / 2, stem, h);
-//    rect(-w / 2, (h - stem) / 2, w, stem);
-//    pop();
-//}
 
 function drawLink(x, y, w, h, a, stem) {
     push();
@@ -170,14 +164,13 @@ function drawLink(x, y, w, h, a, stem) {
     pop();
 }
 
-
 function drawJoint(x, y, w, h, a, stem) {
-    push(); // Сохраняем текущее состояние холста
-    fill(255); // Устанавливаем цвет заливки
-    noStroke(); // Убираем обводку
-    translate(x + w / 2, y + h / 2); // Перемещаем начало координат в центр модуля
-    rotate(a); // Поворачиваем холст на угол a
-    rectMode(CORNER); // Устанавливаем режим отрисовки от угла
+    push();
+    fill(255);
+    noStroke();
+    translate(x + w / 2, y + h / 2);
+    rotate(a);
+    rectMode(CORNER);
 
     // Рисуем первый прямоугольник по центру модуля
     rect(-w / 2, -h / 2, stem, h);
@@ -185,27 +178,34 @@ function drawJoint(x, y, w, h, a, stem) {
     // Рисуем второй прямоугольник, полностью выровненный по центру модуля
     rect(-w / 2, -stem / 2, w, stem);
 
-    pop(); // Восстанавливаем предыдущее состояние холста
+    pop();
 }
-
 
 function drawRound(x, y, w, h, a, stem) {
     push();
     noStroke();
     translate(x + w / 2, y + h / 2);
     rotate(a);
+
+    // Рисуем внешний белый сектор
     fill(255);
-    arc(0, -h / 2, stem * 2, stem * 2, HALF_PI, PI);
+    arc(w / 2, -h / 2, w * 2, h * 2, HALF_PI, PI);
+
+    // Рисуем внутренний черный сектор поверх белого с меньшим радиусом
+    fill(0);
+    arc(w / 2, -h / 2, max(w * 2 - stem * 2, stem), max(h * 2 - stem * 2, stem), HALF_PI, PI);
+
     pop();
 }
 
 function drawBend(x, y, w, h, a, stem) {
     push();
-    fill(255);
     noStroke();
     translate(x + w / 2, y + h / 2);
     rotate(a);
-    arc(0, -h / 2, stem, stem, HALF_PI, PI);
+    fill(255);
+    arc(w / 2, -h / 2, max(w * 2 - stem * 2, stem), max(h * 2 - stem * 2, stem), HALF_PI, PI);
+
     pop();
 }
 
