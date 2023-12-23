@@ -58,7 +58,7 @@ let words = [
     "MNOP",
     "QRST",
     "UVWX",
-    "YZ  ",    
+    "YZГД",    
 ];
 
 
