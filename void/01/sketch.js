@@ -39,6 +39,14 @@ let words = [
     "YZ ",    
 ];
 
+
+// Глобальные переменные
+let cols = 5;  // Количество колонок в модуле
+let rows = 5;  // Количество строк в модуле
+let moduleSize = 12;  // Размер модуля
+let stem = 6;  // Толщина штриха (динамически обновляется позже)
+let letterSpacing = moduleSize; // Отступ между буквами
+
 function setup() {
     createCanvas(windowWidth, windowHeight);
     noLoop();
@@ -46,12 +54,6 @@ function setup() {
 
 function draw() {
     background(0);
-    
-    const cols = 5;
-    const rows = 5;
-    const moduleSize = 12;
-    const stem = moduleSize / 2;  // Толщина штриха
-    const letterSpacing = moduleSize; // Отступ между группами модулей
     
     const startX = (width - (cols * moduleSize + letterSpacing) * words[0].length) / 2;
     const startY = (height - (rows * moduleSize + letterSpacing) * words.length) / 2;
