@@ -45,7 +45,7 @@ function drawGrid(x, y, cols, rows, size, spacing, numLetters) {
             for (let j = 0; j < rows; j++) {
                 const x1 = x + i * size + l * (cols * size + spacing);
                 const y1 = y + j * size;
-                stroke(255);
+                stroke(64);
                 strokeWeight(1);
                 noFill();
                 rect(x1, y1, size, size);
@@ -88,16 +88,31 @@ function drawLetter(code, x, y, cols, rows, size, stem) {
     }
 }
 
+//function drawStraight(x, y, w, h, a, stem) {
+//    push();
+//    translate(x + w / 2, y + h / 2);
+//    rotate(a);
+//    fill(255);
+//    noStroke();
+//    rectMode(CENTER);
+//    rect(-w / 2, -h / 2, stem, h);
+//    pop();
+//}
+
 function drawStraight(x, y, w, h, a, stem) {
     push();
-    translate(x + w / 2, y + h / 2);
-    rotate(a);
-    fill(255);
-    noStroke();
-    rectMode(CENTER);
-    rect(-w / 2, -h / 2, stem, h);
+    translate(x, y); // Перемещаем начало координат в левый верхний угол модуля
+    rotate(a); // Поворачиваем холст на угол a
+
+    fill(255); // Устанавливаем цвет заливки
+    noStroke(); // Убираем обводку
+    rectMode(CORNER); // Устанавливаем режим рисования прямоугольников от левого верхнего угла
+
+    // Рисуем прямоугольник. Он всегда начинается с левого края модуля.
+    rect(0, 0, stem, h); // Прямоугольник занимает левую половину модуля
     pop();
 }
+
 
 function drawCentral(x, y, w, h, a, stem) {
     push();
