@@ -84,7 +84,6 @@ let words = [
     "1234567890",
 ];
 
-
 // Глобальные переменные
 let cols = 5;  // Количество колонок в модуле
 let rows = 5;  // Количество строк в модуле
@@ -134,7 +133,6 @@ function drawGrid(x, y, cols, rows, size, spacing, words) {
         }
     }
 }
-
 
 function drawLetter(code, x, y, cols, rows, size, stem) {
     for (let i = 0; i < cols * rows; i++) {
@@ -219,15 +217,12 @@ function drawJoint(x, y, w, h, a, stem) {
     translate(x + w / 2, y + h / 2);
     rotate(a);
     rectMode(CORNER);
-
-    // Рисуем первый прямоугольник по центру модуля
     rect(-w / 2, -h / 2, stem, h);
-
-    // Рисуем второй прямоугольник, полностью выровненный по центру модуля
     rect(-w / 2, -stem / 2, w, stem);
-
     pop();
 }
+
+
 
 function drawRound(x, y, w, h, a, stem) {
     push();
@@ -235,16 +230,19 @@ function drawRound(x, y, w, h, a, stem) {
     translate(x + w / 2, y + h / 2);
     rotate(a);
 
-    // Рисуем внешний белый сектор
+    // Внешний белый сектор
     fill(255);
     arc(w / 2, -h / 2, w * 2, h * 2, HALF_PI, PI);
 
-    // Рисуем внутренний черный сектор поверх белого с меньшим радиусом
+    // Внутренний черный сектор поверх белого
     fill(0);
-    arc(w / 2, -h / 2, max(w * 2 - stem * 2, stem), max(h * 2 - stem * 2, stem), HALF_PI, PI);
+    let innerRadiusX = w * 2 - stem * 2;  // Радиус для оси X
+    let innerRadiusY = h * 2 - stem * 2;  // Радиус для оси Y
+    arc(w / 2, -h / 2, innerRadiusX, innerRadiusY, HALF_PI, PI);
 
     pop();
 }
+
 
 function drawBend(x, y, w, h, a, stem) {
     push();
@@ -252,8 +250,7 @@ function drawBend(x, y, w, h, a, stem) {
     translate(x + w / 2, y + h / 2);
     rotate(a);
     fill(255);
-    arc(w / 2, -h / 2, max(w * 2 - stem * 2, stem), max(h * 2 - stem * 2, stem), HALF_PI, PI);
-
+    arc(w / 2, -h / 2, stem*2 , stem*2, HALF_PI, PI);
     pop();
 }
 
