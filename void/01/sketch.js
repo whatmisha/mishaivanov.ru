@@ -1,9 +1,10 @@
 let alphabet = {
     "A": "E0R1S1R2E0R1B3E0B0R2S0E0E0E0S2L1S1S1S1L2S0E0E0E0S2",
+    // Другие символы здесь
 };
 
 let words = [
-    "AAAAA",
+    "AAA",
 ];
 
 function setup() {
@@ -18,31 +19,37 @@ function draw() {
     const rows = 5;
     const moduleSize = 12;
     const stem = moduleSize / 2;  // Толщина штриха
-    const gridWidth = cols * moduleSize * words[0].length + (words[0].length - 1) * moduleSize; // Учитываем отступ после каждой буквы
+    const letterSpacing = moduleSize; // Отступ между группами модулей
+    
+    const gridWidth = cols * moduleSize * words[0].length + letterSpacing * (words[0].length - 1);
     const gridHeight = rows * moduleSize * words.length;
     
     const startX = (width - gridWidth) / 2;
     const startY = (height - gridHeight) / 2;
     
-    drawGrid(startX, startY, cols * words[0].length + (words[0].length - 1), rows * words.length, moduleSize); // Учитываем дополнительные столбцы для отступов
+    drawGrid(startX, startY, cols, rows, moduleSize, letterSpacing, words[0].length);
     
     for (let w = 0; w < words.length; w++) {
         for (let l = 0; l < words[w].length; l++) {
-            let letterCode = alphabet[words[w][l]];
-            drawLetter(letterCode, startX + l * (cols * moduleSize + moduleSize), startY + w * rows * moduleSize, cols, rows, moduleSize, stem); // Увеличиваем x координату на moduleSize после каждой буквы
+            let letterCode = alphabet[words[w][l]] || alphabet[" "]; // Default to space if undefined
+            let x = startX + l * (cols * moduleSize + letterSpacing); // Adjusted for letter spacing
+            let y = startY + w * rows * moduleSize;
+            drawLetter(letterCode, x, y, cols, rows, moduleSize, stem);
         }
     }
 }
 
-function drawGrid(x, y, cols, rows, size) {
-    for (let i = 0; i < cols; i++) {
-        for (let j = 0; j < rows; j++) {
-            const x1 = x + i * size;
-            const y1 = y + j * size;
-            stroke(255);
-            strokeWeight(1);
-            noFill();
-            rect(x1, y1, size, size);
+function drawGrid(x, y, cols, rows, size, spacing, numLetters) {
+    for (let l = 0; l < numLetters; l++) {
+        for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < rows; j++) {
+                const x1 = x + i * size + l * (cols * size + spacing);
+                const y1 = y + j * size;
+                stroke(255);
+                strokeWeight(1);
+                noFill();
+                rect(x1, y1, size, size);
+            }
         }
     }
 }
