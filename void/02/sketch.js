@@ -99,6 +99,8 @@ function setup() {
 
 function draw() {
     background(0);
+
+    
     const startX = (width - (cols * moduleSize + letterSpacing) * words[0].length) / 2;
     const startY = (height - (rows * moduleSize + letterSpacing) * words.length) / 2;
     
