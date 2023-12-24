@@ -92,40 +92,78 @@ function setup() {
 }
 
 function drawText() {
-  let inputText = document.getElementById('textInput').value.toUpperCase();
-  clear();
-  background(0);
-  
-  let totalWidth = (cols * moduleSize + letterSpacing) * inputText.length; // Расчет общей ширины текста
-  let startX = (width - totalWidth) / 2; // Начальная координата X для центрирования текста
-  let centerY = (height - 40) / 2; // Центр экрана по вертикали, учитывая поле ввода
-  
-  for (let i = 0; i < inputText.length; i++) {
-    let letterCode = alphabet[inputText[i]] || alphabet[" "]; // Default to space if undefined
-    let x = startX + i * (cols * moduleSize + letterSpacing); // Adjusted for letter spacing and centering
-    let y = centerY; // Центр экрана по вертикали
-    drawLetter(letterCode, x, y, cols, rows, moduleSize, stem);
-  }
+    let inputText = document.getElementById('textInput').value.toUpperCase();
+    let words = inputText.split(' '); // Разделение вводимого текста на слова
+    clear(); // Очищаем холст
+    background(0); // Фон
+
+    let lineSpacing = rows * moduleSize + 10; // Расстояние между строками
+    let lines = []; // Массив для хранения информации о строках
+    let currentLine = { words: [], width: 0 };
+
+    words.forEach(word => {
+        // Расчет ширины слова с учетом отступов между буквами
+        let wordWidth = word.length * cols * moduleSize + (word.length - 1) * moduleSize;
+        // Перенос слова на новую строку, если оно не помещается
+        if (currentLine.width + wordWidth + moduleSize > width - moduleSize) { // Учитываем отступы от краев экрана
+            lines.push(currentLine);
+            currentLine = { words: [word], width: wordWidth };
+        } else {
+            currentLine.words.push(word);
+            currentLine.width += wordWidth + moduleSize; // Добавляем moduleSize как пространство между словами
+        }
+    });
+    if (currentLine.words.length > 0) {
+        lines.push(currentLine); // Добавление последней строки
+    }
+
+    // Расчет начальной позиции Y, чтобы центрировать абзац вертикально
+    let totalHeight = lines.length * lineSpacing;
+    let startY = (height - totalHeight) / 2;
+
+    // Отрисовка каждой строки
+    lines.forEach((line, lineIndex) => {
+        let currentX = (width - line.width) / 2; // Центрирование строки по горизонтали
+        let currentY = startY + lineIndex * lineSpacing;
+
+        line.words.forEach(word => {
+            for (let i = 0; i < word.length; i++) {
+                let letter = word[i];
+                let letterCode = alphabet[letter] || alphabet[" "]; // Default to space if undefined
+                let letterX = currentX;
+                let letterY = currentY;
+
+                // Рисуем букву
+                drawLetter(letterCode, letterX, letterY, cols, rows, moduleSize, stem);
+
+                // Рисуем сетку поверх буквы
+                drawGrid(letterX, letterY, cols, rows, moduleSize, 0);
+
+                // Обновляем X для следующей буквы
+                currentX += cols * moduleSize + moduleSize; // Используем moduleSize для отступа между буквами
+            }
+            // Дополнительное пространство между словами
+            currentX += moduleSize; 
+        });
+    });
 }
 
-function drawGrid(x, y, cols, rows, size, spacing, words) {
-    for (let line = 0; line < words.length; line++) {
-        for (let l = 0; l < words[line].length; l++) {
-            let letterX = x + l * (cols * size + spacing);
-            let letterY = y + line * (rows * size + spacing);
-            for (let i = 0; i < cols; i++) {
-                for (let j = 0; j < rows; j++) {
-                    const x1 = letterX + i * size;
-                    const y1 = letterY + j * size;
-                    stroke(64);
-                    strokeWeight(1);
-                    noFill();
-                    rect(x1, y1, size, size);
-                }
-            }
+
+
+function drawGrid(x, y, cols, rows, size, spacing) {
+    // Рисуем сетку для одной буквы
+    for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+            const x1 = x + i * size;
+            const y1 = y + j * size;
+            stroke(64);
+            strokeWeight(1);
+            noFill();
+            rect(x1, y1, size, size);
         }
     }
 }
+
 
 function drawLetter(code, x, y, cols, rows, size, stem) {
     for (let i = 0; i < cols * rows; i++) {
