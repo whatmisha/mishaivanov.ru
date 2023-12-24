@@ -92,78 +92,75 @@ function setup() {
 }
 
 function drawText() {
-    let inputText = document.getElementById('textInput').value.toUpperCase();
-    let words = inputText.split(' '); // Разделение вводимого текста на слова
-    clear(); // Очищаем холст
-    background(0); // Фон
+  let inputText = document.getElementById('textInput').value.toUpperCase();
+  let words = inputText.split(' '); // Разделение вводимого текста на слова
 
-    let lineSpacing = rows * moduleSize + 10; // Расстояние между строками
-    let lines = []; // Массив для хранения информации о строках
-    let currentLine = { words: [], width: 0 };
+  clear(); // Очищаем холст
+  background(0); // Фон
 
-    words.forEach(word => {
-        // Расчет ширины слова с учетом отступов между буквами
-        let wordWidth = word.length * cols * moduleSize + (word.length - 1) * moduleSize;
-        // Перенос слова на новую строку, если оно не помещается
-        if (currentLine.width + wordWidth + moduleSize > width - moduleSize) { // Учитываем отступы от краев экрана
-            lines.push(currentLine);
-            currentLine = { words: [word], width: wordWidth };
-        } else {
-            currentLine.words.push(word);
-            currentLine.width += wordWidth + moduleSize; // Добавляем moduleSize как пространство между словами
-        }
-    });
-    if (currentLine.words.length > 0) {
-        lines.push(currentLine); // Добавление последней строки
+  // Отрисовка сетки на фоне
+  drawGrid(0, 0, width, height, cols, rows, moduleSize);
+
+  let lineSpacing = rows * moduleSize + 10; // Расстояние между строками
+  let lines = []; // Массив для хранения информации о строках
+
+  // Подготовка данных для строк
+  let currentLine = { words: [], width: 0 };
+  words.forEach(word => {
+    let wordWidth = word.length * (cols * moduleSize + letterSpacing);
+    if (currentLine.width + wordWidth > width) {
+      lines.push(currentLine); // Добавление текущей строки в массив
+      currentLine = { words: [word], width: wordWidth };
+    } else {
+      currentLine.words.push(word);
+      currentLine.width += wordWidth + letterSpacing; // Добавление пробела после слова
     }
+  });
+  if (currentLine.words.length > 0) {
+    lines.push(currentLine); // Добавление последней строки
+  }
 
-    // Расчет начальной позиции Y, чтобы центрировать абзац вертикально
-    let totalHeight = lines.length * lineSpacing;
-    let startY = (height - totalHeight) / 2;
+  // Расчет начальной позиции Y, чтобы центрировать абзац вертикально
+  let totalHeight = lines.length * lineSpacing;
+  let startY = (height - totalHeight) / 2;
 
-    // Отрисовка каждой строки
-    lines.forEach((line, lineIndex) => {
-        let currentX = (width - line.width) / 2; // Центрирование строки по горизонтали
-        let currentY = startY + lineIndex * lineSpacing;
+  // Отрисовка каждой строки
+  lines.forEach((line, lineIndex) => {
+    let currentX = (width - line.width) / 2; // Центрирование строки по горизонтали
+    let currentY = startY + lineIndex * lineSpacing;
 
-        line.words.forEach(word => {
-            for (let i = 0; i < word.length; i++) {
-                let letter = word[i];
-                let letterCode = alphabet[letter] || alphabet[" "]; // Default to space if undefined
-                let letterX = currentX;
-                let letterY = currentY;
+    line.words.forEach(word => {
+      for (let i = 0; i < word.length; i++) {
+        let letter = word[i];
+        let letterCode = alphabet[letter] || alphabet[" "]; // Default to space if undefined
+        drawLetter(letterCode, currentX, currentY, cols, rows, moduleSize, stem);
+        currentX += cols * moduleSize + letterSpacing; // Сдвиг вправо для следующей буквы
+      }
+      currentX += letterSpacing; // Дополнительное пространство после слова
+    });
+  });
+}
 
-                // Рисуем букву
-                drawLetter(letterCode, letterX, letterY, cols, rows, moduleSize, stem);
 
-                // Рисуем сетку поверх буквы
-                drawGrid(letterX, letterY, cols, rows, moduleSize, 0);
 
-                // Обновляем X для следующей буквы
-                currentX += cols * moduleSize + moduleSize; // Используем moduleSize для отступа между буквами
+function drawGrid(x, y, cols, rows, size, spacing, words) {
+    for (let line = 0; line < words.length; line++) {
+        for (let l = 0; l < words[line].length; l++) {
+            let letterX = x + l * (cols * size + spacing);
+            let letterY = y + line * (rows * size + spacing);
+            for (let i = 0; i < cols; i++) {
+                for (let j = 0; j < rows; j++) {
+                    const x1 = letterX + i * size;
+                    const y1 = letterY + j * size;
+                    stroke(64);
+                    strokeWeight(1);
+                    noFill();
+                    rect(x1, y1, size, size);
+                }
             }
-            // Дополнительное пространство между словами
-            currentX += moduleSize; 
-        });
-    });
-}
-
-
-
-function drawGrid(x, y, cols, rows, size, spacing) {
-    // Рисуем сетку для одной буквы
-    for (let i = 0; i < cols; i++) {
-        for (let j = 0; j < rows; j++) {
-            const x1 = x + i * size;
-            const y1 = y + j * size;
-            stroke(64);
-            strokeWeight(1);
-            noFill();
-            rect(x1, y1, size, size);
         }
     }
 }
-
 
 function drawLetter(code, x, y, cols, rows, size, stem) {
     for (let i = 0; i < cols * rows; i++) {
