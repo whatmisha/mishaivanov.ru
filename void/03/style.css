@@ -3,4 +3,21 @@ body, html {
     padding: 0;
     overflow: hidden;
     background-color: black; /* Установка черного фона */
+    display: flex;
+    justify-content: center; /* Центрирование содержимого по горизонтали */
+    align-items: center; /* Центрирование содержимого по вертикали */
+    height: 100vh; /* Высота вьюпорта */
+}
+
+#textInput {
+    position: absolute;
+    bottom: 20px; /* Положение поля ввода внизу страницы */
+    left: 50%;
+    transform: translateX(-50%); /* Центрирование поля ввода */
+    z-index: 10; /* Убедитесь, что текстовое поле находится над канвасом */
+}
+
+#textCanvas {
+    width: 100%;
+    height: 100%;
 }

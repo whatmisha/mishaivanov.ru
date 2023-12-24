@@ -77,13 +77,6 @@ let alphabet = {
     "Я": "E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0"
 };
 
-let words = [
-    "ABCDEFGHIJ",
-    "KLMNOPQRST",
-    "UVWXYZ    ",
-    "1234567890",
-];
-
 // Глобальные переменные
 let cols = 5;  // Количество колонок в модуле
 let rows = 5;  // Количество строк в модуле
@@ -92,27 +85,27 @@ let stem = 6;  // Толщина штриха (динамически обнов
 let letterSpacing = moduleSize; // Отступ между буквами
 
 function setup() {
-    createCanvas(windowWidth, windowHeight);
-    noLoop();
+  let canvas = createCanvas(windowWidth, windowHeight - 40); // Уменьшение высоты холста, чтобы учесть поле ввода
+  canvas.parent('textCanvas');
+  noLoop();
+  textAlign(CENTER, CENTER); // Выравнивание текста по центру
 }
 
-function draw() {
-    background(0);
-
-    
-    const startX = (width - (cols * moduleSize + letterSpacing) * words[0].length) / 2;
-    const startY = (height - (rows * moduleSize + letterSpacing) * words.length) / 2;
-    
-    drawGrid(startX, startY, cols, rows, moduleSize, letterSpacing, words);
-    
-    for (let line = 0; line < words.length; line++) {
-        for (let l = 0; l < words[line].length; l++) {
-            let letterCode = alphabet[words[line][l]] || alphabet[" "]; // Default to space if undefined
-            let x = startX + l * (cols * moduleSize + letterSpacing); // Adjusted for letter spacing
-            let y = startY + line * (rows * moduleSize + letterSpacing); // Adjusted for line spacing
-            drawLetter(letterCode, x, y, cols, rows, moduleSize, stem);
-        }
-    }
+function drawText() {
+  let inputText = document.getElementById('textInput').value.toUpperCase();
+  clear();
+  background(0);
+  
+  let totalWidth = (cols * moduleSize + letterSpacing) * inputText.length; // Расчет общей ширины текста
+  let startX = (width - totalWidth) / 2; // Начальная координата X для центрирования текста
+  let centerY = (height - 40) / 2; // Центр экрана по вертикали, учитывая поле ввода
+  
+  for (let i = 0; i < inputText.length; i++) {
+    let letterCode = alphabet[inputText[i]] || alphabet[" "]; // Default to space if undefined
+    let x = startX + i * (cols * moduleSize + letterSpacing); // Adjusted for letter spacing and centering
+    let y = centerY; // Центр экрана по вертикали
+    drawLetter(letterCode, x, y, cols, rows, moduleSize, stem);
+  }
 }
 
 function drawGrid(x, y, cols, rows, size, spacing, words) {
