@@ -116,24 +116,20 @@ function drawText() {
     let totalHeight = lines.length * lineSpacing;
     let startY = (height - totalHeight) / 2;
 
-lines.forEach((line, lineIndex) => {
-    let currentX = (width - line.width) / 2;
-    let currentY = startY + lineIndex * lineSpacing;
+    lines.forEach((line, lineIndex) => {
+        let currentX = (width - line.width) / 2;
+        let currentY = startY + lineIndex * lineSpacing;
 
-    line.words.forEach(word => {
-    for (let i = 0; i < word.length; i++) {
-        let letter = word[i];
-        let letterCode = alphabet[letter] || alphabet[" "]; // Убедитесь, что пробел обрабатывается
-        drawLetter(letterCode, currentX, currentY, cols, rows, moduleSize, stem);
-        currentX += cols * moduleSize; // Уберите дополнительное пространство между символами
-    }
-    // Оставьте пространство после слова, если это не последнее слово в строке
-    if (word !== line.words[line.words.length - 1]) {
-        currentX += letterSpacing; 
-    }
-});
-});
-
+        line.words.forEach(word => {
+            for (let i = 0; i < word.length; i++) {
+                let letter = word[i];
+                let letterCode = alphabet[letter] || alphabet[" "];
+                drawLetter(letterCode, currentX, currentY, cols, rows, moduleSize, stem);
+                currentX += cols * moduleSize + letterSpacing;
+            }
+            currentX += letterSpacing;  // Дополнительное пространство между словами
+        });
+    });
 }
 
 
