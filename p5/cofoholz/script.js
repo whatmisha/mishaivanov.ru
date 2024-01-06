@@ -39,10 +39,10 @@ function readGamepad() {
     const R1 = 5;
     const L2 = 6;
     const R2 = 7;
-    if (gamepad.buttons[L1].pressed && currentWght > 100) currentWght -= 8; // Увеличение скорости изменения жирности в 4 раза
-    if (gamepad.buttons[R1].pressed && currentWght < 700) currentWght += 8; // Увеличение скорости изменения жирности в 4 раза
-    if (gamepad.buttons[L2].pressed && currentWdth > 100) currentWdth -= 2;
-    if (gamepad.buttons[R2].pressed && currentWdth < 200) currentWdth += 2;
+    if (gamepad.buttons[L1].pressed && currentWght > 100) currentWght -= 16; // Увеличение скорости изменения жирност
+    if (gamepad.buttons[R1].pressed && currentWght < 700) currentWght += 16;
+    if (gamepad.buttons[L2].pressed && currentWdth > 100) currentWdth -= 8; // Увеличение скорости изменения ширины
+    if (gamepad.buttons[R2].pressed && currentWdth < 200) currentWdth += 8;
 
     const dpadLeft = 14;
     const dpadRight = 15;
