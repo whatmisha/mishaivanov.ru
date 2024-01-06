@@ -40,10 +40,10 @@ function readGamepad() {
     const R1 = 5;
     const L2 = 6;
     const R2 = 7;
-    if (gamepad.buttons[L1].pressed && currentWght > 0) currentWght -= 2;
-    if (gamepad.buttons[R1].pressed && currentWght < 100) currentWght += 2;
-    if (gamepad.buttons[L2].pressed && currentWdth > 0) currentWdth -= 2;
-    if (gamepad.buttons[R2].pressed && currentWdth < 100) currentWdth += 2;
+    if (gamepad.buttons[L1].pressed && currentWght > 100) currentWght -= 2;
+    if (gamepad.buttons[R1].pressed && currentWght < 700) currentWght += 2;
+    if (gamepad.buttons[L2].pressed && currentWdth > 100) currentWdth -= 2;
+    if (gamepad.buttons[R2].pressed && currentWdth < 200) currentWdth += 2;
 
     const dpadLeft = 14;
     const dpadRight = 15;
