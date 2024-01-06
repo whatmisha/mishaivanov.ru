@@ -7,10 +7,9 @@ let currentWdth = 0;
 let fontSize = 240;
 let printRequested = false;
 
-// Создаем массив букв и переменную для индекса
 const letters = ["H", "O", "L", "Z"];
 let currentLetterIndex = 0;
-let circlePressed = false; // Флаг для отслеживания нажатия кружочка
+let circlePressed = false;
 
 function updateStyles() {
   textElement.textContent = letters[currentLetterIndex];
@@ -30,8 +29,8 @@ function readGamepad() {
   if (gamepad) {
     const leftStickX = gamepad.axes[0];
     const leftStickY = gamepad.axes[1];
-    posX += leftStickX * 10; // Увеличиваем скорость передвижения в два раза
-    posY += leftStickY * 10; // Увеличиваем скорость передвижения в два раза
+    posX += leftStickX * 10;
+    posY += leftStickY * 10;
 
     const rightStickX = gamepad.axes[2];
     rotation += rightStickX * 2;
@@ -40,15 +39,15 @@ function readGamepad() {
     const R1 = 5;
     const L2 = 6;
     const R2 = 7;
-    if (gamepad.buttons[L1].pressed && currentWght > 100) currentWght -= 8;
-    if (gamepad.buttons[R1].pressed && currentWght < 700) currentWght += 8;
+    if (gamepad.buttons[L1].pressed && currentWght > 100) currentWght -= 8; // Увеличение скорости изменения жирности в 4 раза
+    if (gamepad.buttons[R1].pressed && currentWght < 700) currentWght += 8; // Увеличение скорости изменения жирности в 4 раза
     if (gamepad.buttons[L2].pressed && currentWdth > 100) currentWdth -= 2;
     if (gamepad.buttons[R2].pressed && currentWdth < 200) currentWdth += 2;
 
     const dpadLeft = 14;
     const dpadRight = 15;
-    if (gamepad.buttons[dpadLeft].pressed && fontSize > 60) fontSize -= 8; // Четырехкратная скорость изменения размера
-    if (gamepad.buttons[dpadRight].pressed && fontSize < 1200) fontSize += 8; // Четырехкратная скорость изменения размера
+    if (gamepad.buttons[dpadLeft].pressed && fontSize > 60) fontSize -= 8;
+    if (gamepad.buttons[dpadRight].pressed && fontSize < 1200) fontSize += 8;
 
     const circleButtonIndex = 1;
     if (gamepad.buttons[circleButtonIndex].pressed && !circlePressed) {
