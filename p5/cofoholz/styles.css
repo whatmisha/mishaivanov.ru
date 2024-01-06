@@ -1,0 +1,23 @@
+@font-face {
+  font-family: 'Angst';
+  src: url('https://mishaivanov.ru/p5/cofoholz/CoFoHolz_lettering.woff2') format('woff2');
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  background-color: black;
+  color: white;
+  overflow: hidden;
+}
+
+#text {
+  font-family: 'Angst';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 240px;
+  transform-origin: center;
+  white-space: nowrap;
+}
