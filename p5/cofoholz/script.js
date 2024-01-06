@@ -8,7 +8,7 @@ let fontSize = 240;
 let printRequested = false;
 
 // Создаем массив букв и переменную для индекса
-const letters = ["H", "O", "L", "Z", "F", "A", "C", "E", "S"];
+const letters = ["H", "O", "L", "Z"];
 let currentLetterIndex = 0;
 let circlePressed = false; // Флаг для отслеживания нажатия кружочка
 
