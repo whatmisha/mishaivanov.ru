@@ -1,0 +1,7 @@
+body, html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Убираем скролл, чтобы видео точно было на весь экран */
+    height: 100%;
+    width: 100%;
+}
