@@ -73,8 +73,8 @@ function drawSkeleton() {
         }
     }
 }
-
-// Добавляем обработчик события для адаптации размера холста при изменении размера окна
-function windowResized() {
-    resizeCanvas(windowWidth, windowHeight);
-}
+//
+//// Добавляем обработчик события для адаптации размера холста при изменении размера окна
+//function windowResized() {
+//    resizeCanvas(windowWidth, windowHeight);
+//}
