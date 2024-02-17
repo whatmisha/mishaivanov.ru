@@ -1,57 +1,59 @@
-let video;
-let poseNet;
-let poses = [];
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 
-function setup() {
-    createCanvas(windowWidth, windowHeight); // Создаем холст размером с окно браузера
-    video = createCapture(VIDEO); // Захватываем видео с камеры
-    video.size(width, height); // Задаем размер видео равный размеру холста
-    video.hide(); // Скрываем HTML-элемент видео, чтобы отобразить его на холсте
-    
-    // Инициализация PoseNet
-    poseNet = ml5.poseNet(video, modelReady);
-    poseNet.on('pose', function(results) {
-        poses = results;
+async function setupCamera() {
+    const stream = await navigator.mediaDevices.getUserMedia({
+        'audio': false,
+        'video': {
+            facingMode: 'user',
+        },
+    });
+    video.srcObject = stream;
+
+    return new Promise((resolve) => {
+        video.onloadedmetadata = () => {
+            resolve(video);
+        };
     });
 }
 
-function modelReady() {
-    console.log('Model Loaded');
+async function loadHandpose() {
+    const net = await handpose.load();
+    console.log('Handpose model loaded');
+    return net;
 }
 
-function draw() {
-    background(0); // Задаем черный фон
-    image(video, 0, 0, width, height); // Отображаем видео на весь холст
+async function detect(net) {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const predictions = await net.estimateHands(video);
     
-    drawKeypoints(); // Рисуем ключевые точки
-    drawSkeleton(); // Рисуем скелет
-}
+    if (predictions.length > 0) {
+        for (let i = 0; i < predictions.length; i++) {
+            const landmarks = predictions[i].landmarks;
 
-// Функция для отрисовки ключевых точек
-function drawKeypoints() {
-    for (let i = 0; i < poses.length; i++) {
-        let pose = poses[i].pose;
-        for (let j = 0; j < pose.keypoints.length; j++) {
-            let keypoint = pose.keypoints[j];
-            if (keypoint.score > 0.2) {
-                fill(0, 0, 255); // Задаем цвет точек
-                noStroke();
-                ellipse(keypoint.position.x, keypoint.position.y, 40, 40); // Рисуем точки на ключевых точках
+            // Draw landmarks
+            for (let j = 0; j < landmarks.length; j++) {
+                const [x, y, z] = landmarks[j];
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, 3 * Math.PI);
+                ctx.fillStyle = 'aqua';
+                ctx.fill();
             }
         }
     }
+
+    requestAnimationFrame(() => detect(net));
 }
 
-// Функция для отрисовки скелета
-function drawSkeleton() {
-    for (let i = 0; i < poses.length; i++) {
-        let skeleton = poses[i].skeleton;
-        for (let j = 0; j < skeleton.length; j++) {
-            let partA = skeleton[j][0];
-            let partB = skeleton[j][1];
-            stroke(0, 0, 255); // Задаем цвет линий
-            strokeWeight(40);
-            line(partA.position.x, partA.position.y, partB.position.x, partB.position.y); // Рисуем линии между ключевыми точками
-        }
-    }
+async function main() {
+    await setupCamera();
+    video.play();
+    const net = await loadHandpose();
+    detect(net);
 }
+
+main();
