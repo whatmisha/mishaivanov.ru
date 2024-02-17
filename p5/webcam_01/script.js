@@ -3,7 +3,7 @@ let poseNet;
 let poses = [];
 
 function setup() {
-    createCanvas(640, 480);
+    createCanvas(windowWidth, windowHeight); // Создаем холст размером с окно браузера
     video = createCapture(VIDEO);
     video.size(width, height);
 
@@ -22,38 +22,59 @@ function modelReady() {
 }
 
 function draw() {
-    // Отображаем видео, отраженное по горизонтали
-    translate(width, 0); // Смещаем систему координат к правому краю канваса
-    scale(-1, 1); // Применяем масштабирование для отражения содержимого канваса
-    image(video, 0, 0, width, height);
+    background(0);
+
+    // Рассчитываем соотношение сторон видео и окна
+    const windowRatio = windowWidth / windowHeight;
+    const videoRatio = video.width / video.height;
+    let newWidth, newHeight;
+
+    // Адаптируем размер видео, сохраняя пропорции и обрезая лишнее
+    if (windowRatio > videoRatio) {
+        newWidth = windowWidth;
+        newHeight = windowWidth / videoRatio;
+    } else {
+        newWidth = windowHeight * videoRatio;
+        newHeight = windowHeight;
+    }
+
+    // Отображаем видео зеркально, адаптированное под размер окна
+    translate(width, 0);
+    scale(-1, 1); // Зеркальное отображение
+    image(video, (width - newWidth) / 2, (height - newHeight) / 2, newWidth, newHeight);
+
     drawKeypoints();
     drawSkeleton();
 }
 
-// Рисуем ключевые точки позы на канвасе
-function drawKeypoints()  {
+function drawKeypoints() {
     for (let i = 0; i < poses.length; i++) {
         let pose = poses[i].pose;
         for (let j = 0; j < pose.keypoints.length; j++) {
             let keypoint = pose.keypoints[j];
             if (keypoint.score > 0.2) {
-                fill(255, 0, 0);
+                fill(0, 0, 255); // Синий цвет
                 noStroke();
-                ellipse(keypoint.position.x, keypoint.position.y, 10, 10);
+                ellipse(keypoint.position.x, keypoint.position.y, 40, 40); // Размер маркера
             }
         }
     }
 }
 
-// Добавим функцию для рисования скелета
 function drawSkeleton() {
     for (let i = 0; i < poses.length; i++) {
         let skeleton = poses[i].skeleton;
         for (let j = 0; j < skeleton.length; j++) {
             let partA = skeleton[j][0];
             let partB = skeleton[j][1];
-            stroke(255, 0, 0);
+            stroke(0, 0, 255);
+            strokeWeight(40);
             line(partA.position.x, partA.position.y, partB.position.x, partB.position.y);
         }
     }
+}
+
+// Добавляем обработчик события для адаптации размера холста при изменении размера окна
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
 }
