@@ -8,7 +8,7 @@ function setup() {
     video.size(width, height);
 
     // Отражаем видео по горизонтали для эффекта зеркала
-    video.style('transform', 'scale(-1, 1)');
+    video.style('transform', 'scale(1, 1)');
 
     poseNet = ml5.poseNet(video, modelReady);
     poseNet.on('pose', function(results) {
@@ -38,11 +38,7 @@ function draw() {
         newHeight = windowHeight;
     }
 
-    // Отображаем видео зеркально, адаптированное под размер окна
-    translate(width, 0);
-    scale(-1, 1); // Зеркальное отображение
     image(video, (width - newWidth) / 2, (height - newHeight) / 2, newWidth, newHeight);
-
     drawKeypoints();
     drawSkeleton();
 }
@@ -73,8 +69,3 @@ function drawSkeleton() {
         }
     }
 }
-//
-//// Добавляем обработчик события для адаптации размера холста при изменении размера окна
-//function windowResized() {
-//    resizeCanvas(windowWidth, windowHeight);
-//}
