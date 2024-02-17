@@ -6,10 +6,7 @@ function setup() {
     createCanvas(windowWidth, windowHeight); // Создаем холст размером с окно браузера
     video = createCapture(VIDEO);
     video.size(width, height);
-
-    // Отражаем видео по горизонтали для эффекта зеркала
-    video.style('transform', 'scale(1, 1)');
-
+    
     poseNet = ml5.poseNet(video, modelReady);
     poseNet.on('pose', function(results) {
         poses = results;
@@ -23,22 +20,7 @@ function modelReady() {
 
 function draw() {
     background(0);
-
-    // Рассчитываем соотношение сторон видео и окна
-    const windowRatio = windowWidth / windowHeight;
-    const videoRatio = video.width / video.height;
-    let newWidth, newHeight;
-
-    // Адаптируем размер видео, сохраняя пропорции и обрезая лишнее
-    if (windowRatio > videoRatio) {
-        newWidth = windowWidth;
-        newHeight = windowWidth / videoRatio;
-    } else {
-        newWidth = windowHeight * videoRatio;
-        newHeight = windowHeight;
-    }
-
-    image(video, (width - newWidth) / 2, (height - newHeight) / 2, newWidth, newHeight);
+    image(video, 0, 0, width, height);
     drawKeypoints();
     drawSkeleton();
 }
