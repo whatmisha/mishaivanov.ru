@@ -2,32 +2,33 @@ body, html {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background-color: black; /* Устанавливаем черный фон */
-    display: flex; /* Используем flexbox для выравнивания содержимого */
-    justify-content: center; /* Выравниваем содержимое по центру по горизонтали */
-    align-items: center; /* Выравниваем содержимое по центру по вертикали */
-    height: 100vh; /* Высота body и html занимает всю высоту окна просмотра */
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
 #videoContainer {
-    min-width: 640px; /* Минимальная ширина */
-    min-height: 480px; /* Минимальная высота */
     position: relative;
+    min-width: 1280px;
+    min-height: 960px;
 }
 
-
 video, canvas {
-    /* Убедитесь, что изменения не затронули эти элементы */
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%); /* Центрируем видео и холст */
+    transform: translate(-50%, -50%);
 }
 
+/*
 video {
-    opacity: 1; /* Убедитесь, что видео видно */
+    filter: grayscale(100%);
+    opacity: 1;
 }
+*/
 
 canvas {
-    z-index: 10; /* Убедитесь, что холст находится поверх видео */
+    z-index: 10;
 }

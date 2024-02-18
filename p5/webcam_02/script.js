@@ -4,47 +4,60 @@ const ctx = canvas.getContext('2d');
 
 async function setupCamera() {
     const stream = await navigator.mediaDevices.getUserMedia({
-        'audio': false,
-        'video': {
-            facingMode: 'user',
-        },
+        audio: false,
+        video: { facingMode: 'user' },
     });
     video.srcObject = stream;
-
     return new Promise((resolve) => {
-        video.onloadedmetadata = () => {
-            resolve(video);
-        };
+        video.onloadedmetadata = () => resolve(video);
     });
 }
 
 async function loadHandpose() {
-    const net = await handpose.load();
-    console.log('Handpose model loaded');
-    return net;
+    return await handpose.load();
+}
+
+function applyGrayscaleToImageData(imageData) {
+    let data = imageData.data;
+    for (let i = 0; i < data.length; i += 4) {
+        let gray = data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11;
+        data[i] = gray;        // red
+        data[i + 1] = gray;    // green
+        data[i + 2] = gray;    // blue
+    }
+    return imageData;
 }
 
 async function detect(net) {
+    if (video.readyState !== 4) { // Ensure video is ready
+        requestAnimationFrame(() => detect(net));
+        return;
+    }
+    
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const predictions = await net.estimateHands(video);
-    
-    if (predictions.length > 0) {
-        for (let i = 0; i < predictions.length; i++) {
-            const landmarks = predictions[i].landmarks;
+    ctx.save();
+    ctx.scale(-1, 1); // Mirror the image
+    ctx.translate(-canvas.width, 0);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    ctx.restore();
 
-            // Draw landmarks
-            for (let j = 0; j < landmarks.length; j++) {
-                const [x, y, z] = landmarks[j];
-                ctx.beginPath();
-                ctx.arc(x, y, 5, 0, 3 * Math.PI);
-                ctx.fillStyle = 'aqua';
-                ctx.fill();
-            }
-        }
-    }
+    let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    imageData = applyGrayscaleToImageData(imageData);
+    ctx.putImageData(imageData, 0, 0);
+
+    const predictions = await net.estimateHands(video);
+    predictions.forEach(prediction => {
+        const landmarks = prediction.landmarks;
+        landmarks.forEach(([x, y]) => {
+            const mirroredX = canvas.width - x; // Mirror the landmark x coordinate
+            ctx.beginPath();
+            ctx.arc(mirroredX, y, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = 'blue';
+            ctx.fill();
+        });
+    });
 
     requestAnimationFrame(() => detect(net));
 }
