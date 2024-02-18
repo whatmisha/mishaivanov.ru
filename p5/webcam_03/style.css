@@ -22,10 +22,12 @@ video, canvas {
     transform: translate(-50%, -50%);
 }
 
+/*
 video {
     filter: grayscale(100%);
-    opacity: 1; /* Убедитесь, что видео видно */
+    opacity: 1;
 }
+*/
 
 canvas {
     z-index: 10;
