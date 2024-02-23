@@ -41,7 +41,7 @@ function drawKeypoints() {
         for (let j = 0; j < pose.keypoints.length; j++) {
             let keypoint = pose.keypoints[j];
             if (keypoint.score > 0.2) {
-                fill(0, 0, 255); // Изменяем цвет точек на белый для лучшей видимости
+                fill(255, 255, 255); // Изменяем цвет точек на белый для лучшей видимости
                 noStroke();
                 ellipse(keypoint.position.x, keypoint.position.y, 20, 20); // Изменяем размер точек для соответствия масштабу 640x480
             }
@@ -56,7 +56,7 @@ function drawSkeleton() {
         for (let j = 0; j < skeleton.length; j++) {
             let partA = skeleton[j][0];
             let partB = skeleton[j][1];
-            stroke(0, 0, 255); // Изменяем цвет линий на белый для лучшей видимости
+            stroke(0, 0, 0); // Изменяем цвет линий на белый для лучшей видимости
             strokeWeight(20); // Изменяем толщину линий для соответствия масштабу 640x480
             line(partA.position.x, partA.position.y, partB.position.x, partB.position.y); // Рисуем линии между ключевыми точками
         }
