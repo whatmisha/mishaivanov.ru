@@ -1,68 +1,68 @@
-const video = document.getElementById('video');
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
+let video;
+let poseNet;
+let poses = [];
 
-async function setupCamera() {
-    const stream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: { facingMode: 'user' },
-    });
-    video.srcObject = stream;
-    return new Promise((resolve) => {
-        video.onloadedmetadata = () => resolve(video);
+function setup() {
+    const canvas = createCanvas(windowWidth, windowHeight);
+    canvas.parent('videoContainer'); // Делаем холст дочерним элементом контейнера для видео
+    video = createCapture(VIDEO);
+    video.size(width, height);
+
+    // Закомментируем строку с CSS-фильтром, т.к. будем применять черно-белый фильтр вручную
+    // video.style('filter', 'grayscale(100%)');
+
+    video.hide(); // Скрываем HTML-элемент видео, чтобы отобразить его на холсте
+    poseNet = ml5.poseNet(video, modelReady);
+    poseNet.on('pose', function(results) {
+        poses = results;
     });
 }
 
-async function loadHandpose() {
-    return await handpose.load();
+function modelReady() {
+    console.log('Model Loaded');
+    document.getElementById('preloader').style.display = 'none'; // Скрываем прелоадер после загрузки модели
 }
 
-function applyGrayscaleToImageData(imageData) {
-    let data = imageData.data;
-    for (let i = 0; i < data.length; i += 4) {
-        let gray = data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11;
-        data[i] = gray;
-        data[i + 1] = gray;
-        data[i + 2] = gray;
+function draw() {
+    clear(); // Очищаем холст перед каждым новым кадром
+    push(); // Сохраняем текущее состояние системы координат
+    translate(width, 0); // Перемещаем начало координат в правый верхний угол
+    scale(-1, 1); // Масштабируем по оси X для зеркального отображения
+
+    // Применяем черно-белый фильтр к видео перед отображением
+    filter(GRAY);
+    image(video, 0, 0, width, height); // Отображаем видео на холсте
+
+    drawKeypoints();
+    drawSkeleton();
+    pop(); // Восстанавливаем сохраненное состояние системы координат
+}
+
+// Функция для отрисовки ключевых точек
+function drawKeypoints() {
+    for (let i = 0; i < poses.length; i++) {
+        let pose = poses[i].pose;
+        for (let j = 0; j < pose.keypoints.length; j++) {
+            let keypoint = pose.keypoints[j];
+            if (keypoint.score > 0.2) {
+                fill(0,0,255); // Задаем цвет точек
+                noStroke();
+                ellipse(keypoint.position.x, keypoint.position.y, 40, 40); // Рисуем эллипсы на ключевых точках
+            }
+        }
     }
-    return imageData;
 }
 
-async function detect(net) {
-    if (video.readyState !== 4) {
-        requestAnimationFrame(() => detect(net));
-        return;
+// Функция для отрисовки скелета
+function drawSkeleton() {
+    for (let i = 0; i < poses.length; i++) {
+        let skeleton = poses[i].skeleton;
+        for (let j = 0; j < skeleton.length; j++) {
+            let partA = skeleton[j][0];
+            let partB = skeleton[j][1];
+            stroke(0, 0, 255); // Задаем цвет линий
+            strokeWeight(40);
+            line(partA.position.x, partA.position.y, partB.position.x, partB.position.y); // Рисуем линии между ключевыми точками
+        }
     }
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    imageData = applyGrayscaleToImageData(imageData);
-    ctx.putImageData(imageData, 0, 0);
-
-    const predictions = await net.estimateHands(video);
-    predictions.forEach(prediction => {
-        const landmarks = prediction.landmarks;
-        landmarks.forEach(([x, y]) => {
-            ctx.beginPath();
-            ctx.arc(x, y, 5, 0, 2 * Math.PI);
-            ctx.fillStyle = 'blue';
-            ctx.fill();
-        });
-    });
-
-    requestAnimationFrame(() => detect(net));
 }
-
-async function main() {
-    await setupCamera();
-    video.play();
-    const net = await loadHandpose();
-    document.getElementById('preloader').style.display = 'none'; // Скрываем прелоадер
-    detect(net);
-}
-
-main();
