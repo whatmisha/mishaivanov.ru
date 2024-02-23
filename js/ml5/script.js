@@ -1,6 +1,6 @@
 const repoOwner = 'whatmisha'; // имя пользователя на GitHub
 const repoName = 'mishaivanov.ru';  // название репозитория
-const path = 'p5'; // путь к папке в репозитории
+const path = 'js/ml5'; // путь к папке в репозитории
 
 fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`)
     .then(response => response.json())
