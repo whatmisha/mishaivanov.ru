@@ -1,3 +1,15 @@
+@font-face {
+            font-family: 'CoFoSans-Medium';
+            src: url('https://mishaivanov.ru/fonts/CoFoSans-Medium.woff2') format('woff2');
+            font-weight: normal;
+        }
+
+        @font-face {
+            font-family: 'CoFoSans-Regular';
+            src: url('https://mishaivanov.ru/fonts/CoFoSans-Regular.woff2') format('woff2');
+            font-weight: normal;
+        }
+
 body, html {
     margin: 0;
     padding: 0;
@@ -10,16 +22,30 @@ body, html {
 }
 
 #videoContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     position: relative;
-    min-width: 1280px;
-    min-height: 960px;
+    width: 100%;
+    max-width: 1280px; /* Пример максимальной ширины */
+    height: auto;
 }
 
-video, canvas {
+#preloader {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    font-family: 'CoFoSans-Medium', sans-serif;
+    letter-spacing: -2px;
+    color: blue;
+    font-size: 120px;
+    z-index: 20;
+}
+
+video, canvas {
+    transform: scaleX(-1); /* Отражение */
+    width: 100%; /* Чтобы растягиваться на всю ширину контейнера */
 }
 
 video {
@@ -28,5 +54,8 @@ video {
 }
 
 canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
     z-index: 10;
 }
