@@ -1,15 +1,51 @@
+@font-face {
+    font-family: 'CoFoSans-Medium';
+    src: url('https://mishaivanov.ru/fonts/CoFoSans-Medium.woff2') format('woff2');
+    font-weight: normal;
+}
+
+@font-face {
+    font-family: 'CoFoSans-Regular';
+    src: url('https://mishaivanov.ru/fonts/CoFoSans-Regular.woff2') format('woff2');
+    font-weight: normal;
+}
+
 body, html {
-  height: 100%;
-  margin: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: black;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+#videoContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    max-width: 1280px; /* Уточняем максимальную ширину */
+    height: 480px; /* Устанавливаем высоту, чтобы соответствовать размеру холста */
+}
+
+#preloader {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'CoFoSans-Medium', sans-serif;
+    letter-spacing: -2px;
+    color: blue;
+    font-size: 120px;
+    z-index: 20;
 }
 
 canvas {
-  max-width: 100%;
-  max-height: 100vh;
-  /* Отражаем канвас, если требуется эффект зеркала, но это также отразит контент канваса */
-  transform: scale(-1, 1);
-}
+    filter: grayscale(1);
+    transform: scaleX(1);
+    max-width: 100%;
+    max-height: 480px;
+    margin: auto;
