@@ -1,6 +1,6 @@
-const repoOwner = 'whatmisha'; // имя пользователя на GitHub
-const repoName = 'mishaivanov.ru';  // название репозитория
-const path = 'js/camera'; // путь к папке в репозитории
+const repoOwner = 'whatmisha';
+const repoName = 'mishaivanov.ru';
+const path = 'js/camera';
 
 fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`)
     .then(response => response.json())
@@ -15,7 +15,7 @@ fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`)
                 const link = document.createElement('a');
                 link.href = projectUrl;
                 link.textContent = item.name;
-                link.target = '_blank'; // Открывать в новой вкладке
+                link.target = '_blank';
 
                 const listItem = document.createElement('div');
                 listItem.appendChild(link);
@@ -25,5 +25,5 @@ fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${path}`)
     })
     .catch(error => {
         console.error('Ошибка при получении данных с GitHub:', error);
-        document.getElementById('project-list').textContent = 'Ошибка загрузки проектов.';
+        document.getElementById('project-list').textContent = 'Error loading projects';
     });
