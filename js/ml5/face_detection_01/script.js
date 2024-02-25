@@ -14,7 +14,13 @@ async function setupCamera() {
 }
 
 async function loadModel() {
-    return await blazeface.load();
+    try {
+        const model = await blazeface.load();
+        console.log('Модель успешно загружена.');
+        return model;
+    } catch (error) {
+        console.error('Ошибка при загрузке модели:', error);
+    }
 }
 
 async function detect(net) {
