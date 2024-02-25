@@ -13,19 +13,8 @@ async function setupCamera() {
     });
 }
 
-async function loadHandpose() {
-    return await handpose.load();
-}
-
-function applyGrayscaleToImageData(imageData) {
-    let data = imageData.data;
-    for (let i = 0; i < data.length; i += 4) {
-        let gray = data[i] * 0.3 + data[i + 1] * 0.59 + data[i + 2] * 0.11;
-        data[i] = gray;
-        data[i + 1] = gray;
-        data[i + 2] = gray;
-    }
-    return imageData;
+async function loadModel() {
+    return await blazeface.load();
 }
 
 async function detect(net) {
@@ -39,19 +28,19 @@ async function detect(net) {
 
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    imageData = applyGrayscaleToImageData(imageData);
-    ctx.putImageData(imageData, 0, 0);
+    const predictions = await net.estimateFaces(video, false);
 
-    const predictions = await net.estimateHands(video);
     predictions.forEach(prediction => {
-        const landmarks = prediction.landmarks;
-        landmarks.forEach(([x, y]) => {
-            ctx.beginPath();
-            ctx.arc(x, y, 5, 0, 2 * Math.PI);
-            ctx.fillStyle = 'blue';
-            ctx.fill();
-        });
+        const start = prediction.topLeft;
+        const end = prediction.bottomRight;
+        const size = [end[0] - start[0], end[1] - start[1]];
+
+        // Рисуем прямоугольник вокруг лица
+        ctx.beginPath();
+        ctx.strokeStyle = 'blue';
+        ctx.lineWidth = 20;
+        ctx.rect(start[0], start[1], size[0], size[1]);
+        ctx.stroke();
     });
 
     requestAnimationFrame(() => detect(net));
@@ -60,8 +49,8 @@ async function detect(net) {
 async function main() {
     await setupCamera();
     video.play();
-    const net = await loadHandpose();
-    document.getElementById('preloader').style.display = 'none'; // Скрываем прелоадер
+    const net = await loadModel();
+    document.getElementById('preloader').style.display = 'none';
     detect(net);
 }
 
