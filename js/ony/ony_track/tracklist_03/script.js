@@ -66,15 +66,10 @@ function adjustFontSize() {
         // Добавляем обработчики с учетом соседних букв
         spans.forEach((span, index) => {
             span.addEventListener('mouseover', () => {
-                // Получаем все spans из соседних элементов списка
-                const currentItem = span.closest('li');
-                const allItems = Array.from(document.querySelectorAll('.tracklist li'));
-                const currentItemIndex = allItems.indexOf(currentItem);
-                
                 // Расширяем текущую букву максимально
                 span.style.fontVariationSettings = "'wdth' 1000";
                 
-                // Расширяем соседние буквы в текущей строке
+                // Расширяем соседние буквы с убывающим эффектом
                 for (let i = 1; i <= 2; i++) {
                     if (spans[index - i]) {
                         spans[index - i].style.fontVariationSettings = `'wdth' ${1000 - i * 200}`;
@@ -83,33 +78,19 @@ function adjustFontSize() {
                         spans[index + i].style.fontVariationSettings = `'wdth' ${1000 - i * 200}`;
                     }
                 }
-                
-                // Обрабатываем только одну строку выше и одну строку ниже
-                [-1, 1].forEach(offset => {
-                    const neighborItem = allItems[currentItemIndex + offset];
-                    if (neighborItem) {
-                        const neighborSpans = Array.from(neighborItem.querySelectorAll('span'));
-                        if (neighborSpans[index]) {
-                            neighborSpans[index].style.fontVariationSettings = `'wdth' 800`;
-                        }
-                        // Соседние буквы в соседней строке
-                        for (let j = 1; j <= 2; j++) {
-                            if (neighborSpans[index - j]) {
-                                neighborSpans[index - j].style.fontVariationSettings = `'wdth' ${800 - j * 200}`;
-                            }
-                            if (neighborSpans[index + j]) {
-                                neighborSpans[index + j].style.fontVariationSettings = `'wdth' ${800 - j * 200}`;
-                            }
-                        }
-                    }
-                });
             });
             
             span.addEventListener('mouseout', () => {
-                // Сбрасываем все span элементы на странице
-                document.querySelectorAll('.tracklist li span').forEach(span => {
-                    span.style.fontVariationSettings = "'wdth' 500";
-                });
+                // Возвращаем нормальную ширину для текущей и соседних букв
+                span.style.fontVariationSettings = "'wdth' 500";
+                for (let i = 1; i <= 2; i++) {
+                    if (spans[index - i]) {
+                        spans[index - i].style.fontVariationSettings = "'wdth' 500";
+                    }
+                    if (spans[index + i]) {
+                        spans[index + i].style.fontVariationSettings = "'wdth' 500";
+                    }
+                }
             });
         });
     });
@@ -143,4 +124,46 @@ let resizeTimeout;
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(adjustFontSize, 100);
+});
+
+document.addEventListener('mousemove', function(e) {
+    const letters = document.querySelectorAll('.letter');
+    const cursorX = e.clientX;
+    const defaultWidth = 400;
+    
+    // Сначала посчитаем, сколько "лишней" ширины добавляется при расширении
+    let expansionSum = 0;
+    let expandedLettersCount = 0;
+    
+    letters.forEach(letter => {
+        const rect = letter.getBoundingClientRect();
+        const distance = Math.abs(cursorX - (rect.left + rect.width / 2));
+        
+        if (distance < rect.width * 3) {
+            const expansion = Math.max(0, 1 - distance / (rect.width * 3));
+            expansionSum += expansion * 600; // расширение до 1000
+            expandedLettersCount++;
+        }
+    });
+    
+    // Вычисляем, насколько нужно сузить остальные буквы
+    const remainingLetters = letters.length - expandedLettersCount;
+    const narrowingPerLetter = remainingLetters > 0 ? expansionSum / remainingLetters : 0;
+    
+    // Применяем эффекты
+    letters.forEach(letter => {
+        const rect = letter.getBoundingClientRect();
+        const distance = Math.abs(cursorX - (rect.left + rect.width / 2));
+        
+        if (distance < rect.width * 3) {
+            // Расширяем буквы около курсора
+            const expansion = Math.max(0, 1 - distance / (rect.width * 3));
+            const newWidth = defaultWidth + (expansion * 600);
+            letter.style.fontVariationSettings = `'wdth' ${newWidth}`;
+        } else {
+            // Сужаем остальные буквы
+            const newWidth = Math.max(100, defaultWidth - narrowingPerLetter);
+            letter.style.fontVariationSettings = `'wdth' ${newWidth}`;
+        }
+    });
 }); 
