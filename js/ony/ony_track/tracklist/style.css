@@ -18,7 +18,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  width: 100%;
+  width: calc(100% - 40px);
 }
 
 .text-line {
