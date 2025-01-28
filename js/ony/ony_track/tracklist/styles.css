@@ -12,13 +12,13 @@ body {
   padding: 20px;
   min-height: 100vh;
   font-family: 'Ony Track';
-  font-size: 24px;
 }
 
 .tracklist {
   display: flex;
   flex-direction: column;
   gap: 20px;
+  width: 100%;
 }
 
 .text-line {
