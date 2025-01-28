@@ -2,6 +2,16 @@ let video;
 let poseNet;
 let poses = [];
 
+// В начале файла добавим стиль
+let style = document.createElement('style');
+style.textContent = `
+    .variable-font {
+        font-family: 'Ony Track VGX';
+        font-variation-settings: 'wdth' 1000;
+    }
+`;
+document.head.appendChild(style);
+
 function setup() {
     createCanvas(windowWidth, windowHeight);
     video = createCapture(VIDEO);
@@ -82,13 +92,16 @@ function draw() {
             leftEye.score > 0.2 && rightEye.score > 0.2 && nose.score > 0.2) {
             
             let widthValue = calculateWidth(nose, leftEye, rightEye);
-            document.body.style.fontVariationSettings = `'wdth' ${widthValue}`;
             
-            // Отладочная информация
-            console.log('Nose position:', nose.position.x);
-            console.log('Center position:', (leftEye.position.x + rightEye.position.x) / 2);
-            console.log('Font width set to:', widthValue);
+            // Обновляем стиль для класса
+            style.textContent = `
+                .variable-font {
+                    font-family: 'Ony Track VGX';
+                    font-variation-settings: 'wdth' ${widthValue};
+                }
+            `;
             
+            // Отрисовка с применением стиля
             if (leftEye.score > 0.2) {
                 let scaledX = (leftEye.position.x / 640) * w + x;
                 let scaledY = (leftEye.position.y / 480) * h + y;
@@ -97,6 +110,8 @@ function draw() {
                 push();
                 translate(scaledX, scaledY);
                 scale(-1, 1);
+                drawingContext.font = `180px "Ony Track VGX"`;
+                drawingContext.fontVariationSettings = `'wdth' ${widthValue}`;
                 text('O', 0, 0);
                 pop();
             }
@@ -109,6 +124,8 @@ function draw() {
                 push();
                 translate(scaledX, scaledY);
                 scale(-1, 1);
+                drawingContext.font = `180px "Ony Track VGX"`;
+                drawingContext.fontVariationSettings = `'wdth' ${widthValue}`;
                 text('N', 0, 0);
                 pop();
             }
@@ -121,9 +138,13 @@ function draw() {
                 push();
                 translate(scaledX, scaledY);
                 scale(-1, 1);
+                drawingContext.font = `180px "Ony Track VGX"`;
+                drawingContext.fontVariationSettings = `'wdth' ${widthValue}`;
                 text('Y', 0, 0);
                 pop();
             }
+            
+            console.log('Width value:', widthValue);
         }
     }
     
