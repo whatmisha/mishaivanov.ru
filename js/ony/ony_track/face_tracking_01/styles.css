@@ -1,0 +1,14 @@
+@font-face {
+    font-family: 'Ony Track VGX';
+    src: url('font/Ony_Track_VGX.woff2') format('woff2-variations');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+    font-variation-settings: 'wdth' 400;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
