@@ -2,6 +2,9 @@ let video;
 let poseNet;
 let poses = [];
 let letterO, letterN, letterY;
+let labelDivs = {};
+let currentPositions = {};
+let labelCurrentPositions = {};
 
 // В начале файла добавим стиль
 let style = document.createElement('style');
@@ -29,26 +32,21 @@ function setup() {
     letterN = createDiv('N');
     letterY = createDiv('Y');
     
-    // Стилизуем элементы
+    // Стилизуем элементы - убираем scaleX(-1)
     const letterStyle = `
         position: absolute;
         font-family: 'Ony Track VGX';
         font-size: 180px;
         color: rgb(0, 255, 0);
-        transform: scaleX(-1) translate(-50%, -50%);
+        transform: translate(-50%, -50%);
         pointer-events: none;
         text-align: center;
+        z-index: 1000;
     `;
     
     letterO.style(letterStyle);
     letterN.style(letterStyle);
     letterY.style(letterStyle);
-
-    setTimeout(() => {
-        letterO.style('font-variation-settings', '"wdth" 100');
-        letterN.style('font-variation-settings', '"wdth" 500');
-        letterY.style('font-variation-settings', '"wdth" 1000');
-    }, 1000);
 }
 
 function modelReady() {
@@ -91,6 +89,13 @@ function drawVariableText(x, y, text, width) {
     ctx.restore();
 }
 
+function smoothPosition(current, target, smoothing = 0.2) {
+    return {
+        x: lerp(current.x || target.x, target.x, smoothing),
+        y: lerp(current.y || target.y, target.y, smoothing)
+    };
+}
+
 function draw() {
     background(0);
     
@@ -119,6 +124,56 @@ function draw() {
     if (poses.length > 0) {
         let pose = poses[0].pose;
         
+        // Отрисовка всех ключевых точек
+        for (let keypoint of pose.keypoints) {
+            if (keypoint.part === 'leftEye' || keypoint.part === 'rightEye' || keypoint.part === 'nose') {
+                continue;
+            }
+            
+            if (keypoint.score > 0.2) {
+                let scaledX = (keypoint.position.x / 640) * w + x;
+                let scaledY = (keypoint.position.y / 480) * h + y;
+                
+                // Инициализируем текущую позицию, если её нет
+                if (!labelCurrentPositions[keypoint.part]) {
+                    labelCurrentPositions[keypoint.part] = { x: scaledX, y: scaledY };
+                }
+                
+                // Сглаживаем движение
+                labelCurrentPositions[keypoint.part] = smoothPosition(
+                    labelCurrentPositions[keypoint.part],
+                    { x: scaledX, y: scaledY },
+                    0.1 // Меньшее значение = более плавное движение
+                );
+                
+                let smoothX = labelCurrentPositions[keypoint.part].x;
+                let smoothY = labelCurrentPositions[keypoint.part].y;
+                
+                fill(0, 255, 0);
+                noStroke();
+                ellipse(smoothX, smoothY, 10, 10);
+                
+                if (!labelDivs[keypoint.part]) {
+                    labelDivs[keypoint.part] = createDiv(keypoint.part);
+                    labelDivs[keypoint.part].style(`
+                        position: absolute;
+                        font-family: 'Ony Track VGX';
+                        color: rgb(0, 255, 0);
+                        pointer-events: none;
+                        font-size: 24px;
+                        font-variation-settings: 'wdth' 500;
+                    `);
+                }
+                
+                if (keypoint.part === 'leftEar') {
+                    labelDivs[keypoint.part].style('text-align', 'right');
+                    labelDivs[keypoint.part].position(width - smoothX - 70, smoothY - 12);
+                } else {
+                    labelDivs[keypoint.part].position(width - smoothX + 15, smoothY - 12);
+                }
+            }
+        }
+        
         let leftEye = pose.keypoints.find(k => k.part === 'leftEye');
         let rightEye = pose.keypoints.find(k => k.part === 'rightEye');
         let nose = pose.keypoints.find(k => k.part === 'nose');
@@ -127,32 +182,37 @@ function draw() {
             leftEye.score > 0.2 && rightEye.score > 0.2 && nose.score > 0.2) {
             
             let widthValue = calculateWidth(nose, leftEye, rightEye);
-            console.log('Width value:', widthValue);
             
-            // Обновляем позиции и стили букв
-            if (leftEye.score > 0.2) {
-                let scaledX = (leftEye.position.x / 640) * w + x;
-                let scaledY = (leftEye.position.y / 480) * h + y;
-                letterO.position(width - scaledX, scaledY);
-                letterO.style('font-variation-settings', `"wdth" ${widthValue}`);
-                letterO.style('transform', `scaleX(-1) translate(-50%, -50%)`);
-            }
+            // Сглаживаем движение букв
+            ['leftEye', 'rightEye', 'nose'].forEach(part => {
+                let point = pose.keypoints.find(k => k.part === part);
+                let scaledX = (point.position.x / 640) * w + x;
+                let scaledY = (point.position.y / 480) * h + y;
+                
+                if (!currentPositions[part]) {
+                    currentPositions[part] = { x: scaledX, y: scaledY };
+                }
+                
+                currentPositions[part] = smoothPosition(
+                    currentPositions[part],
+                    { x: scaledX, y: scaledY },
+                    0.1
+                );
+            });
             
-            if (rightEye.score > 0.2) {
-                let scaledX = (rightEye.position.x / 640) * w + x;
-                let scaledY = (rightEye.position.y / 480) * h + y;
-                letterN.position(width - scaledX, scaledY);
-                letterN.style('font-variation-settings', `"wdth" ${widthValue}`);
-                letterN.style('transform', `scaleX(-1) translate(-50%, -50%)`);
-            }
+            // Обновляем позиции букв с использованием сглаженных координат
+            letterO.position(width - currentPositions['leftEye'].x, currentPositions['leftEye'].y);
+            letterN.position(width - currentPositions['rightEye'].x, currentPositions['rightEye'].y);
+            letterY.position(width - currentPositions['nose'].x, currentPositions['nose'].y + 30);
             
-            if (nose.score > 0.2) {
-                let scaledX = (nose.position.x / 640) * w + x;
-                let scaledY = ((nose.position.y / 480) * h + y) + 30;
-                letterY.position(width - scaledX, scaledY);
-                letterY.style('font-variation-settings', `"wdth" ${widthValue}`);
-                letterY.style('transform', `scaleX(-1) translate(-50%, -50%)`);
-            }
+            // Сглаживаем изменение ширины
+            if (!currentPositions.width) currentPositions.width = widthValue;
+            currentPositions.width = lerp(currentPositions.width, widthValue, 0.1);
+            
+            // Применяем сглаженную ширину
+            letterO.style('font-variation-settings', `"wdth" ${currentPositions.width}`);
+            letterN.style('font-variation-settings', `"wdth" ${currentPositions.width}`);
+            letterY.style('font-variation-settings', `"wdth" ${currentPositions.width}`);
         }
     }
     
