@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'OnyTrack';
-  src: url('/font/Ony_Track_VGX.ttf') format('truetype');
+  src: url('./Ony_Track_VGX.woff2') format('woff2');
 }
 
 body {
