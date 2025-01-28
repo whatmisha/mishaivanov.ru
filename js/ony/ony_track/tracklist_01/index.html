@@ -1,55 +1,39 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Font Preview</title>
-  <link rel="stylesheet" href="styles.css">
-  <style>
-    @font-face {
-      font-family: 'Ony Track';
-      src: url('https://mishaivanov.ru/js/ony/ony_track/tracklist_01/font/Ony_Track_VGX.woff2') format('woff2');
-      font-weight: normal;
-      font-style: normal;
-    }
+    <meta charset="UTF-8">
+    <title>ONY Tracklist</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .custom-list {
+            list-style: none;
+            counter-reset: item;
+        }
 
-    body {
-      background-color: black;
-      color: white;
-      margin: 0;
-      padding: 20px;
-      min-height: 100vh;
-      font-family: 'Ony Track';
-    }
-
-    .tracklist {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-      width: 90%;
-      margin: auto;
-      text-align: center;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-    .text-line {
-      display: block;
-      width: 100%;
-      white-space: nowrap;
-      font-size: 24px;
-    }
-  </style>
+        .custom-list li::before {
+            counter-increment: item;
+            content: counter(item, decimal-leading-zero) " ";
+            font-size: 48px;
+            font-variation-settings: 'wdth' 200;
+            margin-right: 10px;
+            display: inline-block;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="text-line">Tracklist:</div>
-    <div class="text-line">1. King Geedorah — Monster Zero</div>
-    <div class="text-line">2. Run The Jewels — Legend Has It</div>
-    <div class="text-line">3. J Dilla — In The Streets</div>
-  </div>
-  <script src="script.js"></script>
+    <div class="tracklist">
+        <h1>ONY Tracklist</h1>
+        <ol class="custom-list">
+            <li>King Geedorah — Monster Zero</li>
+            <li>Run The Jewels — Legend Has It</li>
+            <li>J Dilla — In The Streets</li>
+            <li>Bublle Grog — Indian Tiger Hunting</li>
+            <li>OL — Roaming</li>
+            <li>Kunteynir — Без Косметики</li>
+            <li>Tigran Hamasyan — Poem</li>
+
+        </ol>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>

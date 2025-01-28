@@ -1,9 +1,10 @@
 @font-face {
     font-family: 'Ony Track VGX';
-    src: url('font/Ony_Track_VGX.woff2') format('woff2');
+    src: url('font/Ony_Track_VGX.woff2') format('woff2-variations');
     font-weight: normal;
     font-style: normal;
     font-display: swap;
+    font-variation-settings: 'wdth' 400;
 }
 
 body {
@@ -26,7 +27,7 @@ body {
     margin: 0;
     font-size: 48px;
     font-weight: normal;
-    font-variation-settings: 'wdth' 500;
+    font-variation-settings: 'wdth' 400;
 }
 
 .tracklist ol {

@@ -1,3 +1,10 @@
+// Устанавливаем начальный цвет фона светло-серым и добавляем transition
+document.body.style.backgroundColor = 'hsl(0, 0%, 95%)';
+document.body.style.transition = 'background-color 0.8s';
+
+// Добавляем переменную для отслеживания текущего типа цвета
+let isLightColor = true;
+
 function adjustFontSize() {
     const items = document.querySelectorAll('.tracklist li');
     const viewportWidth = window.innerWidth * 0.97;
@@ -50,6 +57,28 @@ function adjustFontSize() {
     items.forEach(item => {
         item.style.fontSize = fontSize + 'vw';
         item.style.visibility = 'visible';
+        
+        let currentHue, currentSaturation;
+        
+        // Обработчик наведения - только генерирует новый цвет
+        item.addEventListener('mouseenter', () => {
+            currentHue = Math.floor(Math.random() * 360);
+            currentSaturation = Math.floor(Math.random() * 30) + 60; // 60-90%
+        });
+        
+        // Обработчик движения мыши - обновляет яркость
+        item.addEventListener('mousemove', (e) => {
+            if (currentHue === undefined) {
+                currentHue = Math.floor(Math.random() * 360);
+                currentSaturation = Math.floor(Math.random() * 30) + 60;
+            }
+            
+            const mouseXRatio = e.clientX / window.innerWidth;
+            const lightness = Math.floor(20 + (mouseXRatio * 70));
+            
+            const newColor = `hsl(${currentHue}, ${currentSaturation}%, ${lightness}%)`;
+            document.body.style.backgroundColor = newColor;
+        });
         
         // Очищаем и заново создаем спаны
         const text = item.textContent;
@@ -124,4 +153,46 @@ let resizeTimeout;
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(adjustFontSize, 100);
+});
+
+document.addEventListener('mousemove', function(e) {
+    const letters = document.querySelectorAll('.letter');
+    const cursorX = e.clientX;
+    const defaultWidth = 400;
+    
+    // Сначала посчитаем, сколько "лишней" ширины добавляется при расширении
+    let expansionSum = 0;
+    let expandedLettersCount = 0;
+    
+    letters.forEach(letter => {
+        const rect = letter.getBoundingClientRect();
+        const distance = Math.abs(cursorX - (rect.left + rect.width / 2));
+        
+        if (distance < rect.width * 3) {
+            const expansion = Math.max(0, 1 - distance / (rect.width * 3));
+            expansionSum += expansion * 600; // расширение до 1000
+            expandedLettersCount++;
+        }
+    });
+    
+    // Вычисляем, насколько нужно сузить остальные буквы
+    const remainingLetters = letters.length - expandedLettersCount;
+    const narrowingPerLetter = remainingLetters > 0 ? expansionSum / remainingLetters : 0;
+    
+    // Применяем эффекты
+    letters.forEach(letter => {
+        const rect = letter.getBoundingClientRect();
+        const distance = Math.abs(cursorX - (rect.left + rect.width / 2));
+        
+        if (distance < rect.width * 3) {
+            // Расширяем буквы около курсора
+            const expansion = Math.max(0, 1 - distance / (rect.width * 3));
+            const newWidth = defaultWidth + (expansion * 600);
+            letter.style.fontVariationSettings = `'wdth' ${newWidth}`;
+        } else {
+            // Сужаем остальные буквы
+            const newWidth = Math.max(100, defaultWidth - narrowingPerLetter);
+            letter.style.fontVariationSettings = `'wdth' ${newWidth}`;
+        }
+    });
 }); 
