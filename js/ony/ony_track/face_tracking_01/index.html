@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Тайптестер с фейстрекингом</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-    <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
+    <script src="https://unpkg.com/ml5@0.5.0/dist/ml5.min.js" type="text/javascript"></script>
     <style>
         body {
             margin: 0;
@@ -18,37 +18,52 @@
     <script>
         let video;
 
+        // Проверяем загрузку ml5.js
+        window.addEventListener('load', function() {
+            if (typeof ml5 === 'undefined') {
+                console.error('ml5.js не загружен!');
+            } else {
+                console.log('ml5.js успешно загружен');
+                console.log('Версия ml5:', ml5.version);
+                console.log('Доступные методы:', Object.keys(ml5));
+            }
+        });
+
         function setup() {
             createCanvas(windowWidth, windowHeight);
             video = createCapture(VIDEO);
             video.size(640, 480);
             video.hide();
+            
+            // Дополнительная проверка ml5 в setup
+            if (typeof ml5 !== 'undefined') {
+                console.log('ml5 доступен в setup');
+                console.log('Методы:', Object.keys(ml5));
+            }
         }
 
         function draw() {
-            background(255);
+            background(0);
             
             push();
             translate(width, 0);
             scale(-1, 1);
             
-            // Используем фиксированное соотношение сторон 4:3
             let videoAspect = 4/3;
             let windowAspect = width / height;
-            let w = width;
-            let h = height;
-            let x = 0;
-            let y = 0;
+            
+            let w, h;
             
             if (windowAspect > videoAspect) {
-                // Окно шире видео
-                w = height * videoAspect;
-                x = (width - w) / 2;
-            } else {
-                // Окно уже видео
+                w = width;
                 h = width / videoAspect;
-                y = (height - h) / 2;
+            } else {
+                h = height;
+                w = height * videoAspect;
             }
+            
+            let x = (width - w) / 2;
+            let y = (height - h) / 2;
             
             image(video, x, y, w, h);
             
