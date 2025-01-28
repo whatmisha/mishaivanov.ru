@@ -1,17 +1,58 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <title>Font Preview</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    @font-face {
+      font-family: 'Ony Track';
+      src: url('https://mishaivanov.ru/js/ony/ony_track/tracklist/font/Ony_Track_VGX.woff2') format('woff2');
+      font-weight: normal;
+      font-style: normal;
+    }
+
+    body {
+      background-color: black;
+      color: white;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+      font-family: 'Ony Track';
+    }
+
+    .tracklist {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      width: calc(100% - 40px);
+    }
+
+    .text-line {
+      display: block;
+      width: 100%;
+      white-space: nowrap;
+      font-size: 24px;
+    }
+  </style>
 </head>
 <body>
   <div class="tracklist">
-    <span class="text-line" data-text="Tracklist:"></span>
-    <span class="text-line" data-text="1. King Geedorah — Monster Zero"></span>
-    <span class="text-line" data-text="2. Run The Jewels — Legend Has It"></span>
-    <span class="text-line" data-text="3. J Dilla — In The Streets"></span>
+    <span class="text-line" style="font-variation-settings: 'wdth' 100;">Tracklist:</span>
+    <span class="text-line" style="font-variation-settings: 'wdth' 400;">1. King Geedorah — Monster Zero</span>
+    <span class="text-line" style="font-variation-settings: 'wdth' 700;">2. Run The Jewels — Legend Has It</span>
+    <span class="text-line" style="font-variation-settings: 'wdth' 1000;">3. J Dilla — In The Streets</span>
   </div>
-  <script src="script.js"></script>
+
+  <script>
+    // Проверяем загрузку шрифта
+    document.fonts.ready.then(() => {
+      console.log('Все шрифты загружены');
+      
+      // Проверяем, загрузился ли наш конкретный шрифт
+      const font = document.fonts.check('12px "Ony Track"');
+      console.log('Ony Track загружен:', font);
+    });
+  </script>
 </body>
 </html>
