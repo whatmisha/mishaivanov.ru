@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'OnyTrack';
-  src: url('./Ony_Track_VGX.woff2') format('woff2');
+  src: url('./font/Ony_Track_VGX.woff2') format('woff2');
 }
 
 body {
@@ -17,11 +17,15 @@ body {
 
 .container {
   text-align: left;
+  width: 100%;
 }
 
-.container p {
-  font-size: 240px;
-  line-height: 1.2;
+.line {
   margin: 0;
+  text-align: center;
   white-space: nowrap;
+  font-size: 10vw; /* Размер текста зависит от ширины экрана */
+  line-height: 1.2;
+  font-variation-settings: 'wdth' 100; /* Установим минимальную ширину текста */
+  transition: font-variation-settings 0.3s ease;
 }
