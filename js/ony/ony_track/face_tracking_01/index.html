@@ -36,9 +36,8 @@
                 poses = results;
             });
             
-            // Используем шрифт напрямую, без loadFont
             textAlign(CENTER, CENTER);
-            textSize(30);
+            textSize(120);
             textFont('Ony Track VGX');
         }
 
@@ -92,7 +91,7 @@
                     let scaledY = (rightEye.position.y / 480) * h + y;
                     fill(0, 255, 0);
                     noStroke();
-                    text('N', scaledX, scaledY);
+                    text('И', scaledX, scaledY);
                 }
                 
                 if (nose && nose.score > 0.2) {
