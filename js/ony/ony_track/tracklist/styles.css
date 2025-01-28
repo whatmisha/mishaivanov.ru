@@ -22,10 +22,9 @@ body {
 
 .line {
   margin: 0;
-  text-align: center;
   white-space: nowrap;
-  font-size: 10vw; /* Размер текста зависит от ширины экрана */
+  font-size: 10vw; /* Фиксированный базовый размер текста */
   line-height: 1.2;
-  font-variation-settings: 'wdth' 100; /* Установим минимальную ширину текста */
-  transition: font-variation-settings 0.3s ease;
+  font-variation-settings: 'wdth' 100; /* Начальное значение оси wdth */
+  text-align: center;
 }
