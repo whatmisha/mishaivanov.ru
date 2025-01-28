@@ -1,6 +1,6 @@
-// Устанавливаем начальный цвет фона и добавляем transition
-document.body.style.backgroundColor = '#ffffff';
-document.body.style.transition = 'background-color 0.3s';
+// Устанавливаем начальный цвет фона светло-серым и добавляем transition
+document.body.style.backgroundColor = 'hsl(0, 0%, 95%)';
+document.body.style.transition = 'background-color 0.8s';
 
 // Добавляем переменную для отслеживания текущего типа цвета
 let isLightColor = true;
@@ -58,22 +58,25 @@ function adjustFontSize() {
         item.style.fontSize = fontSize + 'vw';
         item.style.visibility = 'visible';
         
-        // Добавляем обработчик наведения на весь элемент списка
-        item.addEventListener('mouseenter', (e) => {
-            // Получаем положение курсора относительно ширины окна (0 до 1)
+        let currentHue, currentSaturation;
+        
+        // Обработчик наведения - только генерирует новый цвет
+        item.addEventListener('mouseenter', () => {
+            currentHue = Math.floor(Math.random() * 360);
+            currentSaturation = Math.floor(Math.random() * 30) + 60; // 60-90%
+        });
+        
+        // Обработчик движения мыши - обновляет яркость
+        item.addEventListener('mousemove', (e) => {
+            if (currentHue === undefined) {
+                currentHue = Math.floor(Math.random() * 360);
+                currentSaturation = Math.floor(Math.random() * 30) + 60;
+            }
+            
             const mouseXRatio = e.clientX / window.innerWidth;
-            
-            // Генерируем случайный цвет в формате HSL
-            const hue = Math.floor(Math.random() * 360);
-            const saturation = Math.floor(Math.random() * 30) + 60; // 60-90%
-            
-            // Рассчитываем яркость на основе положения курсора
-            // При mouseXRatio = 0 (левый край) яркость будет 20%
-            // При mouseXRatio = 1 (правый край) яркость будет 90%
             const lightness = Math.floor(20 + (mouseXRatio * 70));
             
-            const newColor = `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-            console.log('Changing background color to:', newColor, 'Lightness:', lightness);
+            const newColor = `hsl(${currentHue}, ${currentSaturation}%, ${lightness}%)`;
             document.body.style.backgroundColor = newColor;
         });
         
