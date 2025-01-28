@@ -1,30 +1,28 @@
 @font-face {
-  font-family: 'OnyTrack';
-  src: url('./font/Ony_Track_VGX.woff2') format('woff2');
+  font-family: 'Ony Track';
+  src: url('/font/Ony_Track_VGX.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
 }
 
 body {
-  margin: 0;
   background-color: black;
   color: white;
-  font-family: 'OnyTrack', sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  overflow: hidden;
-}
-
-.container {
-  text-align: left;
-  width: 100%;
-}
-
-.line {
   margin: 0;
+  padding: 20px;
+  min-height: 100vh;
+  font-family: 'Ony Track';
+  font-size: 24px;
+}
+
+.tracklist {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.text-line {
+  display: block;
+  width: 100%;
   white-space: nowrap;
-  font-size: 10vw; /* Фиксированный базовый размер текста */
-  line-height: 1.2;
-  font-variation-settings: 'wdth' 100; /* Начальное значение оси wdth */
-  text-align: center;
 }
