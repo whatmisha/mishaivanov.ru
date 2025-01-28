@@ -1,0 +1,18 @@
+.container {
+  width: 90%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  line-height: 1;
+  font-size: 0;
+}
+
+.text-line {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+  display: block;
+  line-height: 1;
+} 
