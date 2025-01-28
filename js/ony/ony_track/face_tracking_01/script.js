@@ -5,6 +5,7 @@ let letterO, letterN, letterY;
 let labelDivs = {};
 let currentPositions = {};
 let labelCurrentPositions = {};
+let videoBuffer;
 
 // В начале файла добавим стиль
 let style = document.createElement('style');
@@ -119,7 +120,15 @@ function draw() {
     let x = (width - w) / 2;
     let y = (height - h) / 2;
     
-    image(video, x, y, w, h);
+    // Создаем отдельный графический буфер для видео
+    if (!videoBuffer) {
+        videoBuffer = createGraphics(w, h);
+    }
+    videoBuffer.image(video, 0, 0, w, h);
+    videoBuffer.filter(GRAY);
+    
+    // Отображаем обработанное видео
+    image(videoBuffer, x, y, w, h);
     
     if (poses.length > 0) {
         let pose = poses[0].pose;
