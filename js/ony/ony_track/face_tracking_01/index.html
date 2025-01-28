@@ -5,72 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Тайптестер с фейстрекингом</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-    <script src="https://unpkg.com/ml5@0.12.2/dist/ml5.min.js"></script>
+    <script src="https://unpkg.com/ml5@latest/dist/ml5.min.js"></script>
     <style>
         body {
             margin: 0;
             padding: 0;
             overflow: hidden;
         }
-        video {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            object-fit: cover;
-        }
     </style>
 </head>
 <body>
     <script>
         let video;
-        let faceapi;
-        let detections = [];
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
             video = createCapture(VIDEO);
-            video.size(windowWidth, windowHeight);
+            video.size(640, 480);
             video.hide();
-            
-            console.log('Видео инициализировано');
-            console.log('Версия ml5:', ml5.version);
-            
-            faceapi = ml5.FaceMesh(video, modelReady);
-        }
-
-        function modelReady() {
-            console.log('Модель FaceMesh загружена');
-            faceapi.predict(gotFaces);
-        }
-
-        function gotFaces(error, result) {
-            if (error) {
-                console.log(error);
-                return;
-            }
-            detections = result;
-            faceapi.predict(gotFaces);
         }
 
         function draw() {
             background(255);
-            if (video) {
-                image(video, 0, 0, width, height);
+            
+            push();
+            translate(width, 0);
+            scale(-1, 1);
+            
+            // Используем фиксированное соотношение сторон 4:3
+            let videoAspect = 4/3;
+            let windowAspect = width / height;
+            let w = width;
+            let h = height;
+            let x = 0;
+            let y = 0;
+            
+            if (windowAspect > videoAspect) {
+                // Окно шире видео
+                w = height * videoAspect;
+                x = (width - w) / 2;
+            } else {
+                // Окно уже видео
+                h = width / videoAspect;
+                y = (height - h) / 2;
             }
             
-            if (detections.length > 0) {
-                for (let i = 0; i < detections.length; i++) {
-                    const keypoints = detections[i].scaledMesh;
-                    for (let j = 0; j < keypoints.length; j++) {
-                        const [x, y] = keypoints[j];
-                        stroke(0, 255, 0);
-                        strokeWeight(4);
-                        point(x, y);
-                    }
-                }
-            }
+            image(video, x, y, w, h);
+            
+            pop();
         }
 
         function windowResized() {
