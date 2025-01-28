@@ -44,24 +44,12 @@
   </style>
 </head>
 <body>
-  <div class="tracklist">
-    <span class="text-line" style="font-variation-settings: 'wdth' 500;">Tracklist:</span>
-    <span class="text-line" style="font-variation-settings: 'wdth' 500;">1. King Geedorah — Monster Zero</span>
-    <span class="text-line" style="font-variation-settings: 'wdth' 500;">2. Run The Jewels — Legend Has It</span>
-    <span class="text-line" style="font-variation-settings: 'wdth' 500;">3. J Dilla — In The Streets</span>
+  <div class="container">
+    <div class="text-line">Tracklist:</div>
+    <div class="text-line">1. King Geedorah — Monster Zero</div>
+    <div class="text-line">2. Run The Jewels — Legend Has It</div>
+    <div class="text-line">3. J Dilla — In The Streets</div>
   </div>
-
-
-
-  <script>
-    // Проверяем загрузку шрифта
-    document.fonts.ready.then(() => {
-      console.log('Все шрифты загружены');
-      
-      // Проверяем, загрузился ли наш конкретный шрифт
-      const font = document.fonts.check('12px "Ony Track"');
-      console.log('Ony Track загружен:', font);
-    });
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
