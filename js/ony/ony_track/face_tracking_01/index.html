@@ -17,6 +17,8 @@
 <body>
     <script>
         let video;
+        let poseNet;
+        let poses = [];
 
         // Проверяем загрузку ml5.js
         window.addEventListener('load', function() {
@@ -35,11 +37,17 @@
             video.size(640, 480);
             video.hide();
             
-            // Дополнительная проверка ml5 в setup
-            if (typeof ml5 !== 'undefined') {
-                console.log('ml5 доступен в setup');
-                console.log('Методы:', Object.keys(ml5));
-            }
+            // Инициализация PoseNet
+            poseNet = ml5.poseNet(video, modelReady);
+            poseNet.on('pose', function(results) {
+                poses = results;
+            });
+            
+            console.log('ml5 version:', ml5.version);
+        }
+
+        function modelReady() {
+            console.log('PoseNet модель загружена');
         }
 
         function draw() {
@@ -66,6 +74,20 @@
             let y = (height - h) / 2;
             
             image(video, x, y, w, h);
+            
+            // Отрисовка точек лица
+            if (poses.length > 0) {
+                let pose = poses[0].pose;
+                
+                // Отрисовка ключевых точек
+                for (let keypoint of pose.keypoints) {
+                    if (keypoint.score > 0.2) {
+                        fill(0, 255, 0);
+                        noStroke();
+                        ellipse(keypoint.position.x, keypoint.position.y, 10, 10);
+                    }
+                }
+            }
             
             pop();
         }
