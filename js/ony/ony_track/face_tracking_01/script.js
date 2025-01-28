@@ -42,18 +42,30 @@ function calculateWidth(nose, leftEye, rightEye) {
     // Вычисляем максимально возможное отклонение (расстояние между глазами)
     let maxDeviation = Math.abs(rightEye.position.x - leftEye.position.x);
     
-    // Нормализуем отклонение от 0 до 1
-    let normalizedDeviation = deviation / maxDeviation;
+    // Нормализуем отклонение от 0 до 1 и делаем более чувствительным
+    let normalizedDeviation = (deviation / maxDeviation) * 2; // Умножаем на 2 для большей чувствительности
     
     // Преобразуем в значение ширины от 100 до 1000
-    // Чем больше отклонение, тем меньше ширина
     let width = 1000 - (normalizedDeviation * 900);
     
     // Ограничиваем значения
-    width = Math.max(100, Math.min(1000, Math.round(width)));
+    return Math.max(100, Math.min(1000, Math.round(width)));
+}
+
+function drawVariableText(x, y, text, width) {
+    const ctx = drawingContext;
+    ctx.save();
+    ctx.font = `180px "Ony Track VGX"`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgb(0, 255, 0)';
     
-    console.log('Width value:', width); // Отладочная информация
-    return width;
+    // Устанавливаем вариативные настройки
+    ctx.font = `180px "Ony Track VGX"`;
+    ctx.fontVariationSettings = `"wdth" ${width}`;
+    
+    ctx.fillText(text, x, y);
+    ctx.restore();
 }
 
 function draw() {
@@ -92,59 +104,38 @@ function draw() {
             leftEye.score > 0.2 && rightEye.score > 0.2 && nose.score > 0.2) {
             
             let widthValue = calculateWidth(nose, leftEye, rightEye);
+            console.log('Width value:', widthValue);
             
-            // Обновляем стиль для класса
-            style.textContent = `
-                .variable-font {
-                    font-family: 'Ony Track VGX';
-                    font-variation-settings: 'wdth' ${widthValue};
-                }
-            `;
-            
-            // Отрисовка с применением стиля
+            // Отрисовка символов с вариативной шириной
             if (leftEye.score > 0.2) {
                 let scaledX = (leftEye.position.x / 640) * w + x;
                 let scaledY = (leftEye.position.y / 480) * h + y;
-                fill(0, 255, 0);
-                noStroke();
                 push();
                 translate(scaledX, scaledY);
                 scale(-1, 1);
-                drawingContext.font = `180px "Ony Track VGX"`;
-                drawingContext.fontVariationSettings = `'wdth' ${widthValue}`;
-                text('O', 0, 0);
+                drawVariableText(0, 0, 'O', widthValue);
                 pop();
             }
             
             if (rightEye.score > 0.2) {
                 let scaledX = (rightEye.position.x / 640) * w + x;
                 let scaledY = (rightEye.position.y / 480) * h + y;
-                fill(0, 255, 0);
-                noStroke();
                 push();
                 translate(scaledX, scaledY);
                 scale(-1, 1);
-                drawingContext.font = `180px "Ony Track VGX"`;
-                drawingContext.fontVariationSettings = `'wdth' ${widthValue}`;
-                text('N', 0, 0);
+                drawVariableText(0, 0, 'N', widthValue);
                 pop();
             }
             
             if (nose.score > 0.2) {
                 let scaledX = (nose.position.x / 640) * w + x;
                 let scaledY = ((nose.position.y / 480) * h + y) + 30;
-                fill(0, 255, 0);
-                noStroke();
                 push();
                 translate(scaledX, scaledY);
                 scale(-1, 1);
-                drawingContext.font = `180px "Ony Track VGX"`;
-                drawingContext.fontVariationSettings = `'wdth' ${widthValue}`;
-                text('Y', 0, 0);
+                drawVariableText(0, 0, 'Y', widthValue);
                 pop();
             }
-            
-            console.log('Width value:', widthValue);
         }
     }
     
