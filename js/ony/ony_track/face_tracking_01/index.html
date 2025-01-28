@@ -13,7 +13,6 @@
         let video;
         let poseNet;
         let poses = [];
-        let font;
 
         // Проверяем загрузку ml5.js
         window.addEventListener('load', function() {
@@ -26,27 +25,21 @@
             }
         });
 
-        function preload() {
-            font = loadFont('font/Ony_Track_VGX.woff2');
-        }
-
         function setup() {
             createCanvas(windowWidth, windowHeight);
             video = createCapture(VIDEO);
             video.size(640, 480);
             video.hide();
             
-            // Инициализация PoseNet
             poseNet = ml5.poseNet(video, modelReady);
             poseNet.on('pose', function(results) {
                 poses = results;
             });
             
-            console.log('ml5 version:', ml5.version);
-            
-            textFont('Ony Track VGX');
+            // Используем шрифт напрямую, без loadFont
             textAlign(CENTER, CENTER);
             textSize(30);
+            textFont('Ony Track VGX');
         }
 
         function modelReady() {
