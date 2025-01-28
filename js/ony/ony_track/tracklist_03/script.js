@@ -66,10 +66,15 @@ function adjustFontSize() {
         // Добавляем обработчики с учетом соседних букв
         spans.forEach((span, index) => {
             span.addEventListener('mouseover', () => {
+                // Получаем все spans из соседних элементов списка
+                const currentItem = span.closest('li');
+                const allItems = Array.from(document.querySelectorAll('.tracklist li'));
+                const currentItemIndex = allItems.indexOf(currentItem);
+                
                 // Расширяем текущую букву максимально
                 span.style.fontVariationSettings = "'wdth' 1000";
                 
-                // Расширяем соседние буквы с убывающим эффектом
+                // Расширяем соседние буквы в текущей строке
                 for (let i = 1; i <= 2; i++) {
                     if (spans[index - i]) {
                         spans[index - i].style.fontVariationSettings = `'wdth' ${1000 - i * 200}`;
@@ -78,19 +83,33 @@ function adjustFontSize() {
                         spans[index + i].style.fontVariationSettings = `'wdth' ${1000 - i * 200}`;
                     }
                 }
+                
+                // Обрабатываем только одну строку выше и одну строку ниже
+                [-1, 1].forEach(offset => {
+                    const neighborItem = allItems[currentItemIndex + offset];
+                    if (neighborItem) {
+                        const neighborSpans = Array.from(neighborItem.querySelectorAll('span'));
+                        if (neighborSpans[index]) {
+                            neighborSpans[index].style.fontVariationSettings = `'wdth' 800`;
+                        }
+                        // Соседние буквы в соседней строке
+                        for (let j = 1; j <= 2; j++) {
+                            if (neighborSpans[index - j]) {
+                                neighborSpans[index - j].style.fontVariationSettings = `'wdth' ${800 - j * 200}`;
+                            }
+                            if (neighborSpans[index + j]) {
+                                neighborSpans[index + j].style.fontVariationSettings = `'wdth' ${800 - j * 200}`;
+                            }
+                        }
+                    }
+                });
             });
             
             span.addEventListener('mouseout', () => {
-                // Возвращаем нормальную ширину для текущей и соседних букв
-                span.style.fontVariationSettings = "'wdth' 500";
-                for (let i = 1; i <= 2; i++) {
-                    if (spans[index - i]) {
-                        spans[index - i].style.fontVariationSettings = "'wdth' 500";
-                    }
-                    if (spans[index + i]) {
-                        spans[index + i].style.fontVariationSettings = "'wdth' 500";
-                    }
-                }
+                // Сбрасываем все span элементы на странице
+                document.querySelectorAll('.tracklist li span').forEach(span => {
+                    span.style.fontVariationSettings = "'wdth' 500";
+                });
             });
         });
     });
