@@ -1,6 +1,7 @@
 let video;
 let poseNet;
 let poses = [];
+let letterO, letterN, letterY;
 
 // В начале файла добавим стиль
 let style = document.createElement('style');
@@ -23,9 +24,31 @@ function setup() {
         poses = results;
     });
     
-    textAlign(CENTER, CENTER);
-    textSize(180);
-    textFont('Ony Track VGX');
+    // Создаем элементы для букв
+    letterO = createDiv('O');
+    letterN = createDiv('N');
+    letterY = createDiv('Y');
+    
+    // Стилизуем элементы
+    const letterStyle = `
+        position: absolute;
+        font-family: 'Ony Track VGX';
+        font-size: 180px;
+        color: rgb(0, 255, 0);
+        transform: scaleX(-1) translate(-50%, -50%);
+        pointer-events: none;
+        text-align: center;
+    `;
+    
+    letterO.style(letterStyle);
+    letterN.style(letterStyle);
+    letterY.style(letterStyle);
+
+    setTimeout(() => {
+        letterO.style('font-variation-settings', '"wdth" 100');
+        letterN.style('font-variation-settings', '"wdth" 500');
+        letterY.style('font-variation-settings', '"wdth" 1000');
+    }, 1000);
 }
 
 function modelReady() {
@@ -106,35 +129,29 @@ function draw() {
             let widthValue = calculateWidth(nose, leftEye, rightEye);
             console.log('Width value:', widthValue);
             
-            // Отрисовка символов с вариативной шириной
+            // Обновляем позиции и стили букв
             if (leftEye.score > 0.2) {
                 let scaledX = (leftEye.position.x / 640) * w + x;
                 let scaledY = (leftEye.position.y / 480) * h + y;
-                push();
-                translate(scaledX, scaledY);
-                scale(-1, 1);
-                drawVariableText(0, 0, 'O', widthValue);
-                pop();
+                letterO.position(width - scaledX, scaledY);
+                letterO.style('font-variation-settings', `"wdth" ${widthValue}`);
+                letterO.style('transform', `scaleX(-1) translate(-50%, -50%)`);
             }
             
             if (rightEye.score > 0.2) {
                 let scaledX = (rightEye.position.x / 640) * w + x;
                 let scaledY = (rightEye.position.y / 480) * h + y;
-                push();
-                translate(scaledX, scaledY);
-                scale(-1, 1);
-                drawVariableText(0, 0, 'N', widthValue);
-                pop();
+                letterN.position(width - scaledX, scaledY);
+                letterN.style('font-variation-settings', `"wdth" ${widthValue}`);
+                letterN.style('transform', `scaleX(-1) translate(-50%, -50%)`);
             }
             
             if (nose.score > 0.2) {
                 let scaledX = (nose.position.x / 640) * w + x;
                 let scaledY = ((nose.position.y / 480) * h + y) + 30;
-                push();
-                translate(scaledX, scaledY);
-                scale(-1, 1);
-                drawVariableText(0, 0, 'Y', widthValue);
-                pop();
+                letterY.position(width - scaledX, scaledY);
+                letterY.style('font-variation-settings', `"wdth" ${widthValue}`);
+                letterY.style('transform', `scaleX(-1) translate(-50%, -50%)`);
             }
         }
     }
