@@ -32,9 +32,12 @@
       display: block;
       width: 100%;
       white-space: nowrap;
-      font-size: 24px;
+      font-size: 36px;
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+  <script src="script.js"></script>
+  <link rel="stylesheet" type="text/css" href="style.css">
 </head>
 <body>
   <div class="tracklist">
@@ -49,7 +52,7 @@
     document.fonts.ready.then(() => {
       console.log('Все шрифты загружены');
       
-      // Проверяем, загрузился ли наш конкретный шрифт
+      // Проверяем, загрузился ли конкретный шрифт
       const font = document.fonts.check('12px "Ony Track"');
       console.log('Ony Track загружен:', font);
     });
