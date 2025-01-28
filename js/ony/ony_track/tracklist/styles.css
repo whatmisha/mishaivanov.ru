@@ -1,0 +1,27 @@
+@font-face {
+  font-family: 'OnyTrack';
+  src: url('/font/Ony_Track_VGX.ttf') format('truetype');
+}
+
+body {
+  margin: 0;
+  background-color: black;
+  color: white;
+  font-family: 'OnyTrack', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.container {
+  text-align: left;
+}
+
+.container p {
+  font-size: 240px;
+  line-height: 1.2;
+  margin: 0;
+  white-space: nowrap;
+}
