@@ -125,7 +125,7 @@ function draw() {
         videoBuffer = createGraphics(w, h);
     }
     videoBuffer.image(video, 0, 0, w, h);
-    videoBuffer.filter(GRAY);
+    // videoBuffer.filter(GRAY);  // закомментировали применение ч/б фильтра
     
     // Отображаем обработанное видео
     image(videoBuffer, x, y, w, h);
