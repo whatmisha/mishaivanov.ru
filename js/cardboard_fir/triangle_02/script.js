@@ -380,14 +380,7 @@ async function saveSVG() {
     svg.setAttribute('height', window.innerHeight);
     svg.setAttribute('viewBox', `0 0 ${window.innerWidth} ${window.innerHeight}`);
     
-    // Добавляем черный фон
-    const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    background.setAttribute('width', '100%');
-    background.setAttribute('height', '100%');
-    background.setAttribute('fill', '#000000');
-    svg.appendChild(background);
-    
-    // Создаем треугольник как path
+    // Создаем треугольник как path с черной заливкой
     const trianglePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     const centerX = window.innerWidth/2;
     const centerY = window.innerHeight/2;
@@ -404,9 +397,7 @@ async function saveSVG() {
     `;
     
     trianglePath.setAttribute('d', pathData);
-    trianglePath.setAttribute('fill', 'none');
-    trianglePath.setAttribute('stroke', '#FFFFFF');
-    trianglePath.setAttribute('stroke-width', '2');
+    trianglePath.setAttribute('fill', '#000000');
     svg.appendChild(trianglePath);
     
     // Добавляем буквы как path
