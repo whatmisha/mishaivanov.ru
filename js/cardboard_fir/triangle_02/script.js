@@ -387,21 +387,27 @@ async function saveSVG() {
     background.setAttribute('fill', '#000000');
     svg.appendChild(background);
     
-    // Добавляем треугольник из трех прямоугольников
-    [leftWall, rightWall, ground].forEach(wall => {
-        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rect.setAttribute('x', wall.position.x - wallThickness/2);
-        rect.setAttribute('y', wall.position.y - (wall === ground ? wallThickness/2 : wall.height/2));
-        rect.setAttribute('width', wall === ground ? triangleHeight : wallThickness);
-        rect.setAttribute('height', wall === ground ? wallThickness : triangleHeight);
-        rect.setAttribute('fill', '#000000');
-        rect.setAttribute('stroke', '#FFFFFF');
-        rect.setAttribute('stroke-width', '2');
-        if (wall !== ground) {
-            rect.setAttribute('transform', `rotate(${wall.angle * 180/Math.PI} ${wall.position.x} ${wall.position.y})`);
-        }
-        svg.appendChild(rect);
-    });
+    // Создаем треугольник как path
+    const trianglePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const centerX = window.innerWidth/2;
+    const centerY = window.innerHeight/2;
+    const topY = centerY - triangleHeight/2;
+    const bottomY = centerY + triangleHeight/2;
+    const leftX = centerX - triangleWidth/2;
+    const rightX = centerX + triangleWidth/2;
+    
+    const pathData = `
+        M ${centerX} ${topY}
+        L ${rightX} ${bottomY}
+        L ${leftX} ${bottomY}
+        Z
+    `;
+    
+    trianglePath.setAttribute('d', pathData);
+    trianglePath.setAttribute('fill', 'none');
+    trianglePath.setAttribute('stroke', '#FFFFFF');
+    trianglePath.setAttribute('stroke-width', '2');
+    svg.appendChild(trianglePath);
     
     // Добавляем буквы как path
     engine.world.bodies.forEach(body => {
