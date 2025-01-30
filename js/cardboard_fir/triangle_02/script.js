@@ -331,4 +331,79 @@ Events.on(engine, 'beforeUpdate', function() {
 
 // Отключаем изменение цвета при коллизиях
 engine.timing.timeScale = 1;
-engine.enableSleeping = false; 
+engine.enableSleeping = false;
+
+// Создаем кнопку для сохранения
+const saveButton = document.createElement('button');
+saveButton.style.cssText = `
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px;
+    background-color: #FFFFFF;
+    border: none;
+    color: #000000;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+`;
+saveButton.textContent = 'Сохранить SVG';
+document.body.appendChild(saveButton);
+
+// Добавляем загрузку библиотеки
+const script = document.createElement('script');
+script.src = 'https://cdn.jsdelivr.net/npm/opentype.js';
+document.head.appendChild(script);
+
+// Обновленная функция сохранения SVG
+async function saveSVG() {
+    // Загружаем шрифт
+    const font = await opentype.load('path/to/Tosh.ttf'); // Укажите правильный путь к вашему шрифту
+    
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', window.innerWidth);
+    svg.setAttribute('height', window.innerHeight);
+    svg.setAttribute('viewBox', `0 0 ${window.innerWidth} ${window.innerHeight}`);
+    
+    // Добавляем буквы как path
+    engine.world.bodies.forEach(body => {
+        if (body.label && body.label.length === 1) {
+            // Создаем path из глифа
+            const path = font.getPath(body.label, 0, 0, 108);
+            const pathData = path.toPathData();
+            
+            // Получаем границы глифа для центрирования
+            const bbox = path.getBoundingBox();
+            const centerX = (bbox.x2 + bbox.x1) / 2;
+            const centerY = (bbox.y2 + bbox.y1) / 2;
+            
+            // Создаем path элемент
+            const pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            pathElement.setAttribute('d', pathData);
+            pathElement.setAttribute('fill', '#FFFFFF');
+            pathElement.setAttribute('transform', 
+                `translate(${body.position.x - centerX}, ${body.position.y - centerY}) ` +
+                `rotate(${body.angle * 180/Math.PI} ${centerX} ${centerY})`
+            );
+            svg.appendChild(pathElement);
+        }
+    });
+    
+    // Конвертируем SVG в строку
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(svg);
+    
+    // Создаем Blob и ссылку для скачивания
+    const blob = new Blob([svgString], {type: 'image/svg+xml'});
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'letters.svg';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+// Обновляем обработчик клика для асинхронной функции
+saveButton.addEventListener('click', () => saveSVG().catch(console.error)); 
