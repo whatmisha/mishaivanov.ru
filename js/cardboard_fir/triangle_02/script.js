@@ -9,7 +9,7 @@ const Engine = Matter.Engine,
 const engine = Engine.create({
     enableSleeping: true
 });
-engine.world.gravity.y = 1; // Настраиваем гравитацию
+engine.world.gravity.y = 0.5; // Настраиваем гравитацию
 
 // Настраиваем рендер
 const canvas = document.getElementById('canvas');
@@ -24,58 +24,62 @@ const render = Render.create({
     }
 });
 
-// Настраиваем размеры равностороннего треугольника
-const triangleWidth = window.innerWidth * 0.3;
-const triangleHeight = window.innerHeight * 0.4;
-const wallThickness = 20;
+// Увеличиваем размеры треугольника
+const triangleWidth = window.innerWidth * 0.3 * 1.2;
+const triangleHeight = window.innerHeight * 0.4 * 1.2;
+const wallThickness = 2;
 const centerY = window.innerHeight/2;
-const gapAtTop = 130;
+
+// Увеличиваем длину стенок, чтобы они смыкались вверху
+const wallLength = Math.sqrt(triangleWidth * triangleWidth + triangleHeight * triangleHeight) * 1.1; // Длина боковых стенок
+
+const wallOptions = {
+    isStatic: true,
+    restitution: 0.2,
+    friction: 0.8,
+    isSensor: false,
+    render: { 
+        fillStyle: '#FFFFFF',
+        strokeStyle: 'transparent',
+        lineWidth: 1,
+        opacity: 1,
+        visible: true
+    },
+    collisionFilter: {
+        group: 1,
+        category: 0x0001,
+        mask: 0x0002
+    }
+};
 
 const leftWall = Bodies.rectangle(
-    (window.innerWidth/2 - triangleWidth/2) - gapAtTop/2,
+    window.innerWidth/2 - triangleWidth/4.2,
     centerY,
     wallThickness,
     triangleHeight,
     { 
-        isStatic: true,
-        angle: Math.PI/6,
-        render: { 
-            fillStyle: 'transparent',
-            strokeStyle: 'rgba(255, 255, 255, 0.2)',
-            lineWidth: 1
-        }
+        ...wallOptions,
+        angle: Math.PI/6
     }
 );
 
 const rightWall = Bodies.rectangle(
-    (window.innerWidth/2 + triangleWidth/2) + gapAtTop/2,
+    window.innerWidth/2 + triangleWidth/4.2,
     centerY,
     wallThickness,
     triangleHeight,
     { 
-        isStatic: true,
-        angle: -Math.PI/6,
-        render: { 
-            fillStyle: 'transparent',
-            strokeStyle: 'rgba(255, 255, 255, 0.2)',
-            lineWidth: 1
-        }
+        ...wallOptions,
+        angle: -Math.PI/6
     }
 );
 
 const ground = Bodies.rectangle(
     window.innerWidth/2,
     centerY + triangleHeight/2,
-    triangleWidth * 1.8,
+    triangleHeight,
     wallThickness,
-    { 
-        isStatic: true,
-        render: { 
-            fillStyle: 'transparent',
-            strokeStyle: 'rgba(255, 255, 255, 0.2)',
-            lineWidth: 1
-        }
-    }
+    wallOptions
 );
 
 World.add(engine.world, [leftWall, rightWall, ground]);
@@ -136,15 +140,19 @@ function createLetters(text) {
         const { width, height } = measureLetterSize(letter, font);
         
         setTimeout(() => {
+            const randomX = window.innerWidth/2 + (Math.random() - 0.5) * (triangleWidth * 0.3);
+            const randomY = centerY - triangleHeight/3;
+            
             const letterBody = Bodies.rectangle(
-                window.innerWidth/2,
-                centerY - triangleHeight/2 - gapAtTop,
+                randomX,
+                randomY,
                 width + 6,
                 height + 6,
                 {
-                    restitution: 0.3,
-                    friction: 0.5,
-                    density: 0.002,
+                    restitution: 0.2,
+                    friction: 0.8,
+                    frictionAir: 0.02,
+                    density: 0.001,
                     render: {
                         fillStyle: 'transparent',
                         strokeStyle: 'transparent',
@@ -154,13 +162,16 @@ function createLetters(text) {
                         category: 0x0002
                     },
                     sleepThreshold: Infinity,
-                    label: letter
+                    label: letter,
+                    chamfer: { radius: 2 }
                 }
             );
+            
             Body.setVelocity(letterBody, {
-                x: (Math.random() - 0.5) * 0.2,
+                x: (Math.random() - 0.5) * 0.1,
                 y: 0
             });
+            
             World.add(engine.world, letterBody);
         }, i * 100);
     });
@@ -205,12 +216,31 @@ textInput.style.cssText = `
     left: ${window.innerWidth/2}px;
     transform: translateX(-50%);
     padding: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
+    background: #FFFFFF;
+    border: none;
+    color: #000000 !important;    // Добавили !important для приоритета
     border-radius: 5px;
     width: 200px;
+    outline: none;
 `;
+
+// Добавляем стили для плейсхолдера
+textInput.setAttribute('placeholder', textInput.getAttribute('placeholder') || '');
+textInput.style.setProperty('--placeholder-color', '#000000');
+textInput.style.setProperty('::placeholder', 'color: #000000');
+
+// Добавляем дополнительные стили через CSS
+const style = document.createElement('style');
+style.textContent = `
+    #textInput::placeholder {
+        color: #000000;
+        opacity: 0.5;
+    }
+    #textInput {
+        color: #000000 !important;
+    }
+`;
+document.head.appendChild(style);
 
 // Обработчик изменения текста
 textInput.addEventListener('input', (e) => {
@@ -232,17 +262,73 @@ window.addEventListener('resize', () => {
     render.options.width = window.innerWidth;
     render.options.height = window.innerHeight;
     
-    // Обновляем позиции стен
     Body.setPosition(leftWall, {
-        x: (window.innerWidth/2 - triangleWidth/2) - gapAtTop/2,
+        x: window.innerWidth/2 - triangleWidth/4.2,
         y: window.innerHeight/2
     });
     Body.setPosition(rightWall, {
-        x: (window.innerWidth/2 + triangleWidth/2) + gapAtTop/2,
+        x: window.innerWidth/2 + triangleWidth/4.2,
         y: window.innerHeight/2
     });
     Body.setPosition(ground, {
         x: window.innerWidth/2,
         y: window.innerHeight/2 + triangleHeight/2
     });
-}); 
+});
+
+// Добавляем функцию проверки, находится ли точка внутри треугольника
+function isInsideTriangle(x, y) {
+    const topY = centerY - triangleHeight/2;
+    const bottomY = centerY + triangleHeight/2;
+    
+    // Если точка выше или ниже треугольника
+    if (y < topY || y > bottomY) return false;
+    
+    // Вычисляем допустимую ширину на текущей высоте
+    const progress = (y - topY) / triangleHeight;
+    const maxWidth = triangleWidth * progress;
+    const leftBound = window.innerWidth/2 - maxWidth/2;
+    const rightBound = window.innerWidth/2 + maxWidth/2;
+    
+    // Проверяем, находится ли точка между левой и правой границами
+    return x >= leftBound && x <= rightBound;
+}
+
+// Добавляем обработчик для проверки позиций букв
+Events.on(engine, 'beforeUpdate', function() {
+    const bodies = engine.world.bodies;
+    bodies.forEach(function(body) {
+        if (!body.isStatic && body.label && body.label.length === 1) {
+            if (!isInsideTriangle(body.position.x, body.position.y)) {
+                // Если буква вышла за пределы, возвращаем её в верхнюю часть треугольника
+                const randomX = window.innerWidth/2 + (Math.random() - 0.5) * (triangleWidth * 0.3);
+                const randomY = centerY - triangleHeight/3;
+                
+                Body.setPosition(body, {
+                    x: randomX,
+                    y: randomY
+                });
+                
+                // Сбрасываем скорость и вращение
+                Body.setVelocity(body, {
+                    x: (Math.random() - 0.5) * 0.2,
+                    y: 0
+                });
+                Body.setAngularVelocity(body, 0);
+                Body.setAngle(body, 0);
+            }
+        }
+    });
+});
+
+// Отключаем все события, которые могут влиять на рендеринг
+Events.on(engine, 'beforeUpdate', function() {
+    [leftWall, rightWall, ground].forEach(wall => {
+        wall.render.fillStyle = '#FFFFFF';
+        wall.render.opacity = 1;
+    });
+});
+
+// Отключаем изменение цвета при коллизиях
+engine.timing.timeScale = 1;
+engine.enableSleeping = false; 
