@@ -242,9 +242,15 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Обработчик изменения текста
-textInput.addEventListener('input', (e) => {
-    createLetters(e.target.value);
+// Удаляем старый обработчик input, если он есть
+textInput.removeEventListener('input', (e) => createLetters(e.target.value));
+
+// Добавляем только обработчик для Enter
+textInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+        createLetters(e.target.value);
+        e.preventDefault(); // Предотвращаем перенос строки в инпуте
+    }
 });
 
 // Запускаем симуляцию
