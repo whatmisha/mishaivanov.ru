@@ -508,7 +508,7 @@ async function saveSVG() {
     // Добавляем буквы как path
     engine.world.bodies.forEach(body => {
         if (body.label && body.label.length === 1) {
-            const path = font.getPath(body.label, 0, 0, 108, {
+            const path = font.getPath(body.label, 0, 0, currentFontSize, {
                 kerning: true,
                 features: {
                     liga: true,
