@@ -386,8 +386,8 @@ async function saveSVG() {
     const centerY = window.innerHeight/2;
     
     // Вычисляем точки равностороннего треугольника
-    const sideLength = triangleWidth; // Длина стороны равна ширине
-    const height = (sideLength * Math.sqrt(3)) / 2; // Высота равностороннего треугольника
+    const sideLength = triangleWidth;
+    const height = (sideLength * Math.sqrt(3)) / 2;
     
     const topY = centerY - height/2;
     const bottomY = centerY + height/2;
@@ -405,10 +405,19 @@ async function saveSVG() {
     trianglePath.setAttribute('fill', '#000000');
     svg.appendChild(trianglePath);
     
-    // Добавляем буквы как path
+    // Добавляем буквы как path с увеличенной толщиной
     engine.world.bodies.forEach(body => {
         if (body.label && body.label.length === 1) {
-            const path = font.getPath(body.label, 0, 0, 108);
+            // Используем font-weight: 900 для создания path
+            const path = font.getPath(body.label, 0, 0, 108, {
+                kerning: true,
+                features: {
+                    liga: true,
+                    rlig: true
+                },
+                weight: 900  // Устанавливаем жирное начертание
+            });
+            
             const pathData = path.toPathData();
             
             const bbox = path.getBoundingBox();
