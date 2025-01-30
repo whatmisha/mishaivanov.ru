@@ -385,9 +385,9 @@ async function saveSVG() {
     const centerX = window.innerWidth/2;
     const centerY = window.innerHeight/2;
     
-    // Вычисляем точки равностороннего треугольника
-    const sideLength = triangleWidth;
-    const height = (sideLength * Math.sqrt(3)) / 2;
+    // Используем те же размеры, что и в браузере
+    const height = triangleHeight; // Используем высоту напрямую из настроек
+    const sideLength = (height * 2) / Math.sqrt(3); // Вычисляем длину стороны из высоты
     
     const topY = centerY - height/2;
     const bottomY = centerY + height/2;
@@ -405,17 +405,16 @@ async function saveSVG() {
     trianglePath.setAttribute('fill', '#000000');
     svg.appendChild(trianglePath);
     
-    // Добавляем буквы как path с увеличенной толщиной
+    // Добавляем буквы как path
     engine.world.bodies.forEach(body => {
         if (body.label && body.label.length === 1) {
-            // Используем font-weight: 900 для создания path
             const path = font.getPath(body.label, 0, 0, 108, {
                 kerning: true,
                 features: {
                     liga: true,
                     rlig: true
                 },
-                weight: 900  // Устанавливаем жирное начертание
+                weight: 900
             });
             
             const pathData = path.toPathData();
