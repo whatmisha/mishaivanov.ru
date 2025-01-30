@@ -26,15 +26,15 @@ canvas {
 @font-face {
     font-family: 'Tosh';
     src: url('font/tosh.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
+    font-weight: medium;
+    font-style: medium;
 }
 
 @font-face {
     font-family: 'Tosh';
     src: url('font/tosh.woff2') format('woff2');
     font-weight: 500;
-    font-style: normal;
+    font-style: medium;
 }
 
 #textInput {
