@@ -129,7 +129,7 @@ function createLetters(text) {
     const lettersToRemove = bodies.filter(body => !body.isStatic);
     World.remove(engine.world, lettersToRemove);
 
-    const font = '500 72px Tosh';
+    const font = '500 108px Tosh';
     const letters = text.split('');
     
     letters.forEach((letter, i) => {
@@ -139,8 +139,8 @@ function createLetters(text) {
             const letterBody = Bodies.rectangle(
                 window.innerWidth/2,
                 centerY - triangleHeight/2 - gapAtTop,
-                width + 4,
-                height + 4,
+                width + 6,
+                height + 6,
                 {
                     restitution: 0.3,
                     friction: 0.5,
@@ -187,7 +187,7 @@ Events.on(render, 'afterRender', function() {
             context.save();
             context.translate(pos.x, pos.y);
             context.rotate(angle);
-            context.font = '500 72px Tosh';
+            context.font = '500 108px Tosh';
             context.fillStyle = '#ffffff';
             context.textAlign = 'center';
             context.textBaseline = 'middle';
