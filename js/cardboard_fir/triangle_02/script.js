@@ -358,7 +358,7 @@ document.head.appendChild(script);
 // Проверяем загрузку шрифта
 async function loadFont() {
     try {
-        const font = await opentype.load('font/tosh.woff2');
+        const font = await opentype.load('font/tosh.ttf');
         console.log('Шрифт успешно загружен:', font);
         return font;
     } catch (error) {
@@ -420,5 +420,5 @@ async function saveSVG() {
     URL.revokeObjectURL(url);
 }
 
-// Обновляем обработчик клика для асинхронной функции
+// Обновляем обработчик клика
 saveButton.addEventListener('click', () => saveSVG().catch(console.error)); 
