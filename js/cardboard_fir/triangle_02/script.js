@@ -355,10 +355,25 @@ const script = document.createElement('script');
 script.src = 'https://cdn.jsdelivr.net/npm/opentype.js';
 document.head.appendChild(script);
 
+// Проверяем загрузку шрифта
+async function loadFont() {
+    try {
+        const font = await opentype.load('font/tosh.woff2');
+        console.log('Шрифт успешно загружен:', font);
+        return font;
+    } catch (error) {
+        console.error('Ошибка загрузки шрифта:', error);
+        return null;
+    }
+}
+
 // Обновленная функция сохранения SVG
 async function saveSVG() {
-    // Загружаем шрифт
-    const font = await opentype.load('path/to/Tosh.ttf'); // Укажите правильный путь к вашему шрифту
+    const font = await loadFont();
+    if (!font) {
+        alert('Не удалось загрузить шрифт. Проверьте консоль для деталей.');
+        return;
+    }
     
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('width', window.innerWidth);
