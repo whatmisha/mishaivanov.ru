@@ -380,14 +380,19 @@ async function saveSVG() {
     svg.setAttribute('height', window.innerHeight);
     svg.setAttribute('viewBox', `0 0 ${window.innerWidth} ${window.innerHeight}`);
     
-    // Создаем треугольник как path с черной заливкой
+    // Создаем равносторонний треугольник
     const trianglePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     const centerX = window.innerWidth/2;
     const centerY = window.innerHeight/2;
-    const topY = centerY - triangleHeight/2;
-    const bottomY = centerY + triangleHeight/2;
-    const leftX = centerX - triangleWidth/2;
-    const rightX = centerX + triangleWidth/2;
+    
+    // Вычисляем точки равностороннего треугольника
+    const sideLength = triangleWidth; // Длина стороны равна ширине
+    const height = (sideLength * Math.sqrt(3)) / 2; // Высота равностороннего треугольника
+    
+    const topY = centerY - height/2;
+    const bottomY = centerY + height/2;
+    const leftX = centerX - sideLength/2;
+    const rightX = centerX + sideLength/2;
     
     const pathData = `
         M ${centerX} ${topY}
