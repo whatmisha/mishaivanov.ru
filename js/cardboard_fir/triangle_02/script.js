@@ -333,21 +333,24 @@ Events.on(engine, 'beforeUpdate', function() {
 engine.timing.timeScale = 1;
 engine.enableSleeping = false;
 
-// Создаем кнопку для сохранения
+// Оставляем только одно создание кнопки
 const saveButton = document.createElement('button');
+saveButton.id = 'saveButton';
+saveButton.textContent = 'сохранить svg';
 saveButton.style.cssText = `
     position: fixed;
     bottom: 20px;
     right: 20px;
-    padding: 10px;
-    background-color: #FFFFFF;
+    padding: 12px 18px;
+    background: #FFFFFF;
     border: none;
-    color: #000000;
     border-radius: 5px;
-    cursor: pointer;
+    color: #000000;
+    font-family: 'Tosh', Arial, sans-serif;
     font-size: 18px;
+    outline: none;
+    cursor: pointer;
 `;
-saveButton.textContent = 'Сохранить SVG';
 document.body.appendChild(saveButton);
 
 // Добавляем загрузку библиотеки
