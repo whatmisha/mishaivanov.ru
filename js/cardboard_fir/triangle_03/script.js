@@ -133,7 +133,7 @@ const fontControls = document.createElement('div');
 fontControls.className = 'font-size-controls';
 fontControls.innerHTML = `
     <button class="font-size-btn decrease">-</button>
-    <input type="number" class="font-size-input" value="108" min="32" max="200">
+    <input type="number" class="font-size-input" value="120" min="32" max="200">
     <button class="font-size-btn increase">+</button>
 `;
 document.body.appendChild(fontControls);
@@ -192,7 +192,7 @@ fontControlsStyle.textContent = `
 document.head.appendChild(fontControlsStyle);
 
 // Добавляем функционал изменения размера
-let currentFontSize = 108;
+let currentFontSize = 120;
 const fontSizeInput = document.querySelector('.font-size-input');
 const decreaseBtn = document.querySelector('.decrease');
 const increaseBtn = document.querySelector('.increase');
@@ -208,11 +208,11 @@ function updateFontSize(newSize) {
 }
 
 decreaseBtn.addEventListener('click', () => {
-    updateFontSize(currentFontSize - 4);
+    updateFontSize(currentFontSize - 1);
 });
 
 increaseBtn.addEventListener('click', () => {
-    updateFontSize(currentFontSize + 4);
+    updateFontSize(currentFontSize + 1);
 });
 
 fontSizeInput.addEventListener('change', (e) => {
@@ -227,7 +227,8 @@ function createLetters(text) {
     const font = `500 ${currentFontSize}px Tosh`;
     const letters = text.split('');
     
-    letters.forEach((letter, i) => {
+    // Добавляем буквы в обратном порядке
+    letters.reverse().forEach((letter, i) => {
         const { width, height } = measureLetterSize(letter, font);
         
         setTimeout(() => {
