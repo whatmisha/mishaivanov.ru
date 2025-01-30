@@ -430,42 +430,41 @@ Events.on(engine, 'beforeUpdate', function() {
 engine.timing.timeScale = 1;
 engine.enableSleeping = false;
 
-// Оставляем только одно создание кнопки
-const saveButton = document.createElement('button');
-saveButton.id = 'saveButton';
-saveButton.textContent = 'сохранить svg';
-saveButton.style.cssText = `
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    padding: 12px 18px;
-    background: #FFFFFF;
-    border: none;
-    border-radius: 5px;
-    color: #000000;
-    font-family: 'Tosh', Arial, sans-serif;
-    font-size: 18px;
-    outline: none;
-    cursor: pointer;
-`;
-document.body.appendChild(saveButton);
-
 // Добавляем загрузку библиотеки
 const script = document.createElement('script');
-script.src = 'https://cdn.jsdelivr.net/npm/opentype.js';
+script.src = 'https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js';
 document.head.appendChild(script);
 
-// Проверяем загрузку шрифта
-async function loadFont() {
-    try {
-        const font = await opentype.load('font/tosh.ttf');
-        console.log('Шрифт успешно загружен:', font);
-        return font;
-    } catch (error) {
-        console.error('Ошибка загрузки шрифта:', error);
-        return null;
-    }
-}
+// Ждем загрузку библиотеки перед использованием
+script.onload = () => {
+    console.log('OpenType.js успешно загружен');
+    // Теперь можно использовать кнопку сохранения
+    const saveButton = document.createElement('button');
+    saveButton.id = 'saveButton';
+    saveButton.textContent = 'сохранить svg';
+    saveButton.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 12px 18px;
+        background: #FFFFFF;
+        border: none;
+        border-radius: 5px;
+        color: #000000;
+        font-family: 'Tosh', Arial, sans-serif;
+        font-size: 18px;
+        outline: none;
+        cursor: pointer;
+    `;
+    document.body.appendChild(saveButton);
+    
+    // Добавляем обработчик клика только после загрузки библиотеки
+    saveButton.addEventListener('click', () => saveSVG().catch(console.error));
+};
+
+script.onerror = () => {
+    console.error('Ошибка загрузки OpenType.js');
+};
 
 // Обновленная функция сохранения SVG
 async function saveSVG() {
@@ -550,5 +549,14 @@ async function saveSVG() {
     URL.revokeObjectURL(url);
 }
 
-// Обновляем обработчик клика
-saveButton.addEventListener('click', () => saveSVG().catch(console.error)); 
+// Проверяем загрузку шрифта
+async function loadFont() {
+    try {
+        const font = await opentype.load('font/tosh.ttf');
+        console.log('Шрифт успешно загружен:', font);
+        return font;
+    } catch (error) {
+        console.error('Ошибка загрузки шрифта:', error);
+        return null;
+    }
+} 
