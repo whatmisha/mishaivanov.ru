@@ -380,19 +380,39 @@ async function saveSVG() {
     svg.setAttribute('height', window.innerHeight);
     svg.setAttribute('viewBox', `0 0 ${window.innerWidth} ${window.innerHeight}`);
     
+    // Добавляем черный фон
+    const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    background.setAttribute('width', '100%');
+    background.setAttribute('height', '100%');
+    background.setAttribute('fill', '#000000');
+    svg.appendChild(background);
+    
+    // Добавляем треугольник из трех прямоугольников
+    [leftWall, rightWall, ground].forEach(wall => {
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', wall.position.x - wallThickness/2);
+        rect.setAttribute('y', wall.position.y - (wall === ground ? wallThickness/2 : wall.height/2));
+        rect.setAttribute('width', wall === ground ? triangleHeight : wallThickness);
+        rect.setAttribute('height', wall === ground ? wallThickness : triangleHeight);
+        rect.setAttribute('fill', '#000000');
+        rect.setAttribute('stroke', '#FFFFFF');
+        rect.setAttribute('stroke-width', '2');
+        if (wall !== ground) {
+            rect.setAttribute('transform', `rotate(${wall.angle * 180/Math.PI} ${wall.position.x} ${wall.position.y})`);
+        }
+        svg.appendChild(rect);
+    });
+    
     // Добавляем буквы как path
     engine.world.bodies.forEach(body => {
         if (body.label && body.label.length === 1) {
-            // Создаем path из глифа
             const path = font.getPath(body.label, 0, 0, 108);
             const pathData = path.toPathData();
             
-            // Получаем границы глифа для центрирования
             const bbox = path.getBoundingBox();
             const centerX = (bbox.x2 + bbox.x1) / 2;
             const centerY = (bbox.y2 + bbox.y1) / 2;
             
-            // Создаем path элемент
             const pathElement = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             pathElement.setAttribute('d', pathData);
             pathElement.setAttribute('fill', '#FFFFFF');
