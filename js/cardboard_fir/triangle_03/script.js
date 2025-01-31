@@ -374,7 +374,7 @@ function addOkButton() {
     const inputRect = textInput.getBoundingClientRect();
     
     const okButton = document.createElement('button');
-    okButton.textContent = 'OK';
+    okButton.textContent = 'drop it';
     okButton.style.cssText = `
         position: fixed;
         bottom: 20px;
