@@ -371,14 +371,12 @@ textInput.addEventListener('keydown', (e) => {
 // После всей инициализации добавляем кнопку OK
 function addOkButton() {
     const textInput = document.getElementById('textInput');
-    const inputRect = textInput.getBoundingClientRect();
     
     const okButton = document.createElement('button');
     okButton.textContent = 'drop it';
     okButton.style.cssText = `
         position: fixed;
         bottom: 20px;
-        left: ${inputRect.right + 10}px;
         padding: 12px 18px;
         background: #FFFFFF;
         border: none;
@@ -392,19 +390,31 @@ function addOkButton() {
     
     document.body.appendChild(okButton);
     
+    // Функция для центрирования блока
+    function centerElements() {
+        const buttonWidth = okButton.offsetWidth;
+        const inputWidth = textInput.offsetWidth;
+        const gap = 10; // Отступ между элементами
+        const totalWidth = inputWidth + buttonWidth + gap;
+        
+        // Вычисляем позицию для инпута
+        const inputLeft = (window.innerWidth - totalWidth) / 2;
+        textInput.style.left = inputLeft + 'px';
+        textInput.style.transform = 'none';
+        
+        // Позиционируем кнопку справа от инпута
+        okButton.style.left = (inputLeft + inputWidth + gap) + 'px';
+    }
+    
+    // Центрируем элементы при загрузке
+    centerElements();
+    
+    // Обновляем позиции при изменении размера окна
+    window.addEventListener('resize', centerElements);
+    
     okButton.addEventListener('click', () => {
         createLetters(textInput.value);
     });
-    
-    // Обновляем обработчик resize
-    const originalResizeHandler = window.onresize;
-    window.onresize = function(e) {
-        if (originalResizeHandler) {
-            originalResizeHandler(e);
-        }
-        const newInputRect = textInput.getBoundingClientRect();
-        okButton.style.left = `${newInputRect.right + 10}px`;
-    };
 }
 
 // Запускаем симуляцию
