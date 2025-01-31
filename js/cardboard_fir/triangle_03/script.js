@@ -207,12 +207,34 @@ function updateFontSize(newSize) {
     createLetters(textInput.value);
 }
 
-decreaseBtn.addEventListener('click', () => {
-    updateFontSize(currentFontSize - 1);
+decreaseBtn.addEventListener('click', (e) => {
+    const currentSize = parseInt(fontSizeInput.value);
+    if (e.shiftKey) {
+        // Если число заканчивается на 0 (ровное), просто отнимаем 10
+        if (currentSize % 10 === 0) {
+            updateFontSize(currentSize - 10);
+        } else {
+            // Иначе округляем вниз до ближайшего десятка
+            updateFontSize(Math.floor(currentSize / 10) * 10);
+        }
+    } else {
+        updateFontSize(currentSize - 1);
+    }
 });
 
-increaseBtn.addEventListener('click', () => {
-    updateFontSize(currentFontSize + 1);
+increaseBtn.addEventListener('click', (e) => {
+    const currentSize = parseInt(fontSizeInput.value);
+    if (e.shiftKey) {
+        // Если число заканчивается на 0 (ровное), просто прибавляем 10
+        if (currentSize % 10 === 0) {
+            updateFontSize(currentSize + 10);
+        } else {
+            // Иначе округляем вверх до ближайшего десятка
+            updateFontSize(Math.ceil(currentSize / 10) * 10);
+        }
+    } else {
+        updateFontSize(currentSize + 1);
+    }
 });
 
 fontSizeInput.addEventListener('change', (e) => {
