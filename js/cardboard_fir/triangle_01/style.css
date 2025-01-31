@@ -8,7 +8,7 @@ html, body {
     margin: 0;
     padding: 0;
     min-height: 100vh;
-    background-color: #000;
+    background-color: #333333;
     color: #fff;
     overflow: hidden;
 }
@@ -26,28 +26,35 @@ canvas {
 @font-face {
     font-family: 'Tosh';
     src: url('font/tosh.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
+    font-weight: medium;
+    font-style: medium;
 }
 
 @font-face {
     font-family: 'Tosh';
     src: url('font/tosh.woff2') format('woff2');
     font-weight: 500;
-    font-style: normal;
+    font-style: medium;
 }
 
 #textInput {
     position: fixed;
     bottom: 20px;
-    left: ${window.innerWidth/2}px;
+    left: 50%;
     transform: translateX(-50%);
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    color: white;
+    padding: 12px 18px;
+    height: 46px;
+    background: #FFFFFF;
+    border: none;
     border-radius: 5px;
     width: 200px;
+    outline: none;
+    color: #000000 !important;
     font-family: 'Tosh', Arial, sans-serif;
-    font-weight: normal;
-} 
+    font-size: 18px;
+}
+
+#textInput::placeholder {
+    color: #000000;
+    opacity: 0.5;
+}
