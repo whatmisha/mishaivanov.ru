@@ -56,7 +56,7 @@ const leftWall = Bodies.rectangle(
     window.innerWidth/2 - triangleWidth/4.2,
     centerY,
     wallThickness,
-    triangleHeight,
+    wallLength,
     { 
         ...wallOptions,
         angle: Math.PI/6
@@ -67,7 +67,7 @@ const rightWall = Bodies.rectangle(
     window.innerWidth/2 + triangleWidth/4.2,
     centerY,
     wallThickness,
-    triangleHeight,
+    wallLength,
     { 
         ...wallOptions,
         angle: -Math.PI/6
@@ -77,7 +77,7 @@ const rightWall = Bodies.rectangle(
 const ground = Bodies.rectangle(
     window.innerWidth/2,
     centerY + triangleHeight/2,
-    triangleHeight,
+    wallLength, // Используем ту же длину, что и для боковых стенок
     wallThickness,
     wallOptions
 );
@@ -368,12 +368,54 @@ textInput.addEventListener('keydown', (e) => {
     }
 });
 
+// После всей инициализации добавляем кнопку OK
+function addOkButton() {
+    const textInput = document.getElementById('textInput');
+    const inputRect = textInput.getBoundingClientRect();
+    
+    const okButton = document.createElement('button');
+    okButton.textContent = 'OK';
+    okButton.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: ${inputRect.right + 10}px;
+        padding: 12px 18px;
+        background: #FFFFFF;
+        border: none;
+        border-radius: 5px;
+        color: #000000;
+        font-family: 'Tosh', Arial, sans-serif;
+        font-size: 18px;
+        cursor: pointer;
+        outline: none;
+    `;
+    
+    document.body.appendChild(okButton);
+    
+    okButton.addEventListener('click', () => {
+        createLetters(textInput.value);
+    });
+    
+    // Обновляем обработчик resize
+    const originalResizeHandler = window.onresize;
+    window.onresize = function(e) {
+        if (originalResizeHandler) {
+            originalResizeHandler(e);
+        }
+        const newInputRect = textInput.getBoundingClientRect();
+        okButton.style.left = `${newInputRect.right + 10}px`;
+    };
+}
+
 // Запускаем симуляцию
 Engine.run(engine);
 Render.run(render);
 
 // Создаем начальные буквы
 createLetters(textInput.value);
+
+// Добавляем кнопку OK после инициализации
+addOkButton();
 
 // Обновляем позицию при изменении размера окна
 window.addEventListener('resize', () => {
@@ -462,10 +504,15 @@ document.head.appendChild(script);
 // Ждем загрузку библиотеки перед использованием
 script.onload = () => {
     console.log('OpenType.js успешно загружен');
-    // Теперь можно использовать кнопку сохранения
+    
+    // Удаляем все существующие кнопки saveButton
+    const existingButtons = document.querySelectorAll('#saveButton');
+    existingButtons.forEach(button => button.remove());
+    
+    // Создаем новую кнопку
     const saveButton = document.createElement('button');
     saveButton.id = 'saveButton';
-    saveButton.textContent = 'сохранить svg';
+    saveButton.textContent = 'save svg';
     saveButton.style.cssText = `
         position: fixed;
         bottom: 20px;
