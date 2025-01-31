@@ -133,7 +133,7 @@ const fontControls = document.createElement('div');
 fontControls.className = 'font-size-controls';
 fontControls.innerHTML = `
     <button class="font-size-btn decrease">-</button>
-    <input type="number" class="font-size-input" value="120" min="32" max="200">
+    <input type="number" class="font-size-input" value="120" min="32">
     <button class="font-size-btn increase">+</button>
 `;
 document.body.appendChild(fontControls);
@@ -198,7 +198,7 @@ const decreaseBtn = document.querySelector('.decrease');
 const increaseBtn = document.querySelector('.increase');
 
 function updateFontSize(newSize) {
-    currentFontSize = Math.min(200, Math.max(32, newSize));
+    currentFontSize = Math.max(32, newSize); // Оставляем только минимальное ограничение
     fontSizeInput.value = currentFontSize;
     
     // Обновляем размер шрифта в функциях рендеринга
