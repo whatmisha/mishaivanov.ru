@@ -302,6 +302,7 @@ Events.on(render, 'afterRender', function() {
 
 // Позиционируем инпут по центру треугольника
 const textInput = document.getElementById('textInput');
+textInput.value = 'acg';  // Меняем дефолтный текст
 textInput.style.cssText = `
     position: fixed;
     bottom: 20px;
