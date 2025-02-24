@@ -20,104 +20,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Добавляем переменные для отслеживания позиции мыши
     let mouseX = 0;
     let mouseY = 0;
-    let attractionRadius = 200; // Радиус действия притяжения
-    let maxAttraction = 50; // Максимальное смещение точки
+    const attractionRadius = 200; // Радиус действия притяжения
+    const maxAttraction = 50; // Максимальное смещение точки
 
     // Добавляем переменные для заморозки
     let isFrozen = false;
     let frozenPoints = [];
-
-    // Добавляем обработчики для радиуса притяжения
-    const radiusSlider = document.getElementById('radiusSlider');
-    const radiusInput = document.getElementById('radiusInput');
-
-    radiusSlider.addEventListener('input', function() {
-        const newValue = parseInt(this.value);
-        radiusInput.value = newValue;
-        attractionRadius = newValue;
-        if (!isFrozen) {
-            redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
-        }
-    });
-
-    radiusInput.addEventListener('change', function() {
-        let newValue = parseInt(this.value);
-        newValue = Math.min(Math.max(newValue, 50), 400);
-        this.value = newValue;
-        radiusSlider.value = newValue;
-        attractionRadius = newValue;
-        if (!isFrozen) {
-            redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
-        }
-    });
-
-    // Добавляем обработчики для силы притяжения
-    const strengthSlider = document.getElementById('strengthSlider');
-    const strengthInput = document.getElementById('strengthInput');
-
-    strengthSlider.addEventListener('input', function() {
-        const newValue = parseInt(this.value);
-        strengthInput.value = newValue;
-        maxAttraction = newValue;
-        if (!isFrozen) {
-            redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
-        }
-    });
-
-    strengthInput.addEventListener('change', function() {
-        let newValue = parseInt(this.value);
-        newValue = Math.min(Math.max(newValue, 10), 150);
-        this.value = newValue;
-        strengthSlider.value = newValue;
-        maxAttraction = newValue;
-        if (!isFrozen) {
-            redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
-        }
-    });
-
-    // Добавляем переменную для режима гравитации
-    let isRepelMode = false;
-
-    // Добавляем обработчик переключателя
-    const gravityMode = document.getElementById('gravityMode');
-    
-    gravityMode.addEventListener('change', function() {
-        isRepelMode = this.checked;
-        if (!isFrozen) {
-            redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
-        }
-    });
-
-    let easingValue = 1;
-    const easingSlider = document.getElementById('easingSlider');
-    const easingInput = document.getElementById('easingInput');
-
-    easingSlider.addEventListener('input', function() {
-        const newValue = parseFloat(this.value);
-        easingInput.value = newValue;
-        easingValue = newValue;
-        if (!isFrozen) {
-            redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
-        }
-    });
-
-    easingInput.addEventListener('change', function() {
-        let newValue = parseFloat(this.value);
-        newValue = Math.min(Math.max(newValue, 1), 50);
-        this.value = newValue;
-        easingSlider.value = newValue;
-        easingValue = newValue;
-        if (!isFrozen) {
-            redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
-        }
-    });
-
-    // Обновляем функцию applyEasing для более плавного затухания
-    function applyEasing(t) {
-        // Добавляем плавное затухание на границах
-        const smoothT = Math.sin(t * Math.PI / 2);
-        return Math.pow(smoothT, 1 / easingValue);
-    }
 
     // Функция для перерисовки всего узора
     function redraw(circleDiameter, spacing) {
@@ -134,6 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function drawDottedLine(startX, startY, endX, endY, circleRadius, spacing, lineIndex) {
         if (isFrozen && frozenPoints[lineIndex]) {
+            // Рисуем замороженные точки
             frozenPoints[lineIndex].forEach(point => {
                 ctx.beginPath();
                 ctx.arc(point.x, point.y, circleRadius, 0, Math.PI * 2);
@@ -143,6 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        // Оригинальный код для рисования точек
         const dx = endX - startX;
         const dy = endY - startY;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -162,15 +72,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 );
                 
                 if (distToMouse < attractionRadius) {
-                    // Добавляем плавное затухание на границе радиуса
-                    const normalizedDist = distToMouse / attractionRadius;
-                    const falloff = Math.cos((normalizedDist * Math.PI) / 2);
-                    const easedAttraction = applyEasing(falloff) * maxAttraction;
+                    const attraction = (1 - distToMouse / attractionRadius) * maxAttraction;
                     const angleToMouse = Math.atan2(mouseY - y, mouseX - x);
                     
-                    const direction = isRepelMode ? -1 : 1;
-                    x += direction * Math.cos(angleToMouse) * easedAttraction;
-                    y += direction * Math.sin(angleToMouse) * easedAttraction;
+                    x += Math.cos(angleToMouse) * attraction;
+                    y += Math.sin(angleToMouse) * attraction;
                 }
             }
             
@@ -241,58 +147,45 @@ document.addEventListener('DOMContentLoaded', function() {
         svg.appendChild(background);
         
         // Для каждого луча
-        angles.forEach((angleDegrees, lineIndex) => {
-            if (isFrozen && frozenPoints[lineIndex]) {
-                // Используем замороженные точки
-                frozenPoints[lineIndex].forEach(point => {
-                    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                    circle.setAttribute("cx", point.x);
-                    circle.setAttribute("cy", point.y);
-                    circle.setAttribute("r", circleDiameter/2);
-                    circle.setAttribute("fill", "white");
-                    svg.appendChild(circle);
-                });
-            } else {
-                // Стандартная логика для незамороженного состояния
-                const angle = (angleDegrees * Math.PI) / 180;
-                const endX = centerX + rayLength * Math.cos(angle);
-                const endY = centerY + rayLength * Math.sin(angle);
+        angles.forEach(angleDegrees => {
+            const angle = (angleDegrees * Math.PI) / 180;
+            const endX = centerX + rayLength * Math.cos(angle);
+            const endY = centerY + rayLength * Math.sin(angle);
+            
+            // Вычисляем точки для текущего луча
+            const dx = endX - centerX;
+            const dy = endY - centerY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            const effectiveSpacing = circleDiameter/2 * 2 + spacing;
+            const numDots = Math.max(Math.ceil(distance / effectiveSpacing), 2);
+            
+            // Создаем каждую точку
+            for (let i = 0; i < numDots; i++) {
+                const t = i / (numDots - 1);
+                let x = centerX + dx * t;
+                let y = centerY + dy * t;
                 
-                const dx = endX - centerX;
-                const dy = endY - centerY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
+                // Применяем эффект притяжения
+                const distToMouse = Math.sqrt(
+                    (x - mouseX) * (x - mouseX) + 
+                    (y - mouseY) * (y - mouseY)
+                );
                 
-                const effectiveSpacing = circleDiameter/2 * 2 + spacing;
-                const numDots = Math.max(Math.ceil(distance / effectiveSpacing), 2);
-                
-                for (let i = 0; i < numDots; i++) {
-                    const t = i / (numDots - 1);
-                    let x = centerX + dx * t;
-                    let y = centerY + dy * t;
+                if (distToMouse < attractionRadius) {
+                    const attraction = (1 - distToMouse / attractionRadius) * maxAttraction;
+                    const angleToMouse = Math.atan2(mouseY - y, mouseX - x);
                     
-                    const distToMouse = Math.sqrt(
-                        (x - mouseX) * (x - mouseX) + 
-                        (y - mouseY) * (y - mouseY)
-                    );
-                    
-                    if (distToMouse < attractionRadius) {
-                        const normalizedDist = distToMouse / attractionRadius;
-                        const falloff = Math.cos((normalizedDist * Math.PI) / 2);
-                        const easedAttraction = applyEasing(falloff) * maxAttraction;
-                        const angleToMouse = Math.atan2(mouseY - y, mouseX - x);
-                        
-                        const direction = isRepelMode ? -1 : 1;
-                        x += direction * Math.cos(angleToMouse) * easedAttraction;
-                        y += direction * Math.sin(angleToMouse) * easedAttraction;
-                    }
-                    
-                    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                    circle.setAttribute("cx", x);
-                    circle.setAttribute("cy", y);
-                    circle.setAttribute("r", circleDiameter/2);
-                    circle.setAttribute("fill", "white");
-                    svg.appendChild(circle);
+                    x += Math.cos(angleToMouse) * attraction;
+                    y += Math.sin(angleToMouse) * attraction;
                 }
+                
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circle.setAttribute("cx", x);
+                circle.setAttribute("cy", y);
+                circle.setAttribute("r", circleDiameter/2);
+                circle.setAttribute("fill", "white");
+                svg.appendChild(circle);
             }
         });
         

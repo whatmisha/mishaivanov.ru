@@ -61,6 +61,11 @@
 </head>
 <body>
     <div class="controls">
+        <div>
+            <label>Дополнительные лучи:</label>
+            <input type="range" id="raysSlider" min="0" max="8" value="0" step="1">
+            <input type="number" id="raysInput" value="0" min="0" max="8">
+        </div>
         <label>
             Диаметр кругов:
             <input type="range" id="sizeSlider" min="4" value="24" step="2">
@@ -77,6 +82,31 @@
             <button id="exportSVG" style="margin-top: 10px; padding: 5px 10px;">Экспорт SVG</button>
             <span style="color: white; margin-left: 10px; opacity: 0.7;">⌘ + E</span>
         </div>
+    </div>
+    <div class="controls gravity-controls" style="right: 20px; left: auto;">
+        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+            <label style="display: flex; align-items: center; cursor: pointer;">
+                <input type="checkbox" id="gravityMode" style="margin-right: 8px;">
+                <span style="white-space: nowrap;">Режим отталкивания</span>
+            </label>
+        </div>
+        <label>
+            Радиус курсора:
+            <input type="range" id="radiusSlider" min="50" max="400" value="200" step="10">
+            <input type="number" id="radiusInput" value="200" min="50" max="400" step="10" style="width: 60px;">
+        </label>
+        <br>
+        <label>
+            Сила курсора:
+            <input type="range" id="strengthSlider" min="10" max="150" value="50" step="5">
+            <input type="number" id="strengthInput" value="50" min="10" max="150" step="5" style="width: 60px;">
+        </label>
+        <br>
+        <label>
+            Легкость кругов:
+            <input type="range" id="easingSlider" min="1" max="50" value="1" step="1">
+            <input type="number" id="easingInput" value="1" min="1" max="50" step="1" style="width: 60px;">
+        </label>
     </div>
     <div style="position: fixed; bottom: 20px; left: 20px; color: white; opacity: 0.7;">
         Пробел — заморозить точки

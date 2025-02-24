@@ -14,8 +14,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const centerY = canvas.height / 2;
     const rayLength = Math.min(canvas.width, canvas.height) * 0.45;
 
-    // Заменяем массив углов на исходный
-    const angles = [90, 100, 115, 140, 175, 220, 270, 325, 25];
+    // В начале файла, где определяются переменные
+    const raysSlider = document.getElementById('raysSlider');
+    const raysInput = document.getElementById('raysInput');
+    const baseAngles = [90, 100, 115, 140, 175, 220, 270, 325, 25];
+    let angles = [...baseAngles];
 
     // Добавляем переменные для отслеживания позиции мыши
     let mouseX = 0;
@@ -393,6 +396,59 @@ document.addEventListener('DOMContentLoaded', function() {
             frozenPoints.push(linePoints);
         });
     }
+
+    // Добавляем функцию для расчета дополнительных углов
+    function calculateAngles(additionalRaysPerSegment) {
+        if (additionalRaysPerSegment === 0) {
+            return [...baseAngles];
+        }
+        
+        const newAngles = [];
+        for (let i = 0; i < baseAngles.length; i++) {
+            const currentAngle = baseAngles[i];
+            const nextAngle = baseAngles[(i + 1) % baseAngles.length];
+            
+            newAngles.push(currentAngle);
+            
+            // Вычисляем промежуточные углы
+            let deltaAngle = nextAngle - currentAngle;
+            // Корректируем для перехода через 360
+            if (deltaAngle < -180) deltaAngle += 360;
+            if (deltaAngle > 180) deltaAngle -= 360;
+            
+            // Добавляем промежуточные лучи
+            for (let j = 1; j <= additionalRaysPerSegment; j++) {
+                const fraction = j / (additionalRaysPerSegment + 1);
+                let newAngle = currentAngle + deltaAngle * fraction;
+                if (newAngle < 0) newAngle += 360;
+                if (newAngle >= 360) newAngle -= 360;
+                newAngles.push(newAngle);
+            }
+        }
+        
+        return newAngles;
+    }
+
+    // Добавляем обработчики событий для слайдера и инпута
+    raysSlider.addEventListener('input', function() {
+        const newValue = parseInt(this.value);
+        raysInput.value = newValue;
+        angles = calculateAngles(newValue);
+        if (!isFrozen) {
+            redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
+        }
+    });
+
+    raysInput.addEventListener('change', function() {
+        let newValue = parseInt(this.value);
+        newValue = Math.min(Math.max(newValue, 0), 8);
+        this.value = newValue;
+        raysSlider.value = newValue;
+        angles = calculateAngles(newValue);
+        if (!isFrozen) {
+            redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
+        }
+    });
 
     // Начальная отрисовка
     redraw(24, 24);
