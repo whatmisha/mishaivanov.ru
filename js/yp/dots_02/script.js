@@ -20,12 +20,60 @@ document.addEventListener('DOMContentLoaded', function() {
     // Добавляем переменные для отслеживания позиции мыши
     let mouseX = 0;
     let mouseY = 0;
-    const attractionRadius = 200; // Радиус действия притяжения
-    const maxAttraction = 50; // Максимальное смещение точки
+    let attractionRadius = 200; // Радиус действия притяжения
+    let maxAttraction = 50; // Максимальное смещение точки
 
     // Добавляем переменные для заморозки
     let isFrozen = false;
     let frozenPoints = [];
+
+    // Добавляем обработчики для радиуса притяжения
+    const radiusSlider = document.getElementById('radiusSlider');
+    const radiusInput = document.getElementById('radiusInput');
+
+    radiusSlider.addEventListener('input', function() {
+        const newValue = parseInt(this.value);
+        radiusInput.value = newValue;
+        attractionRadius = newValue;
+        if (!isFrozen) {
+            redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
+        }
+    });
+
+    radiusInput.addEventListener('change', function() {
+        let newValue = parseInt(this.value);
+        newValue = Math.min(Math.max(newValue, 50), 400);
+        this.value = newValue;
+        radiusSlider.value = newValue;
+        attractionRadius = newValue;
+        if (!isFrozen) {
+            redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
+        }
+    });
+
+    // Добавляем обработчики для силы притяжения
+    const strengthSlider = document.getElementById('strengthSlider');
+    const strengthInput = document.getElementById('strengthInput');
+
+    strengthSlider.addEventListener('input', function() {
+        const newValue = parseInt(this.value);
+        strengthInput.value = newValue;
+        maxAttraction = newValue;
+        if (!isFrozen) {
+            redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
+        }
+    });
+
+    strengthInput.addEventListener('change', function() {
+        let newValue = parseInt(this.value);
+        newValue = Math.min(Math.max(newValue, 10), 150);
+        this.value = newValue;
+        strengthSlider.value = newValue;
+        maxAttraction = newValue;
+        if (!isFrozen) {
+            redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
+        }
+    });
 
     // Функция для перерисовки всего узора
     function redraw(circleDiameter, spacing) {
