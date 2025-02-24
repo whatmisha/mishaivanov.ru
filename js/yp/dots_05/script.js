@@ -122,8 +122,55 @@ document.addEventListener('DOMContentLoaded', function() {
         return Math.pow(smoothT, 1 / easingValue);
     }
 
-    // Функция для перерисовки всего узора
+    // Обновляем класс Point на более простую версию
+    class Point {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
+
+    // Добавляем массив для хранения точек
+    let points = [];
+
+    // В начале файла, где определяются переменные
+    let lastTime = 0;
+    const targetFPS = 60;
+    const frameInterval = 1000 / targetFPS;
+
+    // Обновляем функцию redraw для использования requestAnimationFrame
+    function animate(currentTime) {
+        if (!lastTime) lastTime = currentTime;
+        const deltaTime = currentTime - lastTime;
+
+        if (deltaTime >= frameInterval) {
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            angles.forEach((angleDegrees, index) => {
+                const angle = (angleDegrees * Math.PI) / 180;
+                const endX = centerX + rayLength * Math.cos(angle);
+                const endY = centerY + rayLength * Math.sin(angle);
+                drawDottedLine(centerX, centerY, endX, endY, 
+                    parseInt(sizeSlider.value) / 2, 
+                    parseInt(spacingSlider.value), 
+                    index);
+            });
+
+            lastTime = currentTime;
+        }
+
+        requestAnimationFrame(animate);
+    }
+
+    // Заменяем начальный вызов redraw на animate
+    requestAnimationFrame(animate);
+
+    // Обновляем функцию redraw для пересоздания точек при изменении параметров
     function redraw(circleDiameter, spacing) {
+        // Очищаем массив точек при каждой перерисовке
+        points = [];
+        
         ctx.fillStyle = 'black';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
@@ -135,29 +182,29 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Обновляем функцию drawDottedLine
     function drawDottedLine(startX, startY, endX, endY, circleRadius, spacing, lineIndex) {
-        if (isFrozen && frozenPoints[lineIndex]) {
-            frozenPoints[lineIndex].forEach(point => {
-                ctx.beginPath();
-                ctx.arc(point.x, point.y, circleRadius, 0, Math.PI * 2);
-                ctx.fillStyle = 'white';
-                ctx.fill();
-            });
-            return;
+        if (!points[lineIndex]) {
+            points[lineIndex] = [];
+            const dx = endX - startX;
+            const dy = endY - startY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const effectiveSpacing = circleRadius * 2 + spacing;
+            const numDots = Math.max(Math.ceil(distance / effectiveSpacing), 2);
+            
+            for (let i = 0; i < numDots; i++) {
+                const t = i / (numDots - 1);
+                const x = startX + dx * t;
+                const y = startY + dy * t;
+                points[lineIndex].push(new Point(x, y));
+            }
         }
 
-        const dx = endX - startX;
-        const dy = endY - startY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        
-        const effectiveSpacing = circleRadius * 2 + spacing;
-        const numDots = Math.max(Math.ceil(distance / effectiveSpacing), 2);
-        
-        for (let i = 0; i < numDots; i++) {
-            const t = i / (numDots - 1);
-            let x = startX + dx * t;
-            let y = startY + dy * t;
-            
+        // Отрисовываем точки
+        points[lineIndex].forEach(point => {
+            let x = point.x;
+            let y = point.y;
+
             if (!isFrozen) {
                 const distToMouse = Math.sqrt(
                     (x - mouseX) * (x - mouseX) + 
@@ -165,7 +212,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 );
                 
                 if (distToMouse < attractionRadius) {
-                    // Добавляем плавное затухание на границе радиуса
                     const normalizedDist = distToMouse / attractionRadius;
                     const falloff = Math.cos((normalizedDist * Math.PI) / 2);
                     const easedAttraction = applyEasing(falloff) * maxAttraction;
@@ -176,18 +222,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     y += direction * Math.sin(angleToMouse) * easedAttraction;
                 }
             }
-            
+
             ctx.beginPath();
             ctx.arc(x, y, circleRadius, 0, Math.PI * 2);
             ctx.fillStyle = 'white';
             ctx.fill();
-        }
+        });
     }
 
-    // Обработчики событий для размера кругов
+    // Обновляем обработчики событий для пересоздания точек
     sizeSlider.addEventListener('input', function() {
         const newSize = parseInt(this.value);
         sizeInput.value = newSize;
+        points = []; // Очищаем массив точек
         redraw(newSize, parseInt(spacingSlider.value));
     });
 
@@ -203,12 +250,14 @@ document.addEventListener('DOMContentLoaded', function() {
     spacingSlider.addEventListener('input', function() {
         const newSpacing = parseInt(this.value);
         spacingInput.value = newSpacing;
+        points = []; // Очищаем массив точек
         redraw(parseInt(sizeSlider.value), newSpacing);
     });
 
+    // Обновляем обработчик для spacingInput
     spacingInput.addEventListener('change', function() {
         let newSpacing = parseInt(this.value);
-        newSpacing = Math.min(Math.max(newSpacing, 0), 48);
+        newSpacing = Math.min(Math.max(newSpacing, 0), 360); // Увеличиваем максимум до 360
         this.value = newSpacing;
         spacingSlider.value = newSpacing;
         redraw(parseInt(sizeSlider.value), newSpacing);
@@ -434,6 +483,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const newValue = parseInt(this.value);
         raysInput.value = newValue;
         angles = calculateAngles(newValue);
+        points = []; // Очищаем массив точек
         if (!isFrozen) {
             redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
         }
@@ -445,6 +495,7 @@ document.addEventListener('DOMContentLoaded', function() {
         this.value = newValue;
         raysSlider.value = newValue;
         angles = calculateAngles(newValue);
+        points = []; // Очищаем массив точек
         if (!isFrozen) {
             redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
         }
