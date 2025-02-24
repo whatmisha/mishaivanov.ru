@@ -88,6 +88,35 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    let easingValue = 1;
+    const easingSlider = document.getElementById('easingSlider');
+    const easingInput = document.getElementById('easingInput');
+
+    easingSlider.addEventListener('input', function() {
+        const newValue = parseFloat(this.value);
+        easingInput.value = newValue;
+        easingValue = newValue;
+        if (!isFrozen) {
+            redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
+        }
+    });
+
+    easingInput.addEventListener('change', function() {
+        let newValue = parseFloat(this.value);
+        newValue = Math.min(Math.max(newValue, 1), 50);
+        this.value = newValue;
+        easingSlider.value = newValue;
+        easingValue = newValue;
+        if (!isFrozen) {
+            redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
+        }
+    });
+
+    // Функция для применения easing
+    function applyEasing(t) {
+        return Math.pow(t, 1 / easingValue);
+    }
+
     // Функция для перерисовки всего узора
     function redraw(circleDiameter, spacing) {
         ctx.fillStyle = 'black';
@@ -131,13 +160,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 );
                 
                 if (distToMouse < attractionRadius) {
-                    const attraction = (1 - distToMouse / attractionRadius) * maxAttraction;
+                    const normalizedDist = distToMouse / attractionRadius;
+                    const easedAttraction = applyEasing(1 - normalizedDist) * maxAttraction;
                     const angleToMouse = Math.atan2(mouseY - y, mouseX - x);
                     
-                    // Меняем направление в зависимости от режима
                     const direction = isRepelMode ? -1 : 1;
-                    x += direction * Math.cos(angleToMouse) * attraction;
-                    y += direction * Math.sin(angleToMouse) * attraction;
+                    x += direction * Math.cos(angleToMouse) * easedAttraction;
+                    y += direction * Math.sin(angleToMouse) * easedAttraction;
                 }
             }
             
@@ -243,13 +272,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     );
                     
                     if (distToMouse < attractionRadius) {
-                        const attraction = (1 - distToMouse / attractionRadius) * maxAttraction;
+                        const normalizedDist = distToMouse / attractionRadius;
+                        const easedAttraction = applyEasing(1 - normalizedDist) * maxAttraction;
                         const angleToMouse = Math.atan2(mouseY - y, mouseX - x);
                         
-                        // Меняем направление в зависимости от режима
                         const direction = isRepelMode ? -1 : 1;
-                        x += direction * Math.cos(angleToMouse) * attraction;
-                        y += direction * Math.sin(angleToMouse) * attraction;
+                        x += direction * Math.cos(angleToMouse) * easedAttraction;
+                        y += direction * Math.sin(angleToMouse) * easedAttraction;
                     }
                     
                     const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
