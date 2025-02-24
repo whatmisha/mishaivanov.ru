@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Добавляем переменные для отслеживания позиции мыши
     let mouseX = 0;
     let mouseY = 0;
-    let attractionRadius = 200; // Радиус действия притяжения
+    let attractionRadius = 50; // Изменено с 200 на 50
     let maxAttraction = 1; // Максимальное смещение точки
 
     // Добавляем переменные для заморозки
@@ -513,4 +513,8 @@ document.addEventListener('DOMContentLoaded', function() {
             freezePoints();
         }
     });
+
+    // В HTML также нужно обновить начальные значения
+    radiusSlider.value = '50';
+    radiusInput.value = '50';
 }); 
