@@ -112,9 +112,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Функция для применения easing
+    // Обновляем функцию applyEasing для более плавного затухания
     function applyEasing(t) {
-        return Math.pow(t, 1 / easingValue);
+        // Добавляем плавное затухание на границах
+        const smoothT = Math.sin(t * Math.PI / 2);
+        return Math.pow(smoothT, 1 / easingValue);
     }
 
     // Функция для перерисовки всего узора
@@ -160,8 +162,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 );
                 
                 if (distToMouse < attractionRadius) {
+                    // Добавляем плавное затухание на границе радиуса
                     const normalizedDist = distToMouse / attractionRadius;
-                    const easedAttraction = applyEasing(1 - normalizedDist) * maxAttraction;
+                    const falloff = Math.cos((normalizedDist * Math.PI) / 2);
+                    const easedAttraction = applyEasing(falloff) * maxAttraction;
                     const angleToMouse = Math.atan2(mouseY - y, mouseX - x);
                     
                     const direction = isRepelMode ? -1 : 1;
@@ -273,7 +277,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     if (distToMouse < attractionRadius) {
                         const normalizedDist = distToMouse / attractionRadius;
-                        const easedAttraction = applyEasing(1 - normalizedDist) * maxAttraction;
+                        const falloff = Math.cos((normalizedDist * Math.PI) / 2);
+                        const easedAttraction = applyEasing(falloff) * maxAttraction;
                         const angleToMouse = Math.atan2(mouseY - y, mouseX - x);
                         
                         const direction = isRepelMode ? -1 : 1;
