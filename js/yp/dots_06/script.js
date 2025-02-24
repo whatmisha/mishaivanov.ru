@@ -58,8 +58,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const strengthSlider = document.getElementById('strengthSlider');
     const strengthInput = document.getElementById('strengthInput');
 
+    strengthSlider.min = '1';
+    strengthSlider.value = '1';
+    strengthInput.value = '1';
+    strengthInput.min = '1';
+
     strengthSlider.addEventListener('input', function() {
-        const newValue = parseInt(this.value);
+        const newValue = Math.max(parseInt(this.value), 1);
         strengthInput.value = newValue;
         maxAttraction = newValue;
         if (!isFrozen) {
@@ -68,8 +73,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     strengthInput.addEventListener('change', function() {
-        let newValue = parseInt(this.value);
-        newValue = Math.min(Math.max(newValue, 10), 150);
+        let newValue = Math.max(parseInt(this.value), 1);
+        newValue = Math.min(Math.max(newValue, 1), 150);
         this.value = newValue;
         strengthSlider.value = newValue;
         maxAttraction = newValue;
@@ -86,9 +91,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     gravityMode.addEventListener('change', function() {
         isRepelMode = this.checked;
-        if (!isFrozen) {
-            redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
-        }
     });
 
     let easingValue = 1;
@@ -138,45 +140,52 @@ document.addEventListener('DOMContentLoaded', function() {
             this.vx = 0;
             this.vy = 0;
             this.randomAngle = Math.random() * Math.PI * 2;
-            // Уменьшаем начальное смещение
             this.offsetX = 0;
             this.offsetY = 0;
+            this.isActivated = false; // Флаг активации движения
         }
 
         update() {
-            // Уменьшаем начальный дрейф
-            const driftSpeed = 0.05;
-            this.vx += Math.cos(this.randomAngle) * driftSpeed * 0.01;
-            this.vy += Math.sin(this.randomAngle) * driftSpeed * 0.01;
-            
-            // Увеличиваем возвращающую силу
-            const returnStrength = 0.001;
-            const dx = (this.originalX + this.offsetX) - this.x;
-            const dy = (this.originalY + this.offsetY) - this.y;
-            this.vx += dx * returnStrength;
-            this.vy += dy * returnStrength;
+            if (this.isActivated) {
+                // Усиленный дрейф для активированных точек
+                const driftSpeed = 0.2;
+                this.vx += Math.cos(this.randomAngle) * driftSpeed * 0.02;
+                this.vy += Math.sin(this.randomAngle) * driftSpeed * 0.02;
+                
+                // Очень слабое притяжение к исходной позиции
+                const returnStrength = 0.00005;
+                const dx = (this.originalX + this.offsetX) - this.x;
+                const dy = (this.originalY + this.offsetY) - this.y;
+                this.vx += dx * returnStrength;
+                this.vy += dy * returnStrength;
 
-            // Более сильное затухание
-            const friction = 0.98;
-            this.vx *= friction;
-            this.vy *= friction;
+                // Мягкое затухание для большей инерции
+                const friction = 0.99;
+                this.vx *= friction;
+                this.vy *= friction;
 
-            // Обновляем позицию
-            this.x += this.vx;
-            this.y += this.vy;
+                this.x += this.vx;
+                this.y += this.vy;
 
-            // Медленнее меняем направление дрейфа и смещение
-            this.randomAngle += (Math.random() - 0.5) * 0.01;
-            this.offsetX += (Math.random() - 0.5) * 0.05;
-            this.offsetY += (Math.random() - 0.5) * 0.05;
-            
-            // Уменьшаем максимальное смещение
-            const maxOffset = 15;
-            this.offsetX = Math.max(Math.min(this.offsetX, maxOffset), -maxOffset);
-            this.offsetY = Math.max(Math.min(this.offsetY, maxOffset), -maxOffset);
+                // Медленно меняем направление дрейфа и смещение
+                this.randomAngle += (Math.random() - 0.5) * 0.1;
+                this.offsetX += (Math.random() - 0.5) * 0.1;
+                this.offsetY += (Math.random() - 0.5) * 0.1;
+                
+                const maxOffset = 50;
+                this.offsetX = Math.max(Math.min(this.offsetX, maxOffset), -maxOffset);
+                this.offsetY = Math.max(Math.min(this.offsetY, maxOffset), -maxOffset);
+            } else {
+                // Для неактивированных точек - строгое положение
+                this.x = this.originalX;
+                this.y = this.originalY;
+                this.vx = 0;
+                this.vy = 0;
+            }
         }
 
         applyForce(angle, force) {
+            this.isActivated = true; // Активируем точку при воздействии силы
             this.vx += Math.cos(angle) * force;
             this.vy += Math.sin(angle) * force;
         }
@@ -220,18 +229,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Обновляем функцию redraw для пересоздания точек при изменении параметров
     function redraw(circleDiameter, spacing) {
-        // Очищаем массив точек при каждой перерисовке
-        points = [];
-        
         ctx.fillStyle = 'black';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        angles.forEach((angleDegrees, index) => {
-            const angle = (angleDegrees * Math.PI) / 180;
-            const endX = centerX + rayLength * Math.cos(angle);
-            const endY = centerY + rayLength * Math.sin(angle);
-            drawDottedLine(centerX, centerY, endX, endY, circleDiameter / 2, spacing, index);
-        });
+        if (isFrozen && frozenPoints.length > 0) {
+            // Отрисовываем замороженные точки
+            frozenPoints.forEach(linePoints => {
+                linePoints.forEach(point => {
+                    ctx.beginPath();
+                    ctx.arc(point.x, point.y, circleDiameter / 2, 0, Math.PI * 2);
+                    ctx.fillStyle = 'white';
+                    ctx.fill();
+                });
+            });
+        } else {
+            angles.forEach((angleDegrees, index) => {
+                const angle = (angleDegrees * Math.PI) / 180;
+                const endX = centerX + rayLength * Math.cos(angle);
+                const endY = centerY + rayLength * Math.sin(angle);
+                drawDottedLine(centerX, centerY, endX, endY, circleDiameter / 2, spacing, index);
+            });
+        }
     }
 
     // Обновляем функцию drawDottedLine
@@ -270,18 +288,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 const effectiveRadius = Math.sqrt((stretchedX * stretchedX) / (stretch * stretch) + stretchedY * stretchedY);
                 
                 if (effectiveRadius < attractionRadius) {
-                    const angle = Math.atan2(mouseY - point.y, mouseX - point.x);
-                    const force = (1 - effectiveRadius / attractionRadius) * (maxAttraction / 50 + flowStrength * 0.1);
+                    point.isActivated = true;
+                    
+                    const angleToMouse = Math.atan2(mouseY - point.y, mouseX - point.x);
+                    
+                    const normalizedDist = effectiveRadius / attractionRadius;
+                    const falloff = Math.cos((normalizedDist * Math.PI) / 2);
+                    const force = falloff * (maxAttraction / 100 + flowStrength * 0.05);
                     
                     if (isRepelMode) {
-                        // В режиме отталкивания - отталкиваем от курсора
-                        point.applyForce(angle + Math.PI, force);
-                        point.applyForce(mouseAngle, flowStrength * 0.1);
+                        point.applyForce(angleToMouse + Math.PI, force);
+                        const randomAngle = Math.random() * Math.PI * 2;
+                        point.applyForce(randomAngle, force * 0.1);
                     } else {
-                        // В режиме притяжения - тянем к центру области курсора
-                        // Чем дальше от центра, тем сильнее притяжение
-                        const attractionForce = (effectiveRadius / attractionRadius) * force * 2;
-                        point.applyForce(angle, attractionForce);
+                        point.applyForce(angleToMouse, force);
                     }
                 }
                 
@@ -350,119 +370,46 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Обновляем функцию generateSVG
-    function generateSVG(circleDiameter, spacing) {
-        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("width", "1080");
-        svg.setAttribute("height", "1080");
-        svg.setAttribute("viewBox", "0 0 1080 1080");
-        svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+    function generateSVG(circleRadius) {
+        let svgContent = `<svg width="1080" height="1080" viewBox="0 0 1080 1080" xmlns="http://www.w3.org/2000/svg">
+        <rect width="1080" height="1080" fill="black"/>`;
         
-        // Добавляем черный фон
-        const background = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-        background.setAttribute("width", "1080");
-        background.setAttribute("height", "1080");
-        background.setAttribute("fill", "black");
-        svg.appendChild(background);
+        const pointsToUse = isFrozen ? frozenPoints : points;
         
-        // Для каждого луча
-        angles.forEach((angleDegrees, lineIndex) => {
-            if (isFrozen && frozenPoints[lineIndex]) {
-                // Используем замороженные точки
-                frozenPoints[lineIndex].forEach(point => {
-                    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                    circle.setAttribute("cx", point.x);
-                    circle.setAttribute("cy", point.y);
-                    circle.setAttribute("r", circleDiameter/2);
-                    circle.setAttribute("fill", "white");
-                    svg.appendChild(circle);
-                });
-            } else {
-                // Стандартная логика для незамороженного состояния
-                const angle = (angleDegrees * Math.PI) / 180;
-                const endX = centerX + rayLength * Math.cos(angle);
-                const endY = centerY + rayLength * Math.sin(angle);
-                
-                const dx = endX - centerX;
-                const dy = endY - centerY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                const effectiveSpacing = circleDiameter/2 * 2 + spacing;
-                const numDots = Math.max(Math.ceil(distance / effectiveSpacing), 2);
-                
-                for (let i = 0; i < numDots; i++) {
-                    const t = i / (numDots - 1);
-                    let x = centerX + dx * t;
-                    let y = centerY + dy * t;
-                    
-                    const distToMouse = Math.sqrt(
-                        (x - mouseX) * (x - mouseX) + 
-                        (y - mouseY) * (y - mouseY)
-                    );
-                    
-                    if (distToMouse < attractionRadius) {
-                        const normalizedDist = distToMouse / attractionRadius;
-                        const falloff = Math.cos((normalizedDist * Math.PI) / 2);
-                        const easedAttraction = applyEasing(falloff) * maxAttraction;
-                        const angleToMouse = Math.atan2(mouseY - y, mouseX - x);
-                        
-                        const direction = isRepelMode ? -1 : 1;
-                        x += direction * Math.cos(angleToMouse) * easedAttraction;
-                        y += direction * Math.sin(angleToMouse) * easedAttraction;
-                    }
-                    
-                    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                    circle.setAttribute("cx", x);
-                    circle.setAttribute("cy", y);
-                    circle.setAttribute("r", circleDiameter/2);
-                    circle.setAttribute("fill", "white");
-                    svg.appendChild(circle);
-                }
-            }
+        pointsToUse.forEach(linePoints => {
+            linePoints.forEach(point => {
+                svgContent += `<circle cx="${point.x}" cy="${point.y}" r="${circleRadius}" fill="white"/>`;
+            });
         });
         
-        return svg;
+        svgContent += '</svg>';
+        return svgContent;
     }
 
-    // Функция для скачивания SVG
-    function downloadSVG(svgElement) {
-        const serializer = new XMLSerializer();
-        let source = serializer.serializeToString(svgElement);
+    // Обновляем функцию downloadSVG
+    function downloadSVG(circleRadius) {
+        const svgContent = generateSVG(circleRadius);
+        const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+        const url = URL.createObjectURL(blob);
         
-        // Добавляем декларацию XML
-        if (!source.match(/^<\?xml/)) {
-            source = '<?xml version="1.0" standalone="no"?>\r\n' + source;
-        }
-        
-        const svgBlob = new Blob([source], {type:"image/svg+xml;charset=utf-8"});
-        const svgUrl = URL.createObjectURL(svgBlob);
-        const downloadLink = document.createElement("a");
-        downloadLink.href = svgUrl;
-        downloadLink.download = "pattern.svg";
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-        URL.revokeObjectURL(svgUrl);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'rays.svg';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
     }
 
-    // Добавляем обработчик для кнопки экспорта
+    // Обновляем обработчики экспорта
     document.getElementById('exportSVG').addEventListener('click', function() {
-        const svg = generateSVG(
-            parseInt(sizeSlider.value),
-            parseInt(spacingSlider.value)
-        );
-        downloadSVG(svg);
+        downloadSVG(parseInt(sizeSlider.value) / 2);
     });
 
-    // Добавляем обработчик клавиатуры
     document.addEventListener('keydown', function(e) {
-        // Проверяем cmd+e (для Mac) или ctrl+e (для Windows)
-        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'e') {
-            e.preventDefault(); // Предотвращаем стандартное действие браузера
-            const svg = generateSVG(
-                parseInt(sizeSlider.value),
-                parseInt(spacingSlider.value)
-            );
-            downloadSVG(svg);
+        if ((e.metaKey || e.ctrlKey) && e.key === 'e') {
+            e.preventDefault();
+            downloadSVG(parseInt(sizeSlider.value) / 2);
         }
     });
 
@@ -478,42 +425,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Функция для сохранения текущих позиций точек
+    // Обновляем функцию freezePoints для сохранения текущих позиций
     function freezePoints() {
         frozenPoints = [];
-        angles.forEach(angleDegrees => {
-            const angle = (angleDegrees * Math.PI) / 180;
-            const endX = centerX + rayLength * Math.cos(angle);
-            const endY = centerY + rayLength * Math.sin(angle);
-            
-            const dx = endX - centerX;
-            const dy = endY - centerY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            const effectiveSpacing = parseInt(sizeSlider.value)/2 * 2 + parseInt(spacingSlider.value);
-            const numDots = Math.max(Math.ceil(distance / effectiveSpacing), 2);
-            
+        angles.forEach((angleDegrees, index) => {
             const linePoints = [];
-            for (let i = 0; i < numDots; i++) {
-                const t = i / (numDots - 1);
-                let x = centerX + dx * t;
-                let y = centerY + dy * t;
-                
-                const distToMouse = Math.sqrt(
-                    (x - mouseX) * (x - mouseX) + 
-                    (y - mouseY) * (y - mouseY)
-                );
-                
-                if (distToMouse < attractionRadius) {
-                    const attraction = (1 - distToMouse / attractionRadius) * maxAttraction;
-                    const angleToMouse = Math.atan2(mouseY - y, mouseX - x);
-                    
-                    x += Math.cos(angleToMouse) * attraction;
-                    y += Math.sin(angleToMouse) * attraction;
-                }
-                
-                linePoints.push({x, y});
-            }
+            points[index].forEach(point => {
+                linePoints.push({
+                    x: point.x,
+                    y: point.y
+                });
+            });
             frozenPoints.push(linePoints);
         });
     }
@@ -573,11 +495,22 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Начальная отрисовка
-    redraw(24, 24);
+    // Устанавливаем начальный размер кругов
+    sizeSlider.value = '4';
+    sizeInput.value = '4';
+    
+    // Начальная отрисовка с новым размером
+    redraw(4, parseInt(spacingSlider.value));
 
-    // Обновляем начальное значение силы курсора
-    document.getElementById('strengthSlider').value = '1';
-    document.getElementById('strengthInput').value = '1';
-    maxAttraction = 1;
+    // Обновляем минимальное значение для размера
+    document.getElementById('sizeSlider').min = '2';
+    document.getElementById('sizeInput').min = '2';
+
+    // Добавляем обработчик клика для заморозки
+    canvas.addEventListener('click', function() {
+        isFrozen = !isFrozen;
+        if (isFrozen) {
+            freezePoints();
+        }
+    });
 }); 
