@@ -147,55 +147,45 @@ document.addEventListener('DOMContentLoaded', function() {
         svg.appendChild(background);
         
         // Для каждого луча
-        angles.forEach((angleDegrees, lineIndex) => {
-            if (isFrozen && frozenPoints[lineIndex]) {
-                // Используем замороженные точки
-                frozenPoints[lineIndex].forEach(point => {
-                    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                    circle.setAttribute("cx", point.x);
-                    circle.setAttribute("cy", point.y);
-                    circle.setAttribute("r", circleDiameter/2);
-                    circle.setAttribute("fill", "white");
-                    svg.appendChild(circle);
-                });
-            } else {
-                // Стандартная логика для незамороженного состояния
-                const angle = (angleDegrees * Math.PI) / 180;
-                const endX = centerX + rayLength * Math.cos(angle);
-                const endY = centerY + rayLength * Math.sin(angle);
+        angles.forEach(angleDegrees => {
+            const angle = (angleDegrees * Math.PI) / 180;
+            const endX = centerX + rayLength * Math.cos(angle);
+            const endY = centerY + rayLength * Math.sin(angle);
+            
+            // Вычисляем точки для текущего луча
+            const dx = endX - centerX;
+            const dy = endY - centerY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            const effectiveSpacing = circleDiameter/2 * 2 + spacing;
+            const numDots = Math.max(Math.ceil(distance / effectiveSpacing), 2);
+            
+            // Создаем каждую точку
+            for (let i = 0; i < numDots; i++) {
+                const t = i / (numDots - 1);
+                let x = centerX + dx * t;
+                let y = centerY + dy * t;
                 
-                const dx = endX - centerX;
-                const dy = endY - centerY;
-                const distance = Math.sqrt(dx * dx + dy * dy);
+                // Применяем эффект притяжения
+                const distToMouse = Math.sqrt(
+                    (x - mouseX) * (x - mouseX) + 
+                    (y - mouseY) * (y - mouseY)
+                );
                 
-                const effectiveSpacing = circleDiameter/2 * 2 + spacing;
-                const numDots = Math.max(Math.ceil(distance / effectiveSpacing), 2);
-                
-                for (let i = 0; i < numDots; i++) {
-                    const t = i / (numDots - 1);
-                    let x = centerX + dx * t;
-                    let y = centerY + dy * t;
+                if (distToMouse < attractionRadius) {
+                    const attraction = (1 - distToMouse / attractionRadius) * maxAttraction;
+                    const angleToMouse = Math.atan2(mouseY - y, mouseX - x);
                     
-                    const distToMouse = Math.sqrt(
-                        (x - mouseX) * (x - mouseX) + 
-                        (y - mouseY) * (y - mouseY)
-                    );
-                    
-                    if (distToMouse < attractionRadius) {
-                        const attraction = (1 - distToMouse / attractionRadius) * maxAttraction;
-                        const angleToMouse = Math.atan2(mouseY - y, mouseX - x);
-                        
-                        x += Math.cos(angleToMouse) * attraction;
-                        y += Math.sin(angleToMouse) * attraction;
-                    }
-                    
-                    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-                    circle.setAttribute("cx", x);
-                    circle.setAttribute("cy", y);
-                    circle.setAttribute("r", circleDiameter/2);
-                    circle.setAttribute("fill", "white");
-                    svg.appendChild(circle);
+                    x += Math.cos(angleToMouse) * attraction;
+                    y += Math.sin(angleToMouse) * attraction;
                 }
+                
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circle.setAttribute("cx", x);
+                circle.setAttribute("cy", y);
+                circle.setAttribute("r", circleDiameter/2);
+                circle.setAttribute("fill", "white");
+                svg.appendChild(circle);
             }
         });
         

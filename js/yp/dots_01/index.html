@@ -5,8 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Лучи</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            margin: 0;
+            background: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+        }
+        /* Стили для ползунков */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 200px;
+            height: 2px;
+            background: white;
+            border-radius: 1px;
+            margin: 10px 0;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 15px;
+            height: 15px;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        input[type="range"]::-moz-range-track {
+            width: 200px;
+            height: 2px;
+            background: white;
+            border-radius: 1px;
+        }
+        
+        input[type="range"]::-moz-range-thumb {
+            width: 15px;
+            height: 15px;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+        }
+    </style>
 </head>
 <body>
+    <div class="controls">
+        <label>
+            Диаметр кругов:
+            <input type="range" id="sizeSlider" min="4" value="24" step="2">
+            <input type="number" id="sizeInput" value="24" min="4" step="2" style="width: 60px;">
+        </label>
+        <br>
+        <label>
+            Расстояние между кругами:
+            <input type="range" id="spacingSlider" min="0" max="48" value="24" step="2">
+            <input type="number" id="spacingInput" value="24" min="0" max="48" step="2" style="width: 60px;">
+        </label>
+        <br>
+        <button id="exportSVG" style="margin-top: 10px; padding: 5px 10px;">Экспорт SVG</button>
+    </div>
     <div class="container">
         <canvas id="rayCanvas"></canvas>
     </div>
