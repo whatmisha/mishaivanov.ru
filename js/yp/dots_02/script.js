@@ -75,6 +75,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Добавляем переменную для режима гравитации
+    let isRepelMode = false;
+
+    // Добавляем обработчик переключателя
+    const gravityMode = document.getElementById('gravityMode');
+    
+    gravityMode.addEventListener('change', function() {
+        isRepelMode = this.checked;
+        if (!isFrozen) {
+            redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
+        }
+    });
+
     // Функция для перерисовки всего узора
     function redraw(circleDiameter, spacing) {
         ctx.fillStyle = 'black';
@@ -90,7 +103,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function drawDottedLine(startX, startY, endX, endY, circleRadius, spacing, lineIndex) {
         if (isFrozen && frozenPoints[lineIndex]) {
-            // Рисуем замороженные точки
             frozenPoints[lineIndex].forEach(point => {
                 ctx.beginPath();
                 ctx.arc(point.x, point.y, circleRadius, 0, Math.PI * 2);
@@ -100,7 +112,6 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Оригинальный код для рисования точек
         const dx = endX - startX;
         const dy = endY - startY;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -123,8 +134,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     const attraction = (1 - distToMouse / attractionRadius) * maxAttraction;
                     const angleToMouse = Math.atan2(mouseY - y, mouseX - x);
                     
-                    x += Math.cos(angleToMouse) * attraction;
-                    y += Math.sin(angleToMouse) * attraction;
+                    // Меняем направление в зависимости от режима
+                    const direction = isRepelMode ? -1 : 1;
+                    x += direction * Math.cos(angleToMouse) * attraction;
+                    y += direction * Math.sin(angleToMouse) * attraction;
                 }
             }
             
@@ -233,8 +246,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         const attraction = (1 - distToMouse / attractionRadius) * maxAttraction;
                         const angleToMouse = Math.atan2(mouseY - y, mouseX - x);
                         
-                        x += Math.cos(angleToMouse) * attraction;
-                        y += Math.sin(angleToMouse) * attraction;
+                        // Меняем направление в зависимости от режима
+                        const direction = isRepelMode ? -1 : 1;
+                        x += direction * Math.cos(angleToMouse) * attraction;
+                        y += direction * Math.sin(angleToMouse) * attraction;
                     }
                     
                     const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");

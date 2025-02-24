@@ -79,14 +79,20 @@
         </div>
     </div>
     <div class="controls gravity-controls" style="right: 20px; left: auto;">
+        <div style="display: flex; align-items: center; margin-bottom: 10px;">
+            <label style="display: flex; align-items: center; cursor: pointer;">
+                <input type="checkbox" id="gravityMode" style="margin-right: 8px;">
+                <span style="white-space: nowrap;">Режим отталкивания</span>
+            </label>
+        </div>
         <label>
-            Радиус притяжения:
+            Радиус курсора:
             <input type="range" id="radiusSlider" min="50" max="400" value="200" step="10">
             <input type="number" id="radiusInput" value="200" min="50" max="400" step="10" style="width: 60px;">
         </label>
         <br>
         <label>
-            Сила притяжения:
+            Сила курсора:
             <input type="range" id="strengthSlider" min="10" max="150" value="50" step="5">
             <input type="number" id="strengthInput" value="50" min="10" max="150" step="5" style="width: 60px;">
         </label>
