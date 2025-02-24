@@ -93,37 +93,6 @@ document.addEventListener('DOMContentLoaded', function() {
         isRepelMode = this.checked;
     });
 
-    let easingValue = 1;
-    const easingSlider = document.getElementById('easingSlider');
-    const easingInput = document.getElementById('easingInput');
-
-    easingSlider.addEventListener('input', function() {
-        const newValue = parseFloat(this.value);
-        easingInput.value = newValue;
-        easingValue = newValue;
-        if (!isFrozen) {
-            redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
-        }
-    });
-
-    easingInput.addEventListener('change', function() {
-        let newValue = parseFloat(this.value);
-        newValue = Math.min(Math.max(newValue, 1), 50);
-        this.value = newValue;
-        easingSlider.value = newValue;
-        easingValue = newValue;
-        if (!isFrozen) {
-            redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
-        }
-    });
-
-    // Обновляем функцию applyEasing для более плавного затухания
-    function applyEasing(t) {
-        // Добавляем плавное затухание на границах
-        const smoothT = Math.sin(t * Math.PI / 2);
-        return Math.pow(smoothT, 1 / easingValue);
-    }
-
     // Добавим отслеживание движения курсора
     let mouseVX = 0;
     let mouseVY = 0;
@@ -506,8 +475,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('sizeSlider').min = '2';
     document.getElementById('sizeInput').min = '2';
 
-    // Добавляем обработчик клика для заморозки
-    canvas.addEventListener('click', function() {
+    // Заменяем обработчик клика с canvas на document
+    document.addEventListener('click', function() {
         isFrozen = !isFrozen;
         if (isFrozen) {
             freezePoints();
