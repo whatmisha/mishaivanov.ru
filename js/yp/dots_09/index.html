@@ -79,6 +79,18 @@
             <input type="number" id="spacingInput" value="24" min="0" max="360" step="2" style="width: 60px;">
         </label>
         <br>
+        <label>
+            Глубина (Z):
+            <input type="range" id="depthSlider" min="0" max="500" value="0" step="10">
+            <input type="number" id="depthInput" value="0" min="0" max="500" step="10" style="width: 60px;">
+        </label>
+        <br>
+        <label>
+            Угол обзора:
+            <input type="range" id="perspectiveSlider" min="300" max="2000" value="1000" step="50">
+            <input type="number" id="perspectiveInput" value="1000" min="300" max="2000" step="50" style="width: 60px;">
+        </label>
+        <br>
         <div style="display: flex; align-items: center;">
             <button id="exportSVG" style="margin-top: 10px; padding: 5px 10px;">Экспорт SVG</button>
             <span style="color: white; margin-left: 10px; opacity: 0.7;">⌘ + E</span>
@@ -116,13 +128,6 @@
             <div style="width: 50px; height: 100px; background-color: #333333;"></div>
         </div>
     </div>
-    
-    <!-- Добавляем форму загрузки SVG -->
-    <div class="upload-form" style="position: fixed; bottom: 20px; right: 20px; background: rgba(0,0,0,0.7); padding: 15px; border-radius: 8px; color: white;">
-        <label for="svgFile" style="display: block; margin-bottom: 10px;">Загрузить SVG:</label>
-        <input type="file" id="svgFile" accept=".svg" style="color: white;">
-    </div>
-
     <div class="container">
         <canvas id="rayCanvas"></canvas>
     </div>

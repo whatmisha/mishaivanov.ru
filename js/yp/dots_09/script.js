@@ -47,10 +47,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let randomWalkerVX = 0;
     let randomWalkerVY = 0;
 
-    // Добавляем переменную для хранения текущего SVG
-    let currentSVG = null;
-    let isSVGMode = false;
-
     // Обновляем функцию для проверки активных точек
     function checkActivePoints() {
         let hasActive = false;
@@ -246,71 +242,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Добавляем флаг для отслеживания активных точек
     let hasActivePoints = false;
 
-    // Добавляем обработчик загрузки SVG
-    document.getElementById('svgFile').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                currentSVG = e.target.result;
-                isSVGMode = true;
-                
-                // Отключаем управление лучами, так как теперь используется SVG
-                raysSlider.disabled = true;
-                raysInput.disabled = true;
-                raysSlider.parentElement.style.opacity = '0.5';
-                
-                // Сбрасываем заморозку, если она была активна
-                isFrozen = false;
-                updatePauseIndicator();
-                
-                // Парсим SVG и создаем точки
-                parseSVG(currentSVG);
-            };
-            reader.readAsText(file);
-        }
-    });
-
-    // Функция для парсинга SVG и создания точек
-    function parseSVG(svgContent) {
-        const parser = new DOMParser();
-        const svgDoc = parser.parseFromString(svgContent, 'image/svg+xml');
-        
-        // Создаем временный элемент для измерения путей
-        const tempSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        tempSvg.innerHTML = svgContent;
-        document.body.appendChild(tempSvg);
-        
-        const paths = tempSvg.querySelectorAll('path');
-        points = []; // Очищаем существующие точки
-        
-        // Для каждого пути в SVG
-        paths.forEach((path, index) => {
-            const pathLength = path.getTotalLength();
-            const spacing = parseInt(spacingSlider.value);
-            const numPoints = Math.max(Math.floor(pathLength / spacing), 2);
-            
-            const linePoints = [];
-            
-            // Распределяем точки равномерно вдоль пути
-            for (let i = 0; i < numPoints; i++) {
-                const distance = (i / (numPoints - 1)) * pathLength;
-                const point = path.getPointAtLength(distance);
-                linePoints.push(new Point(point.x, point.y));
-            }
-            
-            if (linePoints.length > 0) {
-                points.push(linePoints);
-            }
-        });
-        
-        // Удаляем временный элемент
-        document.body.removeChild(tempSvg);
-        
-        // Обновляем отображение
-        redraw(parseInt(sizeSlider.value), parseInt(spacingSlider.value));
-    }
-
     // Обновляем функцию animate
     function animate(currentTime) {
         if (!lastTime) lastTime = currentTime;
@@ -325,65 +256,15 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.fillStyle = 'black';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            if (isSVGMode) {
-                // Отрисовываем точки из SVG
-                points.forEach(linePoints => {
-                    linePoints.forEach(point => {
-                        if (!isFrozen) {
-                            const distToMouse = Math.sqrt(
-                                (point.x - mouseX) * (point.x - mouseX) + 
-                                (point.y - mouseY) * (point.y - mouseY)
-                            );
-                            
-                            const mouseSpeed = Math.sqrt(mouseVX * mouseVX + mouseVY * mouseVY);
-                            const flowStrength = Math.min(mouseSpeed, 5);
-                            
-                            const mouseAngle = Math.atan2(mouseVY, mouseVX);
-                            const stretchedX = (point.x - mouseX) * Math.cos(-mouseAngle) - (point.y - mouseY) * Math.sin(-mouseAngle);
-                            const stretchedY = (point.x - mouseX) * Math.sin(-mouseAngle) + (point.y - mouseY) * Math.cos(-mouseAngle);
-                            
-                            const stretch = 1 + flowStrength * 0.1;
-                            const effectiveRadius = Math.sqrt((stretchedX * stretchedX) / (stretch * stretch) + stretchedY * stretchedY);
-                            
-                            if (effectiveRadius < attractionRadius) {
-                                point.isActivated = true;
-                                
-                                const angleToMouse = Math.atan2(mouseY - point.y, mouseX - point.x);
-                                
-                                const normalizedDist = effectiveRadius / attractionRadius;
-                                const falloff = Math.cos((normalizedDist * Math.PI) / 2);
-                                const force = falloff * (maxAttraction / 100 + flowStrength * 0.05);
-                                
-                                if (isRepelMode) {
-                                    point.applyForce(angleToMouse + Math.PI, force);
-                                    const randomAngle = Math.random() * Math.PI * 2;
-                                    point.applyForce(randomAngle, force * 0.1);
-                                } else {
-                                    point.applyForce(angleToMouse, force);
-                                }
-                            }
-                            
-                            point.update();
-                        }
-
-                        ctx.beginPath();
-                        ctx.arc(point.x, point.y, parseInt(sizeSlider.value) / 2, 0, Math.PI * 2);
-                        ctx.fillStyle = 'white';
-                        ctx.fill();
-                    });
-                });
-            } else {
-                // Отрисовываем лучи как раньше
-                angles.forEach((angleDegrees, index) => {
-                    const angle = (angleDegrees * Math.PI) / 180;
-                    const endX = centerX + rayLength * Math.cos(angle);
-                    const endY = centerY + rayLength * Math.sin(angle);
-                    drawDottedLine(centerX, centerY, endX, endY, 
-                        parseInt(sizeSlider.value) / 2, 
-                        parseInt(spacingSlider.value), 
-                        index);
-                });
-            }
+            angles.forEach((angleDegrees, index) => {
+                const angle = (angleDegrees * Math.PI) / 180;
+                const endX = centerX + rayLength * Math.cos(angle);
+                const endY = centerY + rayLength * Math.sin(angle);
+                drawDottedLine(centerX, centerY, endX, endY, 
+                    parseInt(sizeSlider.value) / 2, 
+                    parseInt(spacingSlider.value), 
+                    index);
+            });
 
             // Добавляем отрисовку точки курсора в режиме рандома
             if (isRandomMode) {
@@ -398,7 +279,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (hasActivePoints) {
                     disableSpacingAndRaysControls();
                     wasActiveBeforeFreeze = true;
-                } else if (!isSVGMode) {
+                } else {
                     enableSpacingAndRaysControls();
                     wasActiveBeforeFreeze = false;
                 }
@@ -421,16 +302,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isFrozen && frozenPoints.length > 0) {
             // Отрисовываем замороженные точки
             frozenPoints.forEach(linePoints => {
-                linePoints.forEach(point => {
-                    ctx.beginPath();
-                    ctx.arc(point.x, point.y, circleDiameter / 2, 0, Math.PI * 2);
-                    ctx.fillStyle = 'white';
-                    ctx.fill();
-                });
-            });
-        } else if (isSVGMode) {
-            // Отрисовываем точки из SVG
-            points.forEach(linePoints => {
                 linePoints.forEach(point => {
                     ctx.beginPath();
                     ctx.arc(point.x, point.y, circleDiameter / 2, 0, Math.PI * 2);
@@ -530,14 +401,8 @@ document.addEventListener('DOMContentLoaded', function() {
     spacingSlider.addEventListener('input', function() {
         const newSpacing = parseInt(this.value);
         spacingInput.value = newSpacing;
-        
-        if (isSVGMode && currentSVG) {
-            // Если в режиме SVG, перераспределяем точки
-            parseSVG(currentSVG);
-        } else {
-            points = []; // Очищаем массив точек
-            redraw(parseInt(sizeSlider.value), newSpacing);
-        }
+        points = []; // Очищаем массив точек
+        redraw(parseInt(sizeSlider.value), newSpacing);
     });
 
     // Обновляем обработчик для spacingInput
@@ -652,30 +517,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Обновляем функцию freezePoints для сохранения текущих позиций
     function freezePoints() {
         frozenPoints = [];
-        
-        if (isSVGMode) {
-            points.forEach(linePoints => {
-                const frozenLine = [];
-                linePoints.forEach(point => {
-                    frozenLine.push({
-                        x: point.x,
-                        y: point.y
-                    });
+        angles.forEach((angleDegrees, index) => {
+            const linePoints = [];
+            points[index].forEach(point => {
+                linePoints.push({
+                    x: point.x,
+                    y: point.y
                 });
-                frozenPoints.push(frozenLine);
             });
-        } else {
-            angles.forEach((angleDegrees, index) => {
-                const linePoints = [];
-                points[index].forEach(point => {
-                    linePoints.push({
-                        x: point.x,
-                        y: point.y
-                    });
-                });
-                frozenPoints.push(linePoints);
-            });
-        }
+            frozenPoints.push(linePoints);
+        });
     }
 
     // Добавляем функцию для расчета дополнительных углов
