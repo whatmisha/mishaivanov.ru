@@ -144,65 +144,78 @@ document.addEventListener('DOMContentLoaded', function() {
     let lastMouseX = 0;
     let lastMouseY = 0;
 
-    // Обновляем класс Point для реализации физики
+    // Обновляем класс Point для поддержки 3D
     class Point {
-        constructor(x, y) {
+        constructor(x, y, z = 0) {
             this.x = x;
             this.y = y;
+            this.z = z;
             this.originalX = x;
             this.originalY = y;
+            this.originalZ = z;
             this.vx = 0;
             this.vy = 0;
-            this.randomAngle = Math.random() * Math.PI * 2;
-            this.offsetX = 0;
-            this.offsetY = 0;
-            this.isActivated = false; // Флаг активации движения
+            this.vz = 0;
+            this.isActivated = false;
+            this.damping = 0.95;
         }
-
+        
         update() {
-            if (this.isActivated) {
-                hasActivePoints = true;  // Отмечаем, что есть активные точки
-                
-                // Усиленный дрейф для активированных точек
-                const driftSpeed = 0.2;
-                this.vx += Math.cos(this.randomAngle) * driftSpeed * 0.02;
-                this.vy += Math.sin(this.randomAngle) * driftSpeed * 0.02;
-                
-                // Очень слабое притяжение к исходной позиции
-                const returnStrength = 0.00005;
-                const dx = (this.originalX + this.offsetX) - this.x;
-                const dy = (this.originalY + this.offsetY) - this.y;
-                this.vx += dx * returnStrength;
-                this.vy += dy * returnStrength;
-
-                // Мягкое затухание для большей инерции
-                const friction = 0.99;
-                this.vx *= friction;
-                this.vy *= friction;
-
-                this.x += this.vx;
-                this.y += this.vy;
-
-                // Медленно меняем направление дрейфа и смещение
-                this.randomAngle += (Math.random() - 0.5) * 0.1;
-                this.offsetX += (Math.random() - 0.5) * 0.1;
-                this.offsetY += (Math.random() - 0.5) * 0.1;
-                
-                const maxOffset = 50;
-                this.offsetX = Math.max(Math.min(this.offsetX, maxOffset), -maxOffset);
-                this.offsetY = Math.max(Math.min(this.offsetY, maxOffset), -maxOffset);
+            // Обновляем скорость с затуханием
+            this.vx *= this.damping;
+            this.vy *= this.damping;
+            this.vz *= this.damping;
+            
+            // Обновляем позицию
+            this.x += this.vx;
+            this.y += this.vy;
+            this.z += this.vz;
+            
+            // Возвращаем точку к исходной позиции
+            const dx = this.originalX - this.x;
+            const dy = this.originalY - this.y;
+            const dz = this.originalZ - this.z;
+            
+            const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
+            
+            if (distance > 0.1) {
+                this.vx += dx * 0.01;
+                this.vy += dy * 0.01;
+                this.vz += dz * 0.01;
+                this.isActivated = true;
             } else {
-                this.x = this.originalX;
-                this.y = this.originalY;
-                this.vx = 0;
-                this.vy = 0;
+                this.isActivated = false;
             }
         }
-
+        
         applyForce(angle, force) {
-            this.isActivated = true; // Активируем точку при воздействии силы
+            // Применяем силу в направлении угла
             this.vx += Math.cos(angle) * force;
             this.vy += Math.sin(angle) * force;
+            
+            // Добавляем случайное движение по Z
+            if (depth > 0) {
+                const randomZ = (Math.random() - 0.5) * 2 * force;
+                this.vz += randomZ;
+            }
+        }
+        
+        // Метод для проекции 3D координат на 2D экран
+        project() {
+            if (depth === 0) return { x: this.x, y: this.y, size: 1 };
+            
+            // Вычисляем масштаб в зависимости от Z-координаты
+            const scale = perspective / (perspective + this.z);
+            
+            // Проецируем координаты
+            const projectedX = centerX + (this.x - centerX) * scale;
+            const projectedY = centerY + (this.y - centerY) * scale;
+            
+            return {
+                x: projectedX,
+                y: projectedY,
+                size: scale // Размер точки зависит от расстояния
+            };
         }
     }
 
@@ -319,26 +332,96 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Обновляем функцию drawDottedLine
+    // Обновляем функцию drawDottedLine для поддержки 3D
     function drawDottedLine(startX, startY, endX, endY, circleRadius, spacing, lineIndex) {
+        const dx = endX - startX;
+        const dy = endY - startY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        // Если расстояние между точками равно 0, рисуем только одну точку
+        if (spacing === 0) {
+            if (!points[lineIndex]) {
+                points[lineIndex] = [];
+            }
+            
+            // Если точка еще не создана, создаем ее
+            if (!points[lineIndex][0]) {
+                // Добавляем Z-координату в зависимости от глубины
+                const z = depth > 0 ? (Math.random() - 0.5) * depth : 0;
+                points[lineIndex][0] = new Point(startX, startY, z);
+            }
+            
+            // Обновляем и отрисовываем точку
+            if (!isFrozen) {
+                const point = points[lineIndex][0];
+                const distToMouse = Math.sqrt(
+                    (point.x - mouseX) * (point.x - mouseX) + 
+                    (point.y - mouseY) * (point.y - mouseY)
+                );
+                
+                if (distToMouse < attractionRadius) {
+                    point.isActivated = true;
+                    
+                    const angleToMouse = Math.atan2(mouseY - point.y, mouseX - point.x);
+                    const normalizedDist = distToMouse / attractionRadius;
+                    const falloff = Math.cos((normalizedDist * Math.PI) / 2);
+                    const force = falloff * (maxAttraction / 100);
+                    
+                    if (isRepelMode) {
+                        point.applyForce(angleToMouse + Math.PI, force);
+                    } else {
+                        point.applyForce(angleToMouse, force);
+                    }
+                }
+                
+                point.update();
+                
+                if (point.isActivated) {
+                    hasActivePoints = true;
+                }
+            }
+            
+            // Применяем 3D проекцию
+            const projected = points[lineIndex][0].project();
+            const scaledRadius = circleRadius * projected.size;
+            
+            ctx.beginPath();
+            ctx.arc(projected.x, projected.y, scaledRadius, 0, Math.PI * 2);
+            ctx.fillStyle = 'white';
+            ctx.fill();
+            
+            return;
+        }
+        
+        // Вычисляем количество точек
+        const numPoints = Math.floor(distance / spacing) + 1;
+        
+        // Создаем массив для точек этой линии, если его еще нет
         if (!points[lineIndex]) {
             points[lineIndex] = [];
-            const dx = endX - startX;
-            const dy = endY - startY;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            const effectiveSpacing = circleRadius * 2 + spacing;
-            const numDots = Math.max(Math.ceil(distance / effectiveSpacing), 2);
-            
-            for (let i = 0; i < numDots; i++) {
-                const t = i / (numDots - 1);
-                const x = startX + dx * t;
-                const y = startY + dy * t;
-                points[lineIndex].push(new Point(x, y));
-            }
         }
-
-        points[lineIndex].forEach(point => {
+        
+        // Для каждой точки на линии
+        for (let i = 0; i < numPoints; i++) {
+            const t = i / (numPoints - 1);
+            const x = startX + dx * t;
+            const y = startY + dy * t;
+            
+            // Добавляем Z-координату в зависимости от глубины
+            const z = depth > 0 ? (Math.random() - 0.5) * depth : 0;
+            
+            // Если точка еще не создана, создаем ее
+            if (!points[lineIndex][i]) {
+                points[lineIndex][i] = new Point(x, y, z);
+            } else if (depth > 0 && points[lineIndex][i].z === 0) {
+                // Обновляем Z-координату, если глубина была изменена
+                points[lineIndex][i].z = z;
+                points[lineIndex][i].originalZ = z;
+            }
+            
+            // Обновляем и отрисовываем точку
             if (!isFrozen) {
+                const point = points[lineIndex][i];
                 const distToMouse = Math.sqrt(
                     (point.x - mouseX) * (point.x - mouseX) + 
                     (point.y - mouseY) * (point.y - mouseY)
@@ -373,13 +456,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
                 
                 point.update();
+                
+                if (point.isActivated) {
+                    hasActivePoints = true;
+                }
             }
-
+            
+            // Применяем 3D проекцию
+            const projected = points[lineIndex][i].project();
+            const scaledRadius = circleRadius * projected.size;
+            
             ctx.beginPath();
-            ctx.arc(point.x, point.y, circleRadius, 0, Math.PI * 2);
+            ctx.arc(projected.x, projected.y, scaledRadius, 0, Math.PI * 2);
             ctx.fillStyle = 'white';
             ctx.fill();
-        });
+        }
     }
 
     // Обновляем обработчики событий для изменения размера
@@ -514,18 +605,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Обновляем функцию freezePoints для сохранения текущих позиций
+    // Обновляем функцию freezePoints для сохранения Z-координаты
     function freezePoints() {
         frozenPoints = [];
-        angles.forEach((angleDegrees, index) => {
-            const linePoints = [];
-            points[index].forEach(point => {
-                linePoints.push({
+        
+        points.forEach((linePoints, lineIndex) => {
+            frozenPoints[lineIndex] = [];
+            linePoints.forEach((point, pointIndex) => {
+                frozenPoints[lineIndex][pointIndex] = {
                     x: point.x,
-                    y: point.y
-                });
+                    y: point.y,
+                    z: point.z
+                };
             });
-            frozenPoints.push(linePoints);
         });
     }
 
@@ -700,5 +792,29 @@ document.addEventListener('DOMContentLoaded', function() {
             mouseVX = 0;
             mouseVY = 0;
         }
+    });
+
+    // Обновляем обработчики для слайдеров глубины и перспективы
+    depthSlider.addEventListener('input', function() {
+        depthInput.value = this.value;
+        depth = parseInt(this.value);
+        
+        // Пересоздаем точки с новыми Z-координатами
+        points.forEach((linePoints, lineIndex) => {
+            linePoints.forEach((point, pointIndex) => {
+                if (depth > 0) {
+                    point.z = (Math.random() - 0.5) * depth;
+                    point.originalZ = point.z;
+                } else {
+                    point.z = 0;
+                    point.originalZ = 0;
+                }
+            });
+        });
+    });
+
+    perspectiveSlider.addEventListener('input', function() {
+        perspectiveInput.value = this.value;
+        perspective = parseInt(this.value);
     });
 }); 
