@@ -186,7 +186,14 @@ document.addEventListener('DOMContentLoaded', function() {
     canvas.addEventListener('mouseleave', function() {
         isMouseOverCanvas = false;
         isCursorActive = false;
+        
+        // При выходе с холста убираем точку притяжения, переместив координаты мыши 
+        // за пределы холста, чтобы они не влияли на точки
+        mouseX = -1000;
+        mouseY = -1000;
+        
         // Не сбрасываем mouseEverMoved, так как мышь уже была над холстом
+        // Это позволит сразу отобразить курсор, когда мышь вернется на холст
     });
 
     // Обработка клика для заморозки точек
@@ -247,12 +254,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        if (isRandom) {
-            updateRandomWalker();
-        }
-        
-        // Применяем силы к точкам
-        applyForceToPoints();
+        // Примечание: обновление положения точек и применение сил
+        // теперь происходит в функции animate(), 
+        // поэтому здесь эти операции не дублируются
         
         // Перерисовываем
         redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
@@ -530,6 +534,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updateRandomWalker() {
+        // Если мышь не над холстом или режим random не активен, не выполняем
+        if (!isRandom) {
+            return;
+        }
+        
+        // Устанавливаем флаг, что мышь над холстом (для режима случайного движения)
+        isMouseOverCanvas = true;
+        mouseEverMoved = true;
+        
         // Случайное движение курсора
         const maxSpeed = 5;
         const acceleration = 0.2;
@@ -557,6 +570,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Функция для применения силы к точкам
     function applyForceToPoints() {
+        // Проверяем, находится ли мышь над холстом и в пределах холста
+        if (!isMouseOverCanvas || mouseX < 0 || mouseY < 0 || mouseX > canvas.width || mouseY > canvas.height) {
+            return; // Не применяем силу, если мышь вне холста
+        }
+        
         let totalAffected = 0;
         let totalActivated = 0;
         
@@ -594,7 +612,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        console.log(`Affected points: ${totalAffected}, Activated points: ${totalActivated}`);
+        if (totalAffected > 0 || totalActivated > 0) {
+            console.log(`Affected points: ${totalAffected}, Activated points: ${totalActivated}`);
+        }
         
         // Обновляем состояние контролов
         checkControlsState();
@@ -606,9 +626,14 @@ document.addEventListener('DOMContentLoaded', function() {
             // Обновить все точки
             points.forEach(point => point.update());
             
-            // Применяем силу только если мышь находится над холстом, 
-            // пользователь уже двигал мышью, и мышь находится в области холста
-            if (mouseEverMoved && isMouseOverCanvas && mouseX > -100 && mouseY > -100) {
+            // Обрабатываем случайное движение, если оно активно
+            if (isRandom) {
+                updateRandomWalker();
+                // В режиме случайного движения всегда применяем силу
+                applyForceToPoints();
+            } 
+            // Иначе применяем силу только если мышь над холстом
+            else if (mouseEverMoved && isMouseOverCanvas && mouseX > -100 && mouseY > -100) {
                 applyForceToPoints();
             }
         }
