@@ -38,23 +38,40 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!canvas.parentElement) {
         console.error("Canvas parent element not found!");
         canvas.width = 1000;
-        canvas.height = 600;
+        canvas.height = 1000; // Делаем квадратным, чтобы избежать искажений
     } else {
         const parentWidth = canvas.parentElement.clientWidth;
         console.log(`Parent element width: ${parentWidth}`);
         
-        // Устанавливаем размеры с проверками
+        // Устанавливаем размеры холста как квадрат
         canvas.width = Math.max(parentWidth, 1000);
-        canvas.height = 600;
+        canvas.height = canvas.width; // Делаем высоту равной ширине для квадратного соотношения
+        
+        // Проверяем фактические размеры с учетом CSS
+        const computedStyle = window.getComputedStyle(canvas);
+        console.log(`Canvas CSS dimensions: ${computedStyle.width} x ${computedStyle.height}`);
+        
+        // Если в CSS заданы пропорции, отличные от квадрата, корректируем
+        // логический размер холста, чтобы соответствовать физическому соотношению сторон
+        const cssWidth = parseFloat(computedStyle.width);
+        const cssHeight = parseFloat(computedStyle.height);
+        
+        if (cssWidth && cssHeight && Math.abs(cssWidth - cssHeight) > 10) {
+            // Если есть существенная разница в размерах по CSS, корректируем логический размер
+            const ratio = cssHeight / cssWidth;
+            canvas.height = canvas.width * ratio;
+            console.log(`Adjusted canvas dimensions based on CSS ratio: ${canvas.width} x ${canvas.height}`);
+        }
     }
     
-    console.log(`Canvas size: ${canvas.width}x${canvas.height}`);
+    console.log(`Canvas logical size: ${canvas.width}x${canvas.height}`);
     
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
 
-    let mouseX = centerX;
-    let mouseY = centerY;
+    // Изменяем инициализацию позиции мыши - устанавливаем начальное положение за пределами холста
+    let mouseX = -1000; // За пределами холста
+    let mouseY = -1000; // За пределами холста
     let isRandom = false;
     let isPaused = false;
     let points = [];
@@ -62,6 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let deltaTime = 0;
     let isMouseOverCanvas = false;
     let isCursorActive = false;
+    let mouseEverMoved = false; // Флаг, показывающий, двигал ли пользователь мышь над холстом
 
     // Синхронизация слайдеров и числовых полей
     function syncInputs(slider, input) {
@@ -111,10 +129,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const rect = canvas.getBoundingClientRect();
         mouseX = e.clientX - rect.left;
         mouseY = e.clientY - rect.top;
+        mouseEverMoved = true; // Устанавливаем, что мышь двигалась над холстом
     });
     
     canvas.addEventListener('mousedown', function(e) {
         isCursorActive = true;
+        mouseEverMoved = true; // Устанавливаем, что мышь двигалась над холстом
         
         if (!isPaused) {
             // Активируем все точки в зоне действия курсора
@@ -160,11 +180,13 @@ document.addEventListener('DOMContentLoaded', function() {
         mouseY = e.clientY - rect.top;
         
         isMouseOverCanvas = true;
+        mouseEverMoved = true; // Устанавливаем, что мышь двигалась над холстом
     });
     
     canvas.addEventListener('mouseleave', function() {
         isMouseOverCanvas = false;
         isCursorActive = false;
+        // Не сбрасываем mouseEverMoved, так как мышь уже была над холстом
     });
 
     // Обработка клика для заморозки точек
@@ -342,9 +364,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 generateGridPoints();
             }
             
-            // Рисуем точки
-            const circleRadius = circleDiameter / 2;
+            // Адаптируем размер точек к размеру холста
+            // Для очень больших холстов увеличиваем диаметр
+            const minDimension = Math.min(canvas.width, canvas.height);
+            const scaleFactor = minDimension / 1000; // 1000px как базовый размер
+            const adjustedDiameter = circleDiameter * Math.max(1, scaleFactor);
+            const circleRadius = adjustedDiameter / 2;
             
+            // Рисуем точки
             for (let i = 0; i < points.length; i++) {
                 const point = points[i];
                 
@@ -361,12 +388,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 ctx.fill();
             }
             
-            // Рисуем курсор только если мышь находится над холстом и координаты мыши были установлены пользователем
-            if (isMouseOverCanvas && (mouseX !== centerX || mouseY !== centerY)) {
+            // Рисуем курсор только если мышь когда-либо двигалась над холстом и сейчас находится над ним
+            if (mouseEverMoved && isMouseOverCanvas && mouseX > -100 && mouseY > -100) {
+                // Масштабируем размер курсора с тем же коэффициентом
+                const adjustedRadius = parseInt(radiusInput.value) * Math.max(1, scaleFactor);
+                
                 ctx.beginPath();
-                ctx.arc(mouseX, mouseY, parseInt(radiusInput.value), 0, Math.PI * 2);
+                ctx.arc(mouseX, mouseY, adjustedRadius, 0, Math.PI * 2);
                 ctx.strokeStyle = 'rgba(255, 165, 0, 0.5)';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 2 * Math.max(1, scaleFactor); // Масштабируем толщину линии
                 ctx.stroke();
             }
             
@@ -385,16 +415,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const width = Math.max(canvas.width, 100);
         const height = Math.max(canvas.height, 100);
         
-        // Получаем расстояние между точками
-        const spacing = Math.max(parseInt(spacingInput.value), 10);
-        console.log("Spacing: " + spacing);
+        // Получаем расстояние между точками, адаптируем к размеру холста
+        // Для больших холстов используем большее расстояние
+        const baseSpacing = Math.max(parseInt(spacingInput.value), 10);
+        const minDimension = Math.min(width, height);
+        // Адаптируем spacing к размеру холста, чтобы избежать слишком плотной или редкой сетки
+        const spacing = Math.max(baseSpacing, minDimension / 50);
+        
+        console.log(`Adjusted spacing: ${spacing} (base: ${baseSpacing})`);
         
         // Вычисляем количество точек по горизонтали и вертикали
-        // Гарантируем минимум 3 точки в каждом направлении
+        // Учитываем соотношение сторон холста
         const numX = Math.max(Math.floor(width / spacing), 3);
         const numY = Math.max(Math.floor(height / spacing), 3);
         
-        console.log(`Grid boundaries: ${width}x${height}, Points: ${numX}x${numY} = ${numX * numY} total`);
+        console.log(`Grid dimensions: ${width}x${height}, Points: ${numX}x${numY} = ${numX * numY} total`);
         
         // Проверяем, не слишком ли много точек (максимум 5000)
         const totalPoints = numX * numY;
@@ -571,9 +606,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Обновить все точки
             points.forEach(point => point.update());
             
-            // Если курсор находится над холстом и не на паузе, применяем силу
-            // Дополнительно проверяем, что координаты мыши были изменены пользователем
-            if (isMouseOverCanvas && (mouseX !== centerX || mouseY !== centerY)) {
+            // Применяем силу только если мышь находится над холстом, 
+            // пользователь уже двигал мышью, и мышь находится в области холста
+            if (mouseEverMoved && isMouseOverCanvas && mouseX > -100 && mouseY > -100) {
                 applyForceToPoints();
             }
         }
@@ -593,6 +628,15 @@ document.addEventListener('DOMContentLoaded', function() {
             // Сбрасываем время анимации
             lastTime = 0;
             
+            // Сбрасываем флаг mouseEverMoved, чтобы курсор снова не отображался
+            // пока пользователь не наведет мышь на холст
+            mouseEverMoved = false;
+            isMouseOverCanvas = false;
+            
+            // Устанавливаем координаты мыши за пределами холста
+            mouseX = -1000;
+            mouseY = -1000;
+            
             // Проверяем, созданы ли точки
             if (points.length === 0) {
                 generateGridPoints();
@@ -608,6 +652,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!canvas || !ctx) {
             throw new Error("Canvas or context is not available");
         }
+        
+        // Гарантируем, что флаги мыши сброшены при инициализации
+        mouseEverMoved = false;
+        isMouseOverCanvas = false;
+        mouseX = -1000;
+        mouseY = -1000;
         
         // Генерируем точки
         generateGridPoints();
