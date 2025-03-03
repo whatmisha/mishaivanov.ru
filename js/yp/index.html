@@ -75,10 +75,10 @@
         // Функция для получения списка доступных версий
         async function getAvailableVersions() {
             const versions = [];
-            let i = 0;
+            const maxVersion = 10; // Максимальная версия
             
             // Проверяем существование директорий
-            while (i <= 9999) { // Проверяем до 9999 версии
+            for (let i = 0; i <= maxVersion; i++) {
                 const versionStr = i.toString().padStart(2, '0');
                 try {
                     const response = await fetch(`./${versionStr}/`, { method: 'HEAD' });
@@ -88,7 +88,6 @@
                 } catch (error) {
                     // Игнорируем ошибки
                 }
-                i++;
             }
             
             return versions;
