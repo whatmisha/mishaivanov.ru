@@ -74,23 +74,16 @@
     <script>
         // Функция для получения списка доступных версий
         async function getAvailableVersions() {
-            const versions = [];
-            const maxVersion = 10; // Максимальная версия
-            
-            // Проверяем существование директорий
-            for (let i = 0; i <= maxVersion; i++) {
-                const versionStr = i.toString().padStart(2, '0');
-                try {
-                    const response = await fetch(`./${versionStr}/`, { method: 'HEAD' });
-                    if (response.ok) {
-                        versions.push(versionStr);
-                    }
-                } catch (error) {
-                    // Игнорируем ошибки
+            try {
+                const response = await fetch('./get_versions.php');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch versions');
                 }
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching versions:', error);
+                return ['00']; // Возвращаем дефолтную версию в случае ошибки
             }
-            
-            return versions;
         }
 
         // Функция для получения последней версии проекта
@@ -100,9 +93,6 @@
             if (versions.length === 0) {
                 return "00"; // Дефолтная версия, если ничего не найдено
             }
-            
-            // Сортируем версии по числовому значению
-            versions.sort((a, b) => parseInt(a) - parseInt(b));
             
             // Возвращаем последнюю версию из массива
             return versions[versions.length - 1];
@@ -118,16 +108,12 @@
                 // Проверяем, запрошена ли конкретная версия
                 if (segments.length > 0 && /^\d+$/.test(segments[segments.length - 1])) {
                     const requestedVersion = segments[segments.length - 1];
+                    const versions = await getAvailableVersions();
                     
                     // Проверяем существование запрошенной версии
-                    try {
-                        const response = await fetch(`./${requestedVersion}/`, { method: 'HEAD' });
-                        if (response.ok) {
-                            window.location.href = `./${requestedVersion}/`;
-                            return;
-                        }
-                    } catch (error) {
-                        // Если версия не существует, продолжаем к перенаправлению на последнюю версию
+                    if (versions.includes(requestedVersion)) {
+                        window.location.href = `./${requestedVersion}/`;
+                        return;
                     }
                 }
                 
