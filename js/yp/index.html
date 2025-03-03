@@ -1,46 +1,106 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Перенаправление</title>
+    <title>Redirecting</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            margin-top: 50px;
-            background-color: #f5f5f5;
+            margin: 0;
+            background: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
+
         .container {
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            color: white;
         }
-        h1 {
-            color: #333;
+
+        h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
         }
+
+        p {
+            font-size: 18px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
         .loader {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3498db;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid white;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            width: 40px;
+            height: 40px;
             animation: spin 1s linear infinite;
-            margin: 20px auto;
+            margin: 30px auto;
         }
+
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Mobile message styles */
+        .mobile-message {
+            display: none;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            max-width: 80%;
+        }
+
+        /* Media query for mobile devices */
+        @media (max-width: 768px) {
+            .desktop-content {
+                display: none !important;
+            }
+            
+            .mobile-message {
+                display: block;
+            }
+        }
     </style>
     <script>
+        // Функция для получения списка доступных версий
+        async function getAvailableVersions() {
+            const versions = [];
+            let i = 0;
+            
+            // Проверяем существование директорий
+            while (i <= 9999) { // Проверяем до 9999 версии
+                const versionStr = i.toString().padStart(2, '0');
+                try {
+                    const response = await fetch(`./${versionStr}/`, { method: 'HEAD' });
+                    if (response.ok) {
+                        versions.push(versionStr);
+                    }
+                } catch (error) {
+                    // Игнорируем ошибки
+                }
+                i++;
+            }
+            
+            return versions;
+        }
+
         // Функция для получения последней версии проекта
-        function getLatestVersion() {
-            // Массив доступных версий
-            const versions = ["00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10"];
+        async function getLatestVersion() {
+            const versions = await getAvailableVersions();
+            
+            if (versions.length === 0) {
+                return "00"; // Дефолтная версия, если ничего не найдено
+            }
             
             // Сортируем версии по числовому значению
             versions.sort((a, b) => parseInt(a) - parseInt(b));
@@ -49,41 +109,36 @@
             return versions[versions.length - 1];
         }
 
-        // Функция для проверки существования директории
-        function checkDirectoryExists(path, callback) {
-            const xhr = new XMLHttpRequest();
-            xhr.open('HEAD', path, true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4) {
-                    callback(xhr.status !== 404);
-                }
-            };
-            xhr.send();
-        }
-
         // Функция для перенаправления
-        function redirect() {
-            // Получаем запрошенный путь
-            const path = window.location.pathname;
-            const segments = path.split('/').filter(segment => segment.length > 0);
-            
-            // Проверяем, запрошена ли конкретная версия
-            if (segments.length > 0 && /^\d+$/.test(segments[segments.length - 1])) {
-                const requestedVersion = segments[segments.length - 1];
+        async function redirect() {
+            try {
+                // Получаем запрошенный путь
+                const path = window.location.pathname;
+                const segments = path.split('/').filter(segment => segment.length > 0);
                 
-                // Проверяем существование запрошенной версии
-                checkDirectoryExists(`./${requestedVersion}/`, function(exists) {
-                    if (exists) {
-                        // Если версия существует, перенаправляем на нее
-                        window.location.href = `./${requestedVersion}/`;
-                    } else {
-                        // Если версия не существует, перенаправляем на последнюю
-                        window.location.href = `./${getLatestVersion()}/`;
+                // Проверяем, запрошена ли конкретная версия
+                if (segments.length > 0 && /^\d+$/.test(segments[segments.length - 1])) {
+                    const requestedVersion = segments[segments.length - 1];
+                    
+                    // Проверяем существование запрошенной версии
+                    try {
+                        const response = await fetch(`./${requestedVersion}/`, { method: 'HEAD' });
+                        if (response.ok) {
+                            window.location.href = `./${requestedVersion}/`;
+                            return;
+                        }
+                    } catch (error) {
+                        // Если версия не существует, продолжаем к перенаправлению на последнюю версию
                     }
-                });
-            } else {
-                // Если версия не указана, перенаправляем на последнюю
-                window.location.href = `./${getLatestVersion()}/`;
+                }
+                
+                // Получаем последнюю версию и перенаправляем на нее
+                const latestVersion = await getLatestVersion();
+                window.location.href = `./${latestVersion}/`;
+            } catch (error) {
+                console.error('Ошибка при перенаправлении:', error);
+                // В случае ошибки пытаемся перейти на версию 00
+                window.location.href = './00/';
             }
         }
 
@@ -94,9 +149,16 @@
     </script>
 </head>
 <body>
-    <div class="container">
-        <h1>Перенаправление</h1>
-        <p>Перенаправление на последнюю версию проекта...</p>
+    <!-- Mobile message -->
+    <div class="mobile-message">
+        <h2>Desktop Only</h2>
+        <p>This interface is designed for desktop use only. Please visit this page on a desktop computer for the full experience.</p>
+    </div>
+
+    <!-- Desktop content -->
+    <div class="desktop-content container">
+        <h2>Redirecting</h2>
+        <p>Redirecting to the latest version of the project...</p>
         <div class="loader"></div>
     </div>
 </body>

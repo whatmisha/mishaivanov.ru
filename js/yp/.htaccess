@@ -3,10 +3,10 @@ RewriteEngine On
 # Если запрос идет непосредственно к директории /yp/ без указания версии
 RewriteRule ^$ index.php [L]
 
-# Если запрашивается несуществующая страница, перенаправляем на index.php
-ErrorDocument 404 /js/yp/index.php
-
-# Если запрос идет к конкретной версии, проверяем ее существование
+# Если запрашивается несуществующая страница в /js/yp/, перенаправляем на index.php
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php [L] 
+RewriteRule ^(.*)$ index.php [L]
+
+# Отключаем стандартную страницу 404 для /js/yp/
+ErrorDocument 404 /js/yp/index.php 
