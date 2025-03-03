@@ -37,19 +37,23 @@ $pathParts = explode('/', trim($requestUri, '/'));
 
 // Проверяем, запрошена ли конкретная версия
 $requestedVersion = null;
+$hasNumericSegment = false;
+
+// Ищем числовой сегмент в пути
 foreach ($pathParts as $part) {
     if (preg_match('/^\d+$/', $part)) {
         $requestedVersion = $part;
+        $hasNumericSegment = true;
         break;
     }
 }
 
 // Если запрос идет на конкретную версию, проверяем ее существование
-if ($requestedVersion && is_dir('./' . $requestedVersion)) {
+if ($hasNumericSegment && is_dir('./' . $requestedVersion)) {
     // Если запрошенная версия существует, используем ее
     $version = $requestedVersion;
 } else {
-    // Иначе используем последнюю версию
+    // Иначе используем последнюю версию (в случае неверного адреса или отсутствия версии)
     $version = $latestVersion;
 }
 

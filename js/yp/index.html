@@ -91,23 +91,29 @@
             const path = window.location.pathname;
             const segments = path.split('/').filter(segment => segment.length > 0);
             
+            // Получаем последнюю версию
+            const latestVersion = await findLatestVersion();
+            
             // Проверяем, запрошена ли конкретная версия
-            if (segments.length > 0 && /^\d+$/.test(segments[segments.length - 1])) {
-                const requestedVersion = segments[segments.length - 1];
+            if (segments.length > 0) {
+                const lastSegment = segments[segments.length - 1];
                 
-                // Проверяем существование запрошенной версии
-                const exists = await checkDirectoryExists(`./${requestedVersion}/`);
-                if (exists) {
-                    // Если версия существует, перенаправляем на нее
-                    window.location.href = `./${requestedVersion}/`;
-                } else {
-                    // Если версия не существует, перенаправляем на последнюю
-                    const latestVersion = await findLatestVersion();
-                    window.location.href = `./${latestVersion}/`;
+                // Проверяем, является ли последний сегмент числом (версией)
+                if (/^\d+$/.test(lastSegment)) {
+                    // Проверяем существование запрошенной версии
+                    const exists = await checkDirectoryExists(`./${lastSegment}/`);
+                    if (exists) {
+                        // Если версия существует, перенаправляем на нее
+                        window.location.href = `./${lastSegment}/`;
+                        return;
+                    }
                 }
+                
+                // Если последний сегмент не является числом или версия не существует,
+                // перенаправляем на последнюю версию
+                window.location.href = `./${latestVersion}/`;
             } else {
                 // Если версия не указана, перенаправляем на последнюю
-                const latestVersion = await findLatestVersion();
                 window.location.href = `./${latestVersion}/`;
             }
         }

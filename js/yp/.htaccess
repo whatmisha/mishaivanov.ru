@@ -12,6 +12,12 @@ RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php [L]
 
+# Обработка всех запросов, которые не соответствуют существующим файлам или директориям
+# Это перехватит запросы типа /yp/gfshf
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([^/]+)/?$ index.php [L]
+
 # Разрешаем доступ к PHP-скриптам
 <Files "*.php">
     Order Allow,Deny
