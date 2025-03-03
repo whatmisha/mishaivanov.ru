@@ -92,11 +92,6 @@ document.addEventListener('DOMContentLoaded', function() {
             randomWalkerVY: 0,
             lastRandomX: CENTER_X, // Последняя позиция random walker
             lastRandomY: CENTER_Y  // Последняя позиция random walker
-        },
-        text: {
-            fontSize: 72,
-            strokeWidth: 3.75,
-            fontLoaded: false
         }
     };
     
@@ -967,127 +962,6 @@ document.addEventListener('DOMContentLoaded', function() {
         updateCationAngles(cationsRaysInput.value);
     }
     
-    // ================ TEXT ================
-    
-    // Загрузка шрифта
-    function loadFont() {
-        const font = new FontFace('Yandex Sans', 'url(fonts/Yandex Sans-romans-variable.ttf)', {
-            style: 'normal',
-            weight: '0' // Ultralight начертание
-        });
-        
-        font.load().then(function(loadedFont) {
-            document.fonts.add(loadedFont);
-            state.text.fontLoaded = true;
-            renderTextFrame();
-        }).catch(function(error) {
-            console.error('Ошибка загрузки шрифта:', error);
-        });
-    }
-    
-    // Рендеринг текста
-    function renderTextFrame() {
-        if (!document.getElementById('text-content').classList.contains('active')) {
-            return;
-        }
-        
-        // Устанавливаем размеры канваса с соотношением 16:9
-        const height = CANVAS_SIZE;
-        const width = Math.round(height * 16 / 9);
-        
-        if (textCanvas.width !== width || textCanvas.height !== height) {
-            textCanvas.width = width;
-            textCanvas.height = height;
-        }
-        
-        // Очищаем канвас
-        textCtx.clearRect(0, 0, width, height);
-        
-        // Рисуем черный фон
-        textCtx.fillStyle = 'black';
-        textCtx.fillRect(0, 0, width, height);
-        
-        // Если шрифт загружен, рисуем текст
-        if (state.text.fontLoaded) {
-            const fontSize = parseInt(textSizeInput.value);
-            const strokeWidth = parseFloat(textStrokeInput.value);
-            
-            // Настраиваем шрифт
-            textCtx.font = `${fontSize}px "Yandex Sans"`;
-            textCtx.textAlign = 'center';
-            textCtx.textBaseline = 'middle';
-            
-            const text = "Yandex Practicum";
-            const centerX = width / 2;
-            const centerY = height / 2;
-            
-            // Рисуем обводку
-            textCtx.strokeStyle = 'white';
-            textCtx.lineWidth = strokeWidth;
-            textCtx.strokeText(text, centerX, centerY);
-            
-            // Рисуем текст
-            textCtx.fillStyle = 'white';
-            textCtx.fillText(text, centerX, centerY);
-        }
-    }
-    
-    // Генерация SVG с текстом
-    function generateTextSVG() {
-        const height = CANVAS_SIZE;
-        const width = Math.round(height * 16 / 9);
-        const fontSize = parseInt(textSizeInput.value);
-        const strokeWidth = parseFloat(textStrokeInput.value);
-        
-        let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">`;
-        svg += `<rect width="100%" height="100%" fill="black"/>`;
-        
-        const text = "Yandex Practicum";
-        const centerX = width / 2;
-        const centerY = height / 2;
-        
-        svg += `<text x="${centerX}" y="${centerY}" font-family="Yandex Sans" font-size="${fontSize}" font-weight="0" text-anchor="middle" dominant-baseline="middle" stroke="white" stroke-width="${strokeWidth}" fill="white">${text}</text>`;
-        
-        svg += `</svg>`;
-        return svg;
-    }
-    
-    // Скачивание SVG с текстом
-    function downloadTextSVG() {
-        const svgContent = generateTextSVG();
-        const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-        const url = URL.createObjectURL(blob);
-        
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'text.svg';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        URL.revokeObjectURL(url);
-    }
-    
-    // Инициализация Text
-    function initText() {
-        // Загружаем шрифт
-        loadFont();
-        
-        // Синхронизация контролов
-        syncInputs(textSizeSlider, textSizeInput, () => {
-            state.text.fontSize = parseInt(textSizeInput.value);
-            renderTextFrame();
-        });
-        
-        syncInputs(textStrokeSlider, textStrokeInput, () => {
-            state.text.strokeWidth = parseFloat(textStrokeInput.value);
-            renderTextFrame();
-        });
-        
-        // Экспорт SVG
-        textExportSVG.addEventListener('click', downloadTextSVG);
-    }
-    
     // ================ ОБЩАЯ ИНИЦИАЛИЗАЦИЯ И ОБРАБОТЧИКИ ================
     
     // Обработка переключения вкладок
@@ -1107,13 +981,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function animate() {
         renderRaysFrame();
         renderCationsFrame();
-        renderTextFrame();
         requestAnimationFrame(animate);
     }
     
     // Инициализация и старт анимации
     initDottedRays();
     initCations();
-    initText();
     requestAnimationFrame(animate);
 }); 
