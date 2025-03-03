@@ -183,6 +183,102 @@ document.addEventListener('DOMContentLoaded', function() {
         // Создаем временный канвас для рендеринга текста
         const tempCanvas = document.createElement('canvas');
         // Увеличиваем размер канваса для лучшего качества трассировки
+        const scale = 4; // Увеличиваем разрешение для лучшего результата
+        tempCanvas.width = width * scale;
+        tempCanvas.height = height * scale;
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        // Масштабируем контекст
+        tempCtx.scale(scale, scale);
+        
+        // Рисуем черный фон
+        tempCtx.fillStyle = 'black';
+        tempCtx.fillRect(0, 0, width, height);
+        
+        // Настраиваем шрифт
+        tempCtx.font = `${fontSize}px "Yandex Sans"`;
+        tempCtx.textAlign = 'center';
+        tempCtx.textBaseline = 'middle';
+        
+        // Рисуем белый текст
+        tempCtx.fillStyle = 'white';
+        tempCtx.fillText(text, width / 2, height / 2);
+        
+        // Получаем данные изображения как ImageData
+        const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        
+        // Начинаем создавать SVG
+        let svgOutput = '';
+        
+        // Используем Potrace для трассировки
+        return new Promise((resolve) => {
+            potrace.trace(imageData, {
+                turdSize: 5,         // Игнорировать элементы размером меньше этого значения
+                turnPolicy: 'minority', // Алгоритм обхода при трассировке
+                alphaMax: 1,         // Угол оптимизации
+                optCurve: true,      // Оптимизация в кривые Безье
+                optTolerance: 0.2,   // Допуск оптимизации
+                threshold: 128,      // Порог между черным и белым
+                blackOnWhite: true,  // Обрабатывать черное на белом фоне
+                background: 'transparent' // Прозрачный фон
+            }, (err, svgString) => {
+                if (err) {
+                    console.error("Ошибка при трассировке:", err);
+                    // Возвращаем старую версию SVG в случае ошибки
+                    resolve(generateFallbackTextSVG());
+                    return;
+                }
+                
+                // Извлекаем пути из SVG, созданного Potrace
+                const parser = new DOMParser();
+                const svgDoc = parser.parseFromString(svgString, 'image/svg+xml');
+                const pathElements = svgDoc.querySelectorAll('path');
+                
+                // Создаем новый SVG с нашими параметрами
+                let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">`;
+                svg += `<rect width="100%" height="100%" fill="black"/>`;
+                svg += `<g>`;
+                
+                // Добавляем пути с обводкой и заливкой
+                pathElements.forEach(pathEl => {
+                    const pathData = pathEl.getAttribute('d');
+                    
+                    if (pathData) {
+                        // Добавляем внешнюю обводку, если задана толщина обводки
+                        if (strokeWidth > 0) {
+                            svg += `<path d="${pathData}" fill="none" stroke="white" stroke-width="${strokeWidth * 2}" stroke-linejoin="round" stroke-linecap="round"/>`;
+                        }
+                        
+                        // Добавляем внутреннюю заливку
+                        svg += `<path d="${pathData}" fill="white"/>`;
+                    }
+                });
+                
+                svg += `</g>`;
+                svg += `</svg>`;
+                
+                resolve(svg);
+            });
+        });
+    }
+    
+    // Резервная функция для старого метода трассировки, если Potrace не сработает
+    function generateFallbackTextSVG() {
+        // Получаем размеры контейнера
+        const container = document.querySelector('#text-content .container');
+        const containerRect = container.getBoundingClientRect();
+        
+        // Используем размеры канваса
+        const width = Math.round(containerRect.width);
+        const height = Math.round(containerRect.height);
+        
+        // Используем значения из состояния
+        const fontSize = state.fontSize;
+        const strokeWidth = state.strokeWidth;
+        const text = state.text;
+        
+        // Создаем временный канвас для рендеринга текста
+        const tempCanvas = document.createElement('canvas');
         const scale = 2;
         tempCanvas.width = width * scale;
         tempCanvas.height = height * scale;
@@ -204,153 +300,42 @@ document.addEventListener('DOMContentLoaded', function() {
         tempCtx.fillStyle = 'white';
         tempCtx.fillText(text, width / 2, height / 2);
         
-        // Получаем данные изображения
-        const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
-        const data = imageData.data;
-        
-        // Начинаем создавать SVG
-        let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">`;
-        svg += `<rect width="100%" height="100%" fill="black"/>`;
-        
-        // Создаем группу для текста
-        svg += `<g>`;
-        
-        // Создаем маску для текста
-        const mask = [];
-        for (let y = 0; y < tempCanvas.height; y++) {
-            mask[y] = [];
-            for (let x = 0; x < tempCanvas.width; x++) {
-                const index = (y * tempCanvas.width + x) * 4;
-                // Если пиксель белый (или почти белый)
-                mask[y][x] = data[index] > 200 ? 1 : 0;
-            }
-        }
-        
-        // Функция для трассировки контура
-        function traceContour(startX, startY) {
-            const directions = [
-                [1, 0],   // вправо
-                [0, 1],   // вниз
-                [-1, 0],  // влево
-                [0, -1]   // вверх
-            ];
-            
-            let contour = [];
-            let x = startX;
-            let y = startY;
-            let dir = 0;  // начинаем движение вправо
-            
-            do {
-                contour.push([x, y]);
-                
-                // Помечаем пиксель как посещенный
-                mask[y][x] = 2;
-                
-                // Проверяем соседние пиксели в порядке: вправо, вниз, влево, вверх
-                let found = false;
-                for (let i = 0; i < 4; i++) {
-                    const newDir = (dir + i) % 4;
-                    const [dx, dy] = directions[newDir];
-                    const newX = x + dx;
-                    const newY = y + dy;
-                    
-                    if (newX >= 0 && newX < tempCanvas.width && 
-                        newY >= 0 && newY < tempCanvas.height && 
-                        mask[newY][newX] === 1) {
-                        x = newX;
-                        y = newY;
-                        dir = newDir;
-                        found = true;
-                        break;
-                    }
-                }
-                
-                if (!found) {
-                    // Если не нашли соседний белый пиксель, ищем в любом направлении
-                    for (let i = 0; i < 4; i++) {
-                        const [dx, dy] = directions[i];
-                        const newX = x + dx;
-                        const newY = y + dy;
-                        
-                        if (newX >= 0 && newX < tempCanvas.width && 
-                            newY >= 0 && newY < tempCanvas.height && 
-                            mask[newY][newX] === 1) {
-                            x = newX;
-                            y = newY;
-                            dir = i;
-                            found = true;
-                            break;
-                        }
-                    }
-                }
-                
-                if (!found) break;
-                
-            } while (!(x === startX && y === startY) && contour.length < 10000);
-            
-            return contour;
-        }
-        
-        // Находим все контуры
-        const contours = [];
-        for (let y = 0; y < tempCanvas.height; y++) {
-            for (let x = 0; x < tempCanvas.width; x++) {
-                if (mask[y][x] === 1) {
-                    const contour = traceContour(x, y);
-                    if (contour.length > 2) {
-                        contours.push(contour);
-                    }
-                }
-            }
-        }
-        
-        // Преобразуем контуры в SVG path
-        if (contours.length > 0) {
-            // Создаем path для внешней обводки
-            let pathData = '';
-            
-            contours.forEach(contour => {
-                if (contour.length > 0) {
-                    // Начинаем новый подпуть
-                    pathData += `M${contour[0][0] / scale},${contour[0][1] / scale} `;
-                    
-                    // Добавляем линии для каждой точки контура
-                    for (let i = 1; i < contour.length; i++) {
-                        pathData += `L${contour[i][0] / scale},${contour[i][1] / scale} `;
-                    }
-                    
-                    // Замыкаем контур
-                    pathData += 'Z ';
-                }
-            });
-            
-            // Добавляем path с внешней обводкой
-            svg += `<path d="${pathData}" fill="none" stroke="white" stroke-width="${strokeWidth * 2}" stroke-linejoin="round" stroke-linecap="round"/>`;
-            
-            // Добавляем path с внутренней заливкой
-            svg += `<path d="${pathData}" fill="white"/>`;
-        }
-        
-        svg += `</g>`;
-        svg += `</svg>`;
-        
-        return svg;
+        // Получаем данные изображения как URL
+        return tempCanvas.toDataURL('image/svg+xml');
     }
     
     // Скачивание SVG с текстом
     function downloadTextSVG() {
-        const svgContent = generateTextSVG();
-        const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-        const url = URL.createObjectURL(blob);
+        // Показываем индикатор загрузки, если нужно
+        const button = textExportSVG;
+        const originalText = button.textContent;
+        button.textContent = "Обработка...";
+        button.disabled = true;
         
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'text.svg';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        URL.revokeObjectURL(url);
+        generateTextSVG().then(svgContent => {
+            const blob = new Blob([svgContent], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'text.svg';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            URL.revokeObjectURL(url);
+            
+            // Возвращаем кнопке исходное состояние
+            button.textContent = originalText;
+            button.disabled = false;
+        }).catch(error => {
+            console.error("Ошибка при генерации SVG:", error);
+            alert("Произошла ошибка при создании SVG. Пожалуйста, попробуйте еще раз.");
+            
+            // Возвращаем кнопке исходное состояние
+            button.textContent = originalText;
+            button.disabled = false;
+        });
     }
     
     // Инициализация
