@@ -9,4 +9,9 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php [L]
 
 # Отключаем стандартную страницу 404 для /js/yp/
-ErrorDocument 404 /js/yp/index.php 
+ErrorDocument 404 /js/yp/index.php
+
+# Разрешаем выполнение PHP-скриптов
+<Files "index.php">
+    Require all granted
+</Files> 
