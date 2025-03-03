@@ -1,19 +1,21 @@
 document.addEventListener('DOMContentLoaded', function() {
     const canvas = document.getElementById('gridCanvas');
+    if (!canvas) {
+        console.error("Canvas not found!");
+        return;
+    }
+    
     const ctx = canvas.getContext('2d');
+    if (!ctx) {
+        console.error("Could not get canvas context!");
+        return;
+    }
+    
+    // Получаем элементы управления
     const sizeSlider = document.getElementById('gridSizeSlider');
     const sizeInput = document.getElementById('gridSizeInput');
     const spacingSlider = document.getElementById('gridSpacingSlider');
     const spacingInput = document.getElementById('gridSpacingInput');
-
-    // Фиксированные размеры canvas
-    canvas.width = 1080;
-    canvas.height = 1080;
-
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-
-    // Gravity controls
     const radiusSlider = document.getElementById('gridRadiusSlider');
     const radiusInput = document.getElementById('gridRadiusInput');
     const strengthSlider = document.getElementById('gridStrengthSlider');
@@ -22,6 +24,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const randomMode = document.getElementById('gridRandomMode');
     const exportSVGButton = document.getElementById('gridExportSVG');
     const pauseIndicator = document.getElementById('gridPauseIndicator');
+    
+    // Проверяем, получены ли все необходимые элементы управления
+    if (!sizeSlider || !sizeInput || !spacingSlider || !spacingInput || 
+        !radiusSlider || !radiusInput || !strengthSlider || !strengthInput ||
+        !gravityMode || !randomMode || !exportSVGButton || !pauseIndicator) {
+        console.error("Some UI controls were not found!");
+        // Продолжаем работу, так как большинство функций не зависят от UI
+    }
+
+    // Устанавливаем размеры холста
+    // Сначала проверяем parentElement
+    if (!canvas.parentElement) {
+        console.error("Canvas parent element not found!");
+        canvas.width = 1000;
+        canvas.height = 600;
+    } else {
+        const parentWidth = canvas.parentElement.clientWidth;
+        console.log(`Parent element width: ${parentWidth}`);
+        
+        // Устанавливаем размеры с проверками
+        canvas.width = Math.max(parentWidth, 1000);
+        canvas.height = 600;
+    }
+    
+    console.log(`Canvas size: ${canvas.width}x${canvas.height}`);
+    
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
 
     let mouseX = centerX;
     let mouseY = centerY;
@@ -75,48 +105,66 @@ document.addEventListener('DOMContentLoaded', function() {
     syncInputs(radiusSlider, radiusInput);
     syncInputs(strengthSlider, strengthInput);
 
-    // Обработка событий мыши
-    canvas.addEventListener('mousemove', (e) => {
-        if (!document.getElementById('grid-content').classList.contains('active')) {
-            return; // Не выполняем, если вкладка не активна
-        }
-        
+    // Добавляем обработчики для событий мыши
+    canvas.addEventListener('mouseenter', function(e) {
+        isMouseOverCanvas = true;
         const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
+        mouseX = e.clientX - rect.left;
+        mouseY = e.clientY - rect.top;
+    });
+    
+    canvas.addEventListener('mousedown', function(e) {
+        isCursorActive = true;
         
-        mouseX = (e.clientX - rect.left) * scaleX;
-        mouseY = (e.clientY - rect.top) * scaleY;
-        
-        // Активируем интерактив при движении мыши
         if (!isPaused) {
-            // Гарантируем, что хотя бы некоторые точки активны
+            // Активируем все точки в зоне действия курсора
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
             const radius = parseInt(radiusInput.value);
-            let activatedPoints = 0;
             
-            for (let i = 0; i < points.length; i++) {
-                const point = points[i];
-                const dx = mouseX - point.x;
-                const dy = mouseY - point.y;
+            // Активируем или деактивируем точки
+            points.forEach(point => {
+                const dx = clickX - point.x;
+                const dy = clickY - point.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
                 if (distance < radius) {
-                    point.active = true;
-                    activatedPoints++;
+                    // Инвертируем состояние active
+                    point.active = !point.active;
+                    
+                    if (point.active) {
+                        // Даем точке импульс в случайном направлении
+                        const angle = Math.random() * Math.PI * 2;
+                        const impulse = 2 + Math.random() * 3;
+                        point.vx = Math.cos(angle) * impulse;
+                        point.vy = Math.sin(angle) * impulse;
+                    } else {
+                        // Останавливаем точку
+                        point.vx = 0;
+                        point.vy = 0;
+                    }
                 }
-            }
-            
-            console.log("Активированы точки: " + activatedPoints);
-            
-            applyForceToPoints();
-            redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
+            });
         }
+    });
+    
+    canvas.addEventListener('mouseup', function(e) {
+        isCursorActive = false;
+    });
+    
+    canvas.addEventListener('mousemove', function(e) {
+        // Получаем координаты мыши относительно холста
+        const rect = canvas.getBoundingClientRect();
+        mouseX = e.clientX - rect.left;
+        mouseY = e.clientY - rect.top;
         
         isMouseOverCanvas = true;
     });
-
-    canvas.addEventListener('mouseout', () => {
+    
+    canvas.addEventListener('mouseleave', function() {
         isMouseOverCanvas = false;
+        isCursorActive = false;
     });
 
     // Обработка клика для заморозки точек
@@ -280,58 +328,71 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function redraw(circleDiameter, spacing) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Если точки еще не созданы, создаем их
-        if (points.length === 0) {
-            generateGridPoints();
+        // Проверяем, существует ли контекст и холст
+        if (!ctx || !canvas) {
+            console.error("Canvas or context is not available");
+            return;
         }
         
-        // Рисуем точки
-        const circleRadius = circleDiameter / 2;
-        
-        for (let i = 0; i < points.length; i++) {
-            const point = points[i];
+        try {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            ctx.beginPath();
-            ctx.arc(point.x, point.y, circleRadius, 0, Math.PI * 2);
-            
-            // Активные точки рисуем ярко-голубым цветом
-            if (point.active) {
-                ctx.fillStyle = '#00FFFF';
-            } else {
-                ctx.fillStyle = 'white';
+            // Если точки еще не созданы, создаем их
+            if (points.length === 0) {
+                generateGridPoints();
             }
             
-            ctx.fill();
+            // Рисуем точки
+            const circleRadius = circleDiameter / 2;
+            
+            for (let i = 0; i < points.length; i++) {
+                const point = points[i];
+                
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, circleRadius, 0, Math.PI * 2);
+                
+                // Активные точки рисуем ярко-голубым цветом
+                if (point.active) {
+                    ctx.fillStyle = '#00FFFF';
+                } else {
+                    ctx.fillStyle = 'white';
+                }
+                
+                ctx.fill();
+            }
+            
+            // Рисуем курсор только если мышь находится над холстом и координаты мыши были установлены пользователем
+            if (isMouseOverCanvas && (mouseX !== centerX || mouseY !== centerY)) {
+                ctx.beginPath();
+                ctx.arc(mouseX, mouseY, parseInt(radiusInput.value), 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255, 165, 0, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+            
+            // Обновляем индикатор паузы
+            updatePauseIndicator();
+        } catch (error) {
+            console.error("Error in redraw function:", error);
         }
-        
-        // Рисуем курсор
-        ctx.beginPath();
-        ctx.arc(mouseX, mouseY, parseInt(radiusInput.value), 0, Math.PI * 2);
-        ctx.strokeStyle = 'rgba(255, 165, 0, 0.3)';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        
-        // Обновляем индикатор паузы
-        updatePauseIndicator();
     }
 
     // Функция для генерации сетки точек
     function generateGridPoints() {
         points = [];
         
-        // Получаем размеры холста
-        const width = canvas.width;
-        const height = canvas.height;
+        // Получаем размеры холста и гарантируем, что они больше 0
+        const width = Math.max(canvas.width, 100);
+        const height = Math.max(canvas.height, 100);
         
         // Получаем расстояние между точками
         const spacing = Math.max(parseInt(spacingInput.value), 10);
         console.log("Spacing: " + spacing);
         
         // Вычисляем количество точек по горизонтали и вертикали
-        const numX = Math.floor(width / spacing);
-        const numY = Math.floor(height / spacing);
+        // Гарантируем минимум 3 точки в каждом направлении
+        const numX = Math.max(Math.floor(width / spacing), 3);
+        const numY = Math.max(Math.floor(height / spacing), 3);
         
         console.log(`Grid boundaries: ${width}x${height}, Points: ${numX}x${numY} = ${numX * numY} total`);
         
@@ -359,6 +420,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         console.log(`Generated ${points.length} points`);
+        
+        // Если по какой-то причине точки не создались, создаем хотя бы несколько вручную
+        if (points.length === 0) {
+            console.warn("Failed to generate points using the grid, creating fallback points");
+            // Создаем сетку 10x10 точек вручную
+            const manualSpacing = Math.min(width, height) / 10;
+            for (let y = 0; y < 10; y++) {
+                for (let x = 0; x < 10; x++) {
+                    const pointX = (width / 10) * x + manualSpacing / 2;
+                    const pointY = (height / 10) * y + manualSpacing / 2;
+                    points.push(new Point(pointX, pointY));
+                }
+            }
+            console.log(`Generated ${points.length} fallback points`);
+        }
         
         return points;
     }
@@ -391,10 +467,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function updatePauseIndicator() {
-        if (isPaused) {
-            pauseIndicator.style.display = 'flex';
-        } else {
-            pauseIndicator.style.display = 'none';
+        // Проверяем, существует ли элемент индикатора паузы
+        if (!pauseIndicator) {
+            console.warn("Pause indicator element not found");
+            return;
+        }
+        
+        try {
+            if (isPaused) {
+                pauseIndicator.style.display = 'flex';
+            } else {
+                pauseIndicator.style.display = 'none';
+            }
+        } catch (error) {
+            console.error("Error updating pause indicator:", error);
         }
     }
 
@@ -479,50 +565,78 @@ document.addEventListener('DOMContentLoaded', function() {
         checkControlsState();
     }
 
-    // Обработка нажатия мыши
-    canvas.addEventListener('mousedown', function(e) {
-        isCursorActive = true;
-        
+    // Функция анимации
+    function animate() {
         if (!isPaused) {
-            // Активируем все точки в зоне действия курсора
-            const rect = canvas.getBoundingClientRect();
-            const clickX = e.clientX - rect.left;
-            const clickY = e.clientY - rect.top;
-            const radius = parseInt(radiusInput.value);
+            // Обновить все точки
+            points.forEach(point => point.update());
             
-            // Активируем или деактивируем точки
-            points.forEach(point => {
-                const dx = clickX - point.x;
-                const dy = clickY - point.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance < radius) {
-                    // Инвертируем состояние active
-                    point.active = !point.active;
-                    
-                    if (point.active) {
-                        // Даем точке импульс в случайном направлении
-                        const angle = Math.random() * Math.PI * 2;
-                        const impulse = 2 + Math.random() * 3;
-                        point.vx = Math.cos(angle) * impulse;
-                        point.vy = Math.sin(angle) * impulse;
-                    } else {
-                        // Останавливаем точку
-                        point.vx = 0;
-                        point.vy = 0;
-                    }
-                }
-            });
+            // Если курсор находится над холстом и не на паузе, применяем силу
+            // Дополнительно проверяем, что координаты мыши были изменены пользователем
+            if (isMouseOverCanvas && (mouseX !== centerX || mouseY !== centerY)) {
+                applyForceToPoints();
+            }
+        }
+        
+        // Перерисовываем сцену
+        redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
+        
+        // Запускаем следующий кадр анимации
+        requestAnimationFrame(animate);
+    }
+
+    // Добавляем обработчик для события изменения вкладки
+    window.addEventListener('tab-changed', function() {
+        // Проверяем, активна ли вкладка Grid
+        if (document.getElementById('grid-content').classList.contains('active')) {
+            console.log('Switched to Grid tab');
+            // Сбрасываем время анимации
+            lastTime = 0;
+            
+            // Проверяем, созданы ли точки
+            if (points.length === 0) {
+                generateGridPoints();
+            }
         }
     });
 
     // Инициализация
     console.log("Инициализация Grid...");
-    generateGridPoints();
-    console.log("Создано точек: " + points.length);
     
-    // Запускаем анимацию
-    animate();
+    try {
+        // Проверяем, всё ли готово для инициализации
+        if (!canvas || !ctx) {
+            throw new Error("Canvas or context is not available");
+        }
+        
+        // Генерируем точки
+        generateGridPoints();
+        console.log("Создано точек: " + points.length);
+        
+        // Проверяем, созданы ли точки
+        if (points.length === 0) {
+            console.warn("No points were generated, attempting fallback");
+            // Пытаемся создать точки еще раз с другими параметрами
+            const width = Math.max(canvas.width, 100);
+            const height = Math.max(canvas.height, 100);
+            
+            // Создаем сетку 10x10 точек вручную
+            const manualSpacing = Math.min(width, height) / 10;
+            for (let y = 0; y < 10; y++) {
+                for (let x = 0; x < 10; x++) {
+                    const pointX = (width / 10) * x + manualSpacing / 2;
+                    const pointY = (height / 10) * y + manualSpacing / 2;
+                    points.push(new Point(pointX, pointY));
+                }
+            }
+            console.log(`Generated ${points.length} fallback points directly`);
+        }
+        
+        // Запускаем анимацию
+        animate();
+    } catch (error) {
+        console.error("Error during initialization:", error);
+    }
 
     // Добавляем обработчики событий для элементов управления
     pauseButton.addEventListener('click', function() {
@@ -572,68 +686,5 @@ document.addEventListener('DOMContentLoaded', function() {
         link.download = 'grid.svg';
         link.href = generateSVG();
         link.click();
-    });
-    
-    // Добавляем обработчики для событий мыши
-    canvas.addEventListener('mousedown', function(e) {
-        isCursorActive = true;
-    });
-    
-    canvas.addEventListener('mouseup', function(e) {
-        isCursorActive = false;
-    });
-    
-    canvas.addEventListener('mousemove', function(e) {
-        // Получаем координаты мыши относительно холста
-        const rect = canvas.getBoundingClientRect();
-        mouseX = e.clientX - rect.left;
-        mouseY = e.clientY - rect.top;
-        
-        // Отмечаем, что курсор находится над холстом
-        isMouseOverCanvas = true;
-    });
-    
-    canvas.addEventListener('mouseout', function() {
-        isMouseOverCanvas = false;
-    });
-    
-    // Добавляем обработчик для кнопки очистки
-    clearButton.addEventListener('click', function() {
-        points = [];
-        generateGridPoints();
-    });
-
-    // Функция анимации
-    function animate() {
-        if (!isPaused) {
-            // Обновить все точки
-            points.forEach(point => point.update());
-            
-            // Если курсор находится над холстом и не на паузе, применяем силу
-            if (isMouseOverCanvas) {
-                applyForceToPoints();
-            }
-        }
-        
-        // Перерисовываем сцену
-        redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
-        
-        // Запускаем следующий кадр анимации
-        requestAnimationFrame(animate);
-    }
-
-    // Добавляем обработчик для события изменения вкладки
-    window.addEventListener('tab-changed', function() {
-        // Проверяем, активна ли вкладка Grid
-        if (document.getElementById('grid-content').classList.contains('active')) {
-            console.log('Switched to Grid tab');
-            // Сбрасываем время анимации
-            lastTime = 0;
-            
-            // Проверяем, созданы ли точки
-            if (points.length === 0) {
-                generateGridPoints();
-            }
-        }
     });
 }); 
