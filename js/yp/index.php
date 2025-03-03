@@ -19,7 +19,6 @@ function getLatestVersion() {
     }
     
     // Сортируем версии по числовому значению
-    // Используем intval для правильной сортировки многозначных чисел
     usort($versions, function($a, $b) {
         return intval($a) - intval($b);
     });
@@ -31,29 +30,13 @@ function getLatestVersion() {
 // Получаем последнюю версию
 $latestVersion = getLatestVersion();
 
-// Получаем запрошенный путь
-$requestUri = $_SERVER['REQUEST_URI'];
-$pathParts = explode('/', trim($requestUri, '/'));
-
-// Проверяем, запрошена ли конкретная версия
-$requestedVersion = null;
-$hasNumericSegment = false;
-
-// Ищем числовой сегмент в пути
-foreach ($pathParts as $part) {
-    if (preg_match('/^\d+$/', $part)) {
-        $requestedVersion = $part;
-        $hasNumericSegment = true;
-        break;
-    }
-}
-
 // Если запрос идет на конкретную версию, проверяем ее существование
-if ($hasNumericSegment && is_dir('./' . $requestedVersion)) {
+$requestedVersion = isset($_GET['version']) ? $_GET['version'] : null;
+if ($requestedVersion && is_dir('./' . $requestedVersion)) {
     // Если запрошенная версия существует, используем ее
     $version = $requestedVersion;
 } else {
-    // Иначе используем последнюю версию (в случае неверного адреса или отсутствия версии)
+    // Иначе используем последнюю версию
     $version = $latestVersion;
 }
 
