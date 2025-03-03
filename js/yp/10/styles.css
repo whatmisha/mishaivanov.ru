@@ -8,9 +8,64 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
+/* Стиль для неактивных элементов управления */
+.disabled-control {
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+}
+
+/* Tabs styles */
+.tabs-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    padding: 0 20px;
+    z-index: 100;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.tab {
+    padding: 15px 25px;
+    color: rgba(255, 255, 255, 0.7);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    position: relative;
+}
+
+.tab:hover {
+    color: white;
+}
+
+.tab.active {
+    color: white;
+}
+
+.tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: white;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Adjust controls position to account for tabs */
 .controls {
     position: fixed;
-    top: 20px;
+    top: 70px;
     left: 20px;
     background: rgba(0,0,0,0.7);
     padding: 15px;
@@ -87,7 +142,7 @@ input[type="range"]::-moz-range-thumb {
     opacity: 0.7;
 }
 
-#pauseIndicator {
+#pauseIndicator, .pause-indicator {
     position: fixed;
     bottom: 20px;
     right: 20px;
@@ -130,6 +185,18 @@ input[type="range"]::-moz-range-thumb {
 
 .number-input {
     width: 60px;
+    text-align: center;
+}
+
+.text-input {
+    width: 100%;
+    max-width: 300px;
+    padding: 5px;
+    border: 1px solid #333;
+    background-color: #222;
+    color: white;
+    font-family: 'Yandex Sans', sans-serif;
+    font-size: 14px;
 }
 
 .container {
@@ -139,8 +206,24 @@ input[type="range"]::-moz-range-thumb {
     max-height: 1080px;
 }
 
-#rayCanvas {
+#text-content .container {
+    aspect-ratio: 16/9;
+    width: auto;
+    height: min(90vh, 607px); /* 1080px / 16 * 9 = 607px */
+    max-width: 1920px; /* 1080px * 16 / 9 = 1920px */
+    max-height: 1080px;
+}
+
+#rayCanvas, #cationsCanvas {
     width: 100%;
     height: 100%;
     background-color: black;
+    border: 1px solid #333333;
+}
+
+#textCanvas {
+    width: 100%;
+    height: 100%;
+    background-color: black;
+    border: 1px solid #333333;
 } 

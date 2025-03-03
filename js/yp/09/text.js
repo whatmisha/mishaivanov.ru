@@ -178,92 +178,163 @@ document.addEventListener('DOMContentLoaded', function() {
         // Используем значения из состояния
         const fontSize = state.fontSize;
         const strokeWidth = state.strokeWidth;
+        const text = state.text;
+        
+        // Создаем временный канвас для рендеринга текста
+        const tempCanvas = document.createElement('canvas');
+        // Увеличиваем размер канваса для лучшего качества трассировки
+        const scale = 2;
+        tempCanvas.width = width * scale;
+        tempCanvas.height = height * scale;
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        // Масштабируем контекст
+        tempCtx.scale(scale, scale);
+        
+        // Рисуем черный фон
+        tempCtx.fillStyle = 'black';
+        tempCtx.fillRect(0, 0, width, height);
+        
+        // Настраиваем шрифт
+        tempCtx.font = `${fontSize}px "Yandex Sans"`;
+        tempCtx.textAlign = 'center';
+        tempCtx.textBaseline = 'middle';
+        
+        // Рисуем белый текст
+        tempCtx.fillStyle = 'white';
+        tempCtx.fillText(text, width / 2, height / 2);
+        
+        // Получаем данные изображения
+        const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+        const data = imageData.data;
         
         // Начинаем создавать SVG
         let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}">`;
         svg += `<rect width="100%" height="100%" fill="black"/>`;
         
-        const text = state.text;
-        const centerX = width / 2;
-        const centerY = height / 2;
+        // Создаем группу для текста
+        svg += `<g>`;
         
-        // Проверяем, доступен ли шрифт через opentype.js
-        if (state.font && typeof opentype !== 'undefined') {
-            // Преобразуем текст в path с помощью opentype.js
-            try {
-                // Создаем path для текста
-                const path = state.font.getPath(text, 0, 0, fontSize);
-                
-                // Получаем bounding box для центрирования
-                const bbox = path.getBoundingBox();
-                const textWidth = bbox.x2 - bbox.x1;
-                const textHeight = bbox.y2 - bbox.y1;
-                
-                // Вычисляем смещение для центрирования
-                const offsetX = centerX - (bbox.x1 + textWidth / 2);
-                const offsetY = centerY - (bbox.y1 + textHeight / 2);
-                
-                // Получаем SVG path данные
-                const pathData = path.toPathData();
-                
-                // Добавляем path с внешней обводкой
-                svg += `<g transform="translate(${offsetX}, ${offsetY})">
-                    <!-- Внешняя обводка -->
-                    <path d="${pathData}" 
-                        fill="none" 
-                        stroke="white" 
-                        stroke-width="${strokeWidth * 2}" 
-                        stroke-linejoin="round" 
-                        stroke-linecap="round" />
-                    
-                    <!-- Внутренняя заливка -->
-                    <path d="${pathData}" 
-                        fill="white" />
-                </g>`;
-            } catch (error) {
-                console.error('Ошибка при создании path из текста:', error);
-                // Используем запасной вариант с обычным текстом
-                fallbackTextSVG();
+        // Создаем маску для текста
+        const mask = [];
+        for (let y = 0; y < tempCanvas.height; y++) {
+            mask[y] = [];
+            for (let x = 0; x < tempCanvas.width; x++) {
+                const index = (y * tempCanvas.width + x) * 4;
+                // Если пиксель белый (или почти белый)
+                mask[y][x] = data[index] > 200 ? 1 : 0;
             }
-        } else {
-            // Если opentype.js недоступен, используем обычный текст с инструкцией
-            fallbackTextSVG();
         }
         
+        // Функция для трассировки контура
+        function traceContour(startX, startY) {
+            const directions = [
+                [1, 0],   // вправо
+                [0, 1],   // вниз
+                [-1, 0],  // влево
+                [0, -1]   // вверх
+            ];
+            
+            let contour = [];
+            let x = startX;
+            let y = startY;
+            let dir = 0;  // начинаем движение вправо
+            
+            do {
+                contour.push([x, y]);
+                
+                // Помечаем пиксель как посещенный
+                mask[y][x] = 2;
+                
+                // Проверяем соседние пиксели в порядке: вправо, вниз, влево, вверх
+                let found = false;
+                for (let i = 0; i < 4; i++) {
+                    const newDir = (dir + i) % 4;
+                    const [dx, dy] = directions[newDir];
+                    const newX = x + dx;
+                    const newY = y + dy;
+                    
+                    if (newX >= 0 && newX < tempCanvas.width && 
+                        newY >= 0 && newY < tempCanvas.height && 
+                        mask[newY][newX] === 1) {
+                        x = newX;
+                        y = newY;
+                        dir = newDir;
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if (!found) {
+                    // Если не нашли соседний белый пиксель, ищем в любом направлении
+                    for (let i = 0; i < 4; i++) {
+                        const [dx, dy] = directions[i];
+                        const newX = x + dx;
+                        const newY = y + dy;
+                        
+                        if (newX >= 0 && newX < tempCanvas.width && 
+                            newY >= 0 && newY < tempCanvas.height && 
+                            mask[newY][newX] === 1) {
+                            x = newX;
+                            y = newY;
+                            dir = i;
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (!found) break;
+                
+            } while (!(x === startX && y === startY) && contour.length < 10000);
+            
+            return contour;
+        }
+        
+        // Находим все контуры
+        const contours = [];
+        for (let y = 0; y < tempCanvas.height; y++) {
+            for (let x = 0; x < tempCanvas.width; x++) {
+                if (mask[y][x] === 1) {
+                    const contour = traceContour(x, y);
+                    if (contour.length > 2) {
+                        contours.push(contour);
+                    }
+                }
+            }
+        }
+        
+        // Преобразуем контуры в SVG path
+        if (contours.length > 0) {
+            // Создаем path для внешней обводки
+            let pathData = '';
+            
+            contours.forEach(contour => {
+                if (contour.length > 0) {
+                    // Начинаем новый подпуть
+                    pathData += `M${contour[0][0] / scale},${contour[0][1] / scale} `;
+                    
+                    // Добавляем линии для каждой точки контура
+                    for (let i = 1; i < contour.length; i++) {
+                        pathData += `L${contour[i][0] / scale},${contour[i][1] / scale} `;
+                    }
+                    
+                    // Замыкаем контур
+                    pathData += 'Z ';
+                }
+            });
+            
+            // Добавляем path с внешней обводкой
+            svg += `<path d="${pathData}" fill="none" stroke="white" stroke-width="${strokeWidth * 2}" stroke-linejoin="round" stroke-linecap="round"/>`;
+            
+            // Добавляем path с внутренней заливкой
+            svg += `<path d="${pathData}" fill="white"/>`;
+        }
+        
+        svg += `</g>`;
         svg += `</svg>`;
-        return svg;
         
-        // Запасной вариант с обычным текстом
-        function fallbackTextSVG() {
-            svg += `
-            <!-- Текст будет преобразован в path при открытии в векторном редакторе -->
-            <g transform="translate(${centerX}, ${centerY})">
-                <!-- Внешняя обводка -->
-                <text text-anchor="middle" dominant-baseline="middle" 
-                    font-family="Yandex Sans" 
-                    font-size="${fontSize}" 
-                    font-weight="0"
-                    fill="none"
-                    stroke="white" 
-                    stroke-width="${strokeWidth * 2}" 
-                    stroke-linejoin="round" 
-                    stroke-linecap="round">${text}</text>
-                
-                <!-- Внутренняя заливка -->
-                <text text-anchor="middle" dominant-baseline="middle" 
-                    font-family="Yandex Sans" 
-                    font-size="${fontSize}" 
-                    font-weight="0"
-                    fill="white">${text}</text>
-                
-                <!-- Комментарий для пользователя -->
-                <desc>
-                    Примечание: Для получения текста в кривых, откройте этот SVG в векторном редакторе 
-                    (например, Adobe Illustrator, Figma или Inkscape) и преобразуйте текст в кривые 
-                    перед дальнейшим использованием.
-                </desc>
-            </g>`;
-        }
+        return svg;
     }
     
     // Скачивание SVG с текстом
@@ -332,4 +403,4 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Запуск инициализации
     init();
-}); 
+});

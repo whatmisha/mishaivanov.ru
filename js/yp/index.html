@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Перенаправление</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    <script>
+        // Функция для сканирования директорий и поиска последней версии
+        async function findLatestVersion() {
+            // Начальное значение по умолчанию
+            let latestVersion = "10";
+            
+            try {
+                // Получаем список всех директорий с помощью fetch и специального PHP-скрипта
+                const response = await fetch('scan_directories.php');
+                if (response.ok) {
+                    const directories = await response.json();
+                    
+                    // Фильтруем только директории с числовыми именами
+                    const versionDirs = directories.filter(dir => /^\d+$/.test(dir));
+                    
+                    if (versionDirs.length > 0) {
+                        // Сортируем версии по числовому значению (важно для правильной сортировки многозначных чисел)
+                        versionDirs.sort((a, b) => parseInt(a) - parseInt(b));
+                        
+                        // Получаем последнюю версию
+                        latestVersion = versionDirs[versionDirs.length - 1];
+                    }
+                }
+            } catch (error) {
+                console.error('Ошибка при поиске последней версии:', error);
+                // В случае ошибки используем значение по умолчанию
+            }
+            
+            return latestVersion;
+        }
+
+        // Функция для проверки существования директории
+        async function checkDirectoryExists(path) {
+            try {
+                const response = await fetch(path, { method: 'HEAD' });
+                return response.status !== 404;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        // Функция для перенаправления
+        async function redirect() {
+            // Получаем запрошенный путь
+            const path = window.location.pathname;
+            const segments = path.split('/').filter(segment => segment.length > 0);
+            
+            // Проверяем, запрошена ли конкретная версия
+            if (segments.length > 0 && /^\d+$/.test(segments[segments.length - 1])) {
+                const requestedVersion = segments[segments.length - 1];
+                
+                // Проверяем существование запрошенной версии
+                const exists = await checkDirectoryExists(`./${requestedVersion}/`);
+                if (exists) {
+                    // Если версия существует, перенаправляем на нее
+                    window.location.href = `./${requestedVersion}/`;
+                } else {
+                    // Если версия не существует, перенаправляем на последнюю
+                    const latestVersion = await findLatestVersion();
+                    window.location.href = `./${latestVersion}/`;
+                }
+            } else {
+                // Если версия не указана, перенаправляем на последнюю
+                const latestVersion = await findLatestVersion();
+                window.location.href = `./${latestVersion}/`;
+            }
+        }
+
+        // Запускаем перенаправление после загрузки страницы
+        window.onload = function() {
+            setTimeout(() => {
+                redirect().catch(error => {
+                    console.error('Ошибка при перенаправлении:', error);
+                    // В случае ошибки перенаправляем на версию по умолчанию
+                    window.location.href = './10/';
+                });
+            }, 1000); // Задержка в 1 секунду для отображения анимации
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Перенаправление</h1>
+        <p>Перенаправление на последнюю версию проекта...</p>
+        <div class="loader"></div>
+    </div>
+</body>
+</html> 

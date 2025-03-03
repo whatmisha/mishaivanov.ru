@@ -1,0 +1,22 @@
+RewriteEngine On
+
+# Если запрос идет непосредственно к директории /yp/ без указания версии
+RewriteRule ^$ index.php [L]
+
+# Если запрашивается несуществующая страница, перенаправляем на index.php
+ErrorDocument 404 /js/yp/index.php
+
+# Если запрос идет к конкретной версии, проверяем ее существование
+# Но только если это не запрос к существующему файлу или директории
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [L]
+
+# Разрешаем доступ к PHP-скриптам
+<Files "*.php">
+    Order Allow,Deny
+    Allow from all
+</Files>
+
+# Запрещаем листинг директорий
+Options -Indexes 
