@@ -1,60 +1,36 @@
 <?php
-// Функция для получения последней версии проекта
-function getLatestVersion() {
-    // Получаем список директорий
-    $dirs = glob('./*', GLOB_ONLYDIR);
-    
-    // Фильтруем только директории с числовыми именами (версии)
-    $versions = [];
-    foreach ($dirs as $dir) {
-        $dirName = basename($dir);
-        // Изменяем регулярное выражение, чтобы оно принимало любое количество цифр
-        if (preg_match('/^\d+$/', $dirName)) {
-            $versions[] = $dirName;
-        }
+// Получаем список всех директорий
+$versions = [];
+$dir = __DIR__;
+
+// Получаем все директории в текущей папке
+$items = scandir($dir);
+
+foreach ($items as $item) {
+    // Пропускаем . и .. и не-директории
+    if ($item === '.' || $item === '..' || !is_dir($dir . '/' . $item)) {
+        continue;
     }
     
-    // Если версий нет, возвращаем дефолтное значение
-    if (empty($versions)) {
-        return "00"; // Дефолтная версия
+    // Проверяем, что имя директории состоит только из цифр
+    if (preg_match('/^\d+$/', $item)) {
+        $versions[] = intval($item);
     }
-    
-    // Сортируем версии по числовому значению
-    usort($versions, function($a, $b) {
-        // Преобразуем строки в числа для корректного сравнения
-        return intval($a) - intval($b);
-    });
-    
-    // Получаем последнюю версию
-    $latestVersion = end($versions);
-    
-    // Форматируем версию, чтобы она имела как минимум 2 цифры
-    return str_pad($latestVersion, 2, '0', STR_PAD_LEFT);
 }
 
-// Получаем последнюю версию
-$latestVersion = getLatestVersion();
-
-// Если запрос идет на конкретную версию, проверяем ее существование
-$requestedVersion = isset($_GET['version']) ? $_GET['version'] : null;
-if ($requestedVersion !== null) {
-    // Проверяем, что запрошенная версия содержит только цифры
-    if (preg_match('/^\d+$/', $requestedVersion)) {
-        // Форматируем запрошенную версию
-        $requestedVersion = str_pad($requestedVersion, 2, '0', STR_PAD_LEFT);
-        if (is_dir('./' . $requestedVersion)) {
-            $version = $requestedVersion;
-        } else {
-            $version = $latestVersion;
-        }
-    } else {
-        $version = $latestVersion;
-    }
-} else {
-    $version = $latestVersion;
+// Если нет доступных версий, перенаправляем на 00
+if (empty($versions)) {
+    header('Location: ./00/');
+    exit;
 }
 
-// Перенаправляем на выбранную версию
-header("Location: ./$version/");
+// Находим максимальную версию
+$latestVersion = max($versions);
+
+// Форматируем номер версии с ведущим нулем
+$latestVersionStr = str_pad($latestVersion, 2, '0', STR_PAD_LEFT);
+
+// Перенаправляем на последнюю версию
+header('Location: ./' . $latestVersionStr . '/');
 exit;
 ?> 
