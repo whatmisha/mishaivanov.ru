@@ -15,11 +15,17 @@ foreach ($items as $item) {
     
     // Проверяем, что имя директории состоит только из цифр
     if (preg_match('/^\d+$/', $item)) {
-        $versions[] = $item;
+        $versions[] = intval($item); // Преобразуем в число для правильной сортировки
     }
 }
 
-// Сортируем версии по числовому значению
-sort($versions, SORT_NUMERIC);
+// Сортируем версии по числовому значению в порядке убывания
+rsort($versions, SORT_NUMERIC);
 
-echo json_encode($versions); 
+// Преобразуем обратно в строки с ведущими нулями
+$formatted_versions = [];
+foreach ($versions as $version) {
+    $formatted_versions[] = str_pad($version, 2, '0', STR_PAD_LEFT);
+}
+
+echo json_encode($formatted_versions); 

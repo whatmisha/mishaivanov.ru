@@ -1,4 +1,8 @@
 <?php
-// Просто включаем файл redirect.html
-include 'redirect.html';
+// Текущая актуальная версия (обновляйте при добавлении новой версии)
+$latest_version = '11';
+
+// Перенаправляем на актуальную версию
+header('Location: ./' . $latest_version . '/');
+exit;
 ?> 
