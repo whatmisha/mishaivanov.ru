@@ -1,5 +1,13 @@
 RewriteEngine On
 
-# Редирект с /yp на /js/yp/
-RewriteRule ^yp/?$ /js/yp/ [R=301,L]
-RewriteRule ^yp/(.*)$ /js/yp/$1 [R=301,L] 
+# Редирект с .ru на .com
+RewriteCond %{HTTP_HOST} ^mishaivanov\.ru$ [NC]
+RewriteRule ^(.*)$ https://mishaivanov.com/$1 [R=301,L]
+
+# Редирект с /js/yp на актуальную версию
+RewriteCond %{REQUEST_URI} ^/js/yp/?$ [NC]
+RewriteRule ^js/yp/?$ /js/yp/index.php [L]
+
+# Редирект со старых версий на актуальную
+RewriteCond %{REQUEST_URI} ^/js/yp/(?!\d{2}/) [NC]
+RewriteRule ^js/yp/(.*)$ /js/yp/index.php [L] 

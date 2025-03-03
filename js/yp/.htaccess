@@ -9,4 +9,7 @@ ErrorDocument 404 /js/yp/index.php
 # Если запрос идет к конкретной версии, проверяем ее существование
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php [L] 
+RewriteRule ^(.*)$ index.php [L]
+
+RewriteCond %{HTTP_HOST} ^mishaivanov\.ru$ [NC]
+RewriteRule ^(.*)$ https://mishaivanov.com/$1 [R=301,L] 
