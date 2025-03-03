@@ -1,0 +1,5 @@
+RewriteEngine On
+
+# Редирект с /yp на /js/yp/
+RewriteRule ^yp/?$ /js/yp/ [R=301,L]
+RewriteRule ^yp/(.*)$ /js/yp/$1 [R=301,L] 
