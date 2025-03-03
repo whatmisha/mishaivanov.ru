@@ -81,6 +81,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let isCursorActive = false;
     let mouseEverMoved = false; // Флаг, показывающий, двигал ли пользователь мышь над холстом
 
+    // Добавляем переменные для отслеживания движения мыши
+    let prevMouseX = -1000;
+    let prevMouseY = -1000;
+    let mouseVelocityX = 0;
+    let mouseVelocityY = 0;
+
     // Синхронизация слайдеров и числовых полей
     function syncInputs(slider, input) {
         slider.addEventListener('input', () => {
@@ -174,10 +180,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     canvas.addEventListener('mousemove', function(e) {
+        // Сохраняем предыдущие координаты
+        prevMouseX = mouseX;
+        prevMouseY = mouseY;
+        
         // Получаем координаты мыши относительно холста
         const rect = canvas.getBoundingClientRect();
         mouseX = e.clientX - rect.left;
         mouseY = e.clientY - rect.top;
+        
+        // Вычисляем скорость движения мыши
+        mouseVelocityX = mouseX - prevMouseX;
+        mouseVelocityY = mouseY - prevMouseY;
         
         isMouseOverCanvas = true;
         mouseEverMoved = true; // Устанавливаем, что мышь двигалась над холстом
@@ -189,6 +203,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // При выходе с холста убираем точку притяжения, переместив координаты мыши 
         // за пределы холста, чтобы они не влияли на точки
+        prevMouseX = mouseX; // Сохраняем последнюю позицию для расчета инерции
+        prevMouseY = mouseY;
         mouseX = -1000;
         mouseY = -1000;
         
@@ -292,40 +308,61 @@ document.addEventListener('DOMContentLoaded', function() {
             this.vy = 0;
             this.active = false;
             this.activationTime = 0;
+            this.mass = 0.5 + Math.random() * 0.5; // Более легкие точки
         }
 
         update() {
             // Обновляем position если точка активна
             if (this.active) {
-                // Применяем затухание
-                this.vx *= 0.95;
-                this.vy *= 0.95;
+                // Применяем очень мягкое затухание для эффекта "пыльцы"
+                this.vx *= 0.98; // Немного увеличиваем затухание
+                this.vy *= 0.98;
                 
                 // Обновляем позицию
                 this.x += this.vx;
                 this.y += this.vy;
                 
-                // Постепенно возвращаем точку к исходной позиции
+                // Возвращение к исходной позиции
                 const dx = this.originalX - this.x;
                 const dy = this.originalY - this.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                // Чем дальше точка от исходной позиции, тем сильнее её тянет обратно
-                const returnForce = 0.01 * Math.min(distance * 0.1, 1);
+                // Увеличиваем силу возврата
+                const returnForce = 0.001 / this.mass; // Было 0.0003, увеличиваем для более быстрого возврата
                 
-                if (distance > 0.1) {
-                    this.vx += dx * returnForce;
-                    this.vy += dy * returnForce;
-                } else {
-                    // Если точка очень близко к исходной позиции и почти не движется, 
-                    // деактивируем её
-                    if (Math.abs(this.vx) < 0.1 && Math.abs(this.vy) < 0.1) {
-                        this.x = this.originalX;
-                        this.y = this.originalY;
-                        this.vx = 0;
-                        this.vy = 0;
-                        this.active = false;
-                    }
+                // Применяем силу возврата
+                if (distance > 1) { // Уменьшаем порог для начала возврата
+                    // Увеличиваем силу возврата
+                    const factor = Math.min(distance * 0.005, 0.1); // Увеличиваем коэффициент
+                    this.vx += dx * returnForce * factor;
+                    this.vy += dy * returnForce * factor;
+                }
+                
+                // Деактивируем точку если она почти не движется
+                if (Math.abs(this.vx) < 0.05 && Math.abs(this.vy) < 0.05 && distance < 1) {
+                    // Деактивируем точку и возвращаем на исходную позицию
+                    this.x = this.originalX;
+                    this.y = this.originalY;
+                    this.vx = 0;
+                    this.vy = 0;
+                    this.active = false;
+                }
+                
+                // Проверка границ холста с отскоком
+                if (this.x < 0) {
+                    this.x = 0;
+                    this.vx *= -0.5; // Отскок с потерей энергии
+                } else if (this.x > canvas.width) {
+                    this.x = canvas.width;
+                    this.vx *= -0.5;
+                }
+                
+                if (this.y < 0) {
+                    this.y = 0;
+                    this.vy *= -0.5;
+                } else if (this.y > canvas.height) {
+                    this.y = canvas.height;
+                    this.vy *= -0.5;
                 }
             }
         }
@@ -335,11 +372,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Если точка не активна, активируем её
                 this.active = true;
                 this.activationTime = Date.now();
+                
+                // Даем начальный импульс в направлении силы, а не случайном
+                this.vx = Math.cos(angle) * force * 2; // Увеличиваем начальный импульс
+                this.vy = Math.sin(angle) * force * 2;
             }
             
-            // Применяем силу
-            this.vx += Math.cos(angle) * force;
-            this.vy += Math.sin(angle) * force;
+            // Применяем силу с учетом массы точки
+            const adjustedForce = force * 1.5 / this.mass;
+            this.vx += Math.cos(angle) * adjustedForce;
+            this.vy += Math.sin(angle) * adjustedForce;
         }
     }
 
@@ -411,68 +453,90 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Функция для генерации сетки точек
+    // Функция для генерации точек сетки
     function generateGridPoints() {
+        // Очищаем массив точек
         points = [];
         
-        // Получаем размеры холста и гарантируем, что они больше 0
-        const width = Math.max(canvas.width, 100);
-        const height = Math.max(canvas.height, 100);
+        // Проверяем размеры холста
+        if (canvas.width <= 0 || canvas.height <= 0) {
+            console.error("Invalid canvas dimensions:", canvas.width, canvas.height);
+            // Устанавливаем минимальные размеры
+            canvas.width = Math.max(canvas.width, 1000);
+            canvas.height = Math.max(canvas.height, 1000);
+        }
         
-        // Получаем расстояние между точками, адаптируем к размеру холста
-        // Для больших холстов используем большее расстояние
-        const baseSpacing = Math.max(parseInt(spacingInput.value), 10);
-        const minDimension = Math.min(width, height);
-        // Адаптируем spacing к размеру холста, чтобы избежать слишком плотной или редкой сетки
-        const spacing = Math.max(baseSpacing, minDimension / 50);
+        // Получаем минимальный размер холста для расчета расстояния между точками
+        const minDimension = Math.min(canvas.width, canvas.height);
         
-        console.log(`Adjusted spacing: ${spacing} (base: ${baseSpacing})`);
+        // Получаем расстояние между точками из поля ввода
+        let spacing = parseInt(spacingInput.value);
+        
+        // Проверяем, что spacing имеет разумное значение
+        if (isNaN(spacing) || spacing <= 0) {
+            console.error("Invalid spacing value:", spacing);
+            spacing = 50; // Устанавливаем значение по умолчанию
+            spacingInput.value = spacing;
+            if (spacingSlider) spacingSlider.value = spacing;
+        }
+        
+        // Адаптируем расстояние между точками к размеру холста
+        // Это обеспечит примерно одинаковое количество точек независимо от размера холста
+        const scaleFactor = minDimension / 1000;
+        const adjustedSpacing = spacing * scaleFactor;
+        
+        console.log(`Generating grid with spacing: ${adjustedSpacing} (base: ${spacing}, scale: ${scaleFactor})`);
         
         // Вычисляем количество точек по горизонтали и вертикали
-        // Учитываем соотношение сторон холста
-        const numX = Math.max(Math.floor(width / spacing), 3);
-        const numY = Math.max(Math.floor(height / spacing), 3);
+        const cols = Math.floor(canvas.width / adjustedSpacing);
+        const rows = Math.floor(canvas.height / adjustedSpacing);
         
-        console.log(`Grid dimensions: ${width}x${height}, Points: ${numX}x${numY} = ${numX * numY} total`);
+        console.log(`Grid dimensions: ${cols} columns x ${rows} rows`);
         
-        // Проверяем, не слишком ли много точек (максимум 5000)
-        const totalPoints = numX * numY;
+        // Проверяем, не слишком ли много точек
+        const totalPoints = cols * rows;
         if (totalPoints > 5000) {
-            const scaleFactor = Math.sqrt(5000 / totalPoints);
-            const newSpacing = Math.ceil(spacing / scaleFactor);
-            console.log(`Too many points (${totalPoints}), adjusting spacing to ${newSpacing}`);
-            spacingInput.value = newSpacing;
-            return generateGridPoints();
-        }
-        
-        // Вычисляем отступы для центрирования сетки
-        const offsetX = (width - (numX - 1) * spacing) / 2;
-        const offsetY = (height - (numY - 1) * spacing) / 2;
-        
-        // Создаем сетку точек
-        for (let y = 0; y < numY; y++) {
-            for (let x = 0; x < numX; x++) {
-                const pointX = offsetX + x * spacing;
-                const pointY = offsetY + y * spacing;
-                points.push(new Point(pointX, pointY));
-            }
-        }
-        
-        console.log(`Generated ${points.length} points`);
-        
-        // Если по какой-то причине точки не создались, создаем хотя бы несколько вручную
-        if (points.length === 0) {
-            console.warn("Failed to generate points using the grid, creating fallback points");
-            // Создаем сетку 10x10 точек вручную
-            const manualSpacing = Math.min(width, height) / 10;
-            for (let y = 0; y < 10; y++) {
-                for (let x = 0; x < 10; x++) {
-                    const pointX = (width / 10) * x + manualSpacing / 2;
-                    const pointY = (height / 10) * y + manualSpacing / 2;
-                    points.push(new Point(pointX, pointY));
+            console.warn(`Too many points: ${totalPoints}. Adjusting spacing.`);
+            const newSpacing = Math.sqrt((canvas.width * canvas.height) / 5000);
+            console.log(`Adjusted spacing to: ${newSpacing}`);
+            
+            // Пересчитываем количество точек
+            const newCols = Math.floor(canvas.width / newSpacing);
+            const newRows = Math.floor(canvas.height / newSpacing);
+            
+            // Создаем точки с новым расстоянием
+            for (let i = 0; i < newCols; i++) {
+                for (let j = 0; j < newRows; j++) {
+                    const x = (i + 0.5) * newSpacing;
+                    const y = (j + 0.5) * newSpacing;
+                    points.push(new Point(x, y));
                 }
             }
-            console.log(`Generated ${points.length} fallback points`);
+        } else {
+            // Создаем точки
+            for (let i = 0; i < cols; i++) {
+                for (let j = 0; j < rows; j++) {
+                    const x = (i + 0.5) * adjustedSpacing;
+                    const y = (j + 0.5) * adjustedSpacing;
+                    points.push(new Point(x, y));
+                }
+            }
+        }
+        
+        console.log(`Created ${points.length} points`);
+        
+        // Если не удалось создать точки, создаем резервную сетку
+        if (points.length === 0) {
+            console.error("Failed to create points, using fallback grid");
+            const fallbackSpacing = minDimension / 10;
+            for (let i = 0; i < 10; i++) {
+                for (let j = 0; j < 10; j++) {
+                    const x = (i + 0.5) * fallbackSpacing;
+                    const y = (j + 0.5) * fallbackSpacing;
+                    points.push(new Point(x, y));
+                }
+            }
+            console.log(`Created ${points.length} fallback points`);
         }
         
         return points;
@@ -579,7 +643,18 @@ document.addEventListener('DOMContentLoaded', function() {
         let totalActivated = 0;
         
         const cursorRadius = parseInt(radiusInput.value);
+        const cursorStrength = parseInt(strengthInput.value);
         const isRepel = gravityMode.checked;
+        
+        // Вычисляем скорость движения мыши для эффекта инерции
+        const mouseSpeed = Math.sqrt(mouseVelocityX * mouseVelocityX + mouseVelocityY * mouseVelocityY);
+        const inertiaFactor = Math.min(mouseSpeed * 0.3, 3); // Увеличиваем эффект инерции
+        
+        // Используем точный радиус курсора без расширения
+        const exactRadius = cursorRadius;
+        
+        // Уменьшаем силу воздействия в 10 раз
+        const strengthMultiplier = 0.05; // Было 0.5, уменьшаем в 10 раз
         
         points.forEach(point => {
             // Считаем расстояние от курсора до точки
@@ -588,7 +663,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const distance = Math.sqrt(dx * dx + dy * dy);
             
             // Применяем силу только если точка находится в радиусе курсора
-            if (distance < cursorRadius) {
+            if (distance < exactRadius) {
+                // Коэффициент затухания на границе радиуса (1 в центре, 0 на границе)
+                const falloff = 1 - (distance / exactRadius);
+                
                 // Активируем точку, если она не активна
                 if (!point.active) {
                     point.active = true;
@@ -597,7 +675,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Расчитываем угол и силу
                 const angle = Math.atan2(dy, dx);
-                const force = cursorRadius / Math.max(distance, 1) * 0.2;
+                
+                // Базовая сила с учетом расстояния, затухания и силы курсора
+                // Используем cursorStrength для масштабирования силы (от 1 до 100)
+                const strengthFactor = cursorStrength / 100; // Нормализуем значение от 0.01 до 1
+                let force = cursorRadius / Math.max(distance, 1) * strengthMultiplier * falloff * strengthFactor;
                 
                 // Применяем силу притяжения или отталкивания в зависимости от режима
                 if (isRepel) {
@@ -608,8 +690,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     point.applyForce(angle, force);
                 }
                 
+                // Добавляем эффект инерции от движения мыши
+                if (mouseSpeed > 0.3) { // Снижаем порог для активации инерции
+                    const inertiaAngle = Math.atan2(mouseVelocityY, mouseVelocityX);
+                    // Также уменьшаем силу инерции в соответствии с общим уменьшением
+                    const inertiaForce = inertiaFactor * falloff * 0.12 * strengthFactor; // Было 1.2, уменьшаем в 10 раз
+                    point.applyForce(inertiaAngle, inertiaForce);
+                }
+                
                 totalAffected++;
             }
+            // Удаляем случайную активацию точек вне радиуса курсора
         });
         
         if (totalAffected > 0 || totalActivated > 0) {
@@ -622,26 +713,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Функция анимации
     function animate() {
-        if (!isPaused) {
-            // Обновить все точки
-            points.forEach(point => point.update());
-            
-            // Обрабатываем случайное движение, если оно активно
-            if (isRandom) {
-                updateRandomWalker();
-                // В режиме случайного движения всегда применяем силу
-                applyForceToPoints();
-            } 
-            // Иначе применяем силу только если мышь над холстом
-            else if (mouseEverMoved && isMouseOverCanvas && mouseX > -100 && mouseY > -100) {
-                applyForceToPoints();
-            }
+        // Обновляем положение всех точек
+        points.forEach(point => {
+            point.update();
+        });
+        
+        // Применяем силы от курсора, если мышь над холстом
+        if (isMouseOverCanvas) {
+            applyForceToPoints();
         }
         
-        // Перерисовываем сцену
+        // Перерисовываем
         redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
         
-        // Запускаем следующий кадр анимации
+        // Запрашиваем следующий кадр
         requestAnimationFrame(animate);
     }
 
@@ -762,4 +847,6 @@ document.addEventListener('DOMContentLoaded', function() {
         link.href = generateSVG();
         link.click();
     });
+
+    initialize();
 }); 
