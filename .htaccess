@@ -1,13 +1,12 @@
 RewriteEngine On
 
-# Редирект с .ru на .com
+# Редирект с .ru на .com (только если хост точно mishaivanov.ru)
 RewriteCond %{HTTP_HOST} ^mishaivanov\.ru$ [NC]
 RewriteRule ^(.*)$ https://mishaivanov.com/$1 [R=301,L]
 
 # Редирект с /js/yp на актуальную версию
-RewriteCond %{REQUEST_URI} ^/js/yp/?$ [NC]
+# Важно: этот редирект должен срабатывать только если запрос идет на /js/yp точно
 RewriteRule ^js/yp/?$ /js/yp/index.php [L]
 
 # Редирект со старых версий на актуальную
-RewriteCond %{REQUEST_URI} ^/js/yp/(?!\d{2}/) [NC]
-RewriteRule ^js/yp/(.*)$ /js/yp/index.php [L] 
+RewriteRule ^js/yp/([^0-9].*)$ /js/yp/index.php [L] 
