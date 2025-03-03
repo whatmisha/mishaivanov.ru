@@ -1,5 +1,0 @@
-RewriteEngine On
-
-# Редирект с .ru на .com (только если хост точно mishaivanov.ru)
-RewriteCond %{HTTP_HOST} ^mishaivanov\.ru$ [NC]
-RewriteRule ^(.*)$ https://mishaivanov.com/$1 [R=301,L] 

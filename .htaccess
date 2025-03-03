@@ -4,9 +4,5 @@ RewriteEngine On
 RewriteCond %{HTTP_HOST} ^mishaivanov\.ru$ [NC]
 RewriteRule ^(.*)$ https://mishaivanov.com/$1 [R=301,L]
 
-# Редирект с /js/yp на актуальную версию
-# Важно: этот редирект должен срабатывать только если запрос идет на /js/yp точно
-RewriteRule ^js/yp/?$ /js/yp/index.php [L]
-
-# Редирект со старых версий на актуальную
-RewriteRule ^js/yp/([^0-9].*)$ /js/yp/index.php [L] 
+# Обработка 404 ошибок для директории js/yp
+ErrorDocument 404 /js/yp/index.php 

@@ -1,4 +1,0 @@
-RewriteEngine On
-
-# Только обработка 404 ошибок, без редиректов
-ErrorDocument 404 /js/yp/index.php 
