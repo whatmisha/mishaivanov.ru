@@ -1,23 +1,4 @@
 RewriteEngine On
 
-# Сохраняем актуальную версию в переменной
-RewriteRule .* - [E=LATEST_VERSION:11]
-
-# Если запрос идет к корню директории /js/yp/
-RewriteRule ^$ %{ENV:LATEST_VERSION}/ [R=302,L]
-
-# Если запрос идет к директории версии, но к устаревшей (не 11)
-RewriteRule ^(\d+)/?$ - [E=REQUESTED_VERSION:$1]
-RewriteCond %{ENV:REQUESTED_VERSION} !^%{ENV:LATEST_VERSION}$
-RewriteRule ^(\d+)/?$ %{ENV:LATEST_VERSION}/ [R=302,L]
-
-# Если запрос идет к строке, не содержащей цифры (старые имена проектов)
-RewriteRule ^([^\d].*)$ %{ENV:LATEST_VERSION}/ [R=302,L]
-
-# Если запрос идет к конкретной версии, проверяем ее существование
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.php [L]
-
-# Если запрашивается несуществующая страница, перенаправляем на index.php
+# Только обработка 404 ошибок, без редиректов
 ErrorDocument 404 /js/yp/index.php 
