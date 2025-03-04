@@ -211,8 +211,28 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
+    <script src="dotted-rays.js"></script>
+    <script src="cations.js"></script>
+    <script src="grid.js"></script>
     <script src="pause-handler.js"></script>
     <script src="script.js"></script>
-    <script src="grid.js"></script>
+    <script>
+        // Проверка наличия функции freezePointsGrid после загрузки всех скриптов
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('index.html: DOMContentLoaded event');
+            console.log('freezePointsGrid in window?', typeof window.freezePointsGrid === 'function');
+            
+            // Установка интервала для периодической проверки наличия функции
+            const checkInterval = setInterval(function() {
+                console.log('Checking if freezePointsGrid exists:', typeof window.freezePointsGrid === 'function');
+                if (typeof window.freezePointsGrid === 'function') {
+                    clearInterval(checkInterval);
+                }
+            }, 500);
+            
+            // Проверка элементов canvas
+            console.log('gridCanvas exists?', document.getElementById('gridCanvas') !== null);
+        });
+    </script>
 </body>
 </html> 

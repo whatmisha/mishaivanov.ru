@@ -199,6 +199,17 @@ document.addEventListener('DOMContentLoaded', function() {
         isCursorActive = false;
     });
     
+    // Добавляем обработчик клика для переключения паузы
+    canvas.addEventListener('click', function(e) {
+        // Проверяем, не клик ли это с модификаторами (для активации точек)
+        if (e.ctrlKey || e.shiftKey || e.altKey) {
+            return; // Не обрабатываем клики с модификаторами
+        }
+        
+        // Переключаем паузу
+        freezePoints();
+    });
+    
     canvas.addEventListener('mousemove', function(e) {
         // Сохраняем предыдущие координаты
         prevMouseX = mouseX;
@@ -684,8 +695,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function freezePoints() {
-        console.log('freezePoints called, current isPaused:', isPaused);
+    // Делаем функцию freezePoints глобальной
+    window.freezePointsGrid = function() {
+        console.log('freezePointsGrid called (global), current isPaused:', isPaused);
         isPaused = !isPaused;
         console.log('new isPaused state:', isPaused);
         updatePauseIndicator();
@@ -699,6 +711,18 @@ document.addEventListener('DOMContentLoaded', function() {
             // Если разморозили, проверяем состояние контролов
             checkControlsState();
         }
+    };
+    
+    console.log('grid.js: Exported freezePointsGrid to window object, function exists:', typeof window.freezePointsGrid === 'function');
+    
+    // Отправляем пользовательское событие о том, что функция freezePointsGrid готова
+    const gridFunctionReadyEvent = new CustomEvent('grid-function-ready');
+    window.dispatchEvent(gridFunctionReadyEvent);
+
+    // Локальная функция для внутреннего использования
+    function freezePoints() {
+        console.log('local freezePoints redirecting to global freezePointsGrid');
+        window.freezePointsGrid();
     }
 
     function updateRandomWalker() {
@@ -969,6 +993,4 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('grid-export-svg', function() {
         downloadSVG(parseInt(sizeInput.value) / 2);
     });
-
-    initialize();
 }); 
