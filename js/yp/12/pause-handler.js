@@ -2,146 +2,207 @@
 document.addEventListener('DOMContentLoaded', function() {
     console.log('pause-handler.js: DOMContentLoaded');
     
+    // Проверка наличия элементов DOM
+    console.log('Проверка элементов DOM:');
+    console.log('dotted-rays-content существует:', !!document.getElementById('dotted-rays-content'));
+    console.log('cations-content существует:', !!document.getElementById('cations-content'));
+    console.log('grid-content существует:', !!document.getElementById('grid-content'));
+    console.log('rayCanvas существует:', !!document.getElementById('rayCanvas'));
+    console.log('cationsCanvas существует:', !!document.getElementById('cationsCanvas'));
+    console.log('gridCanvas существует:', !!document.getElementById('gridCanvas'));
+    
+    // Добавляю отладочный код для проверки вкладок
+    console.log('Активная вкладка при загрузке:');
+    console.log('dotted-rays-content активен:', document.getElementById('dotted-rays-content')?.classList.contains('active'));
+    console.log('cations-content активен:', document.getElementById('cations-content')?.classList.contains('active'));
+    console.log('grid-content активен:', document.getElementById('grid-content')?.classList.contains('active'));
+    
+    // Слушаем событие tab-changed для логирования переключения вкладок
+    window.addEventListener('tab-changed', function(e) {
+        console.log('Событие tab-changed получено');
+        console.log('dotted-rays-content активен:', document.getElementById('dotted-rays-content')?.classList.contains('active'));
+        console.log('cations-content активен:', document.getElementById('cations-content')?.classList.contains('active'));
+        console.log('grid-content активен:', document.getElementById('grid-content')?.classList.contains('active'));
+    });
+    
+    // Специальный прямой обработчик пробела для вкладки Grid
+    document.addEventListener('keydown', function(e) {
+        // Проверяем, что это пробел и активна вкладка Grid
+        if ((e.code === 'Space' || e.key === ' ') && document.activeElement.tagName !== 'INPUT') {
+            // Проверяем статус вкладки Grid
+            const gridActive = document.getElementById('grid-content')?.classList.contains('active');
+            console.log('Прямой обработчик пробела: grid-content активен:', gridActive);
+            
+            if (gridActive) {
+                e.preventDefault(); // Предотвращаем прокрутку
+                console.log('Пробел нажат во вкладке Grid - прямой обработчик');
+                
+                // Генерируем событие grid-toggle-pause вместо прямого вызова
+                const event = new Event('grid-toggle-pause');
+                console.log('Dispatching grid-toggle-pause event from direct handler');
+                window.dispatchEvent(event);
+                return; // Выходим, чтобы избежать двойного вызова
+            }
+        }
+    }, true); // Используем capturing для перехвата события до других обработчиков
+    
     // Добавляем тестовый прямой обработчик на gridCanvas
-    setTimeout(function() {
+    let gridCanvasChecked = false;
+    
+    function setupGridCanvasClickHandler() {
+        if (gridCanvasChecked) return;
+        gridCanvasChecked = true;
+        
         const gridCanvas = document.getElementById('gridCanvas');
         if (gridCanvas) {
-            console.log('Attaching direct click handler to gridCanvas after delay');
+            console.log('Найден gridCanvas, добавляю прямой обработчик клика');
+            
             gridCanvas.addEventListener('click', function(e) {
-                console.log('Direct click on gridCanvas detected');
-                if (!e.ctrlKey && !e.shiftKey && !e.altKey) {
-                    if (typeof window.freezePointsGrid === 'function') {
-                        console.log('Directly calling freezePointsGrid');
-                        window.freezePointsGrid();
-                    } else {
-                        console.warn('freezePointsGrid not available for direct call');
-                    }
+                // Игнорируем клики с модификаторами
+                if (e.ctrlKey || e.shiftKey || e.altKey) {
+                    console.log('Клик с модификатором, игнорирую');
+                    return;
                 }
+                
+                console.log('Клик на gridCanvas - прямой обработчик');
+                // Генерируем событие grid-toggle-pause вместо прямого вызова
+                const event = new Event('grid-toggle-pause');
+                console.log('Dispatching grid-toggle-pause event from canvas click');
+                window.dispatchEvent(event);
             });
         } else {
-            console.warn('gridCanvas not found after delay');
+            console.warn('gridCanvas не найден при инициализации обработчика клика');
+            // Попробуем найти canvas через 500ms (возможно, он создается динамически)
+            setTimeout(function() {
+                const retryCanvas = document.getElementById('gridCanvas');
+                if (retryCanvas) {
+                    console.log('gridCanvas найден после задержки, добавляю обработчик клика');
+                    // Тот же обработчик что и выше
+                    retryCanvas.addEventListener('click', function(e) {
+                        if (e.ctrlKey || e.shiftKey || e.altKey) return;
+                        console.log('Клик на gridCanvas - прямой обработчик (отложенная инициализация)');
+                        // Генерируем событие grid-toggle-pause вместо прямого вызова
+                        const event = new Event('grid-toggle-pause');
+                        console.log('Dispatching grid-toggle-pause event from canvas click (delayed init)');
+                        window.dispatchEvent(event);
+                    });
+                }
+            }, 500);
         }
-    }, 1000);
+    }
+    
+    // Вызываем функцию настройки обработчика клика
+    setupGridCanvasClickHandler();
     
     // Получаем все холсты
     const rayCanvas = document.getElementById('rayCanvas');
     const cationsCanvas = document.getElementById('cationsCanvas');
-    const gridCanvas = document.getElementById('gridCanvas');
     
     // Обработчик клика по холсту для паузы
     function handleCanvasClick(e) {
-        console.log('Canvas click detected on:', e.currentTarget.id);
-        // Проверяем, что это не клик с модификаторами (Ctrl, Shift, Alt)
-        if (e.ctrlKey || e.shiftKey || e.altKey) {
-            return; // Не обрабатываем клики с модификаторами
-        }
+        // Не обрабатываем клики с модификаторами (они используются для других действий)
+        if (e.ctrlKey || e.shiftKey || e.altKey) return;
+
+        console.log('Canvas clicked:', e.currentTarget.id);
         
-        // Определяем, какой холст был кликнут и отправляем соответствующее событие
         if (e.currentTarget === rayCanvas) {
+            console.log('Ray canvas clicked, dispatching ray-toggle-pause event');
             const event = new Event('ray-toggle-pause');
             window.dispatchEvent(event);
         } else if (e.currentTarget === cationsCanvas) {
+            console.log('Cations canvas clicked, dispatching cations-toggle-pause event');
             const event = new Event('cations-toggle-pause');
             window.dispatchEvent(event);
-        } else if (e.currentTarget === gridCanvas) {
-            console.log('Grid canvas clicked, dispatching grid-toggle-pause event');
-            const event = new Event('grid-toggle-pause');
-            window.dispatchEvent(event);
         }
+        // Обработчик для Grid canvas теперь реализован отдельно
     }
-    
-    // Добавляем обработчики клика для всех холстов
+
+    // Добавляем обработчики клика на холсты
     if (rayCanvas) rayCanvas.addEventListener('click', handleCanvasClick);
     if (cationsCanvas) cationsCanvas.addEventListener('click', handleCanvasClick);
-    if (gridCanvas) {
-        console.log('Adding click handler to gridCanvas');
-        gridCanvas.addEventListener('click', handleCanvasClick);
-    } else {
-        console.warn('gridCanvas not found in pause-handler.js');
-    }
     
     // Функция для проверки доступности freezePointsGrid
-    function checkFreezePointsGridAvailability() {
+    function checkFreezePointsGrid(callback) {
         if (typeof window.freezePointsGrid === 'function') {
-            console.log('freezePointsGrid function found in global scope');
-            clearInterval(checkInterval);
+            if (callback && typeof callback === 'function') {
+                callback();
+            } else {
+                console.log('freezePointsGrid доступна, но callback не указан');
+                // Можем вызвать напрямую
+                window.freezePointsGrid();
+            }
         } else {
-            console.warn('freezePointsGrid function still not found in global scope');
-        }
-    }
-    
-    // Проверяем доступность функции каждые 500 мс
-    const checkInterval = setInterval(checkFreezePointsGridAvailability, 500);
-    
-    // Проверяем сразу при загрузке
-    checkFreezePointsGridAvailability();
-    
-    // Обработчик события о готовности функции freezePointsGrid
-    window.addEventListener('grid-function-ready', function() {
-        console.log('grid-function-ready event received, freezePointsGrid available:', 
-                   typeof window.freezePointsGrid === 'function');
-        
-        // При получении уведомления о готовности повторно проверяем наличие функции
-        checkFreezePointsGridAvailability();
-    });
-    
-    // Обработчик события grid-toggle-pause
-    window.addEventListener('grid-toggle-pause', function() {
-        console.log('grid-toggle-pause event received');
-        // Вызываем функцию freezePoints из grid.js через глобальную ссылку
-        if (typeof window.freezePointsGrid === 'function') {
-            console.log('Calling freezePointsGrid from event handler');
-            window.freezePointsGrid();
-        } else {
-            console.warn('freezePointsGrid function not found in grid.js');
-            // Пробуем найти функцию через 100 мс (в случае гонки событий)
-            setTimeout(function() {
+            console.warn('freezePointsGrid function is not available yet, retrying in 100ms');
+            setTimeout(() => {
                 if (typeof window.freezePointsGrid === 'function') {
-                    console.log('Calling freezePointsGrid after delay');
-                    window.freezePointsGrid();
+                    if (callback && typeof callback === 'function') {
+                        callback();
+                    } else {
+                        console.log('freezePointsGrid доступна после задержки, но callback не указан');
+                        window.freezePointsGrid();
+                    }
                 } else {
-                    console.error('freezePointsGrid still not available after delay');
+                    console.error('freezePointsGrid function is still not available after delay');
                 }
             }, 100);
         }
-    });
+    }
     
-    // Обработчик нажатия клавиши пробел для всех вкладок
-    // Этот обработчик дублирует функциональность из script.js, но нужен для совместимости
+    // Обработчик нажатия пробела для всех вкладок
     document.addEventListener('keydown', function(e) {
-        if (e.code === 'Space' || e.key === ' ') {
-            // Предотвращаем прокрутку страницы при нажатии пробела
-            e.preventDefault();
+        if ((e.code === 'Space' || e.key === ' ') && document.activeElement.tagName !== 'INPUT') {
+            e.preventDefault(); // Предотвращаем прокрутку страницы
             
-            // Определяем активную вкладку и вызываем соответствующую функцию заморозки
+            // Отладочная информация о статусе вкладок
+            console.log('Space pressed - tab statuses:');
+            console.log('dotted-rays-content активен:', document.getElementById('dotted-rays-content')?.classList.contains('active'));
+            console.log('cations-content активен:', document.getElementById('cations-content')?.classList.contains('active'));
+            console.log('grid-content активен:', document.getElementById('grid-content')?.classList.contains('active'));
+            console.log('freezePointsGrid доступен:', typeof window.freezePointsGrid === 'function');
+            
+            // Определяем активную вкладку и отправляем соответствующее событие
             if (document.getElementById('dotted-rays-content').classList.contains('active')) {
+                console.log('Space pressed in Dotted Rays tab');
                 const event = new Event('ray-toggle-pause');
                 window.dispatchEvent(event);
             } else if (document.getElementById('cations-content').classList.contains('active')) {
+                console.log('Space pressed in Cations tab');
                 const event = new Event('cations-toggle-pause');
                 window.dispatchEvent(event);
             } else if (document.getElementById('grid-content').classList.contains('active')) {
+                console.log('Space pressed in Grid tab');
+                // Генерируем событие grid-toggle-pause вместо прямого вызова
                 const event = new Event('grid-toggle-pause');
+                console.log('Dispatching grid-toggle-pause event');
                 window.dispatchEvent(event);
+            } else {
+                console.warn('No active tab found when space pressed');
             }
         }
-        
-        // Обработка комбинации Cmd+E для экспорта SVG
-        if ((e.metaKey || e.ctrlKey) && (e.code === 'KeyE' || e.key === 'e')) {
-            // Предотвращаем стандартное поведение браузера (обычно открытие поиска)
+    });
+    
+    // Обработчик Cmd+E/Ctrl+E для экспорта
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'e' && (e.metaKey || e.ctrlKey)) {
             e.preventDefault();
             
-            // Определяем активную вкладку и вызываем соответствующую функцию экспорта
+            // Определяем активную вкладку и отправляем соответствующее событие
             if (document.getElementById('dotted-rays-content').classList.contains('active')) {
+                console.log('Cmd+E pressed in Dotted Rays tab');
                 const event = new Event('ray-export-svg');
                 window.dispatchEvent(event);
             } else if (document.getElementById('cations-content').classList.contains('active')) {
+                console.log('Cmd+E pressed in Cations tab');
                 const event = new Event('cations-export-svg');
                 window.dispatchEvent(event);
             } else if (document.getElementById('grid-content').classList.contains('active')) {
+                console.log('Cmd+E pressed in Grid tab');
                 const event = new Event('grid-export-svg');
                 window.dispatchEvent(event);
             }
         }
     });
-}); 
+});
+
+// Одноразовая проверка наличия функции freezePointsGrid при загрузке
+console.log('pause-handler.js: Проверка наличия freezePointsGrid при загрузке:', typeof window.freezePointsGrid === 'function'); 

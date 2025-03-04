@@ -1,10 +1,3 @@
-// Создаем глобальную функцию freezePointsGrid
-// Объявляем заранее, до DOMContentLoaded
-window.freezePointsGrid = function() {
-    console.log('Глобальная функция freezePointsGrid вызвана, но еще не инициализирована');
-    // Эта функция будет переопределена в DOMContentLoaded
-};
-
 document.addEventListener('DOMContentLoaded', function() {
     const canvas = document.getElementById('gridCanvas');
     if (!canvas) {
@@ -154,20 +147,6 @@ document.addEventListener('DOMContentLoaded', function() {
         mouseEverMoved = true; // Устанавливаем, что мышь двигалась над холстом
     });
     
-    // Добавляем ПРЯМОЙ обработчик клика на canvas для переключения паузы
-    canvas.addEventListener('click', function(e) {
-        console.log('Прямой клик на gridCanvas');
-        
-        // Игнорируем клики с модификаторами (Ctrl, Shift, Alt)
-        if (e.ctrlKey || e.shiftKey || e.altKey) {
-            console.log('Клик с модификатором, игнорирую для паузы');
-            return; // Не обрабатываем клики с модификаторами
-        }
-        
-        console.log('Вызываю freezePointsGrid напрямую из обработчика клика');
-        window.freezePointsGrid(); // Прямой вызов функции переключения паузы
-    });
-    
     canvas.addEventListener('mousedown', function(e) {
         console.log('Mousedown event on canvas');
         isCursorActive = true;
@@ -260,12 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Обработка клавиши 'e' для экспорта SVG
     document.addEventListener('keydown', (e) => {
-        const gridContentActive = document.getElementById('grid-content')?.classList.contains('active');
-        console.log('grid.js: Проверка активности grid-content:', gridContentActive);
-        console.log('grid.js: freezePointsGrid доступен:', typeof window.freezePointsGrid === 'function');
-        
-        if (e.key === 'e' && (e.metaKey || e.ctrlKey) && gridContentActive) {
-            console.log('Комбинация Cmd+E нажата и вкладка Grid активна');
+        if (e.key === 'e' && (e.metaKey || e.ctrlKey) && document.getElementById('grid-content').classList.contains('active')) {
             e.preventDefault();
             downloadSVG(parseInt(sizeInput.value));
         }
@@ -282,7 +256,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    /* Закомментировано для избежания конфликта с глобальным обработчиком в pause-handler.js
     // Добавляем новый обработчик нажатия пробела для паузы
     document.addEventListener('keydown', function spaceKeyHandler(e) {
         // Проверяем, что нажат пробел, не происходит ввод в текстовое поле и активна вкладка Grid
@@ -294,7 +267,6 @@ document.addEventListener('DOMContentLoaded', function() {
             freezePoints();
         }
     });
-    */
 
     // Обработка режима случайного движения
     randomMode.addEventListener('click', () => {
@@ -317,44 +289,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Обработка события заморозки из основного скрипта
     window.addEventListener('grid-toggle-pause', function() {
-        console.log('grid-toggle-pause event received in grid.js');
-        console.log('Current isPaused state before toggle:', isPaused);
         freezePoints();
-        console.log('New isPaused state after toggle:', isPaused);
-    });
-
-    // Добавляем обработчик клика по холсту для проверки клика по точке
-    window.addEventListener('grid-canvas-click', function(event) {
-        const clickX = event.detail.x;
-        const clickY = event.detail.y;
-        
-        // Проверяем, не попал ли клик на точку
-        let clickedOnPoint = false;
-        const radius = parseInt(radiusInput.value);
-        
-        for (let i = 0; i < points.length; i++) {
-            const point = points[i];
-            const dx = clickX - point.x;
-            const dy = clickY - point.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance < radius) {
-                clickedOnPoint = true;
-                break;
-            }
-        }
-        
-        // Если клик не попал на точку, переключаем паузу
-        if (!clickedOnPoint) {
-            console.log('Calling freezePoints from canvas click (via global handler)');
-            freezePoints();
-        }
     });
 
     // Обработка события экспорта из основного скрипта
     window.addEventListener('grid-export-svg', function() {
-        console.log('grid-export-svg event received in grid.js');
-        downloadSVG(parseInt(sizeInput.value) / 2);
+        downloadSVG(parseInt(sizeInput.value));
     });
 
     // Обработка события отрисовки из основного скрипта
@@ -716,20 +656,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Переопределяем глобальную функцию freezePointsGrid с правильной реализацией
-    window.freezePointsGrid = function() {
-        console.log('freezePointsGrid called (global), current isPaused:', isPaused);
-        console.log('Toggling isPaused state from', isPaused, 'to', !isPaused);
+    function freezePoints() {
+        console.log('freezePoints called, current isPaused:', isPaused);
         isPaused = !isPaused;
         console.log('new isPaused state:', isPaused);
         updatePauseIndicator();
-        
-        // Отправляем пользовательское событие, чтобы оповестить о переключении паузы
-        const pauseEvent = new CustomEvent('grid-pause-toggled', { 
-            detail: { isPaused: isPaused } 
-        });
-        console.log('Dispatching grid-pause-toggled event with isPaused:', isPaused);
-        window.dispatchEvent(pauseEvent);
         
         // Обновляем текст кнопки паузы, если она существует
         if (pauseButton) {
@@ -740,20 +671,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Если разморозили, проверяем состояние контролов
             checkControlsState();
         }
-    };
-    
-    console.log('grid.js: Reinitialized freezePointsGrid function with proper implementation');
-    
-    // Отправляем пользовательское событие о том, что функция freezePointsGrid готова
-    const gridFunctionReadyEvent = new CustomEvent('grid-function-ready');
-    window.dispatchEvent(gridFunctionReadyEvent);
-
-    // Локальная функция для внутреннего использования
-    function freezePoints() {
-        console.log('local freezePoints called in grid.js');
-        console.log('Current isPaused state before redirecting:', isPaused);
-        window.freezePointsGrid();
-        console.log('New isPaused state after redirecting:', isPaused);
     }
 
     function updateRandomWalker() {
@@ -971,6 +888,45 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Добавляем обработчик клика на холст для паузы
+    canvas.addEventListener('click', function(e) {
+        console.log('Canvas clicked');
+        
+        // Проверяем, что это не обработка активации точек
+        if (e.ctrlKey || e.shiftKey || e.altKey) {
+            return; // Если нажаты модификаторы, не переключаем паузу
+        }
+        
+        // Получаем координаты клика
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const clickX = (e.clientX - rect.left) * scaleX;
+        const clickY = (e.clientY - rect.top) * scaleY;
+        
+        // Проверяем, не попал ли клик на точку
+        let clickedOnPoint = false;
+        const radius = parseInt(radiusInput.value);
+        
+        for (let i = 0; i < points.length; i++) {
+            const point = points[i];
+            const dx = clickX - point.x;
+            const dy = clickY - point.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < radius) {
+                clickedOnPoint = true;
+                break;
+            }
+        }
+        
+        // Если клик не попал на точку, переключаем паузу
+        if (!clickedOnPoint) {
+            console.log('Calling freezePoints from canvas click');
+            freezePoints();
+        }
+    });
+    
     sizeInput.addEventListener('input', function() {
         sizeSlider.value = sizeInput.value;
     });
@@ -1015,9 +971,5 @@ document.addEventListener('DOMContentLoaded', function() {
         link.click();
     });
 
-    // Добавляем обработчик события grid-pause-toggled для обновления индикатора паузы
-    window.addEventListener('grid-pause-toggled', function(e) {
-        console.log('grid-pause-toggled event received with isPaused:', e.detail.isPaused);
-        updatePauseIndicator();
-    });
+    initialize();
 }); 
