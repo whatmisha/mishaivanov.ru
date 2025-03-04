@@ -507,8 +507,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Обработка события паузы из глобального обработчика
-        window.addEventListener('ray-toggle-pause', function() {
+        // Нажатие на канвас для заморозки
+        rayCanvas.addEventListener('click', function() {
             toggleRaysPause();
         });
         
@@ -921,8 +921,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Обработка события паузы из глобального обработчика для Cations
-        window.addEventListener('cations-toggle-pause', function() {
+        // Нажатие на канвас для заморозки
+        cationsCanvas.addEventListener('click', function() {
             toggleCationsPause();
         });
         
@@ -1001,24 +1001,40 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Обработка события ray-toggle-pause
-    window.addEventListener('ray-toggle-pause', function() {
-        toggleRaysPause();
-    });
-    
-    // Обработка события cations-toggle-pause
-    window.addEventListener('cations-toggle-pause', function() {
-        toggleCationsPause();
-    });
-    
-    // Обработка события ray-export-svg
-    window.addEventListener('ray-export-svg', function() {
-        downloadRaysSVG();
-    });
-    
-    // Обработка события cations-export-svg
-    window.addEventListener('cations-export-svg', function() {
-        downloadCationsSVG();
+    // Обработка нажатия клавиши пробел для заморозки графики
+    document.addEventListener('keydown', function(e) {
+        if (e.code === 'Space' || e.key === ' ') {
+            // Предотвращаем прокрутку страницы при нажатии пробела
+            e.preventDefault();
+            
+            // Определяем активную вкладку и вызываем соответствующую функцию заморозки
+            if (document.getElementById('dotted-rays-content').classList.contains('active')) {
+                toggleRaysPause();
+            } else if (document.getElementById('cations-content').classList.contains('active')) {
+                toggleCationsPause();
+            } else if (document.getElementById('grid-content').classList.contains('active')) {
+                // Вызываем функцию заморозки для Grid
+                const event = new Event('grid-toggle-pause');
+                window.dispatchEvent(event);
+            }
+        }
+        
+        // Обработка комбинации Cmd+E для экспорта SVG
+        if ((e.metaKey || e.ctrlKey) && (e.code === 'KeyE' || e.key === 'e')) {
+            // Предотвращаем стандартное поведение браузера (обычно открытие поиска)
+            e.preventDefault();
+            
+            // Определяем активную вкладку и вызываем соответствующую функцию экспорта
+            if (document.getElementById('dotted-rays-content').classList.contains('active')) {
+                downloadRaysSVG();
+            } else if (document.getElementById('cations-content').classList.contains('active')) {
+                downloadCationsSVG();
+            } else if (document.getElementById('grid-content').classList.contains('active')) {
+                // Вызываем функцию экспорта для Grid
+                const event = new Event('grid-export-svg');
+                window.dispatchEvent(event);
+            }
+        }
     });
     
     // Функция анимации

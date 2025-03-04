@@ -292,34 +292,6 @@ document.addEventListener('DOMContentLoaded', function() {
         freezePoints();
     });
 
-    // Добавляем обработчик клика по холсту для проверки клика по точке
-    window.addEventListener('grid-canvas-click', function(event) {
-        const clickX = event.detail.x;
-        const clickY = event.detail.y;
-        
-        // Проверяем, не попал ли клик на точку
-        let clickedOnPoint = false;
-        const radius = parseInt(radiusInput.value);
-        
-        for (let i = 0; i < points.length; i++) {
-            const point = points[i];
-            const dx = clickX - point.x;
-            const dy = clickY - point.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance < radius) {
-                clickedOnPoint = true;
-                break;
-            }
-        }
-        
-        // Если клик не попал на точку, переключаем паузу
-        if (!clickedOnPoint) {
-            console.log('Calling freezePoints from canvas click (via global handler)');
-            freezePoints();
-        }
-    });
-
     // Обработка события экспорта из основного скрипта
     window.addEventListener('grid-export-svg', function() {
         downloadSVG(parseInt(sizeInput.value));
@@ -916,6 +888,45 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Добавляем обработчик клика на холст для паузы
+    canvas.addEventListener('click', function(e) {
+        console.log('Canvas clicked');
+        
+        // Проверяем, что это не обработка активации точек
+        if (e.ctrlKey || e.shiftKey || e.altKey) {
+            return; // Если нажаты модификаторы, не переключаем паузу
+        }
+        
+        // Получаем координаты клика
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const clickX = (e.clientX - rect.left) * scaleX;
+        const clickY = (e.clientY - rect.top) * scaleY;
+        
+        // Проверяем, не попал ли клик на точку
+        let clickedOnPoint = false;
+        const radius = parseInt(radiusInput.value);
+        
+        for (let i = 0; i < points.length; i++) {
+            const point = points[i];
+            const dx = clickX - point.x;
+            const dy = clickY - point.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < radius) {
+                clickedOnPoint = true;
+                break;
+            }
+        }
+        
+        // Если клик не попал на точку, переключаем паузу
+        if (!clickedOnPoint) {
+            console.log('Calling freezePoints from canvas click');
+            freezePoints();
+        }
+    });
+    
     sizeInput.addEventListener('input', function() {
         sizeSlider.value = sizeInput.value;
     });
@@ -958,16 +969,6 @@ document.addEventListener('DOMContentLoaded', function() {
         link.download = 'grid.svg';
         link.href = generateSVG();
         link.click();
-    });
-
-    // Обработчик события grid-toggle-pause
-    window.addEventListener('grid-toggle-pause', function() {
-        freezePoints();
-    });
-    
-    // Обработчик события grid-export-svg
-    window.addEventListener('grid-export-svg', function() {
-        downloadSVG(parseInt(sizeInput.value) / 2);
     });
 
     initialize();
