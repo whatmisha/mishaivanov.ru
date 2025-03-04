@@ -33,7 +33,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let mouseX = centerX;
     let mouseY = centerY;
     let isRandom = false;
-    let isPaused = false;
     let points = [];
     let lastTime = 0;
     let deltaTime = 0;
@@ -59,26 +58,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Обработка событий мыши
     canvas.addEventListener('mousemove', (e) => {
-        if (!document.getElementById('dotted-rays-content').classList.contains('active')) {
-            return; // Не выполняем, если вкладка не активна
-        }
-        
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
-        
         mouseX = (e.clientX - rect.left) * scaleX;
         mouseY = (e.clientY - rect.top) * scaleY;
     });
 
-    // Обработка клика для заморозки точек
-    canvas.addEventListener('click', freezePoints);
-
-    // Обработка пробела для заморозки точек
+    // Обработка клавиши 'e' для экспорта SVG
     document.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' && document.getElementById('dotted-rays-content').classList.contains('active')) {
-            freezePoints();
-        } else if (e.key === 'e' && (e.metaKey || e.ctrlKey) && document.getElementById('dotted-rays-content').classList.contains('active')) {
+        if (e.key === 'e' && (e.metaKey || e.ctrlKey) && 
+            document.getElementById('dotted-rays-content').classList.contains('active')) {
             e.preventDefault();
             downloadSVG(parseInt(sizeInput.value));
         }
@@ -91,8 +81,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Обработка экспорта SVG
-    exportSVGButton.addEventListener('click', () => {
-        downloadSVG(parseInt(sizeInput.value));
+    exportSVGButton.addEventListener('click', function() {
+        // Вызываем событие для экспорта SVG, которое будет обработано в script.js
+        const event = new Event('rays-export-svg');
+        window.dispatchEvent(event);
     });
 
     // Обработка изменения количества лучей
@@ -209,13 +201,14 @@ document.addEventListener('DOMContentLoaded', function() {
         deltaTime = currentTime - lastTime;
         lastTime = currentTime;
         
-        if (isPaused) {
+        // Если не в режиме случайного движения, не обновляем точки
+        if (!isRandom) {
+            redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
             return;
         }
         
-        if (isRandom) {
-            updateRandomWalker();
-        }
+        // Обновляем случайное движение
+        updateRandomWalker();
         
         // Применяем силы к точкам
         const radius = parseInt(radiusInput.value);
@@ -318,8 +311,11 @@ document.addEventListener('DOMContentLoaded', function() {
         let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${canvas.width} ${canvas.height}" width="${canvas.width}" height="${canvas.height}">`;
         svg += `<rect width="100%" height="100%" fill="black"/>`;
         
-        for (let i = 0; i < points.length; i++) {
-            const point = points[i];
+        // Используем текущие позиции точек, включая те, которые были перемещены
+        const currentPoints = points;
+        
+        for (let i = 0; i < currentPoints.length; i++) {
+            const point = currentPoints[i];
             svg += `<circle cx="${point.x}" cy="${point.y}" r="${circleRadius}" fill="white"/>`;
         }
         
@@ -328,46 +324,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function downloadSVG(circleRadius) {
-        const svg = generateSVG(circleRadius);
-        const blob = new Blob([svg], { type: 'image/svg+xml' });
+        const svgString = generateSVG(circleRadius);
+        const blob = new Blob([svgString], {type: 'image/svg+xml'});
         const url = URL.createObjectURL(blob);
-        
         const a = document.createElement('a');
         a.href = url;
         a.download = 'dotted-rays.svg';
-        document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-    }
-
-    function updatePauseIndicator() {
-        if (isPaused) {
-            pauseIndicator.style.display = 'block';
-        } else {
-            pauseIndicator.style.display = 'none';
-        }
-    }
-
-    // Инициализация
-    angles = calculateAngles(parseInt(raysInput.value));
-    redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
-    
-    // Запускаем анимацию
-    requestAnimationFrame(animate);
-    
-    function freezePoints() {
-        if (!document.getElementById('dotted-rays-content').classList.contains('active')) {
-            return; // Не выполняем, если вкладка не активна
-        }
-        
-        isPaused = !isPaused;
-        updatePauseIndicator();
-        
-        if (!isPaused) {
-            // Если возобновляем анимацию, сбрасываем lastTime
-            lastTime = 0;
-        }
     }
 
     function calculateAngles(additionalRaysPerSegment) {
@@ -430,4 +395,11 @@ document.addEventListener('DOMContentLoaded', function() {
     window.addEventListener('redraw-dotted-rays', function() {
         redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
     });
+
+    // Инициализация
+    angles = calculateAngles(parseInt(raysInput.value));
+    redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
+    
+    // Запускаем анимацию
+    requestAnimationFrame(animate);
 }); 

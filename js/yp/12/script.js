@@ -19,10 +19,10 @@ document.addEventListener('DOMContentLoaded', function() {
     rayCanvas.width = CANVAS_SIZE;
     rayCanvas.height = CANVAS_SIZE;
     
-    const cationsCanvas = document.getElementById('cationsCanvas');
-    const cationsCtx = cationsCanvas.getContext('2d');
-    cationsCanvas.width = CANVAS_SIZE;
-    cationsCanvas.height = CANVAS_SIZE;
+    const plusRaysCanvas = document.getElementById('plusRaysCanvas');
+    const plusRaysCtx = plusRaysCanvas.getContext('2d');
+    plusRaysCanvas.width = CANVAS_SIZE;
+    plusRaysCanvas.height = CANVAS_SIZE;
     
     // Элементы управления для Dotted Rays
     const sizeSlider = document.getElementById('sizeSlider');
@@ -38,25 +38,23 @@ document.addEventListener('DOMContentLoaded', function() {
     const gravityMode = document.getElementById('gravityMode');
     const randomMode = document.getElementById('randomMode');
     const exportSVGButton = document.getElementById('exportSVG');
-    const pauseIndicator = document.getElementById('pauseIndicator');
     
-    // Элементы управления для Cations
-    const cationsLengthSlider = document.getElementById('cationsLengthSlider');
-    const cationsLengthInput = document.getElementById('cationsLengthInput');
-    const cationsThicknessSlider = document.getElementById('cationsThicknessSlider');
-    const cationsThicknessInput = document.getElementById('cationsThicknessInput');
-    const cationsSpacingSlider = document.getElementById('cationsSpacingSlider');
-    const cationsSpacingInput = document.getElementById('cationsSpacingInput');
-    const cationsRaysSlider = document.getElementById('cationsRaysSlider');
-    const cationsRaysInput = document.getElementById('cationsRaysInput');
-    const cationsRadiusSlider = document.getElementById('cationsRadiusSlider');
-    const cationsRadiusInput = document.getElementById('cationsRadiusInput');
-    const cationsStrengthSlider = document.getElementById('cationsStrengthSlider');
-    const cationsStrengthInput = document.getElementById('cationsStrengthInput');
-    const cationsGravityMode = document.getElementById('cationsGravityMode');
-    const cationsRandomMode = document.getElementById('cationsRandomMode');
-    const cationsExportSVGButton = document.getElementById('cationsExportSVG');
-    const cationsPauseIndicator = document.getElementById('cationsPauseIndicator');
+    // Элементы управления для Plus Rays
+    const plusRaysLengthSlider = document.getElementById('plusRaysLengthSlider');
+    const plusRaysLengthInput = document.getElementById('plusRaysLengthInput');
+    const plusRaysThicknessSlider = document.getElementById('plusRaysThicknessSlider');
+    const plusRaysThicknessInput = document.getElementById('plusRaysThicknessInput');
+    const plusRaysSpacingSlider = document.getElementById('plusRaysSpacingSlider');
+    const plusRaysSpacingInput = document.getElementById('plusRaysSpacingInput');
+    const plusRaysRaysSlider = document.getElementById('plusRaysRaysSlider');
+    const plusRaysRaysInput = document.getElementById('plusRaysRaysInput');
+    const plusRaysRadiusSlider = document.getElementById('plusRaysRadiusSlider');
+    const plusRaysRadiusInput = document.getElementById('plusRaysRadiusInput');
+    const plusRaysStrengthSlider = document.getElementById('plusRaysStrengthSlider');
+    const plusRaysStrengthInput = document.getElementById('plusRaysStrengthInput');
+    const plusRaysGravityMode = document.getElementById('plusRaysGravityMode');
+    const plusRaysRandomMode = document.getElementById('plusRaysRandomMode');
+    const plusRaysExportSVGButton = document.getElementById('plusRaysExportSVG');
     
     // Глобальные переменные для состояния
     const state = {
@@ -65,19 +63,17 @@ document.addEventListener('DOMContentLoaded', function() {
             angles: [...BASE_ANGLES],
             mouseX: -1000, // Значение за пределами холста
             mouseY: -1000, // Значение за пределами холста
-            isPaused: false,
             isRandom: false,
             randomWalkerVX: 0,
             randomWalkerVY: 0,
             lastRandomX: CENTER_X, // Последняя позиция random walker
             lastRandomY: CENTER_Y  // Последняя позиция random walker
         },
-        cations: {
+        plusRays: {
             crosses: [],
             angles: [...BASE_ANGLES],
             mouseX: -1000, // Значение за пределами холста
             mouseY: -1000, // Значение за пределами холста
-            isPaused: false,
             isRandom: false,
             randomWalkerVX: 0,
             randomWalkerVY: 0,
@@ -123,64 +119,85 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Обновление случайной позиции
     function updateRandomPosition(stateObj) {
-        // Если заморожено, не обновляем позицию
-        if (stateObj.isPaused) return;
+        // Если режим random не активен, не обновляем позицию
+        if (!stateObj.isRandom) return;
         
-        // Увеличиваем случайное ускорение
-        const acceleration = 2.0;
-        stateObj.randomWalkerVX += (Math.random() - 0.5) * acceleration;
-        stateObj.randomWalkerVY += (Math.random() - 0.5) * acceleration;
+        // Константы для случайного движения
+        const maxSpeed = 5;
+        const acceleration = 0.2;
         
-        // Увеличиваем максимальную скорость
-        const maxSpeed = 15;
-        const speed = Math.sqrt(stateObj.randomWalkerVX * stateObj.randomWalkerVX + stateObj.randomWalkerVY * stateObj.randomWalkerVY);
-        if (speed > maxSpeed) {
-            stateObj.randomWalkerVX = (stateObj.randomWalkerVX / speed) * maxSpeed;
-            stateObj.randomWalkerVY = (stateObj.randomWalkerVY / speed) * maxSpeed;
-        }
+        // Добавляем случайное ускорение (используем один вызов Math.random для оптимизации)
+        const randomVal = Math.random() - 0.5;
+        stateObj.randomWalkerVX += randomVal * acceleration;
+        stateObj.randomWalkerVY += randomVal * acceleration;
+        
+        // Ограничиваем максимальную скорость (используем Math.min/max для оптимизации)
+        stateObj.randomWalkerVX = Math.max(-maxSpeed, Math.min(maxSpeed, stateObj.randomWalkerVX));
+        stateObj.randomWalkerVY = Math.max(-maxSpeed, Math.min(maxSpeed, stateObj.randomWalkerVY));
         
         // Обновляем позицию
-        stateObj.mouseX += stateObj.randomWalkerVX;
-        stateObj.mouseY += stateObj.randomWalkerVY;
+        stateObj.lastRandomX += stateObj.randomWalkerVX;
+        stateObj.lastRandomY += stateObj.randomWalkerVY;
         
-        // Сохраняем последнюю позицию
-        stateObj.lastRandomX = stateObj.mouseX;
-        stateObj.lastRandomY = stateObj.mouseY;
+        // Проверяем границы холста и отражаем при необходимости
+        const canvasWidth = rayCanvas.width;
+        const canvasHeight = rayCanvas.height;
         
-        // Отражаем от границ canvas
-        const padding = 50;
-        if (stateObj.mouseX < padding) {
-            stateObj.mouseX = padding;
-            stateObj.randomWalkerVX *= -0.8;
-        }
-        if (stateObj.mouseX > CANVAS_SIZE - padding) {
-            stateObj.mouseX = CANVAS_SIZE - padding;
-            stateObj.randomWalkerVX *= -0.8;
-        }
-        if (stateObj.mouseY < padding) {
-            stateObj.mouseY = padding;
-            stateObj.randomWalkerVY *= -0.8;
-        }
-        if (stateObj.mouseY > CANVAS_SIZE - padding) {
-            stateObj.mouseY = CANVAS_SIZE - padding;
-            stateObj.randomWalkerVY *= -0.8;
+        if (stateObj.lastRandomX < 0) {
+            stateObj.lastRandomX = 0;
+            stateObj.randomWalkerVX *= -1;
+        } else if (stateObj.lastRandomX > canvasWidth) {
+            stateObj.lastRandomX = canvasWidth;
+            stateObj.randomWalkerVX *= -1;
         }
         
-        // Обновляем последнюю позицию после отражения от границ
-        stateObj.lastRandomX = stateObj.mouseX;
-        stateObj.lastRandomY = stateObj.mouseY;
+        if (stateObj.lastRandomY < 0) {
+            stateObj.lastRandomY = 0;
+            stateObj.randomWalkerVY *= -1;
+        } else if (stateObj.lastRandomY > canvasHeight) {
+            stateObj.lastRandomY = canvasHeight;
+            stateObj.randomWalkerVY *= -1;
+        }
+        
+        // Обновляем позицию мыши для эффекта гравитации
+        stateObj.mouseX = stateObj.lastRandomX;
+        stateObj.mouseY = stateObj.lastRandomY;
     }
     
-    // Синхронизация слайдеров и числовых полей
+    // Синхронизация слайдера и текстового поля
     function syncInputs(slider, input, callback) {
-        slider.addEventListener('input', () => {
-            input.value = slider.value;
-            if (callback) callback(slider.value);
+        // Проверяем, что оба элемента существуют
+        if (!slider || !input) return;
+        
+        // Устанавливаем обработчик события для слайдера
+        slider.addEventListener('input', function() {
+            // Устанавливаем значение текстового поля равным значению слайдера
+            input.value = this.value;
+            
+            // Если передан callback, вызываем его с новым значением
+            if (typeof callback === 'function') {
+                callback(this.value);
+            }
         });
         
-        input.addEventListener('input', () => {
-            slider.value = input.value;
-            if (callback) callback(input.value);
+        // Устанавливаем обработчик события для текстового поля
+        input.addEventListener('input', function() {
+            // Проверяем, что введенное значение находится в допустимом диапазоне
+            const value = parseInt(this.value);
+            const min = parseInt(this.min);
+            const max = parseInt(this.max);
+            
+            // Если значение вне диапазона, корректируем его
+            if (value < min) this.value = min;
+            if (value > max) this.value = max;
+            
+            // Устанавливаем значение слайдера равным значению текстового поля
+            slider.value = this.value;
+            
+            // Если передан callback, вызываем его с новым значением
+            if (typeof callback === 'function') {
+                callback(this.value);
+            }
         });
     }
     
@@ -290,13 +307,35 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Отрисовка точек
     function drawPoints(ctx, points, circleRadius) {
+        // Если нет контекста, выходим
+        if (!ctx) return;
+        
+        // Очищаем холст
         ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
         
-        // Рисуем все точки
-        for (const point of points) {
+        // Если нет точек, просто выходим после очистки
+        if (!points || !points.length) return;
+        
+        // Сохраняем текущее состояние контекста
+        ctx.save();
+        
+        // Устанавливаем стиль для всех точек
+        ctx.fillStyle = 'white';
+        
+        // Отрисовываем каждую точку
+        for (let i = 0; i < points.length; i++) {
+            const point = points[i];
+            
+            // Пропускаем точки с нулевым радиусом
+            if (circleRadius <= 0) continue;
+            
+            // Начинаем новый путь
             ctx.beginPath();
+            
+            // Рисуем круг
             ctx.arc(point.x, point.y, circleRadius, 0, Math.PI * 2);
-            ctx.fillStyle = 'white';
+            
+            // Заполняем круг
             ctx.fill();
         }
         
@@ -307,6 +346,9 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.fillStyle = 'orange';
             ctx.fill();
         }
+        
+        // Восстанавливаем состояние контекста
+        ctx.restore();
     }
     
     // Генерация лучей с точками
@@ -372,23 +414,29 @@ document.addEventListener('DOMContentLoaded', function() {
         raysInput.disabled = hasActivePoints;
     }
     
-    // Экспорт SVG
-    function generateRaysSVG() {
+    // Новая функция для экспорта Dotted Rays SVG
+    function downloadRaysSVG() {
+        // Получаем текущие размеры и конфигурацию
         const circleRadius = parseInt(sizeInput.value) / 2;
         
+        // Создаем SVG документ
         let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS_SIZE} ${CANVAS_SIZE}" width="${CANVAS_SIZE}" height="${CANVAS_SIZE}">`;
         svg += `<rect width="100%" height="100%" fill="black"/>`;
         
+        // Если активен режим рандома, отрисовываем курсор в виде круга
+        if (state.rays.isRandom) {
+            svg += `<circle cx="${state.rays.mouseX}" cy="${state.rays.mouseY}" r="5" fill="orange"/>`;
+        }
+        
+        // Добавляем все текущие точки
         for (const point of state.rays.points) {
+            // Используем актуальные координаты точек
             svg += `<circle cx="${point.x}" cy="${point.y}" r="${circleRadius}" fill="white"/>`;
         }
         
         svg += `</svg>`;
-        return svg;
-    }
-    
-    function downloadRaysSVG() {
-        const svg = generateRaysSVG();
+        
+        // Создаем и скачиваем файл
         const blob = new Blob([svg], { type: 'image/svg+xml' });
         const url = URL.createObjectURL(blob);
         
@@ -399,17 +447,6 @@ document.addEventListener('DOMContentLoaded', function() {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-    }
-    
-    // Обновление индикатора паузы
-    function updateRaysPauseIndicator() {
-        pauseIndicator.style.display = state.rays.isPaused ? 'block' : 'none';
-    }
-    
-    // Переключение паузы для точек
-    function toggleRaysPause() {
-        state.rays.isPaused = !state.rays.isPaused;
-        updateRaysPauseIndicator();
     }
     
     // Рендеринг кадра
@@ -429,28 +466,26 @@ document.addEventListener('DOMContentLoaded', function() {
             );
         }
         
-        if (!state.rays.isPaused) {
-            const radius = parseInt(radiusInput.value);
-            const strength = parseInt(strengthInput.value) * 0.01;
-            const isRepel = gravityMode.checked;
-            
-            // Обновляем случайную позицию, если включен режим рандома
-            if (state.rays.isRandom) {
-                updateRandomPosition(state.rays);
-            }
-            
-            // Обновляем точки
-            const hasActivePoints = updatePoints(
-                state.rays.points, 
-                state.rays.mouseX, 
-                state.rays.mouseY, 
-                radius, 
-                strength, 
-                isRepel
-            );
-            
-            updateRayControls(hasActivePoints);
+        const radius = parseInt(radiusInput.value);
+        const strength = parseInt(strengthInput.value) * 0.01;
+        const isRepel = gravityMode.checked;
+        
+        // Обновляем случайную позицию, если включен режим рандома
+        if (state.rays.isRandom) {
+            updateRandomPosition(state.rays);
         }
+        
+        // Обновляем точки
+        const hasActivePoints = updatePoints(
+            state.rays.points, 
+            state.rays.mouseX, 
+            state.rays.mouseY, 
+            radius, 
+            strength, 
+            isRepel
+        );
+        
+        updateRayControls(hasActivePoints);
         
         const diameter = parseInt(sizeInput.value);
         drawPoints(rayCtx, state.rays.points, diameter / 2);
@@ -470,7 +505,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const hasActivePoints = state.rays.points.some(point => point.active);
             
             // Если нет активных точек или анимация на паузе, сбрасываем массив точек
-            if (!hasActivePoints || state.rays.isPaused) {
+            if (!hasActivePoints || state.rays.isRandom) {
                 state.rays.points = [];
             }
             // Если есть активные точки, не сбрасываем их
@@ -506,14 +541,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 state.rays.mouseY = -1000;
             }
         });
-        
-        // Обработка события паузы из глобального обработчика
-        window.addEventListener('ray-toggle-pause', function() {
-            toggleRaysPause();
-        });
-        
-        // Экспорт SVG
-        exportSVGButton.addEventListener('click', downloadRaysSVG);
         
         // Обработка движения мыши
         rayCanvas.addEventListener('mousemove', function(e) {
@@ -567,9 +594,12 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Начальные значения
         updateRayAngles(raysInput.value);
+        
+        // Экспорт SVG
+        exportSVGButton.addEventListener('click', downloadRaysSVG);
     }
     
-    // ================ CATIONS ================
+    // ================ PLUS RAYS ================
     
     // Класс для крестов
     class Cross {
@@ -655,6 +685,7 @@ document.addEventListener('DOMContentLoaded', function() {
         draw(ctx, lineLength, lineThickness) {
             ctx.lineWidth = lineThickness;
             ctx.strokeStyle = 'white';
+            ctx.lineCap = 'butt';
             
             // Горизонтальная линия
             ctx.beginPath();
@@ -692,34 +723,60 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Отрисовка крестов
     function drawCrosses(ctx, crosses, lineLength, lineThickness) {
+        // Если нет контекста, выходим
+        if (!ctx) return;
+        
+        // Очищаем холст
         ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
         
-        // Рисуем все кресты
-        for (const cross of crosses) {
+        // Если нет крестов, просто выходим после очистки
+        if (!crosses || !crosses.length) return;
+        
+        // Сохраняем текущее состояние контекста
+        ctx.save();
+        
+        // Устанавливаем стиль для всех крестов
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = lineThickness;
+        ctx.lineCap = 'butt';
+        
+        // Отрисовываем каждый крест
+        for (let i = 0; i < crosses.length; i++) {
+            const cross = crosses[i];
+            
+            // Пропускаем кресты с нулевой длиной или толщиной
+            if (lineLength <= 0 || lineThickness <= 0) continue;
+            
+            // Рисуем крест
             cross.draw(ctx, lineLength, lineThickness);
         }
         
         // Если включен режим рандома, рисуем оранжевый крест в позиции курсора
-        if (state.cations.isRandom) {
+        if (state.plusRays.isRandom) {
             ctx.save();
-            ctx.translate(state.cations.mouseX, state.cations.mouseY);
-            
-            ctx.beginPath();
-            ctx.moveTo(-lineLength / 2, 0);
-            ctx.lineTo(lineLength / 2, 0);
-            ctx.moveTo(0, -lineLength / 2);
-            ctx.lineTo(0, lineLength / 2);
-            
             ctx.strokeStyle = 'orange';
-            ctx.lineWidth = lineThickness;
+            
+            // Горизонтальная линия
+            ctx.beginPath();
+            ctx.moveTo(state.plusRays.mouseX - lineLength / 2, state.plusRays.mouseY);
+            ctx.lineTo(state.plusRays.mouseX + lineLength / 2, state.plusRays.mouseY);
+            ctx.stroke();
+            
+            // Вертикальная линия
+            ctx.beginPath();
+            ctx.moveTo(state.plusRays.mouseX, state.plusRays.mouseY - lineLength / 2);
+            ctx.lineTo(state.plusRays.mouseX, state.plusRays.mouseY + lineLength / 2);
             ctx.stroke();
             
             ctx.restore();
         }
+        
+        // Восстанавливаем состояние контекста
+        ctx.restore();
     }
     
     // Генерация лучей с крестами
-    function generateCationCrosses(angles, spacing) {
+    function generatePlusRayCrosses(angles, spacing) {
         let allCrosses = [];
         
         for (const angle of angles) {
@@ -756,231 +813,234 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Обновление элементов управления
-    function updateCationsControls(hasActiveCrosses) {
+    function updatePlusRaysControls(hasActiveCrosses) {
         // Разрешаем изменять размер и толщину крестов даже когда они движутся
-        // cationsLengthSlider.disabled = hasActiveCrosses;
-        // cationsLengthInput.disabled = hasActiveCrosses;
-        // cationsThicknessSlider.disabled = hasActiveCrosses;
-        // cationsThicknessInput.disabled = hasActiveCrosses;
+        // plusRaysLengthSlider.disabled = hasActiveCrosses;
+        // plusRaysLengthInput.disabled = hasActiveCrosses;
+        // plusRaysThicknessSlider.disabled = hasActiveCrosses;
+        // plusRaysThicknessInput.disabled = hasActiveCrosses;
         
         // Делаем слайдеры полупрозрачными, когда они неактивны
         if (hasActiveCrosses) {
-            cationsSpacingSlider.classList.add('disabled-control');
-            cationsSpacingInput.classList.add('disabled-control');
-            cationsRaysSlider.classList.add('disabled-control');
-            cationsRaysInput.classList.add('disabled-control');
+            plusRaysSpacingSlider.classList.add('disabled-control');
+            plusRaysSpacingInput.classList.add('disabled-control');
+            plusRaysRaysSlider.classList.add('disabled-control');
+            plusRaysRaysInput.classList.add('disabled-control');
         } else {
-            cationsSpacingSlider.classList.remove('disabled-control');
-            cationsSpacingInput.classList.remove('disabled-control');
-            cationsRaysSlider.classList.remove('disabled-control');
-            cationsRaysInput.classList.remove('disabled-control');
+            plusRaysSpacingSlider.classList.remove('disabled-control');
+            plusRaysSpacingInput.classList.remove('disabled-control');
+            plusRaysRaysSlider.classList.remove('disabled-control');
+            plusRaysRaysInput.classList.remove('disabled-control');
         }
         
         // Отключаем только слайдеры, которые нельзя изменять при движении
-        cationsSpacingSlider.disabled = hasActiveCrosses;
-        cationsSpacingInput.disabled = hasActiveCrosses;
-        cationsRaysSlider.disabled = hasActiveCrosses;
-        cationsRaysInput.disabled = hasActiveCrosses;
+        plusRaysSpacingSlider.disabled = hasActiveCrosses;
+        plusRaysSpacingInput.disabled = hasActiveCrosses;
+        plusRaysRaysSlider.disabled = hasActiveCrosses;
+        plusRaysRaysInput.disabled = hasActiveCrosses;
     }
     
-    // Экспорт SVG
-    function generateCationsSVG() {
-        const lineLength = parseFloat(cationsLengthInput.value);
-        const lineThickness = parseFloat(cationsThicknessInput.value);
+    // Новая функция для экспорта Plus Rays SVG
+    function downloadPlusRaysSVG() {
+        // Получаем текущие размеры и конфигурацию
+        const lineLength = parseFloat(plusRaysLengthInput.value);
+        const lineThickness = parseFloat(plusRaysThicknessInput.value);
         
+        // Создаем SVG документ
         let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS_SIZE} ${CANVAS_SIZE}" width="${CANVAS_SIZE}" height="${CANVAS_SIZE}">`;
         svg += `<rect width="100%" height="100%" fill="black"/>`;
         
-        for (const cross of state.cations.crosses) {
-            svg += `<line x1="${cross.x - lineLength/2}" y1="${cross.y}" x2="${cross.x + lineLength/2}" y2="${cross.y}" stroke="white" stroke-width="${lineThickness}"/>`;
-            svg += `<line x1="${cross.x}" y1="${cross.y - lineLength/2}" x2="${cross.x}" y2="${cross.y + lineLength/2}" stroke="white" stroke-width="${lineThickness}"/>`;
+        // Если активен режим рандома, отрисовываем курсор
+        if (state.plusRays.isRandom) {
+            const cursorSize = lineLength;
+            
+            // Горизонтальная линия курсора
+            svg += `<line x1="${state.plusRays.mouseX - cursorSize/2}" y1="${state.plusRays.mouseY}" 
+                           x2="${state.plusRays.mouseX + cursorSize/2}" y2="${state.plusRays.mouseY}" 
+                           stroke="orange" stroke-width="${lineThickness}" stroke-linecap="butt"/>`;
+            
+            // Вертикальная линия курсора
+            svg += `<line x1="${state.plusRays.mouseX}" y1="${state.plusRays.mouseY - cursorSize/2}" 
+                           x2="${state.plusRays.mouseX}" y2="${state.plusRays.mouseY + cursorSize/2}" 
+                           stroke="orange" stroke-width="${lineThickness}" stroke-linecap="butt"/>`;
+        }
+        
+        // Добавляем все текущие кресты
+        for (const cross of state.plusRays.crosses) {
+            // Используем актуальные координаты крестов
+            svg += `<line x1="${cross.x - lineLength/2}" y1="${cross.y}" 
+                           x2="${cross.x + lineLength/2}" y2="${cross.y}" 
+                           stroke="white" stroke-width="${lineThickness}" stroke-linecap="butt"/>`;
+            
+            svg += `<line x1="${cross.x}" y1="${cross.y - lineLength/2}" 
+                           x2="${cross.x}" y2="${cross.y + lineLength/2}" 
+                           stroke="white" stroke-width="${lineThickness}" stroke-linecap="butt"/>`;
         }
         
         svg += `</svg>`;
-        return svg;
-    }
-    
-    function downloadCationsSVG() {
-        const svg = generateCationsSVG();
+        
+        // Создаем и скачиваем файл
         const blob = new Blob([svg], { type: 'image/svg+xml' });
         const url = URL.createObjectURL(blob);
         
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'cations.svg';
+        a.download = 'plus-rays.svg';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
     
-    // Обновление индикатора паузы
-    function updateCationsPauseIndicator() {
-        cationsPauseIndicator.style.display = state.cations.isPaused ? 'block' : 'none';
-    }
-    
-    // Переключение паузы для крестов
-    function toggleCationsPause() {
-        state.cations.isPaused = !state.cations.isPaused;
-        updateCationsPauseIndicator();
-    }
-    
     // Рендеринг кадра
-    function renderCationsFrame() {
-        if (!document.getElementById('cations-content').classList.contains('active')) {
+    function renderPlusRaysFrame() {
+        if (!document.getElementById('plus-rays-content').classList.contains('active')) {
             return;
         }
         
         // Если кресты еще не созданы или их нужно пересоздать
-        if (state.cations.crosses.length === 0) {
-            const spacing = parseInt(cationsSpacingInput.value);
-            state.cations.crosses = generateCationCrosses(
-                state.cations.angles, 
+        if (state.plusRays.crosses.length === 0) {
+            const spacing = parseInt(plusRaysSpacingInput.value);
+            state.plusRays.crosses = generatePlusRayCrosses(
+                state.plusRays.angles, 
                 spacing
             );
         }
         
-        if (!state.cations.isPaused) {
-            const radius = parseInt(cationsRadiusInput.value);
-            const strength = parseInt(cationsStrengthInput.value) * 0.01;
-            const isRepel = cationsGravityMode.checked;
-            
-            // Обновляем случайную позицию, если включен режим рандома
-            if (state.cations.isRandom) {
-                updateRandomPosition(state.cations);
-            }
-            
-            // Обновляем кресты
-            const hasActiveCrosses = updateCrosses(
-                state.cations.crosses, 
-                state.cations.mouseX, 
-                state.cations.mouseY, 
-                radius, 
-                strength, 
-                isRepel
-            );
-            
-            updateCationsControls(hasActiveCrosses);
+        const radius = parseInt(plusRaysRadiusInput.value);
+        const strength = parseInt(plusRaysStrengthInput.value) * 0.01;
+        const isRepel = plusRaysGravityMode.checked;
+        
+        // Обновляем случайную позицию, если включен режим рандома
+        if (state.plusRays.isRandom) {
+            updateRandomPosition(state.plusRays);
         }
         
-        const lineLength = parseInt(cationsLengthInput.value);
-        const lineThickness = parseInt(cationsThicknessInput.value);
+        // Обновляем кресты
+        const hasActiveCrosses = updateCrosses(
+            state.plusRays.crosses, 
+            state.plusRays.mouseX, 
+            state.plusRays.mouseY, 
+            radius, 
+            strength, 
+            isRepel
+        );
         
-        drawCrosses(cationsCtx, state.cations.crosses, lineLength, lineThickness);
+        updatePlusRaysControls(hasActiveCrosses);
+        
+        const lineLength = parseInt(plusRaysLengthInput.value);
+        const lineThickness = parseInt(plusRaysThicknessInput.value);
+        
+        drawCrosses(plusRaysCtx, state.plusRays.crosses, lineLength, lineThickness);
     }
     
-    // Инициализация Cations
-    function initCations() {
+    // Инициализация Plus Rays
+    function initPlusRays() {
         // Обновление углов при изменении количества лучей
-        function updateCationAngles(value) {
-            state.cations.angles = calculateAngles(parseInt(value));
-            state.cations.crosses = []; // Сбрасываем кресты для пересоздания
+        function updatePlusRayAngles(value) {
+            state.plusRays.angles = calculateAngles(parseInt(value));
+            state.plusRays.crosses = []; // Сбрасываем кресты для пересоздания
         }
         
         // Сбрасываем кресты при изменении размера или расстояния
-        function resetCationCrosses() {
+        function resetPlusRayCrosses() {
             // Проверяем, есть ли активные кресты
-            const hasActiveCrosses = state.cations.crosses.some(cross => cross.active);
+            const hasActiveCrosses = state.plusRays.crosses.some(cross => cross.active);
             
             // Если нет активных крестов или анимация на паузе, сбрасываем массив крестов
-            if (!hasActiveCrosses || state.cations.isPaused) {
-                state.cations.crosses = [];
+            if (!hasActiveCrosses || state.plusRays.isRandom) {
+                state.plusRays.crosses = [];
             }
             // Если есть активные кресты, не сбрасываем их
         }
         
         // Синхронизация контролов
-        syncInputs(cationsRaysSlider, cationsRaysInput, updateCationAngles);
-        syncInputs(cationsLengthSlider, cationsLengthInput, resetCationCrosses);
-        syncInputs(cationsThicknessSlider, cationsThicknessInput, resetCationCrosses);
-        syncInputs(cationsSpacingSlider, cationsSpacingInput, resetCationCrosses);
-        syncInputs(cationsRadiusSlider, cationsRadiusInput);
-        syncInputs(cationsStrengthSlider, cationsStrengthInput);
+        syncInputs(plusRaysRaysSlider, plusRaysRaysInput, updatePlusRayAngles);
+        syncInputs(plusRaysLengthSlider, plusRaysLengthInput, resetPlusRayCrosses);
+        syncInputs(plusRaysThicknessSlider, plusRaysThicknessInput, resetPlusRayCrosses);
+        syncInputs(plusRaysSpacingSlider, plusRaysSpacingInput, resetPlusRayCrosses);
+        syncInputs(plusRaysRadiusSlider, plusRaysRadiusInput);
+        syncInputs(plusRaysStrengthSlider, plusRaysStrengthInput);
         
         // Случайное движение
-        cationsRandomMode.addEventListener('click', function() {
-            state.cations.isRandom = !state.cations.isRandom;
-            this.textContent = state.cations.isRandom ? "Stop Random" : "Random";
+        plusRaysRandomMode.addEventListener('click', function() {
+            state.plusRays.isRandom = !state.plusRays.isRandom;
+            this.textContent = state.plusRays.isRandom ? "Stop Random" : "Random";
             
-            if (state.cations.isRandom) {
+            if (state.plusRays.isRandom) {
                 // Инициализируем скорость
-                state.cations.randomWalkerVX = 0;
-                state.cations.randomWalkerVY = 0;
+                state.plusRays.randomWalkerVX = 0;
+                state.plusRays.randomWalkerVY = 0;
                 
                 // Используем последнюю сохраненную позицию или центр холста
-                state.cations.mouseX = state.cations.lastRandomX;
-                state.cations.mouseY = state.cations.lastRandomY;
+                state.plusRays.mouseX = state.plusRays.lastRandomX;
+                state.plusRays.mouseY = state.plusRays.lastRandomY;
             } else {
                 // Сохраняем последнюю позицию перед выключением
-                state.cations.lastRandomX = state.cations.mouseX;
-                state.cations.lastRandomY = state.cations.mouseY;
+                state.plusRays.lastRandomX = state.plusRays.mouseX;
+                state.plusRays.lastRandomY = state.plusRays.mouseY;
                 
                 // Сбрасываем позицию мыши при выключении режима
-                state.cations.mouseX = -1000;
-                state.cations.mouseY = -1000;
+                state.plusRays.mouseX = -1000;
+                state.plusRays.mouseY = -1000;
             }
         });
         
-        // Обработка события паузы из глобального обработчика для Cations
-        window.addEventListener('cations-toggle-pause', function() {
-            toggleCationsPause();
-        });
-        
-        // Экспорт SVG
-        cationsExportSVGButton.addEventListener('click', downloadCationsSVG);
-        
         // Обработка движения мыши
-        cationsCanvas.addEventListener('mousemove', function(e) {
-            if (!document.getElementById('cations-content').classList.contains('active')) {
+        plusRaysCanvas.addEventListener('mousemove', function(e) {
+            if (!document.getElementById('plus-rays-content').classList.contains('active')) {
                 return;
             }
             
             // Если включен режим рандома, не обновляем позицию курсора
-            if (state.cations.isRandom) {
+            if (state.plusRays.isRandom) {
                 return;
             }
             
-            const rect = cationsCanvas.getBoundingClientRect();
-            const scaleX = cationsCanvas.width / rect.width;
-            const scaleY = cationsCanvas.height / rect.height;
+            const rect = plusRaysCanvas.getBoundingClientRect();
+            const scaleX = plusRaysCanvas.width / rect.width;
+            const scaleY = plusRaysCanvas.height / rect.height;
             
-            state.cations.mouseX = (e.clientX - rect.left) * scaleX;
-            state.cations.mouseY = (e.clientY - rect.top) * scaleY;
+            state.plusRays.mouseX = (e.clientX - rect.left) * scaleX;
+            state.plusRays.mouseY = (e.clientY - rect.top) * scaleY;
         });
         
         // Обработка входа курсора на холст
-        cationsCanvas.addEventListener('mouseenter', function(e) {
-            if (!document.getElementById('cations-content').classList.contains('active')) {
+        plusRaysCanvas.addEventListener('mouseenter', function(e) {
+            if (!document.getElementById('plus-rays-content').classList.contains('active')) {
                 return;
             }
             
             // Если включен режим рандома, не обновляем позицию курсора
-            if (state.cations.isRandom) {
+            if (state.plusRays.isRandom) {
                 return;
             }
             
-            const rect = cationsCanvas.getBoundingClientRect();
-            const scaleX = cationsCanvas.width / rect.width;
-            const scaleY = cationsCanvas.height / rect.height;
+            const rect = plusRaysCanvas.getBoundingClientRect();
+            const scaleX = plusRaysCanvas.width / rect.width;
+            const scaleY = plusRaysCanvas.height / rect.height;
             
-            state.cations.mouseX = (e.clientX - rect.left) * scaleX;
-            state.cations.mouseY = (e.clientY - rect.top) * scaleY;
+            state.plusRays.mouseX = (e.clientX - rect.left) * scaleX;
+            state.plusRays.mouseY = (e.clientY - rect.top) * scaleY;
         });
         
         // Обработка выхода курсора с холста
-        cationsCanvas.addEventListener('mouseleave', function() {
+        plusRaysCanvas.addEventListener('mouseleave', function() {
             // Если включен режим рандома, не меняем позицию курсора
-            if (state.cations.isRandom) {
+            if (state.plusRays.isRandom) {
                 return;
             }
             
             // Устанавливаем позицию курсора за пределами холста
-            state.cations.mouseX = -1000;
-            state.cations.mouseY = -1000;
+            state.plusRays.mouseX = -1000;
+            state.plusRays.mouseY = -1000;
         });
         
         // Начальные значения
-        updateCationAngles(cationsRaysInput.value);
+        updatePlusRayAngles(plusRaysRaysInput.value);
+        
+        // Экспорт SVG
+        plusRaysExportSVGButton.addEventListener('click', downloadPlusRaysSVG);
     }
     
     // ================ ОБЩАЯ ИНИЦИАЛИЗАЦИЯ И ОБРАБОТЧИКИ ================
@@ -1001,40 +1061,62 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Обработка события ray-toggle-pause
-    window.addEventListener('ray-toggle-pause', function() {
-        toggleRaysPause();
-    });
-    
-    // Обработка события cations-toggle-pause
-    window.addEventListener('cations-toggle-pause', function() {
-        toggleCationsPause();
-    });
-    
-    // Обработка события ray-export-svg
-    window.addEventListener('ray-export-svg', function() {
+    // Обработка события rays-export-svg
+    window.addEventListener('rays-export-svg', function() {
         downloadRaysSVG();
     });
-    
-    // Обработка события cations-export-svg
-    window.addEventListener('cations-export-svg', function() {
-        downloadCationsSVG();
+
+    // Обработка события plus-rays-export-svg
+    window.addEventListener('plus-rays-export-svg', function() {
+        downloadPlusRaysSVG();
     });
     
-    // Функция анимации
+    // Обработка клавиш для экспорта SVG
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'e' && (e.metaKey || e.ctrlKey)) {
+            e.preventDefault();
+            
+            // Определяем, какая вкладка активна
+            const dottedRaysActive = document.getElementById('dotted-rays-content').classList.contains('active');
+            const plusRaysActive = document.getElementById('plus-rays-content').classList.contains('active');
+            const gridActive = document.getElementById('grid-content').classList.contains('active');
+            
+            if (dottedRaysActive) {
+                downloadRaysSVG();
+            } else if (plusRaysActive) {
+                downloadPlusRaysSVG();
+            } else if (gridActive) {
+                // Вызываем событие для экспорта SVG Grid
+                const event = new Event('grid-export-svg');
+                window.dispatchEvent(event);
+            }
+        }
+    });
+    
+    // Основная функция анимации
     function animate() {
-        renderRaysFrame();
-        renderCationsFrame();
-        // Вызываем функцию для отрисовки сетки
-        if (document.getElementById('grid-content') && document.getElementById('grid-content').classList.contains('active')) {
+        // Запрашиваем следующий кадр анимации
+        requestAnimationFrame(animate);
+        
+        // Проверяем, какая вкладка активна
+        const dottedRaysActive = document.getElementById('dotted-rays-content').classList.contains('active');
+        const plusRaysActive = document.getElementById('plus-rays-content').classList.contains('active');
+        const gridActive = document.getElementById('grid-content').classList.contains('active');
+        
+        // Отрисовываем только активную вкладку
+        if (dottedRaysActive) {
+            renderRaysFrame();
+        } else if (plusRaysActive) {
+            renderPlusRaysFrame();
+        } else if (gridActive) {
+            // Вызываем событие для отрисовки сетки
             const event = new Event('grid-render-frame');
             window.dispatchEvent(event);
         }
-        requestAnimationFrame(animate);
     }
     
     // Инициализация и старт анимации
     initDottedRays();
-    initCations();
+    initPlusRays();
     requestAnimationFrame(animate);
 }); 

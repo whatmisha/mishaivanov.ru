@@ -1,10 +1,4 @@
-// Создаем глобальную функцию freezePointsGrid
-// Объявляем заранее, до DOMContentLoaded
-window.freezePointsGrid = function() {
-    console.log('Глобальная функция freezePointsGrid вызвана, но еще не инициализирована');
-    // Эта функция будет переопределена в DOMContentLoaded
-};
-
+// Скрипт для вкладки Grid
 document.addEventListener('DOMContentLoaded', function() {
     const canvas = document.getElementById('gridCanvas');
     if (!canvas) {
@@ -30,14 +24,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const gravityMode = document.getElementById('gridGravityMode');
     const randomMode = document.getElementById('gridRandomMode');
     const exportSVGButton = document.getElementById('gridExportSVG');
-    const pauseIndicator = document.getElementById('gridPauseIndicator');
-    const pauseButton = document.getElementById('gridPauseButton'); // Эта кнопка не существует в HTML
     const downloadButton = document.getElementById('gridExportSVG'); // Используем экспорт SVG кнопку как downloadButton
     
     // Проверяем, получены ли все необходимые элементы управления
     if (!sizeSlider || !sizeInput || !spacingSlider || !spacingInput || 
         !radiusSlider || !radiusInput || !strengthSlider || !strengthInput ||
-        !gravityMode || !randomMode || !exportSVGButton || !pauseIndicator) {
+        !gravityMode || !randomMode || !exportSVGButton) {
         console.error("Some UI controls were not found!");
         // Продолжаем работу, так как большинство функций не зависят от UI
     }
@@ -82,7 +74,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let mouseX = -1000; // За пределами холста
     let mouseY = -1000; // За пределами холста
     let isRandom = false;
-    let isPaused = false;
     let points = [];
     let lastTime = 0;
     let deltaTime = 0;
@@ -108,10 +99,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Если изменились параметры курсора, сразу применяем изменения
             if (slider === radiusSlider || slider === strengthSlider) {
-                if (!isPaused) {
-                    applyForceToPoints();
-                    redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
-                }
+                applyForceToPoints();
+                redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
             }
         });
 
@@ -125,10 +114,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Если изменились параметры курсора, сразу применяем изменения
             if (input === radiusInput || input === strengthInput) {
-                if (!isPaused) {
-                    applyForceToPoints();
-                    redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
-                }
+                applyForceToPoints();
+                redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
             }
         });
     }
@@ -154,20 +141,6 @@ document.addEventListener('DOMContentLoaded', function() {
         mouseEverMoved = true; // Устанавливаем, что мышь двигалась над холстом
     });
     
-    // Добавляем ПРЯМОЙ обработчик клика на canvas для переключения паузы
-    canvas.addEventListener('click', function(e) {
-        console.log('Прямой клик на gridCanvas');
-        
-        // Игнорируем клики с модификаторами (Ctrl, Shift, Alt)
-        if (e.ctrlKey || e.shiftKey || e.altKey) {
-            console.log('Клик с модификатором, игнорирую для паузы');
-            return; // Не обрабатываем клики с модификаторами
-        }
-        
-        console.log('Вызываю freezePointsGrid напрямую из обработчика клика');
-        window.freezePointsGrid(); // Прямой вызов функции переключения паузы
-    });
-    
     canvas.addEventListener('mousedown', function(e) {
         console.log('Mousedown event on canvas');
         isCursorActive = true;
@@ -177,42 +150,39 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.ctrlKey || e.shiftKey || e.altKey) {
             console.log('Modifier key pressed, activating points');
             
-            if (!isPaused) {
-                // Активируем все точки в зоне действия курсора
-                const rect = canvas.getBoundingClientRect();
+            const rect = canvas.getBoundingClientRect();
+            
+            // Учитываем масштабирование холста, если оно есть
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            
+            const clickX = (e.clientX - rect.left) * scaleX;
+            const clickY = (e.clientY - rect.top) * scaleY;
+            const radius = parseInt(radiusInput.value);
+            
+            // Активируем или деактивируем точки
+            points.forEach(point => {
+                const dx = clickX - point.x;
+                const dy = clickY - point.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
                 
-                // Учитываем масштабирование холста, если оно есть
-                const scaleX = canvas.width / rect.width;
-                const scaleY = canvas.height / rect.height;
-                
-                const clickX = (e.clientX - rect.left) * scaleX;
-                const clickY = (e.clientY - rect.top) * scaleY;
-                const radius = parseInt(radiusInput.value);
-                
-                // Активируем или деактивируем точки
-                points.forEach(point => {
-                    const dx = clickX - point.x;
-                    const dy = clickY - point.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < radius) {
+                    // Инвертируем состояние active
+                    point.active = !point.active;
                     
-                    if (distance < radius) {
-                        // Инвертируем состояние active
-                        point.active = !point.active;
-                        
-                        if (point.active) {
-                            // Даем точке импульс в случайном направлении
-                            const angle = Math.random() * Math.PI * 2;
-                            const impulse = 2 + Math.random() * 3;
-                            point.vx = Math.cos(angle) * impulse;
-                            point.vy = Math.sin(angle) * impulse;
-                        } else {
-                            // Останавливаем точку
-                            point.vx = 0;
-                            point.vy = 0;
-                        }
+                    if (point.active) {
+                        // Даем точке импульс в случайном направлении
+                        const angle = Math.random() * Math.PI * 2;
+                        const impulse = 2 + Math.random() * 3;
+                        point.vx = Math.cos(angle) * impulse;
+                        point.vy = Math.sin(angle) * impulse;
+                    } else {
+                        // Останавливаем точку
+                        point.vx = 0;
+                        point.vy = 0;
                     }
-                });
-            }
+                }
+            });
         }
     });
     
@@ -261,40 +231,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Обработка клавиши 'e' для экспорта SVG
     document.addEventListener('keydown', (e) => {
         const gridContentActive = document.getElementById('grid-content')?.classList.contains('active');
-        console.log('grid.js: Проверка активности grid-content:', gridContentActive);
-        console.log('grid.js: freezePointsGrid доступен:', typeof window.freezePointsGrid === 'function');
         
         if (e.key === 'e' && (e.metaKey || e.ctrlKey) && gridContentActive) {
             console.log('Комбинация Cmd+E нажата и вкладка Grid активна');
             e.preventDefault();
-            downloadSVG(parseInt(sizeInput.value));
+            downloadSVG(parseInt(sizeInput.value) / 2);
         }
     });
-
-    // Удаляем обработчик нажатия пробела для паузы, так как он может конфликтовать с другими
-    document.removeEventListener('keydown', function(e) {
-        // Эта функция никогда не будет вызвана, она здесь только для документации
-        if (e.code === 'Space' && 
-            document.activeElement.tagName !== 'INPUT' && 
-            document.getElementById('grid-content').classList.contains('active')) {
-            e.preventDefault();
-            freezePoints();
-        }
-    });
-
-    /* Закомментировано для избежания конфликта с глобальным обработчиком в pause-handler.js
-    // Добавляем новый обработчик нажатия пробела для паузы
-    document.addEventListener('keydown', function spaceKeyHandler(e) {
-        // Проверяем, что нажат пробел, не происходит ввод в текстовое поле и активна вкладка Grid
-        if (e.code === 'Space' && 
-            document.activeElement.tagName !== 'INPUT' && 
-            document.getElementById('grid-content').classList.contains('active')) {
-            e.preventDefault(); // Предотвращаем прокрутку страницы
-            console.log('Space key pressed in grid tab - new handler');
-            freezePoints();
-        }
-    });
-    */
 
     // Обработка режима случайного движения
     randomMode.addEventListener('click', () => {
@@ -304,51 +247,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Обработка режима отталкивания
     gravityMode.addEventListener('change', () => {
-        if (!isPaused) {
-            applyForceToPoints();
-            redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
-        }
+        applyForceToPoints();
+        redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
     });
 
     // Обработка экспорта SVG
     exportSVGButton.addEventListener('click', () => {
-        downloadSVG(parseInt(sizeInput.value));
-    });
-
-    // Обработка события заморозки из основного скрипта
-    window.addEventListener('grid-toggle-pause', function() {
-        console.log('grid-toggle-pause event received in grid.js');
-        console.log('Current isPaused state before toggle:', isPaused);
-        freezePoints();
-        console.log('New isPaused state after toggle:', isPaused);
-    });
-
-    // Добавляем обработчик клика по холсту для проверки клика по точке
-    window.addEventListener('grid-canvas-click', function(event) {
-        const clickX = event.detail.x;
-        const clickY = event.detail.y;
-        
-        // Проверяем, не попал ли клик на точку
-        let clickedOnPoint = false;
-        const radius = parseInt(radiusInput.value);
-        
-        for (let i = 0; i < points.length; i++) {
-            const point = points[i];
-            const dx = clickX - point.x;
-            const dy = clickY - point.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance < radius) {
-                clickedOnPoint = true;
-                break;
-            }
-        }
-        
-        // Если клик не попал на точку, переключаем паузу
-        if (!clickedOnPoint) {
-            console.log('Calling freezePoints from canvas click (via global handler)');
-            freezePoints();
-        }
+        // Делим размер пополам, как при экспорте через шорткат
+        downloadSVG(parseInt(sizeInput.value) / 2);
     });
 
     // Обработка события экспорта из основного скрипта
@@ -357,29 +263,25 @@ document.addEventListener('DOMContentLoaded', function() {
         downloadSVG(parseInt(sizeInput.value) / 2);
     });
 
-    // Обработка события отрисовки из основного скрипта
-    window.addEventListener('grid-render-frame', function() {
-        const currentTime = performance.now();
-        
-        if (lastTime === 0) {
-            lastTime = currentTime;
-            return;
-        }
-        
-        deltaTime = currentTime - lastTime;
+    // Функция обновления для анимации
+    function update(currentTime) {
+        // Вычисляем deltaTime в секундах
+        if (!lastTime) lastTime = currentTime;
+        deltaTime = (currentTime - lastTime) / 1000; // в секундах
         lastTime = currentTime;
         
-        if (isPaused) {
-            return;
-        }
+        // Обновляем случайное положение мыши, если активен режим random
+        updateRandomWalker();
         
-        // Примечание: обновление положения точек и применение сил
-        // теперь происходит в функции animate(), 
-        // поэтому здесь эти операции не дублируются
+        // Обновляем положение точек
+        updatePoints();
         
-        // Перерисовываем
+        // Отрисовываем сцену
         redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
-    });
+        
+        // Запрашиваем следующий кадр
+        requestAnimationFrame(update);
+    }
 
     function checkActivePoints() {
         // Проверяем, есть ли активные точки
@@ -394,11 +296,23 @@ document.addEventListener('DOMContentLoaded', function() {
     function checkControlsState() {
         const hasActivePoints = checkActivePoints();
         
-        // Если есть активные точки, деактивируем контролы
-        sizeSlider.disabled = hasActivePoints;
-        sizeInput.disabled = hasActivePoints;
+        // Если есть активные точки, деактивируем контролы spacing
+        // Но оставляем активными контролы размера точек (size)
         spacingSlider.disabled = hasActivePoints;
         spacingInput.disabled = hasActivePoints;
+        
+        // Добавляем или убираем класс disabled-control в зависимости от состояния
+        if (hasActivePoints) {
+            spacingSlider.classList.add('disabled-control');
+            spacingInput.classList.add('disabled-control');
+        } else {
+            spacingSlider.classList.remove('disabled-control');
+            spacingInput.classList.remove('disabled-control');
+        }
+        
+        // Элементы управления размером всегда активны
+        sizeSlider.disabled = false;
+        sizeInput.disabled = false;
     }
 
     class Point {
@@ -503,11 +417,15 @@ document.addEventListener('DOMContentLoaded', function() {
     function disableSpacingControls() {
         spacingSlider.disabled = true;
         spacingInput.disabled = true;
+        spacingSlider.classList.add('disabled-control');
+        spacingInput.classList.add('disabled-control');
     }
 
     function enableSpacingControls() {
         spacingSlider.disabled = false;
         spacingInput.disabled = false;
+        spacingSlider.classList.remove('disabled-control');
+        spacingInput.classList.remove('disabled-control');
     }
 
     function redraw(circleDiameter, spacing) {
@@ -574,9 +492,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 ctx.lineTo(mouseX, mouseY + crossSize);
                 ctx.stroke();
             }
-            
-            // Обновляем индикатор паузы
-            updatePauseIndicator();
         } catch (error) {
             console.error("Error in redraw function:", error);
         }
@@ -633,20 +548,36 @@ document.addEventListener('DOMContentLoaded', function() {
             const newCols = Math.floor(canvas.width / newSpacing);
             const newRows = Math.floor(canvas.height / newSpacing);
             
-            // Создаем точки с новым расстоянием
+            // Вычисляем общую ширину и высоту сетки
+            const totalWidth = newCols * newSpacing;
+            const totalHeight = newRows * newSpacing;
+            
+            // Вычисляем смещение для центрирования
+            const offsetX = (canvas.width - totalWidth) / 2;
+            const offsetY = (canvas.height - totalHeight) / 2;
+            
+            // Создаем точки с новым расстоянием, центрированные на холсте
             for (let i = 0; i < newCols; i++) {
                 for (let j = 0; j < newRows; j++) {
-                    const x = (i + 0.5) * newSpacing;
-                    const y = (j + 0.5) * newSpacing;
+                    const x = offsetX + i * newSpacing + newSpacing / 2;
+                    const y = offsetY + j * newSpacing + newSpacing / 2;
                     points.push(new Point(x, y));
                 }
             }
         } else {
-            // Создаем точки
+            // Вычисляем общую ширину и высоту сетки
+            const totalWidth = cols * adjustedSpacing;
+            const totalHeight = rows * adjustedSpacing;
+            
+            // Вычисляем смещение для центрирования
+            const offsetX = (canvas.width - totalWidth) / 2;
+            const offsetY = (canvas.height - totalHeight) / 2;
+            
+            // Создаем точки, центрированные на холсте
             for (let i = 0; i < cols; i++) {
                 for (let j = 0; j < rows; j++) {
-                    const x = (i + 0.5) * adjustedSpacing;
-                    const y = (j + 0.5) * adjustedSpacing;
+                    const x = offsetX + i * adjustedSpacing + adjustedSpacing / 2;
+                    const y = offsetY + j * adjustedSpacing + adjustedSpacing / 2;
                     points.push(new Point(x, y));
                 }
             }
@@ -658,10 +589,21 @@ document.addEventListener('DOMContentLoaded', function() {
         if (points.length === 0) {
             console.error("Failed to create points, using fallback grid");
             const fallbackSpacing = minDimension / 10;
-            for (let i = 0; i < 10; i++) {
-                for (let j = 0; j < 10; j++) {
-                    const x = (i + 0.5) * fallbackSpacing;
-                    const y = (j + 0.5) * fallbackSpacing;
+            const fallbackCols = 10;
+            const fallbackRows = 10;
+            
+            // Вычисляем общую ширину и высоту резервной сетки
+            const totalWidth = fallbackCols * fallbackSpacing;
+            const totalHeight = fallbackRows * fallbackSpacing;
+            
+            // Вычисляем смещение для центрирования
+            const offsetX = (canvas.width - totalWidth) / 2;
+            const offsetY = (canvas.height - totalHeight) / 2;
+            
+            for (let i = 0; i < fallbackCols; i++) {
+                for (let j = 0; j < fallbackRows; j++) {
+                    const x = offsetX + i * fallbackSpacing + fallbackSpacing / 2;
+                    const y = offsetY + j * fallbackSpacing + fallbackSpacing / 2;
                     points.push(new Point(x, y));
                 }
             }
@@ -685,79 +627,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function downloadSVG(circleRadius) {
-        const svg = generateSVG(circleRadius);
-        const blob = new Blob([svg], { type: 'image/svg+xml' });
+        const svgString = generateSVG(circleRadius);
+        const blob = new Blob([svgString], {type: 'image/svg+xml'});
         const url = URL.createObjectURL(blob);
-        
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'grid.svg';
-        document.body.appendChild(a);
+        a.download = 'dotted-grid.svg';
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
 
-    function updatePauseIndicator() {
-        // Проверяем, существует ли элемент индикатора паузы
-        if (!pauseIndicator) {
-            console.warn("Pause indicator element not found");
-            return;
-        }
-        
-        try {
-            if (isPaused) {
-                pauseIndicator.style.display = 'flex';
-            } else {
-                pauseIndicator.style.display = 'none';
-            }
-        } catch (error) {
-            console.error("Error updating pause indicator:", error);
-        }
-    }
-
-    // Переопределяем глобальную функцию freezePointsGrid с правильной реализацией
-    window.freezePointsGrid = function() {
-        console.log('freezePointsGrid called (global), current isPaused:', isPaused);
-        console.log('Toggling isPaused state from', isPaused, 'to', !isPaused);
-        isPaused = !isPaused;
-        console.log('new isPaused state:', isPaused);
-        updatePauseIndicator();
-        
-        // Отправляем пользовательское событие, чтобы оповестить о переключении паузы
-        const pauseEvent = new CustomEvent('grid-pause-toggled', { 
-            detail: { isPaused: isPaused } 
-        });
-        console.log('Dispatching grid-pause-toggled event with isPaused:', isPaused);
-        window.dispatchEvent(pauseEvent);
-        
-        // Обновляем текст кнопки паузы, если она существует
-        if (pauseButton) {
-            pauseButton.textContent = isPaused ? 'Resume' : 'Pause';
-        }
-        
-        if (!isPaused) {
-            // Если разморозили, проверяем состояние контролов
-            checkControlsState();
-        }
-    };
-    
-    console.log('grid.js: Reinitialized freezePointsGrid function with proper implementation');
-    
-    // Отправляем пользовательское событие о том, что функция freezePointsGrid готова
-    const gridFunctionReadyEvent = new CustomEvent('grid-function-ready');
-    window.dispatchEvent(gridFunctionReadyEvent);
-
-    // Локальная функция для внутреннего использования
-    function freezePoints() {
-        console.log('local freezePoints called in grid.js');
-        console.log('Current isPaused state before redirecting:', isPaused);
-        window.freezePointsGrid();
-        console.log('New isPaused state after redirecting:', isPaused);
-    }
-
     function updateRandomWalker() {
-        // Если мышь не над холстом или режим random не активен, не выполняем
+        // Если режим random не активен, не выполняем
         if (!isRandom) {
             return;
         }
@@ -872,13 +754,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Функция анимации
     function animate() {
-        // Если анимация на паузе, только перерисовываем и запрашиваем следующий кадр
-        if (isPaused) {
-            redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
-            requestAnimationFrame(animate);
-            return;
-        }
-        
         // Обновляем положение всех точек
         points.forEach(point => {
             point.update();
@@ -887,6 +762,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Применяем силы от курсора, если мышь над холстом
         if (isMouseOverCanvas) {
             applyForceToPoints();
+        }
+        
+        // Если активен режим случайного движения, вызываем updateRandomWalker
+        if (isRandom) {
+            updateRandomWalker();
         }
         
         // Перерисовываем
@@ -965,30 +845,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Добавляем обработчики событий для элементов управления
-    if (pauseButton) {
-        pauseButton.addEventListener('click', function() {
-            freezePoints();
-        });
-    }
-    
     sizeInput.addEventListener('input', function() {
         sizeSlider.value = sizeInput.value;
+        redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
     });
     
     sizeSlider.addEventListener('input', function() {
         sizeInput.value = sizeSlider.value;
+        redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
     });
     
     spacingInput.addEventListener('input', function() {
         spacingSlider.value = spacingInput.value;
-        // Перегенерируем точки при изменении расстояния
-        generateGridPoints();
+        redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
     });
     
     spacingSlider.addEventListener('input', function() {
         spacingInput.value = spacingSlider.value;
-        // Перегенерируем точки при изменении расстояния
-        generateGridPoints();
+        redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
     });
     
     radiusInput.addEventListener('input', function() {
@@ -1005,19 +879,5 @@ document.addEventListener('DOMContentLoaded', function() {
     
     strengthSlider.addEventListener('input', function() {
         strengthInput.value = strengthSlider.value;
-    });
-    
-    // Добавляем обработчики для кнопки сохранения
-    downloadButton.addEventListener('click', function() {
-        const link = document.createElement('a');
-        link.download = 'grid.svg';
-        link.href = generateSVG();
-        link.click();
-    });
-
-    // Добавляем обработчик события grid-pause-toggled для обновления индикатора паузы
-    window.addEventListener('grid-pause-toggled', function(e) {
-        console.log('grid-pause-toggled event received with isPaused:', e.detail.isPaused);
-        updatePauseIndicator();
     });
 }); 

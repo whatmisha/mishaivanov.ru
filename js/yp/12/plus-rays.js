@@ -1,12 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const canvas = document.getElementById('cationsCanvas');
+    const canvas = document.getElementById('plusRaysCanvas');
     const ctx = canvas.getContext('2d');
-    const lengthSlider = document.getElementById('cationsLengthSlider');
-    const lengthInput = document.getElementById('cationsLengthInput');
-    const thicknessSlider = document.getElementById('cationsThicknessSlider');
-    const thicknessInput = document.getElementById('cationsThicknessInput');
-    const spacingSlider = document.getElementById('cationsSpacingSlider');
-    const spacingInput = document.getElementById('cationsSpacingInput');
+    const lengthSlider = document.getElementById('plusRaysLengthSlider');
+    const lengthInput = document.getElementById('plusRaysLengthInput');
+    const thicknessSlider = document.getElementById('plusRaysThicknessSlider');
+    const thicknessInput = document.getElementById('plusRaysThicknessInput');
+    const spacingSlider = document.getElementById('plusRaysSpacingSlider');
+    const spacingInput = document.getElementById('plusRaysSpacingInput');
 
     // Фиксированные размеры canvas
     canvas.width = 1080;
@@ -17,25 +17,24 @@ document.addEventListener('DOMContentLoaded', function() {
     const rayLength = Math.min(canvas.width, canvas.height) * 0.45;
 
     // Определяем переменные
-    const raysSlider = document.getElementById('cationsRaysSlider');
-    const raysInput = document.getElementById('cationsRaysInput');
+    const raysSlider = document.getElementById('plusRaysRaysSlider');
+    const raysInput = document.getElementById('plusRaysRaysInput');
     const baseAngles = [90, 100, 115, 140, 175, 220, 270, 325, 25];
     let angles = [...baseAngles];
 
     // Gravity controls
-    const radiusSlider = document.getElementById('cationsRadiusSlider');
-    const radiusInput = document.getElementById('cationsRadiusInput');
-    const strengthSlider = document.getElementById('cationsStrengthSlider');
-    const strengthInput = document.getElementById('cationsStrengthInput');
-    const gravityMode = document.getElementById('cationsGravityMode');
-    const randomMode = document.getElementById('cationsRandomMode');
-    const exportSVGButton = document.getElementById('cationsExportSVG');
-    const pauseIndicator = document.getElementById('cationsPauseIndicator');
+    const radiusSlider = document.getElementById('plusRaysRadiusSlider');
+    const radiusInput = document.getElementById('plusRaysRadiusInput');
+    const strengthSlider = document.getElementById('plusRaysStrengthSlider');
+    const strengthInput = document.getElementById('plusRaysStrengthInput');
+    const gravityMode = document.getElementById('plusRaysGravityMode');
+    const randomMode = document.getElementById('plusRaysRandomMode');
+    const exportSVGButton = document.getElementById('plusRaysExportSVG');
+    const pauseIndicator = document.getElementById('plusRaysPauseIndicator');
 
     let mouseX = centerX;
     let mouseY = centerY;
     let isRandom = false;
-    let isPaused = false;
     let crosses = [];
     let lastTime = 0;
     let deltaTime = 0;
@@ -62,10 +61,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Обработка событий мыши
     canvas.addEventListener('mousemove', (e) => {
-        if (!document.getElementById('cations-content').classList.contains('active')) {
-            return; // Не выполняем, если вкладка не активна
-        }
-        
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
@@ -74,14 +69,10 @@ document.addEventListener('DOMContentLoaded', function() {
         mouseY = (e.clientY - rect.top) * scaleY;
     });
 
-    // Обработка клика для заморозки точек
-    canvas.addEventListener('click', freezeCrosses);
-
-    // Обработка пробела для заморозки точек
+    // Обработка клавиши 'e' для экспорта SVG
     document.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' && document.getElementById('cations-content').classList.contains('active')) {
-            freezeCrosses();
-        } else if (e.key === 'e' && (e.metaKey || e.ctrlKey) && document.getElementById('cations-content').classList.contains('active')) {
+        if (e.key === 'e' && (e.metaKey || e.ctrlKey) && 
+            document.getElementById('plus-rays-content').classList.contains('active')) {
             e.preventDefault();
             downloadSVG(parseFloat(lengthInput.value), parseFloat(thicknessInput.value));
         }
@@ -95,7 +86,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Обработка экспорта SVG
     exportSVGButton.addEventListener('click', () => {
-        downloadSVG(parseFloat(lengthInput.value), parseFloat(thicknessInput.value));
+        // Вызываем событие для экспорта SVG, которое будет обработано в script.js
+        const event = new Event('plus-rays-export-svg');
+        window.dispatchEvent(event);
     });
 
     // Обработка изменения количества лучей
@@ -187,6 +180,7 @@ document.addEventListener('DOMContentLoaded', function() {
         draw(lineLength, lineThickness) {
             ctx.lineWidth = lineThickness;
             ctx.strokeStyle = 'white';
+            ctx.lineCap = 'butt';
             
             // Горизонтальная линия
             ctx.beginPath();
@@ -219,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function animate(currentTime) {
         requestAnimationFrame(animate);
         
-        if (!document.getElementById('cations-content').classList.contains('active')) {
+        if (!document.getElementById('plus-rays-content').classList.contains('active')) {
             return; // Не анимируем, если вкладка не активна
         }
         
@@ -231,13 +225,14 @@ document.addEventListener('DOMContentLoaded', function() {
         deltaTime = currentTime - lastTime;
         lastTime = currentTime;
         
-        if (isPaused) {
+        // Если не в режиме случайного движения, не обновляем кресты
+        if (!isRandom) {
+            redraw(parseFloat(lengthInput.value), parseFloat(thicknessInput.value), parseInt(spacingInput.value));
             return;
         }
         
-        if (isRandom) {
-            updateRandomWalker();
-        }
+        // Обновляем случайное движение
+        updateRandomWalker();
         
         // Применяем силы к крестам
         const radius = parseInt(radiusInput.value);
@@ -336,10 +331,13 @@ document.addEventListener('DOMContentLoaded', function() {
         let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${canvas.width} ${canvas.height}" width="${canvas.width}" height="${canvas.height}">`;
         svg += `<rect width="100%" height="100%" fill="black"/>`;
         
-        for (let i = 0; i < crosses.length; i++) {
-            const cross = crosses[i];
-            svg += `<line x1="${cross.x - lineLength/2}" y1="${cross.y}" x2="${cross.x + lineLength/2}" y2="${cross.y}" stroke="white" stroke-width="${lineThickness}"/>`;
-            svg += `<line x1="${cross.x}" y1="${cross.y - lineLength/2}" x2="${cross.x}" y2="${cross.y + lineLength/2}" stroke="white" stroke-width="${lineThickness}"/>`;
+        // Используем текущие позиции крестов, включая те, которые были перемещены
+        const currentCrosses = crosses;
+        
+        for (let i = 0; i < currentCrosses.length; i++) {
+            const cross = currentCrosses[i];
+            svg += `<line x1="${cross.x - lineLength/2}" y1="${cross.y}" x2="${cross.x + lineLength/2}" y2="${cross.y}" stroke="white" stroke-width="${lineThickness}" stroke-linecap="butt"/>`;
+            svg += `<line x1="${cross.x}" y1="${cross.y - lineLength/2}" x2="${cross.x}" y2="${cross.y + lineLength/2}" stroke="white" stroke-width="${lineThickness}" stroke-linecap="butt"/>`;
         }
         
         svg += `</svg>`;
@@ -347,25 +345,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function downloadSVG(lineLength, lineThickness) {
-        const svg = generateSVG(lineLength, lineThickness);
-        const blob = new Blob([svg], { type: 'image/svg+xml' });
+        const svgString = generateSVG(lineLength, lineThickness);
+        const blob = new Blob([svgString], {type: 'image/svg+xml'});
         const url = URL.createObjectURL(blob);
-        
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'cations.svg';
+        a.download = 'plus-rays.svg';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-    }
-
-    function updatePauseIndicator() {
-        if (isPaused) {
-            pauseIndicator.style.display = 'block';
-        } else {
-            pauseIndicator.style.display = 'none';
-        }
     }
 
     // Инициализация
@@ -374,20 +363,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Запускаем анимацию
     requestAnimationFrame(animate);
-
-    function freezeCrosses() {
-        if (!document.getElementById('cations-content').classList.contains('active')) {
-            return; // Не выполняем, если вкладка не активна
-        }
-        
-        isPaused = !isPaused;
-        updatePauseIndicator();
-        
-        if (!isPaused) {
-            // Если возобновляем анимацию, сбрасываем lastTime
-            lastTime = 0;
-        }
-    }
 
     function calculateAngles(additionalRaysPerSegment) {
         // Базовые углы
@@ -446,7 +421,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Обработчик события для перерисовки
-    window.addEventListener('redraw-cations', function() {
+    window.addEventListener('redraw-plus-rays', function() {
         redraw(parseFloat(lengthInput.value), parseFloat(thicknessInput.value), parseInt(spacingInput.value));
     });
 }); 
