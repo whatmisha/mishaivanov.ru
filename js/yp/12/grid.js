@@ -199,6 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
         isCursorActive = false;
     });
     
+    /* Закомментировано для избежания конфликта с глобальным обработчиком
     // Добавляем обработчик клика для переключения паузы
     canvas.addEventListener('click', function(e) {
         // Проверяем, не клик ли это с модификаторами (для активации точек)
@@ -209,6 +210,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Переключаем паузу
         freezePoints();
     });
+    */
     
     canvas.addEventListener('mousemove', function(e) {
         // Сохраняем предыдущие координаты
@@ -267,6 +269,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    /* Закомментировано для избежания конфликта с глобальным обработчиком в pause-handler.js
     // Добавляем новый обработчик нажатия пробела для паузы
     document.addEventListener('keydown', function spaceKeyHandler(e) {
         // Проверяем, что нажат пробел, не происходит ввод в текстовое поле и активна вкладка Grid
@@ -278,6 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
             freezePoints();
         }
     });
+    */
 
     // Обработка режима случайного движения
     randomMode.addEventListener('click', () => {
