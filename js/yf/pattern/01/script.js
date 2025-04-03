@@ -5,7 +5,7 @@ let params = {
     cornerRadius: 120,        // Радиус скругления
     roundedCaps: false,       // Скругленные окончания
     showLabels: true,         // Отображение подписей модульной сетки
-    duplicateLayers: 1,       // Количество слоев дубликатов
+    duplicateLayers: 0,       // Количество слоев дубликатов
     scaleDown: 0,             // Уменьшение масштаба (0 = 1:1, 1 = 1:2, 2 = 1:4, 3 = 1:8, ...)
     tessellationMode: true,   // Режим теселяции (true - гексагональная сетка, false - по осям)
     showGrid: true            // Отображение модульной сетки
