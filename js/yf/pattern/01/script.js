@@ -7,7 +7,8 @@ let params = {
     showLabels: true,         // Отображение подписей модульной сетки
     duplicateLayers: 1,       // Количество слоев дубликатов
     scaleDown: 0,             // Уменьшение масштаба (0 = 1:1, 1 = 1:2, 2 = 1:4, 3 = 1:8, ...)
-    tessellationMode: true   // Режим теселяции (true - гексагональная сетка, false - по осям)
+    tessellationMode: true,   // Режим теселяции (true - гексагональная сетка, false - по осям)
+    showGrid: true            // Отображение модульной сетки
 };
 
 // Получаем канвас и его контекст
@@ -36,6 +37,7 @@ const duplicateLayersValue = document.getElementById('duplicateLayersValue');
 const scaleDownSlider = document.getElementById('scaleDown');
 const scaleDownValue = document.getElementById('scaleDownValue');
 const tessellationModeCheckbox = document.getElementById('tessellationMode');
+const showGridCheckbox = document.getElementById('showGrid');
 const exportSVGButton = document.getElementById('exportSVG');
 
 // Функция инициализации
@@ -51,6 +53,7 @@ function init() {
     updateScaleDownValue();
     roundedCapsCheckbox.checked = params.roundedCaps;
     tessellationModeCheckbox.checked = params.tessellationMode;
+    showGridCheckbox.checked = params.showGrid;
 
     // Масштабирование канваса для правильного отображения на разных устройствах
     resize();
@@ -90,6 +93,11 @@ function init() {
     
     tessellationModeCheckbox.addEventListener('change', function() {
         params.tessellationMode = this.checked;
+        drawPattern();
+    });
+    
+    showGridCheckbox.addEventListener('change', function() {
+        params.showGrid = this.checked;
         drawPattern();
     });
 
@@ -179,11 +187,14 @@ function drawPattern() {
 
 // Функция рисования модульной сетки
 function drawGrid() {
-    ctx.strokeStyle = '#3F3F3F';
-    ctx.lineWidth = 0.5;
+    // Если сетка отключена, не рисуем ее
+    if (!params.showGrid) return;
     
-    // Рисуем круги
     const centerPoint = { x: gridCenterX, y: gridCenterY };
+    
+    // Рисуем концентрические окружности
+    ctx.strokeStyle = '#AAAAAA';
+    ctx.lineWidth = 1;
     
     for (let radius of gridRadii) {
         ctx.beginPath();
@@ -191,10 +202,8 @@ function drawGrid() {
         ctx.stroke();
     }
     
-    // Рисуем линии от центра
-    const angles = [
-        0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330
-    ];
+    // Рисуем линии, исходящие из центра
+    const angles = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
     
     for (let angle of angles) {
         const radian = angle * Math.PI / 180;
@@ -215,6 +224,9 @@ function drawGrid() {
 
 // Функция рисования подписей модульной сетки
 function drawGridLabels() {
+    // Если сетка отключена, не рисуем подписи
+    if (!params.showGrid) return;
+    
     const centerPoint = { x: gridCenterX, y: gridCenterY };
     const outerRadius = 250; // Радиус самой большой окружности
     
@@ -526,7 +538,7 @@ function drawTessellationLayer(layerIndex) {
                 
                 // Проверяем, что точка находится на правильном расстоянии от центра:
                 // - дальше, чем (layerIndex - 1) * moduleDistance (предыдущий слой)
-                // - ближе или равно верхнему пределу расстояния
+                // - ближе или равно расширенному лимиту для высоких слоев
                 // - не совпадает с центром
                 if (distFromCenter > (layerIndex - 1) * moduleDistance && 
                     distFromCenter <= upperDistanceLimit && 
@@ -1092,20 +1104,21 @@ function drawSixthDuplicatePattern() {
 
 // Функция рисования модульной сетки для дубликата (без индексов)
 function drawDuplicateGrid(centerPoint) {
-    ctx.strokeStyle = '#3F3F3F';
-    ctx.lineWidth = 0.5;
+    // Если сетка отключена, не рисуем ее
+    if (!params.showGrid) return;
     
-    // Рисуем круги
+    // Рисуем концентрические окружности
+    ctx.strokeStyle = '#AAAAAA';
+    ctx.lineWidth = 1;
+    
     for (let radius of gridRadii) {
         ctx.beginPath();
         ctx.arc(centerPoint.x, centerPoint.y, radius, 0, 2 * Math.PI);
         ctx.stroke();
     }
     
-    // Рисуем линии от центра
-    const angles = [
-        0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330
-    ];
+    // Рисуем линии, исходящие из центра
+    const angles = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
     
     for (let angle of angles) {
         const radian = angle * Math.PI / 180;
@@ -1153,6 +1166,9 @@ function createRoundedAnglePath(points, radius) {
 
 // Функция экспорта в SVG
 function exportToSVG() {
+    // Получаем масштаб для SVG
+    const currentScale = 1 / getScaleFactor();
+    
     // Создаем SVG элемент
     const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svgElement.setAttribute('width', canvas.width);
@@ -1168,18 +1184,19 @@ function exportToSVG() {
     
     style.textContent = `
         .st0 {
+            fill: none;
             stroke: #fff;
             stroke-width: ${params.lineThickness}px;
-            fill: none;
             stroke-miterlimit: 10;
             stroke-linecap: ${lineCap};
             stroke-linejoin: ${lineJoin};
         }
         .st1 {
+            fill: none;
             stroke: #3f3f3f;
             stroke-width: .5px;
-            fill: none;
             stroke-miterlimit: 10;
+            ${!params.showGrid ? 'display: none;' : ''}
         }
         .label {
             font-family: Arial;
@@ -1203,111 +1220,43 @@ function exportToSVG() {
     // Применяем трансформацию
     mainContainer.setAttribute('transform', `translate(${offsetX * scale}, ${offsetY * scale}) scale(${scale})`);
     
-    // Создаем группу для модульной сетки
-    const gridGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    
-    // Добавляем круги
-    const centerPoint = { x: gridCenterX, y: gridCenterY };
-    
-    for (let radius of gridRadii) {
-        const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        circle.setAttribute('class', 'st1');
-        circle.setAttribute('cx', centerPoint.x);
-        circle.setAttribute('cy', centerPoint.y);
-        circle.setAttribute('r', radius);
-        gridGroup.appendChild(circle);
-    }
-    
-    // Добавляем линии от центра
-    const angles = [
-        0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330
-    ];
-    
-    for (let angle of angles) {
-        const radian = angle * Math.PI / 180;
-        const endX = centerPoint.x + Math.cos(radian) * 250;
-        const endY = centerPoint.y + Math.sin(radian) * 250;
-        
-        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('class', 'st1');
-        line.setAttribute('x1', centerPoint.x);
-        line.setAttribute('y1', centerPoint.y);
-        line.setAttribute('x2', endX);
-        line.setAttribute('y2', endY);
-        gridGroup.appendChild(line);
-    }
-    
-    // Добавляем подписи точек пересечения по принципу циферблата часов
-    if (params.showLabels) {
-        const outerRadius = 250; // Радиус самой большой окружности
-        
-        // Добавляем подписи цифр по циферблату
-        for (let hour = 1; hour <= 12; hour++) {
-            // Вычисляем угол для текущего часа (в радианах)
-            // На циферблате 3 часа соответствует 0 градусов в системе координат SVG
-            const angle = ((hour * 30) - 90) * Math.PI / 180;
-            
-            // Вычисляем координаты метки
-            const x = centerPoint.x + Math.cos(angle) * outerRadius;
-            const y = centerPoint.y + Math.sin(angle) * outerRadius;
-            
-            // Смещение для лучшего позиционирования
-            const offsetX = Math.cos(angle) * 10;
-            const offsetY = Math.sin(angle) * 10;
-            
-            // Создаем текстовый элемент
-            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            text.setAttribute('class', 'label');
-            text.setAttribute('x', x + offsetX);
-            text.setAttribute('y', y + offsetY);
-            text.textContent = hour.toString();
-            
-            gridGroup.appendChild(text);
-        }
-        
-        // Добавляем буквенные индексы вдоль луча "3 часа" (0 градусов)
-        const angle3Hour = 0; // 0 градусов - направление вправо (восток)
-        
-        // Буквы для маркировки от центра (A) до внешней окружности (K)
-        const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'];
-        
-        // Центр (точка A)
-        const textA = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        textA.setAttribute('class', 'label');
-        textA.setAttribute('x', centerPoint.x);
-        textA.setAttribute('y', centerPoint.y - 10);
-        textA.textContent = 'A';
-        gridGroup.appendChild(textA);
-        
-        // Точки на пересечении с окружностями (от B до K)
-        for (let i = 0; i < gridRadii.length; i++) {
-            const radius = gridRadii[gridRadii.length - 1 - i]; // Идем от меньшей окружности к большей
-            const letterIndex = i + 1; // Индекс буквы: B для первой окружности, C для второй и т.д.
-            
-            if (letterIndex >= letters.length) break;
-            
-            const x = centerPoint.x + Math.cos(angle3Hour) * radius;
-            const y = centerPoint.y + Math.sin(angle3Hour) * radius;
-            
-            // Смещение для лучшего позиционирования
-            const offsetY = -10; // Смещение вверх
-            
-            // Создаем текстовый элемент
-            const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            text.setAttribute('class', 'label');
-            text.setAttribute('x', x);
-            text.setAttribute('y', y + offsetY);
-            text.textContent = letters[letterIndex];
-            
-            gridGroup.appendChild(text);
-        }
-    }
-    
-    mainContainer.appendChild(gridGroup);
-    
-    // Создаем группу для основной графики
+    // Создаем основную группу для графических элементов
     const mainGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     
+    svgElement.appendChild(mainContainer);
+    mainContainer.appendChild(mainGroup);
+    
+    // Добавляем модульную сетку центрального элемента в SVG если сетка включена
+    if (params.showGrid) {
+        // Добавляем круги
+        for (let radius of gridRadii) {
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('class', 'st1');
+            circle.setAttribute('cx', gridCenterX);
+            circle.setAttribute('cy', gridCenterY);
+            circle.setAttribute('r', radius);
+            mainContainer.appendChild(circle);
+        }
+        
+        // Добавляем линии от центра
+        const angles = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
+        
+        for (let angle of angles) {
+            const radian = angle * Math.PI / 180;
+            const endX = gridCenterX + Math.cos(radian) * 250;
+            const endY = gridCenterY + Math.sin(radian) * 250;
+            
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('class', 'st1');
+            line.setAttribute('x1', gridCenterX);
+            line.setAttribute('y1', gridCenterY);
+            line.setAttribute('x2', endX);
+            line.setAttribute('y2', endY);
+            mainContainer.appendChild(line);
+        }
+    }
+    
+    // Экспортируем базовый графический элемент (центральный модуль)
     // Точки исходной линии
     const points = [
         { x: 1135, y: 540.0001153 },
@@ -1341,27 +1290,35 @@ function exportToSVG() {
     path3.setAttribute('d', createRoundedAnglePath(rotatedPoints2, params.cornerRadius));
     mainGroup.appendChild(path3);
     
-    // Добавляем дубликаты в SVG
-    for (let layer = 1; layer <= params.duplicateLayers; layer++) {
-        // Экспортируем дубликаты для текущего слоя
-        exportDuplicateLayer(svgElement, mainGroup, layer);
+    // Экспортируем дублирующие паттерны
+    if (params.duplicateLayers > 0) {
+        // Режим теселляции или стандартный режим
+        if (params.tessellationMode) {
+            for (let i = 0; i <= params.duplicateLayers; i++) {
+                exportTessellationLayer(svgElement, mainGroup, i);
+            }
+        } else {
+            for (let i = 0; i <= params.duplicateLayers; i++) {
+                exportDuplicateLayer(svgElement, mainGroup, i);
+            }
+        }
     }
     
-    mainContainer.appendChild(mainGroup);
-    svgElement.appendChild(mainContainer);
+    // Создаем data URL
+    const svgData = new XMLSerializer().serializeToString(svgElement);
+    const svgBlob = new Blob([svgData], {type: 'image/svg+xml;charset=utf-8'});
+    const svgUrl = URL.createObjectURL(svgBlob);
     
-    // Конвертируем SVG в строку и создаем ссылку для скачивания
-    const svgString = new XMLSerializer().serializeToString(svgElement);
-    const blob = new Blob([svgString], {type: 'image/svg+xml'});
-    const url = URL.createObjectURL(blob);
+    // Создаем временную ссылку для скачивания
+    const downloadLink = document.createElement('a');
+    downloadLink.href = svgUrl;
+    downloadLink.download = 'pattern.svg';
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
     
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'pattern.svg';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // Освобождаем URL
+    URL.revokeObjectURL(svgUrl);
 }
 
 // Функция для экспорта слоя дубликатов в SVG
