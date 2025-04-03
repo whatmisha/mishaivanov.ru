@@ -108,6 +108,15 @@ function init() {
         resize();
         drawPattern();
     });
+
+    // Добавляем обработчик клавиш для экспорта по Cmd+E
+    document.addEventListener('keydown', function(event) {
+        // Проверяем, что нажата Cmd (metaKey) + E (keyCode 69 или key 'e')
+        if ((event.metaKey || event.ctrlKey) && (event.keyCode === 69 || event.key === 'e')) {
+            event.preventDefault(); // Предотвращаем стандартное действие браузера
+            exportToSVG();
+        }
+    });
 }
 
 // Обновление отображения значения толщины
