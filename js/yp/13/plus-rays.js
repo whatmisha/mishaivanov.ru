@@ -1,10 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const canvas = document.getElementById('rayCanvas');
+    const canvas = document.getElementById('plusRaysCanvas');
     const ctx = canvas.getContext('2d');
-    const sizeSlider = document.getElementById('sizeSlider');
-    const sizeInput = document.getElementById('sizeInput');
-    const spacingSlider = document.getElementById('spacingSlider');
-    const spacingInput = document.getElementById('spacingInput');
+    const lengthSlider = document.getElementById('plusRaysLengthSlider');
+    const lengthInput = document.getElementById('plusRaysLengthInput');
+    const thicknessSlider = document.getElementById('plusRaysThicknessSlider');
+    const thicknessInput = document.getElementById('plusRaysThicknessInput');
+    const spacingSlider = document.getElementById('plusRaysSpacingSlider');
+    const spacingInput = document.getElementById('plusRaysSpacingInput');
 
     // Фиксированные размеры canvas
     canvas.width = 1080;
@@ -14,27 +16,26 @@ document.addEventListener('DOMContentLoaded', function() {
     const centerY = canvas.height / 2;
     const rayLength = Math.min(canvas.width, canvas.height) * 0.45;
 
-    // В начале файла, где определяются переменные
-    const raysSlider = document.getElementById('raysSlider');
-    const raysInput = document.getElementById('raysInput');
+    // Определяем переменные
+    const raysSlider = document.getElementById('plusRaysRaysSlider');
+    const raysInput = document.getElementById('plusRaysRaysInput');
     const baseAngles = [90, 100, 115, 140, 175, 220, 270, 325, 25];
     let angles = [...baseAngles];
 
     // Gravity controls
-    const radiusSlider = document.getElementById('radiusSlider');
-    const radiusInput = document.getElementById('radiusInput');
-    const strengthSlider = document.getElementById('strengthSlider');
-    const strengthInput = document.getElementById('strengthInput');
-    const gravityMode = document.getElementById('gravityMode');
-    const randomMode = document.getElementById('randomMode');
-    const exportSVGButton = document.getElementById('exportSVG');
-    const pauseIndicator = document.getElementById('pauseIndicator');
+    const radiusSlider = document.getElementById('plusRaysRadiusSlider');
+    const radiusInput = document.getElementById('plusRaysRadiusInput');
+    const strengthSlider = document.getElementById('plusRaysStrengthSlider');
+    const strengthInput = document.getElementById('plusRaysStrengthInput');
+    const gravityMode = document.getElementById('plusRaysGravityMode');
+    const randomMode = document.getElementById('plusRaysRandomMode');
+    const exportSVGButton = document.getElementById('plusRaysExportSVG');
+    const pauseIndicator = document.getElementById('plusRaysPauseIndicator');
 
     let mouseX = centerX;
     let mouseY = centerY;
     let isRandom = false;
-    let isPaused = false;
-    let points = [];
+    let crosses = [];
     let lastTime = 0;
     let deltaTime = 0;
 
@@ -42,16 +43,17 @@ document.addEventListener('DOMContentLoaded', function() {
     function syncInputs(slider, input) {
         slider.addEventListener('input', () => {
             input.value = slider.value;
-            redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
+            redraw(parseFloat(lengthInput.value), parseFloat(thicknessInput.value), parseInt(spacingInput.value));
         });
 
         input.addEventListener('input', () => {
             slider.value = input.value;
-            redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
+            redraw(parseFloat(lengthInput.value), parseFloat(thicknessInput.value), parseInt(spacingInput.value));
         });
     }
 
-    syncInputs(sizeSlider, sizeInput);
+    syncInputs(lengthSlider, lengthInput);
+    syncInputs(thicknessSlider, thicknessInput);
     syncInputs(spacingSlider, spacingInput);
     syncInputs(raysSlider, raysInput);
     syncInputs(radiusSlider, radiusInput);
@@ -59,10 +61,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Обработка событий мыши
     canvas.addEventListener('mousemove', (e) => {
-        if (!document.getElementById('dotted-rays-content').classList.contains('active')) {
-            return; // Не выполняем, если вкладка не активна
-        }
-        
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
@@ -71,16 +69,12 @@ document.addEventListener('DOMContentLoaded', function() {
         mouseY = (e.clientY - rect.top) * scaleY;
     });
 
-    // Обработка клика для заморозки точек
-    canvas.addEventListener('click', freezePoints);
-
-    // Обработка пробела для заморозки точек
+    // Обработка клавиши 'e' для экспорта SVG
     document.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' && document.getElementById('dotted-rays-content').classList.contains('active')) {
-            freezePoints();
-        } else if (e.key === 'e' && (e.metaKey || e.ctrlKey) && document.getElementById('dotted-rays-content').classList.contains('active')) {
+        if (e.key === 'e' && (e.metaKey || e.ctrlKey) && 
+            document.getElementById('plus-rays-content').classList.contains('active')) {
             e.preventDefault();
-            downloadSVG(parseInt(sizeInput.value));
+            downloadSVG(parseFloat(lengthInput.value), parseFloat(thicknessInput.value));
         }
     });
 
@@ -92,26 +86,28 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Обработка экспорта SVG
     exportSVGButton.addEventListener('click', () => {
-        downloadSVG(parseInt(sizeInput.value));
+        // Вызываем событие для экспорта SVG, которое будет обработано в script.js
+        const event = new Event('plus-rays-export-svg');
+        window.dispatchEvent(event);
     });
 
     // Обработка изменения количества лучей
     raysSlider.addEventListener('input', () => {
         raysInput.value = raysSlider.value;
         angles = calculateAngles(parseInt(raysSlider.value));
-        redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
+        redraw(parseFloat(lengthInput.value), parseFloat(thicknessInput.value), parseInt(spacingInput.value));
     });
 
     raysInput.addEventListener('input', () => {
         raysSlider.value = raysInput.value;
         angles = calculateAngles(parseInt(raysInput.value));
-        redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
+        redraw(parseFloat(lengthInput.value), parseFloat(thicknessInput.value), parseInt(spacingInput.value));
     });
 
-    function checkActivePoints() {
-        // Проверяем, есть ли активные точки
-        for (let i = 0; i < points.length; i++) {
-            if (points[i].active) {
+    function checkActiveCrosses() {
+        // Проверяем, есть ли активные кресты
+        for (let i = 0; i < crosses.length; i++) {
+            if (crosses[i].active) {
                 return true;
             }
         }
@@ -119,18 +115,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function checkControlsState() {
-        const hasActivePoints = checkActivePoints();
+        const hasActiveCrosses = checkActiveCrosses();
         
-        // Если есть активные точки, деактивируем контролы
-        sizeSlider.disabled = hasActivePoints;
-        sizeInput.disabled = hasActivePoints;
-        spacingSlider.disabled = hasActivePoints;
-        spacingInput.disabled = hasActivePoints;
-        raysSlider.disabled = hasActivePoints;
-        raysInput.disabled = hasActivePoints;
+        // Если есть активные кресты, деактивируем контролы
+        lengthSlider.disabled = hasActiveCrosses;
+        lengthInput.disabled = hasActiveCrosses;
+        thicknessSlider.disabled = hasActiveCrosses;
+        thicknessInput.disabled = hasActiveCrosses;
+        spacingSlider.disabled = hasActiveCrosses;
+        spacingInput.disabled = hasActiveCrosses;
+        raysSlider.disabled = hasActiveCrosses;
+        raysInput.disabled = hasActiveCrosses;
     }
 
-    class Point {
+    class Cross {
         constructor(x, y) {
             this.x = x;
             this.y = y;
@@ -152,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
             this.x += this.vx;
             this.y += this.vy;
             
-            // Возвращаем точку к исходной позиции
+            // Возвращаем крест к исходной позиции
             const dx = this.originalX - this.x;
             const dy = this.originalY - this.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
@@ -161,7 +159,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 this.vx += dx * 0.01;
                 this.vy += dy * 0.01;
             } else {
-                // Если точка вернулась к исходной позиции, останавливаем её
+                // Если крест вернулся к исходной позиции, останавливаем его
                 if (Math.abs(this.vx) < 0.1 && Math.abs(this.vy) < 0.1) {
                     this.x = this.originalX;
                     this.y = this.originalY;
@@ -177,6 +175,24 @@ document.addEventListener('DOMContentLoaded', function() {
             
             this.vx += Math.cos(angle) * force;
             this.vy += Math.sin(angle) * force;
+        }
+
+        draw(lineLength, lineThickness) {
+            ctx.lineWidth = lineThickness;
+            ctx.strokeStyle = 'white';
+            ctx.lineCap = 'butt';
+            
+            // Горизонтальная линия
+            ctx.beginPath();
+            ctx.moveTo(this.x - lineLength / 2, this.y);
+            ctx.lineTo(this.x + lineLength / 2, this.y);
+            ctx.stroke();
+            
+            // Вертикальная линия
+            ctx.beginPath();
+            ctx.moveTo(this.x, this.y - lineLength / 2);
+            ctx.lineTo(this.x, this.y + lineLength / 2);
+            ctx.stroke();
         }
     }
 
@@ -197,7 +213,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function animate(currentTime) {
         requestAnimationFrame(animate);
         
-        if (!document.getElementById('dotted-rays-content').classList.contains('active')) {
+        if (!document.getElementById('plus-rays-content').classList.contains('active')) {
             return; // Не анимируем, если вкладка не активна
         }
         
@@ -209,29 +225,30 @@ document.addEventListener('DOMContentLoaded', function() {
         deltaTime = currentTime - lastTime;
         lastTime = currentTime;
         
-        if (isPaused) {
+        // Если не в режиме случайного движения, не обновляем кресты
+        if (!isRandom) {
+            redraw(parseFloat(lengthInput.value), parseFloat(thicknessInput.value), parseInt(spacingInput.value));
             return;
         }
         
-        if (isRandom) {
-            updateRandomWalker();
-        }
+        // Обновляем случайное движение
+        updateRandomWalker();
         
-        // Применяем силы к точкам
+        // Применяем силы к крестам
         const radius = parseInt(radiusInput.value);
         const strength = parseInt(strengthInput.value) * 0.01;
         const isRepel = gravityMode.checked;
         
-        for (let i = 0; i < points.length; i++) {
-            const point = points[i];
+        for (let i = 0; i < crosses.length; i++) {
+            const cross = crosses[i];
             
-            // Расстояние от точки до курсора
-            const dx = mouseX - point.x;
-            const dy = mouseY - point.y;
+            // Расстояние от креста до курсора
+            const dx = mouseX - cross.x;
+            const dy = mouseY - cross.y;
             const distance = Math.sqrt(dx * dx + dy * dy);
             
             if (distance < radius) {
-                // Угол между точкой и курсором
+                // Угол между крестом и курсором
                 const angle = Math.atan2(dy, dx);
                 
                 // Сила зависит от расстояния (ближе = сильнее)
@@ -239,62 +256,61 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Применяем силу (притяжение или отталкивание)
                 if (isRepel) {
-                    point.applyForce(angle + Math.PI, force);
+                    cross.applyForce(angle + Math.PI, force);
                 } else {
-                    point.applyForce(angle, force);
+                    cross.applyForce(angle, force);
                 }
                 
-                // Активируем точку, если она еще не активна
-                if (!point.active) {
-                    point.active = true;
+                // Активируем крест, если он еще не активен
+                if (!cross.active) {
+                    cross.active = true;
                     checkControlsState();
                 }
             }
             
-            // Обновляем позицию точки
-            point.update();
+            // Обновляем позицию креста
+            cross.update();
         }
         
         // Перерисовываем сцену
-        redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
+        redraw(parseFloat(lengthInput.value), parseFloat(thicknessInput.value), parseInt(spacingInput.value));
     }
 
-    function redraw(circleDiameter, spacing) {
+    function redraw(lineLength, lineThickness, spacing) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Если есть активные точки, рисуем их в текущих позициях
-        if (points.length > 0 && checkActivePoints()) {
-            for (let i = 0; i < points.length; i++) {
-                const point = points[i];
-                
-                ctx.beginPath();
-                ctx.arc(point.x, point.y, circleDiameter / 2, 0, Math.PI * 2);
-                ctx.fillStyle = 'white';
-                ctx.fill();
+        // Если есть активные кресты, рисуем их в текущих позициях
+        if (crosses.length > 0 && checkActiveCrosses()) {
+            for (let i = 0; i < crosses.length; i++) {
+                const cross = crosses[i];
+                cross.draw(lineLength, lineThickness);
             }
         } else {
-            // Иначе создаем новые точки и рисуем их
-            points = [];
+            // Иначе создаем новые кресты и рисуем их
+            crosses = [];
             
             for (let i = 0; i < angles.length; i++) {
                 const angle = angles[i] * (Math.PI / 180);
                 const endX = centerX + Math.cos(angle) * rayLength;
                 const endY = centerY + Math.sin(angle) * rayLength;
                 
-                drawDottedLine(centerX, centerY, endX, endY, circleDiameter / 2, spacing, i);
+                drawCrossesLine(centerX, centerY, endX, endY, lineLength, lineThickness, spacing, i);
             }
         }
     }
 
-    function drawDottedLine(startX, startY, endX, endY, circleRadius, spacing, lineIndex) {
+    function drawCrossesLine(startX, startY, endX, endY, lineLength, lineThickness, spacing, lineIndex) {
         const dx = endX - startX;
         const dy = endY - startY;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        // Количество точек на линии
-        const count = Math.max(1, Math.floor(distance / spacing));
+        // Гарантируем минимальное безопасное значение для расстояния между крестами
+        spacing = Math.max(4, spacing);
         
-        // Шаг между точками
+        // Количество крестов на линии с ограничением максимального количества
+        const count = Math.min(500, Math.max(1, Math.floor(distance / spacing)));
+        
+        // Шаг между крестами
         const stepX = dx / count;
         const stepY = dy / count;
         
@@ -302,73 +318,51 @@ document.addEventListener('DOMContentLoaded', function() {
             const x = startX + stepX * i;
             const y = startY + stepY * i;
             
-            // Создаем точку
-            const point = new Point(x, y);
-            points.push(point);
+            // Создаем крест
+            const cross = new Cross(x, y);
+            crosses.push(cross);
             
-            // Рисуем круг
-            ctx.beginPath();
-            ctx.arc(x, y, circleRadius, 0, Math.PI * 2);
-            ctx.fillStyle = 'white';
-            ctx.fill();
+            // Рисуем крест
+            cross.draw(lineLength, lineThickness);
         }
     }
 
-    function generateSVG(circleRadius) {
+    function generateSVG(lineLength, lineThickness) {
         let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${canvas.width} ${canvas.height}" width="${canvas.width}" height="${canvas.height}">`;
         svg += `<rect width="100%" height="100%" fill="black"/>`;
         
-        for (let i = 0; i < points.length; i++) {
-            const point = points[i];
-            svg += `<circle cx="${point.x}" cy="${point.y}" r="${circleRadius}" fill="white"/>`;
+        // Используем текущие позиции крестов, включая те, которые были перемещены
+        const currentCrosses = crosses;
+        
+        for (let i = 0; i < currentCrosses.length; i++) {
+            const cross = currentCrosses[i];
+            svg += `<line x1="${cross.x - lineLength/2}" y1="${cross.y}" x2="${cross.x + lineLength/2}" y2="${cross.y}" stroke="white" stroke-width="${lineThickness}" stroke-linecap="butt"/>`;
+            svg += `<line x1="${cross.x}" y1="${cross.y - lineLength/2}" x2="${cross.x}" y2="${cross.y + lineLength/2}" stroke="white" stroke-width="${lineThickness}" stroke-linecap="butt"/>`;
         }
         
         svg += `</svg>`;
         return svg;
     }
 
-    function downloadSVG(circleRadius) {
-        const svg = generateSVG(circleRadius);
-        const blob = new Blob([svg], { type: 'image/svg+xml' });
+    function downloadSVG(lineLength, lineThickness) {
+        const svgString = generateSVG(lineLength, lineThickness);
+        const blob = new Blob([svgString], {type: 'image/svg+xml'});
         const url = URL.createObjectURL(blob);
-        
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'dotted-rays.svg';
+        a.download = 'plus-rays.svg';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
 
-    function updatePauseIndicator() {
-        if (isPaused) {
-            pauseIndicator.style.display = 'block';
-        } else {
-            pauseIndicator.style.display = 'none';
-        }
-    }
-
     // Инициализация
     angles = calculateAngles(parseInt(raysInput.value));
-    redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
+    redraw(parseFloat(lengthInput.value), parseFloat(thicknessInput.value), parseInt(spacingInput.value));
     
     // Запускаем анимацию
     requestAnimationFrame(animate);
-    
-    function freezePoints() {
-        if (!document.getElementById('dotted-rays-content').classList.contains('active')) {
-            return; // Не выполняем, если вкладка не активна
-        }
-        
-        isPaused = !isPaused;
-        updatePauseIndicator();
-        
-        if (!isPaused) {
-            // Если возобновляем анимацию, сбрасываем lastTime
-            lastTime = 0;
-        }
-    }
 
     function calculateAngles(additionalRaysPerSegment) {
         // Базовые углы
@@ -427,7 +421,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Обработчик события для перерисовки
-    window.addEventListener('redraw-dotted-rays', function() {
-        redraw(parseInt(sizeInput.value), parseInt(spacingInput.value));
+    window.addEventListener('redraw-plus-rays', function() {
+        redraw(parseFloat(lengthInput.value), parseFloat(thicknessInput.value), parseInt(spacingInput.value));
     });
 }); 

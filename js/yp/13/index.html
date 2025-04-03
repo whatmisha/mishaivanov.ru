@@ -15,12 +15,12 @@
 
     <!-- Tabs navigation -->
     <div class="desktop-content tabs-container">
-        <div class="tab active" data-tab="dotted-rays">Dotted Rays Logo</div>
-        <div class="tab" data-tab="cations">Cations</div>
-        <div class="tab" data-tab="grid">Grid</div>
+        <div class="tab active" data-tab="dotted-rays">Dotted Rays</div>
+        <div class="tab" data-tab="plus-rays">Plus Rays</div>
+        <div class="tab" data-tab="grid">Dotted Grid</div>
     </div>
 
-    <!-- Dotted Rays Logo tab content -->
+    <!-- Dotted Rays tab content -->
     <div id="dotted-rays-content" class="tab-content active">
         <!-- Desktop content -->
         <div class="desktop-content controls">
@@ -53,11 +53,11 @@
                 <input type="number" id="radiusInput" value="50" min="50" max="400" step="10" class="number-input">
             </label>
             <br>
-            <label>
-                Cursor Force:
-                <input type="range" id="strengthSlider" min="1" max="100" value="1" step="1">
+            <div class="control-group">
+                <label>Сила воздействия:</label>
+                <input type="range" id="strengthSlider" value="1" min="1" max="100" step="1" class="slider">
                 <input type="number" id="strengthInput" value="1" min="1" max="100" step="1" class="number-input">
-            </label>
+            </div>
             <br>
             <div class="control-row">
                 <label class="control-row">
@@ -69,92 +69,74 @@
                 <button id="randomMode">Random</button>
             </div>
         </div>
-        <div class="desktop-content bottom-hint">
-            Press space or click into artboard to freeze graphics
-        </div>
-        <div id="pauseIndicator" class="desktop-content">
-            <div class="pause-bars">
-                <div class="pause-bar"></div>
-                <div class="pause-bar"></div>
-            </div>
-        </div>
         <div class="container desktop-content">
             <canvas id="rayCanvas"></canvas>
         </div>
     </div>
 
-    <!-- Cations tab content -->
-    <div id="cations-content" class="tab-content">
-        <!-- Controls for Cations -->
+    <!-- Plus Rays tab content -->
+    <div id="plus-rays-content" class="tab-content">
+        <!-- Controls for Plus Rays -->
         <div class="desktop-content controls">
             <div>
                 <label>Additional Rays:</label>
-                <input type="range" id="cationsRaysSlider" min="0" max="8" value="0" step="1">
-                <input type="number" id="cationsRaysInput" value="0" min="0" max="8">
+                <input type="range" id="plusRaysRaysSlider" min="0" max="8" value="0" step="1">
+                <input type="number" id="plusRaysRaysInput" value="0" min="0" max="8">
             </div>
             <label>
                 Line Length:
-                <input type="range" id="cationsLengthSlider" min="4" max="400" value="12" step="2">
-                <input type="number" id="cationsLengthInput" value="12" min="4" max="400" step="2" class="number-input">
+                <input type="range" id="plusRaysLengthSlider" min="4" max="400" value="12" step="2">
+                <input type="number" id="plusRaysLengthInput" value="12" min="4" max="400" step="2" class="number-input">
             </label>
             <br>
             <label>
                 Line Thickness:
-                <input type="range" id="cationsThicknessSlider" min="1" value="1" step="0.5">
-                <input type="number" id="cationsThicknessInput" value="1" min="1" step="0.5" class="number-input">
+                <input type="range" id="plusRaysThicknessSlider" min="1" value="1" step="0.5">
+                <input type="number" id="plusRaysThicknessInput" value="1" min="1" step="0.5" class="number-input">
             </label>
             <br>
             <label>
                 Distance Between Crosses:
-                <input type="range" id="cationsSpacingSlider" min="4" max="360" value="24" step="2">
-                <input type="number" id="cationsSpacingInput" value="24" min="4" max="360" step="2" class="number-input">
+                <input type="range" id="plusRaysSpacingSlider" min="4" max="360" value="24" step="2">
+                <input type="number" id="plusRaysSpacingInput" value="24" min="4" max="360" step="2" class="number-input">
             </label>
             <br>
             <div class="control-row">
-                <button id="cationsExportSVG" class="export-button">Export SVG</button>
+                <button id="plusRaysExportSVG" class="export-button">Export SVG</button>
                 <span class="keyboard-hint">⌘ + E</span>
             </div>
         </div>
         <div class="desktop-content controls gravity-controls">
             <label>
                 Cursor Radius:
-                <input type="range" id="cationsRadiusSlider" min="50" max="400" value="50" step="10">
-                <input type="number" id="cationsRadiusInput" value="50" min="50" max="400" step="10" class="number-input">
+                <input type="range" id="plusRaysRadiusSlider" min="50" max="400" value="50" step="10">
+                <input type="number" id="plusRaysRadiusInput" value="50" min="50" max="400" step="10" class="number-input">
             </label>
             <br>
-            <label>
-                Cursor Force:
-                <input type="range" id="cationsStrengthSlider" min="1" max="100" value="1" step="1">
-                <input type="number" id="cationsStrengthInput" value="1" min="1" max="100" step="1" class="number-input">
-            </label>
+            <div class="control-group">
+                <label>Сила воздействия:</label>
+                <input type="range" id="plusRaysStrengthSlider" value="1" min="1" max="100" step="1" class="slider">
+                <input type="number" id="plusRaysStrengthInput" value="1" min="1" max="100" step="1" class="number-input">
+            </div>
             <br>
             <div class="control-row">
                 <label class="control-row">
-                    <input type="checkbox" id="cationsGravityMode" class="repel-checkbox">
+                    <input type="checkbox" id="plusRaysGravityMode" class="repel-checkbox">
                     <span>Repel Mode</span>
                 </label>
             </div>
             <div class="control-row">
-                <button id="cationsRandomMode">Random</button>
-            </div>
-        </div>
-        <div class="desktop-content bottom-hint">
-            Press space or click into artboard to freeze graphics
-        </div>
-        <div id="cationsPauseIndicator" class="desktop-content pause-indicator">
-            <div class="pause-bars">
-                <div class="pause-bar"></div>
-                <div class="pause-bar"></div>
+                <button id="plusRaysRandomMode">Random</button>
             </div>
         </div>
         <div class="container desktop-content">
-            <canvas id="cationsCanvas"></canvas>
+            <canvas id="plusRaysCanvas"></canvas>
         </div>
     </div>
 
-    <!-- Grid tab content -->
+    <!-- Dotted Grid tab content -->
     <div id="grid-content" class="tab-content">
-        <!-- Controls for Grid -->
+        <!-- Controls for Dotted Grid -->
         <div class="desktop-content controls">
             <label>
                 Circle Diameter:
@@ -172,6 +154,9 @@
                 <button id="gridExportSVG" class="export-button">Export SVG</button>
                 <span class="keyboard-hint">⌘ + E</span>
             </div>
+            <div class="control-row">
+                <button id="gridTogglePause">Пауза</button>
+            </div>
         </div>
         <div class="desktop-content controls gravity-controls">
             <label>
@@ -180,11 +165,11 @@
                 <input type="number" id="gridRadiusInput" value="50" min="50" max="400" step="10" class="number-input">
             </label>
             <br>
-            <label>
-                Cursor Force:
-                <input type="range" id="gridStrengthSlider" min="1" max="100" value="1" step="1">
+            <div class="control-group">
+                <label>Сила воздействия:</label>
+                <input type="range" id="gridStrengthSlider" value="1" min="1" max="100" step="1" class="slider">
                 <input type="number" id="gridStrengthInput" value="1" min="1" max="100" step="1" class="number-input">
-            </label>
+            </div>
             <br>
             <div class="control-row">
                 <label class="control-row">
@@ -196,22 +181,23 @@
                 <button id="gridRandomMode">Random</button>
             </div>
         </div>
-        <div class="desktop-content bottom-hint">
-            Press space or click into artboard to freeze graphics
-        </div>
-        <div id="gridPauseIndicator" class="desktop-content pause-indicator">
-            <div class="pause-bars">
-                <div class="pause-bar"></div>
-                <div class="pause-bar"></div>
-            </div>
-        </div>
         <div class="container desktop-content">
             <canvas id="gridCanvas"></canvas>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/opentype.js@latest/dist/opentype.min.js"></script>
-    <script src="script.js"></script>
+    <script src="dotted-rays.js"></script>
+    <script src="plus-rays.js"></script>
     <script src="grid.js"></script>
+    <script src="script.js"></script>
+    <script>
+        // Проверка элементов canvas после загрузки
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('index.html: DOMContentLoaded event');
+            // Проверка элементов canvas
+            console.log('gridCanvas exists?', document.getElementById('gridCanvas') !== null);
+        });
+    </script>
 </body>
 </html> 

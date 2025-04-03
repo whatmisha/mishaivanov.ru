@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор паттерна</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <canvas id="patternCanvas" width="1920" height="1080"></canvas>
+    </div>
+    <div class="controls">
+        <div class="control-group">
+            <label for="lineThickness">Толщина линии:</label>
+            <input type="range" id="lineThickness" min="1" max="100" step="1" value="50">
+            <span id="lineThicknessValue">50px</span>
+        </div>
+        <div class="control-group">
+            <label for="cornerRadius">Скругление угла:</label>
+            <input type="range" id="cornerRadius" min="0" max="100" step="1" value="50">
+            <span id="cornerRadiusValue">50px</span>
+        </div>
+        <div class="control-group">
+            <input type="checkbox" id="roundedCaps">
+            <label for="roundedCaps">Скругленные окончания</label>
+        </div>
+        <button id="exportSVG">Экспорт в SVG</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html> 
