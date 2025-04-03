@@ -493,9 +493,7 @@ function drawTessellationLayer(layerIndex) {
         // мы будем перебирать все возможные точки сетки в квадратной области
         // и проверять, находятся ли они на правильном расстоянии от центра
         
-        // Увеличиваем область поиска для больших слоев, чтобы избежать пробелов
-        // Для слоев > 7 увеличиваем область поиска по вертикали
-        const searchRadius = Math.max(layerIndex, Math.floor(layerIndex * 1.5));
+        const maxCoordsDistance = moduleDistance * layerIndex;
         
         // Шаг сетки по x (гексагональная сетка имеет разные шаги по x и y)
         const xStep = moduleDistance;
@@ -504,10 +502,8 @@ function drawTessellationLayer(layerIndex) {
         const yStep = moduleDistance * Math.sin(60 * Math.PI / 180);
         
         // Перебираем возможные позиции в квадратной области
-        // Расширяем область поиска по вертикали для больших слоев
-        for (let xi = -searchRadius; xi <= searchRadius; xi++) {
-            // Расширенный поиск по вертикали для заполнения холста
-            for (let yi = -Math.ceil(searchRadius * 1.15); yi <= Math.ceil(searchRadius * 1.15); yi++) {
+        for (let xi = -layerIndex; xi <= layerIndex; xi++) {
+            for (let yi = -layerIndex; yi <= layerIndex; yi++) {
                 // Смещение четных строк вправо (для гексагональной сетки)
                 const rowOffset = (yi % 2 === 0) ? 0 : moduleDistance / 2;
                 
@@ -518,19 +514,18 @@ function drawTessellationLayer(layerIndex) {
                 // Вычисляем расстояние от центра сетки до этой точки
                 const distFromCenter = Math.sqrt(Math.pow(x - gridCenterX, 2) + Math.pow(y - gridCenterY, 2));
                 
-                // Проверяем критерии по расстоянию
-                // Для более высоких слоев немного ослабляем верхнюю границу
-                const upperDistanceLimit = layerIndex <= 7 ? 
-                    layerIndex * moduleDistance : 
-                    layerIndex * moduleDistance * 1.1;
-                
                 // Проверяем, что точка находится на правильном расстоянии от центра:
                 // - дальше, чем (layerIndex - 1) * moduleDistance (предыдущий слой)
-                // - ближе или равно верхнему пределу расстояния
+                // - ближе или равно layerIndex * moduleDistance (текущий слой)
                 // - не совпадает с центром
                 if (distFromCenter > (layerIndex - 1) * moduleDistance && 
-                    distFromCenter <= upperDistanceLimit && 
+                    distFromCenter <= layerIndex * moduleDistance && 
                     distFromCenter > 0) {
+                    
+                    // Добавляем дополнительную проверку, чтобы убедиться, что мы размещаем
+                    // модули в точках гексагональной сетки
+                    // Для каждой точки проверяем, что она находится на правильном расстоянии
+                    // от своих соседей
                     
                     // Если это первая точка в массиве или точка соответствует гексагональной сетке
                     if (coordinates.length === 0 || isValidHexGridPoint(x, y, coordinates)) {
@@ -1603,9 +1598,7 @@ function exportTessellationLayer(svgElement, mainGroup, layerIndex) {
         // мы будем перебирать все возможные точки сетки в квадратной области
         // и проверять, находятся ли они на правильном расстоянии от центра
         
-        // Увеличиваем область поиска для больших слоев, чтобы избежать пробелов
-        // Для слоев > 7 увеличиваем область поиска по вертикали
-        const searchRadius = Math.max(layerIndex, Math.floor(layerIndex * 1.5));
+        const maxCoordsDistance = moduleDistance * layerIndex;
         
         // Шаг сетки по x (гексагональная сетка имеет разные шаги по x и y)
         const xStep = moduleDistance;
@@ -1614,10 +1607,8 @@ function exportTessellationLayer(svgElement, mainGroup, layerIndex) {
         const yStep = moduleDistance * Math.sin(60 * Math.PI / 180);
         
         // Перебираем возможные позиции в квадратной области
-        // Расширяем область поиска по вертикали для больших слоев
-        for (let xi = -searchRadius; xi <= searchRadius; xi++) {
-            // Расширенный поиск по вертикали для заполнения холста
-            for (let yi = -Math.ceil(searchRadius * 1.15); yi <= Math.ceil(searchRadius * 1.15); yi++) {
+        for (let xi = -layerIndex; xi <= layerIndex; xi++) {
+            for (let yi = -layerIndex; yi <= layerIndex; yi++) {
                 // Смещение четных строк вправо (для гексагональной сетки)
                 const rowOffset = (yi % 2 === 0) ? 0 : moduleDistance / 2;
                 
@@ -1628,18 +1619,12 @@ function exportTessellationLayer(svgElement, mainGroup, layerIndex) {
                 // Вычисляем расстояние от центра сетки до этой точки
                 const distFromCenter = Math.sqrt(Math.pow(x - gridCenterX, 2) + Math.pow(y - gridCenterY, 2));
                 
-                // Проверяем критерии по расстоянию
-                // Для более высоких слоев немного ослабляем верхнюю границу
-                const upperDistanceLimit = layerIndex <= 7 ? 
-                    layerIndex * moduleDistance : 
-                    layerIndex * moduleDistance * 1.1;
-                
                 // Проверяем, что точка находится на правильном расстоянии от центра:
                 // - дальше, чем (layerIndex - 1) * moduleDistance (предыдущий слой)
-                // - ближе или равно расширенному лимиту для высоких слоев
+                // - ближе или равно layerIndex * moduleDistance (текущий слой)
                 // - не совпадает с центром
                 if (distFromCenter > (layerIndex - 1) * moduleDistance && 
-                    distFromCenter <= upperDistanceLimit && 
+                    distFromCenter <= layerIndex * moduleDistance && 
                     distFromCenter > 0) {
                     
                     // Если это первая точка в массиве или точка соответствует гексагональной сетке
