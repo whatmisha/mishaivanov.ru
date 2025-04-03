@@ -20,6 +20,7 @@ body {
     justify-content: center;
     align-items: center;
     flex-grow: 1;
+    overflow: hidden;
 }
 
 canvas {
@@ -31,33 +32,41 @@ canvas {
 }
 
 .controls {
-    padding: 20px;
+    padding: 10px;
     background-color: #111111;
     border-top: 1px solid #3F3F3F;
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    justify-content: center;
+    gap: 15px;
     align-items: center;
+    overflow-y: auto;
+    max-height: 40vh; /* Максимальная высота - 40% от высоты окна */
+    min-height: fit-content;
 }
 
 .control-group {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
+    min-width: 200px;
+    flex: 0 1 auto;
 }
 
 label {
     font-size: 14px;
     color: #999;
+    white-space: nowrap;
 }
 
 input[type="range"] {
-    width: 200px;
+    width: 150px;
     background-color: #333;
     -webkit-appearance: none;
     height: 4px;
     border-radius: 2px;
     outline: none;
+    flex: 0 1 auto;
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -88,6 +97,7 @@ input[type="checkbox"] {
     cursor: pointer;
     position: relative;
     outline: none;
+    flex-shrink: 0;
 }
 
 input[type="checkbox"]:checked {
@@ -115,4 +125,46 @@ button {
 
 button:hover {
     background-color: #444;
+}
+
+/* Медиа-запросы для адаптивности */
+@media (max-width: 1200px) {
+    .controls {
+        padding: 8px;
+        gap: 10px;
+    }
+    
+    .control-group {
+        min-width: 180px;
+    }
+    
+    input[type="range"] {
+        width: 120px;
+    }
+}
+
+@media (max-width: 768px) {
+    .controls {
+        padding: 5px;
+        gap: 5px;
+    }
+    
+    .control-group {
+        min-width: 160px;
+        gap: 5px;
+    }
+    
+    input[type="range"] {
+        width: 100px;
+    }
+    
+    label {
+        font-size: 12px;
+    }
+}
+
+@media (max-height: 600px) {
+    .controls {
+        max-height: 50vh; /* Увеличиваем максимальную высоту на маленьких экранах */
+    }
 } 
