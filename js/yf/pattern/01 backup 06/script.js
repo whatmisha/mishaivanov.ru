@@ -5,8 +5,7 @@ let params = {
     cornerRadius: 120,        // Радиус скругления
     roundedCaps: false,       // Скругленные окончания
     showLabels: true,         // Отображение подписей модульной сетки
-    duplicateLayers: 1,       // Количество слоев дубликатов
-    scaleDown: 0              // Уменьшение масштаба (0 = 1:1, 1 = 1:2, 2 = 1:4, 3 = 1:8, ...)
+    duplicateLayers: 1        // Количество слоев дубликатов
 };
 
 // Получаем канвас и его контекст
@@ -32,8 +31,6 @@ const cornerRadiusValue = document.getElementById('cornerRadiusValue');
 const roundedCapsCheckbox = document.getElementById('roundedCaps');
 const duplicateLayersSlider = document.getElementById('duplicateLayers');
 const duplicateLayersValue = document.getElementById('duplicateLayersValue');
-const scaleDownSlider = document.getElementById('scaleDown');
-const scaleDownValue = document.getElementById('scaleDownValue');
 const exportSVGButton = document.getElementById('exportSVG');
 
 // Функция инициализации
@@ -42,11 +39,9 @@ function init() {
     lineThicknessSlider.value = params.lineThickness;
     cornerRadiusSlider.value = params.cornerRadius;
     duplicateLayersSlider.value = params.duplicateLayers;
-    scaleDownSlider.value = params.scaleDown;
     updateThicknessValue();
     updateCornerRadiusValue();
     updateDuplicateLayersValue();
-    updateScaleDownValue();
     roundedCapsCheckbox.checked = params.roundedCaps;
 
     // Масштабирование канваса для правильного отображения на разных устройствах
@@ -71,12 +66,6 @@ function init() {
     duplicateLayersSlider.addEventListener('input', function() {
         params.duplicateLayers = parseInt(this.value);
         updateDuplicateLayersValue();
-        drawPattern();
-    });
-    
-    scaleDownSlider.addEventListener('input', function() {
-        params.scaleDown = parseInt(this.value);
-        updateScaleDownValue();
         drawPattern();
     });
 
@@ -109,17 +98,6 @@ function updateDuplicateLayersValue() {
     duplicateLayersValue.textContent = params.duplicateLayers.toString();
 }
 
-// Обновление отображения значения уменьшения масштаба
-function updateScaleDownValue() {
-    const scale = getScaleFactor();
-    scaleDownValue.textContent = `1:${scale}`;
-}
-
-// Функция получения фактора масштаба
-function getScaleFactor() {
-    return Math.pow(2, params.scaleDown);
-}
-
 // Функция масштабирования канваса
 function resize() {
     // Сохраняем оригинальный размер канваса
@@ -147,26 +125,11 @@ function drawPattern() {
     // Очищаем канвас
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Сохраняем текущий контекст
-    ctx.save();
-    
-    // Примененяем масштаб
-    const scaleFactor = getScaleFactor();
-    ctx.scale(1/scaleFactor, 1/scaleFactor);
-    
-    // Корректируем смещение для центрирования после масштабирования
-    const offsetX = (canvas.width * scaleFactor - canvas.width) / 2;
-    const offsetY = (canvas.height * scaleFactor - canvas.height) / 2;
-    ctx.translate(offsetX, offsetY);
-    
     // Рисуем модульную сетку (серые линии)
     drawGrid();
     
     // Рисуем основную графику (белую линию)
     drawMainGraphic();
-    
-    // Восстанавливаем контекст
-    ctx.restore();
 }
 
 // Функция рисования модульной сетки
@@ -1025,18 +988,6 @@ function exportToSVG() {
     `;
     svgElement.appendChild(style);
     
-    // Создаем группу-контейнер для всего содержимого с учетом масштаба
-    const mainContainer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    
-    // Вычисляем масштаб и координаты трансформации
-    const scaleFactor = getScaleFactor();
-    const scale = 1/scaleFactor;
-    const offsetX = (canvas.width * scaleFactor - canvas.width) / 2;
-    const offsetY = (canvas.height * scaleFactor - canvas.height) / 2;
-    
-    // Применяем трансформацию
-    mainContainer.setAttribute('transform', `translate(${offsetX * scale}, ${offsetY * scale}) scale(${scale})`);
-    
     // Создаем группу для модульной сетки
     const gridGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     
@@ -1137,7 +1088,7 @@ function exportToSVG() {
         }
     }
     
-    mainContainer.appendChild(gridGroup);
+    svgElement.appendChild(gridGroup);
     
     // Создаем группу для основной графики
     const mainGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -1181,8 +1132,7 @@ function exportToSVG() {
         exportDuplicateLayer(svgElement, mainGroup, layer);
     }
     
-    mainContainer.appendChild(mainGroup);
-    svgElement.appendChild(mainContainer);
+    svgElement.appendChild(mainGroup);
     
     // Конвертируем SVG в строку и создаем ссылку для скачивания
     const svgString = new XMLSerializer().serializeToString(svgElement);
