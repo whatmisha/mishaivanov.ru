@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Паттерн из точек</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <canvas id="patternCanvas"></canvas>
+        
+        <div class="controls">
+            <h2>Настройки</h2>
+            
+            <div class="control-group">
+                <label for="dotsCount">Количество точек:</label>
+                <input type="range" id="dotsCount" min="50" max="1000" value="300" step="10">
+                <span id="dotsCountValue">300</span>
+            </div>
+            
+            <div class="control-group">
+                <label for="radius">Радиус окружности:</label>
+                <input type="range" id="radius" min="50" max="400" value="250" step="10">
+                <span id="radiusValue">250</span>
+            </div>
+            
+            <div class="control-group">
+                <label for="dotSize">Размер точек:</label>
+                <input type="range" id="dotSize" min="1" max="10" value="3" step="0.5">
+                <span id="dotSizeValue">3</span>
+            </div>
+            
+            <div class="control-group">
+                <label for="dotColor">Цвет точек:</label>
+                <input type="color" id="dotColor" value="#ffffff">
+            </div>
+            
+            <div class="control-group">
+                <label for="spiralFactor">Фактор спирали:</label>
+                <input type="range" id="spiralFactor" min="0" max="2" value="1" step="0.01">
+                <span id="spiralFactorValue">1</span>
+            </div>
+            
+            <button id="generateBtn">Сбросить настройки</button>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html> 
