@@ -38,6 +38,12 @@ function initTabs() {
             } else if (tabName === 'voronoi' && window.voronoiModule) {
                 window.voronoiModule.resizeCanvas();
                 window.voronoiModule.generatePoints();
+            } else if (tabName === 'rectangle' && window.rectangleModule) {
+                window.rectangleModule.resizeCanvas();
+                window.rectangleModule.generatePoints();
+            } else if (tabName === 'fibonacci-rect' && window.fibonacciRectModule) {
+                window.fibonacciRectModule.resizeCanvas();
+                window.fibonacciRectModule.generatePattern();
             }
         });
     });
@@ -56,5 +62,11 @@ function handleResize() {
     } else if (activeTab === 'voronoi' && window.voronoiModule) {
         window.voronoiModule.resizeCanvas();
         window.voronoiModule.generatePoints();
+    } else if (activeTab === 'rectangle' && window.rectangleModule) {
+        window.rectangleModule.resizeCanvas();
+        window.rectangleModule.generatePoints();
+    } else if (activeTab === 'fibonacci-rect' && window.fibonacciRectModule) {
+        window.fibonacciRectModule.resizeCanvas();
+        window.fibonacciRectModule.generatePattern();
     }
 } 

@@ -14,6 +14,8 @@
         <div class="tabs">
             <button class="tab-button active" data-tab="fibonacci">Fibonacci Dotted Circle</button>
             <button class="tab-button" data-tab="voronoi">Voronoi Distribution Circle</button>
+            <button class="tab-button" data-tab="rectangle">Voronoi Rectangle 2:1</button>
+            <button class="tab-button" data-tab="fibonacci-rect">Fibonacci Rectangle</button>
         </div>
         
         <div class="content-wrapper">
@@ -90,11 +92,87 @@
                     </div>
                 </div>
             </div>
+            
+            <div class="tab-content" id="rectangle-tab">
+                <div class="wrapper">
+                    <canvas id="rectangle-canvas"></canvas>
+                    
+                    <div class="controls">
+                        <h2>Settings</h2>
+                        <div class="control-group">
+                            <label for="rectangle-pointCount">Number of dots: <span id="rectangle-pointCountValue" class="value-display">150</span></label>
+                            <input type="range" id="rectangle-pointCount" min="50" max="400" value="150" step="5">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label for="rectangle-ratio">Width/Height ratio: <span id="rectangle-ratioValue" class="value-display">2</span></label>
+                            <input type="range" id="rectangle-ratio" min="1" max="3" value="2" step="0.1">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label for="rectangle-pointSize">Dot size: <span id="rectangle-pointSizeValue" class="value-display">3</span></label>
+                            <input type="range" id="rectangle-pointSize" min="1" max="10" value="3" step="0.5">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label for="rectangle-pointColor">Dot color:</label>
+                            <input type="color" id="rectangle-pointColor" value="#ffffff">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label for="rectangle-iterations">Optimization iterations: <span id="rectangle-iterationsValue" class="value-display">0</span></label>
+                            <input type="range" id="rectangle-iterations" min="0" max="50" value="0" step="5">
+                        </div>
+                        
+                        <button id="rectangle-regenerateBtn">Generate New Pattern</button>
+                        <button id="rectangle-exportSvgBtn" class="export-btn">Export as SVG</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="fibonacci-rect-tab">
+                <div class="wrapper">
+                    <canvas id="fibonacci-rect-canvas"></canvas>
+                    
+                    <div class="controls">
+                        <h2>Settings</h2>
+                        <div class="control-group">
+                            <label for="fibonacci-rect-pointCount">Number of dots: <span id="fibonacci-rect-pointCountValue" class="value-display">300</span></label>
+                            <input type="range" id="fibonacci-rect-pointCount" min="50" max="1000" value="300" step="10">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label for="fibonacci-rect-ratio">Width/Height ratio: <span id="fibonacci-rect-ratioValue" class="value-display">2.0</span></label>
+                            <input type="range" id="fibonacci-rect-ratio" min="1" max="3" value="2" step="0.1">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label for="fibonacci-rect-pointSize">Dot size: <span id="fibonacci-rect-pointSizeValue" class="value-display">3</span></label>
+                            <input type="range" id="fibonacci-rect-pointSize" min="1" max="10" value="3" step="0.5">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label for="fibonacci-rect-pointColor">Dot color:</label>
+                            <input type="color" id="fibonacci-rect-pointColor" value="#ffffff">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label for="fibonacci-rect-spiralFactor">Spiral factor: <span id="fibonacci-rect-spiralFactorValue" class="value-display">1.00</span></label>
+                            <input type="range" id="fibonacci-rect-spiralFactor" min="0" max="2" value="1" step="0.01">
+                        </div>
+                        
+                        <button id="fibonacci-rect-resetBtn">Reset Settings</button>
+                        <button id="fibonacci-rect-exportSvgBtn" class="export-btn">Export as SVG</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
     <script src="script.js"></script>
     <script src="fibonacci.js"></script>
     <script src="voronoi.js"></script>
+    <script src="rectangle.js"></script>
+    <script src="fibonacci-rectangle.js"></script>
 </body>
 </html> 
