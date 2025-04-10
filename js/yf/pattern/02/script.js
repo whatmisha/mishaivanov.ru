@@ -1,140 +1,190 @@
-// JavaScript код будет здесь 
-
 document.addEventListener('DOMContentLoaded', () => {
-    const canvas = document.getElementById('patternCanvas');
+    // Получаем элементы DOM
+    const canvas = document.getElementById('dotCanvas');
     const ctx = canvas.getContext('2d');
     
     // Получаем элементы управления
-    const dotsCountInput = document.getElementById('dotsCount');
+    const dotCountInput = document.getElementById('dotCount');
     const radiusInput = document.getElementById('radius');
     const dotSizeInput = document.getElementById('dotSize');
     const dotColorInput = document.getElementById('dotColor');
-    const spiralFactorInput = document.getElementById('spiralFactor');
-    const generateBtn = document.getElementById('generateBtn');
+    const angleInput = document.getElementById('angle');
+    const resetButton = document.getElementById('resetButton');
     
-    // Элементы отображения значений
-    const dotsCountValue = document.getElementById('dotsCountValue');
+    // Элементы для отображения значений
+    const dotCountValue = document.getElementById('dotCountValue');
     const radiusValue = document.getElementById('radiusValue');
     const dotSizeValue = document.getElementById('dotSizeValue');
-    const spiralFactorValue = document.getElementById('spiralFactorValue');
+    const angleValue = document.getElementById('angleValue');
     
-    // Исходные значения настроек
+    // Начальные настройки
     const defaultSettings = {
-        dotsCount: 300,
+        dotCount: 300,
         radius: 250,
         dotSize: 3,
-        dotColor: "#ffffff",
-        spiralFactor: 1
+        dotColor: '#ffffff',
+        angle: 0
     };
     
-    // Обновление отображения значений при изменении ползунков
-    dotsCountInput.addEventListener('input', () => {
-        dotsCountValue.textContent = dotsCountInput.value;
-        generatePattern();
-    });
-    
-    radiusInput.addEventListener('input', () => {
-        radiusValue.textContent = radiusInput.value;
-        generatePattern();
-    });
-    
-    dotSizeInput.addEventListener('input', () => {
-        dotSizeValue.textContent = dotSizeInput.value;
-        generatePattern();
-    });
-    
-    spiralFactorInput.addEventListener('input', () => {
-        spiralFactorValue.textContent = spiralFactorInput.value;
-        generatePattern();
-    });
-    
-    // Также обновляем при изменении цвета
-    dotColorInput.addEventListener('input', generatePattern);
-    
-    // Установка размеров канваса
+    // Устанавливаем размер канваса
     function setupCanvas() {
-        // Используем квадратные размеры для канваса, чтобы избежать искажений
-        const containerWidth = window.innerWidth;
-        const size = Math.min(containerWidth - 380, window.innerHeight - 80);
+        // Делаем размер канваса фиксированным с нечетной стороной для гарантии центрального пикселя
+        let size = 801; // Нечетный размер для гарантии центрального пикселя
         
         canvas.width = size;
         canvas.height = size;
-    }
-    
-    // Функция для генерации паттерна
-    function generatePattern() {
-        const dotsCount = parseInt(dotsCountInput.value);
-        const radius = parseInt(radiusInput.value);
-        const dotSize = parseFloat(dotSizeInput.value);
-        const dotColor = dotColorInput.value;
-        const spiralFactor = parseFloat(spiralFactorInput.value);
         
-        // Очистка канваса
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Точно вычисляем центр канваса
-        const centerX = Math.floor(canvas.width / 2);
-        const centerY = Math.floor(canvas.height / 2);
-        
-        // Константа золотого угла в радианах (приблизительно 137.5 градусов)
-        const goldenAngle = Math.PI * (3 - Math.sqrt(5));
-        
-        // Сначала нарисуем центральную точку
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, dotSize, 0, Math.PI * 2);
-        ctx.fillStyle = dotColor;
-        ctx.fill();
-        
-        // Затем рисуем остальные точки
-        for (let i = 1; i < dotsCount; i++) {
-            // Вычисляем угол и расстояние от центра с использованием золотого угла
-            const angle = i * goldenAngle * spiralFactor;
-            
-            // Вычисляем расстояние от центра (нормализовано от 0 до 1)
-            // Равномерное распределение точек по площади
-            const normalizedIndex = i / (dotsCount - 1);
-            const distance = radius * Math.sqrt(normalizedIndex);
-            
-            // Вычисляем координаты точки
-            const x = centerX + Math.cos(angle) * distance;
-            const y = centerY + Math.sin(angle) * distance;
-            
-            // Рисуем точку
-            ctx.beginPath();
-            ctx.arc(x, y, dotSize, 0, Math.PI * 2);
-            ctx.fillStyle = dotColor;
-            ctx.fill();
+        // Проверяем, что радиус не превышает половину размера канваса
+        const maxRadius = Math.floor(size / 2) - 20;
+        if (parseInt(radiusInput.value) > maxRadius) {
+            radiusInput.value = maxRadius;
+            radiusValue.textContent = maxRadius;
         }
     }
     
-    // Функция сброса настроек к исходным значениям
+    // Отдебажная функция для рисования перекрестия в центре
+    function drawCenterCross() {
+        const centerX = Math.floor(canvas.width / 2);
+        const centerY = Math.floor(canvas.height / 2);
+        
+        ctx.beginPath();
+        ctx.moveTo(centerX - 10, centerY);
+        ctx.lineTo(centerX + 10, centerY);
+        ctx.moveTo(centerX, centerY - 10);
+        ctx.lineTo(centerX, centerY + 10);
+        ctx.strokeStyle = 'red';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
+    
+    // Функция для отрисовки точек
+    function drawDots() {
+        // Получаем текущие настройки
+        const dotCount = parseInt(dotCountInput.value);
+        const radius = parseInt(radiusInput.value);
+        const dotSize = parseFloat(dotSizeInput.value);
+        const dotColor = dotColorInput.value;
+        const angle = parseInt(angleInput.value) * (Math.PI / 180); // Переводим градусы в радианы
+        
+        // Очищаем канвас
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Точный центр канваса
+        const centerX = Math.floor(canvas.width / 2);
+        const centerY = Math.floor(canvas.height / 2);
+        
+        // Рисуем опорное перекрестие для дебага
+        // drawCenterCross();
+        
+        // Константа золотого угла (примерно 137.5 градусов в радианах)
+        const goldenAngle = Math.PI * (3 - Math.sqrt(5));
+        
+        // Массив для хранения точек (исключая центральную)
+        const dots = [];
+        
+        // Рассчитываем положение всех точек, кроме центральной
+        for (let i = 1; i < dotCount; i++) {
+            // Расчет для точек
+            const currAngle = i * goldenAngle + angle;
+            
+            // Вычисляем расстояние от центра
+            // Используем квадратный корень для равномерного распределения
+            const dist = radius * Math.sqrt(i / dotCount);
+            
+            const x = centerX + Math.round(Math.cos(currAngle) * dist);
+            const y = centerY + Math.round(Math.sin(currAngle) * dist);
+            
+            dots.push({ x, y, dist });
+        }
+        
+        // Сортируем точки по расстоянию от центра
+        dots.sort((a, b) => a.dist - b.dist);
+        
+        // Берем первые 6 точек для определения положения центральной
+        const closestDots = dots.slice(0, 6);
+        
+        // Находим среднее положение ближайших точек
+        let sumX = 0;
+        let sumY = 0;
+        closestDots.forEach(dot => {
+            sumX += dot.x;
+            sumY += dot.y;
+        });
+        
+        // Рассчитываем "правильную" позицию центральной точки
+        const trueCenterX = Math.round(sumX / closestDots.length);
+        const trueCenterY = Math.round(sumY / closestDots.length);
+        
+        // Рисуем все точки кроме центральной
+        dots.forEach(dot => {
+            ctx.beginPath();
+            ctx.arc(dot.x, dot.y, dotSize, 0, Math.PI * 2);
+            ctx.fillStyle = dotColor;
+            ctx.fill();
+        });
+        
+        // Рисуем центральную точку в "правильной" позиции
+        ctx.beginPath();
+        ctx.arc(trueCenterX, trueCenterY, dotSize, 0, Math.PI * 2);
+        ctx.fillStyle = dotColor;
+        ctx.fill();
+    }
+    
+    // Функция для обновления отображаемых значений
+    function updateDisplayValues() {
+        dotCountValue.textContent = dotCountInput.value;
+        radiusValue.textContent = radiusInput.value;
+        dotSizeValue.textContent = dotSizeInput.value;
+        angleValue.textContent = `${angleInput.value}°`;
+    }
+    
+    // Обработчики событий для ползунков
+    dotCountInput.addEventListener('input', () => {
+        updateDisplayValues();
+        drawDots();
+    });
+    
+    radiusInput.addEventListener('input', () => {
+        updateDisplayValues();
+        drawDots();
+    });
+    
+    dotSizeInput.addEventListener('input', () => {
+        updateDisplayValues();
+        drawDots();
+    });
+    
+    angleInput.addEventListener('input', () => {
+        updateDisplayValues();
+        drawDots();
+    });
+    
+    // Обработчик для изменения цвета
+    dotColorInput.addEventListener('input', drawDots);
+    
+    // Функция сброса настроек
     function resetSettings() {
-        dotsCountInput.value = defaultSettings.dotsCount;
+        dotCountInput.value = defaultSettings.dotCount;
         radiusInput.value = defaultSettings.radius;
         dotSizeInput.value = defaultSettings.dotSize;
         dotColorInput.value = defaultSettings.dotColor;
-        spiralFactorInput.value = defaultSettings.spiralFactor;
+        angleInput.value = defaultSettings.angle;
         
-        // Обновляем отображаемые значения
-        dotsCountValue.textContent = defaultSettings.dotsCount;
-        radiusValue.textContent = defaultSettings.radius;
-        dotSizeValue.textContent = defaultSettings.dotSize;
-        spiralFactorValue.textContent = defaultSettings.spiralFactor;
-        
-        // Обновляем паттерн
-        generatePattern();
+        updateDisplayValues();
+        drawDots();
     }
+    
+    // Обработчик для кнопки сброса
+    resetButton.addEventListener('click', resetSettings);
+    
+    // Обработчик изменения размера окна не меняет размер канваса
+    window.addEventListener('resize', () => {
+        // Не меняем размер канваса для предотвращения проблем с центрированием
+        drawDots();
+    });
     
     // Инициализация
     setupCanvas();
-    generatePattern();
-    
-    // Кнопка теперь сбрасывает настройки
-    generateBtn.addEventListener('click', resetSettings);
-    
-    // Обработчик изменения размера окна
-    window.addEventListener('resize', () => {
-        setupCanvas();
-        generatePattern();
-    });
+    updateDisplayValues();
+    drawDots();
 }); 
