@@ -14,7 +14,7 @@
         <div class="tabs">
             <button class="tab-button active" data-tab="fibonacci">Fibonacci Dotted Circle</button>
             <button class="tab-button" data-tab="voronoi">Voronoi Distribution Circle</button>
-            <button class="tab-button" data-tab="rectangle">Voronoi Rectangle 2:1</button>
+            <button class="tab-button" data-tab="rectangle">Voronoi Rectangle</button>
             <button class="tab-button" data-tab="fibonacci-rect">Fibonacci Rectangle</button>
         </div>
         
@@ -41,17 +41,12 @@
                         </div>
                         
                         <div class="control-group">
-                            <label for="fibonacci-pointColor">Dot color:</label>
-                            <input type="color" id="fibonacci-pointColor" value="#ffffff">
-                        </div>
-                        
-                        <div class="control-group">
                             <label for="fibonacci-spiralFactor">Spiral factor: <span id="fibonacci-spiralFactorValue" class="value-display">1</span></label>
                             <input type="range" id="fibonacci-spiralFactor" min="0" max="2" value="1" step="0.01">
                         </div>
                         
                         <button id="fibonacci-resetBtn">Reset Settings</button>
-                        <button id="fibonacci-exportSvgBtn" class="export-btn">Export as SVG</button>
+                        <button id="fibonacci-exportSvgBtn" class="export-btn">Export as SVG (⌘E)</button>
                     </div>
                 </div>
             </div>
@@ -78,17 +73,12 @@
                         </div>
                         
                         <div class="control-group">
-                            <label for="voronoi-pointColor">Dot color:</label>
-                            <input type="color" id="voronoi-pointColor" value="#ffffff">
-                        </div>
-                        
-                        <div class="control-group">
                             <label for="voronoi-iterations">Optimization iterations: <span id="voronoi-iterationsValue" class="value-display">0</span></label>
-                            <input type="range" id="voronoi-iterations" min="0" max="50" value="0" step="5">
+                            <input type="range" id="voronoi-iterations" min="0" max="50" value="0" step="1">
                         </div>
                         
                         <button id="voronoi-regenerateBtn">Generate New Pattern</button>
-                        <button id="voronoi-exportSvgBtn" class="export-btn">Export as SVG</button>
+                        <button id="voronoi-exportSvgBtn" class="export-btn">Export as SVG (⌘E)</button>
                     </div>
                 </div>
             </div>
@@ -115,17 +105,12 @@
                         </div>
                         
                         <div class="control-group">
-                            <label for="rectangle-pointColor">Dot color:</label>
-                            <input type="color" id="rectangle-pointColor" value="#ffffff">
-                        </div>
-                        
-                        <div class="control-group">
                             <label for="rectangle-iterations">Optimization iterations: <span id="rectangle-iterationsValue" class="value-display">0</span></label>
-                            <input type="range" id="rectangle-iterations" min="0" max="50" value="0" step="5">
+                            <input type="range" id="rectangle-iterations" min="0" max="50" value="0" step="1">
                         </div>
                         
                         <button id="rectangle-regenerateBtn">Generate New Pattern</button>
-                        <button id="rectangle-exportSvgBtn" class="export-btn">Export as SVG</button>
+                        <button id="rectangle-exportSvgBtn" class="export-btn">Export as SVG (⌘E)</button>
                     </div>
                 </div>
             </div>
@@ -152,17 +137,12 @@
                         </div>
                         
                         <div class="control-group">
-                            <label for="fibonacci-rect-pointColor">Dot color:</label>
-                            <input type="color" id="fibonacci-rect-pointColor" value="#ffffff">
-                        </div>
-                        
-                        <div class="control-group">
                             <label for="fibonacci-rect-spiralFactor">Spiral factor: <span id="fibonacci-rect-spiralFactorValue" class="value-display">1.00</span></label>
                             <input type="range" id="fibonacci-rect-spiralFactor" min="0" max="2" value="1" step="0.01">
                         </div>
                         
                         <button id="fibonacci-rect-resetBtn">Reset Settings</button>
-                        <button id="fibonacci-rect-exportSvgBtn" class="export-btn">Export as SVG</button>
+                        <button id="fibonacci-rect-exportSvgBtn" class="export-btn">Export as SVG (⌘E)</button>
                     </div>
                 </div>
             </div>

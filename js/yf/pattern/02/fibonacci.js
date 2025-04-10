@@ -10,7 +10,6 @@ window.fibonacciModule = (function() {
     const pointCountInput = document.getElementById('fibonacci-pointCount');
     const radiusInput = document.getElementById('fibonacci-radius');
     const pointSizeInput = document.getElementById('fibonacci-pointSize');
-    const pointColorInput = document.getElementById('fibonacci-pointColor');
     const spiralFactorInput = document.getElementById('fibonacci-spiralFactor');
     const resetBtn = document.getElementById('fibonacci-resetBtn');
     const exportSvgBtn = document.getElementById('fibonacci-exportSvgBtn');
@@ -26,9 +25,11 @@ window.fibonacciModule = (function() {
         pointCount: 300,
         radius: 250,
         pointSize: 3,
-        pointColor: "#ffffff",
         spiralFactor: 1
     };
+    
+    // Константа для цвета точек
+    const pointColor = "#ffffff";
     
     // Инициализация событий
     function init() {
@@ -52,9 +53,6 @@ window.fibonacciModule = (function() {
             spiralFactorValue.textContent = spiralFactorInput.value;
             generatePattern();
         });
-        
-        // Обновление при изменении цвета точек
-        pointColorInput.addEventListener('input', drawPoints);
         
         // Кнопка сброса настроек
         resetBtn.addEventListener('click', resetSettings);
@@ -131,7 +129,6 @@ window.fibonacciModule = (function() {
     // Отрисовка точек
     function drawPoints() {
         const pointSize = parseFloat(pointSizeInput.value);
-        const pointColor = pointColorInput.value;
         
         // Очистка канваса
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -150,7 +147,6 @@ window.fibonacciModule = (function() {
         pointCountInput.value = defaultSettings.pointCount;
         radiusInput.value = defaultSettings.radius;
         pointSizeInput.value = defaultSettings.pointSize;
-        pointColorInput.value = defaultSettings.pointColor;
         spiralFactorInput.value = defaultSettings.spiralFactor;
         
         // Обновляем отображаемые значения
@@ -167,7 +163,6 @@ window.fibonacciModule = (function() {
     function exportAsSvg() {
         const pointCount = parseInt(pointCountInput.value);
         const pointSize = parseFloat(pointSizeInput.value);
-        const pointColor = pointColorInput.value;
         
         // Определяем размеры SVG
         const width = canvas.width;

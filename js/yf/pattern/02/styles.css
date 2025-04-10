@@ -113,8 +113,8 @@ canvas {
 }
 
 .controls {
-    min-width: 300px;
-    max-width: 350px;
+    width: 350px;
+    min-width: 350px;
     background-color: #111;
     padding: 20px;
     border-radius: 8px;
@@ -174,12 +174,13 @@ button:hover {
 }
 
 .export-btn {
-    background-color: #2a6c35;
+    background-color: #ffffff;
+    color: #000;
     margin-top: 10px;
 }
 
 .export-btn:hover {
-    background-color: #368045;
+    background-color: #e0e0e0;
 }
 
 .value-display {

@@ -13,7 +13,6 @@ window.fibonacciRectModule = (function() {
     const ratioValue = document.getElementById('fibonacci-rect-ratioValue');
     const pointSizeInput = document.getElementById('fibonacci-rect-pointSize');
     const pointSizeValue = document.getElementById('fibonacci-rect-pointSizeValue');
-    const pointColorInput = document.getElementById('fibonacci-rect-pointColor');
     const spiralFactorInput = document.getElementById('fibonacci-rect-spiralFactor');
     const spiralFactorValue = document.getElementById('fibonacci-rect-spiralFactorValue');
     const resetBtn = document.getElementById('fibonacci-rect-resetBtn');
@@ -26,7 +25,7 @@ window.fibonacciRectModule = (function() {
     let height = width / ratio;
     let pointCount = parseInt(pointCountInput.value);
     let pointSize = parseFloat(pointSizeInput.value);
-    let pointColor = pointColorInput.value;
+    const pointColor = "#ffffff"; // Фиксированный белый цвет точек
     let spiralFactor = parseFloat(spiralFactorInput.value);
     
     // Исходные значения настроек
@@ -34,7 +33,6 @@ window.fibonacciRectModule = (function() {
         pointCount: 300,
         ratio: 2.0,
         pointSize: 3,
-        pointColor: "#ffffff",
         spiralFactor: 1
     };
     
@@ -63,11 +61,6 @@ window.fibonacciRectModule = (function() {
             drawPoints();
         });
         
-        pointColorInput.addEventListener('input', () => {
-            pointColor = pointColorInput.value;
-            drawPoints();
-        });
-        
         spiralFactorInput.addEventListener('input', () => {
             spiralFactor = parseFloat(spiralFactorInput.value);
             spiralFactorValue.textContent = spiralFactor.toFixed(2);
@@ -86,22 +79,14 @@ window.fibonacciRectModule = (function() {
      * Изменение размера холста
      */
     function resizeCanvas() {
-        const container = canvas.parentElement;
-        const controlsWidth = 300; // Примерная ширина панели управления
-        
-        // Рассчитываем максимальный размер холста
-        const containerWidth = container.clientWidth - controlsWidth - 40;
-        const containerHeight = container.clientHeight - 40;
+        const containerWidth = document.querySelector('.content-wrapper').clientWidth;
+        const maxWidth = containerWidth - 400; // Отступ для панели управления
+        const maxHeight = window.innerHeight - 150;
+        const size = Math.min(maxWidth, maxHeight);
         
         // Определяем размеры холста с учетом соотношения сторон
-        let canvasWidth = Math.min(width, containerWidth);
-        let canvasHeight = canvasWidth / ratio;
-        
-        // Если высота слишком большая, корректируем размеры
-        if (canvasHeight > containerHeight) {
-            canvasHeight = containerHeight;
-            canvasWidth = canvasHeight * ratio;
-        }
+        const canvasWidth = size;
+        const canvasHeight = size / ratio;
         
         // Устанавливаем размеры холста
         canvas.width = canvasWidth;
@@ -209,7 +194,6 @@ window.fibonacciRectModule = (function() {
         pointCountInput.value = defaultSettings.pointCount;
         ratioInput.value = defaultSettings.ratio;
         pointSizeInput.value = defaultSettings.pointSize;
-        pointColorInput.value = defaultSettings.pointColor;
         spiralFactorInput.value = defaultSettings.spiralFactor;
         
         // Обновляем отображаемые значения
@@ -223,7 +207,6 @@ window.fibonacciRectModule = (function() {
         ratio = defaultSettings.ratio;
         height = width / ratio;
         pointSize = defaultSettings.pointSize;
-        pointColor = defaultSettings.pointColor;
         spiralFactor = defaultSettings.spiralFactor;
         
         // Обновляем холст и паттерн

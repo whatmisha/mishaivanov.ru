@@ -14,7 +14,6 @@ window.rectangleModule = (function() {
     const ratioValue = document.getElementById('rectangle-ratioValue');
     const pointSizeInput = document.getElementById('rectangle-pointSize');
     const pointSizeValue = document.getElementById('rectangle-pointSizeValue');
-    const pointColorInput = document.getElementById('rectangle-pointColor');
     const iterationsInput = document.getElementById('rectangle-iterations');
     const iterationsValue = document.getElementById('rectangle-iterationsValue');
     const regenerateBtn = document.getElementById('rectangle-regenerateBtn');
@@ -27,7 +26,7 @@ window.rectangleModule = (function() {
     let height = width / ratio;
     let pointCount = parseInt(pointCountInput.value);
     let pointSize = parseFloat(pointSizeInput.value);
-    let pointColor = pointColorInput.value;
+    const pointColor = "#ffffff"; // Фиксированный белый цвет точек
     let iterations = parseInt(iterationsInput.value);
     
     /**
@@ -55,11 +54,6 @@ window.rectangleModule = (function() {
             drawPoints();
         });
         
-        pointColorInput.addEventListener('input', () => {
-            pointColor = pointColorInput.value;
-            drawPoints();
-        });
-        
         iterationsInput.addEventListener('input', () => {
             iterations = parseInt(iterationsInput.value);
             iterationsValue.textContent = iterations;
@@ -78,22 +72,14 @@ window.rectangleModule = (function() {
      * Изменение размера холста
      */
     function resizeCanvas() {
-        const container = canvas.parentElement;
-        const controlsWidth = 300; // Примерная ширина панели управления
+        const containerWidth = document.querySelector('.content-wrapper').clientWidth;
+        const maxWidth = containerWidth - 400; // Отступ для панели управления
+        const maxHeight = window.innerHeight - 150;
+        const size = Math.min(maxWidth, maxHeight);
         
-        // Рассчитываем максимальный размер холста, чтобы он поместился в контейнер
-        const containerWidth = container.clientWidth - controlsWidth - 40;
-        const containerHeight = container.clientHeight - 40;
-        
-        // Определяем максимальную ширину холста с учетом соотношения сторон
-        let canvasWidth = Math.min(width, containerWidth);
-        let canvasHeight = canvasWidth / ratio;
-        
-        // Если высота слишком большая, корректируем размеры
-        if (canvasHeight > containerHeight) {
-            canvasHeight = containerHeight;
-            canvasWidth = canvasHeight * ratio;
-        }
+        // Определяем размеры холста с учетом соотношения сторон
+        const canvasWidth = size;
+        const canvasHeight = size / ratio;
         
         // Устанавливаем размеры холста
         canvas.width = canvasWidth;

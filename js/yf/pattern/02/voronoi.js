@@ -10,7 +10,6 @@ window.voronoiModule = (function() {
     const pointCountInput = document.getElementById('voronoi-pointCount');
     const radiusInput = document.getElementById('voronoi-radius');
     const pointSizeInput = document.getElementById('voronoi-pointSize');
-    const pointColorInput = document.getElementById('voronoi-pointColor');
     const iterationsInput = document.getElementById('voronoi-iterations');
     const regenerateBtn = document.getElementById('voronoi-regenerateBtn');
     const exportSvgBtn = document.getElementById('voronoi-exportSvgBtn');
@@ -20,6 +19,9 @@ window.voronoiModule = (function() {
     const radiusValue = document.getElementById('voronoi-radiusValue');
     const pointSizeValue = document.getElementById('voronoi-pointSizeValue');
     const iterationsValue = document.getElementById('voronoi-iterationsValue');
+    
+    // Константа для цвета точек
+    const pointColor = "#ffffff";
     
     // Инициализация событий
     function init() {
@@ -43,9 +45,6 @@ window.voronoiModule = (function() {
             iterationsValue.textContent = iterationsInput.value;
             generatePoints();
         });
-        
-        // Обновление при изменении цвета точек
-        pointColorInput.addEventListener('input', drawPoints);
         
         // Кнопка регенерации
         regenerateBtn.addEventListener('click', generatePoints);
@@ -161,7 +160,6 @@ window.voronoiModule = (function() {
     // Отрисовка точек
     function drawPoints() {
         const pointSize = parseFloat(pointSizeInput.value);
-        const pointColor = pointColorInput.value;
         
         // Очистка канваса
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -178,7 +176,6 @@ window.voronoiModule = (function() {
     // Экспорт в SVG
     function exportAsSvg() {
         const pointSize = parseFloat(pointSizeInput.value);
-        const pointColor = pointColorInput.value;
         
         // Определяем размеры SVG
         const width = canvas.width;

@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Первоначальная настройка размеров канвасов
     handleResize();
+    
+    // Инициализация горячих клавиш
+    initHotkeys();
 });
 
 /**
@@ -69,4 +72,32 @@ function handleResize() {
         window.fibonacciRectModule.resizeCanvas();
         window.fibonacciRectModule.generatePattern();
     }
+}
+
+/**
+ * Инициализация горячих клавиш
+ */
+function initHotkeys() {
+    // Обработчик горячей клавиши cmd+e для экспорта в SVG
+    document.addEventListener('keydown', function(event) {
+        // Проверяем, что нажата cmd+e (metaKey для macOS, ctrlKey для Windows)
+        if ((event.metaKey || event.ctrlKey) && event.key === 'e') {
+            // Предотвращаем стандартное поведение браузера
+            event.preventDefault();
+            
+            // Получаем активную вкладку
+            const activeTab = document.querySelector('.tab-button.active').getAttribute('data-tab');
+            
+            // Вызываем соответствующую функцию экспорта в зависимости от активной вкладки
+            if (activeTab === 'fibonacci' && window.fibonacciModule) {
+                window.fibonacciModule.exportAsSvg();
+            } else if (activeTab === 'voronoi' && window.voronoiModule) {
+                window.voronoiModule.exportAsSvg();
+            } else if (activeTab === 'rectangle' && window.rectangleModule) {
+                window.rectangleModule.exportSvg();
+            } else if (activeTab === 'fibonacci-rect' && window.fibonacciRectModule) {
+                window.fibonacciRectModule.exportSvg();
+            }
+        }
+    });
 } 
