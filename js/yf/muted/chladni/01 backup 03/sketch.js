@@ -221,17 +221,26 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   
   // Временно создаем буфер для размытия текста
   let textGraphics = createGraphics(width, height);
-  textGraphics.background(0, 0); // Полностью прозрачный фон
-  textGraphics.fill(255); // Всегда белый текст
+  textGraphics.background(invertedMode ? 255 : 0, 0); // Прозрачный фон
+  textGraphics.fill(invertedMode ? 0 : 255);
   textGraphics.noStroke();
   textGraphics.textFont('Arial Bold'); // Жирный шрифт для текста
   textGraphics.textAlign(CENTER, CENTER);
   textGraphics.textSize(textSizeValue);
   
-  // Создаем размытый текст
-  // Всегда применяем размытие, игнорируя значение textBlurValue = 0
-  let effectiveBlur = max(5, textBlurValue); // Минимальное размытие 5
-  drawBlurredText(textGraphics, customText, width/2, height/2, effectiveBlur);
+  // Создаем размытый текст, если задано размытие
+  if (textBlurValue > 0) {
+    drawBlurredText(textGraphics, customText, width/2, height/2, textBlurValue);
+  } else {
+    // Для текста без размытия добавляем фон для лучшей видимости
+    textGraphics.fill(invertedMode ? 0 : 255, 70);
+    textGraphics.rectMode(CENTER);
+    let textWidth = textGraphics.textWidth(customText);
+    textGraphics.rect(width/2, height/2, textWidth + 60, textSizeValue * 1.8, 25);
+    
+    textGraphics.fill(invertedMode ? 0 : 255);
+    textGraphics.text(customText, width/2, height/2);
+  }
   
   loadPixels();
   
@@ -269,9 +278,8 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
       // Получаем значение альфа-канала текста (0-255)
       let textAlpha = textPixels[txtIndex + 3];
       
-      // Смешиваем значение фигуры с текстом только в режиме интеграции
-      // (но не когда текст отображается поверх)
-      if (!textVisible && textAlpha > 0) {
+      // Смешиваем значение фигуры с текстом
+      if (textAlpha > 0) {
         // Если есть текст в данной точке, влияем на значение фигуры
         // Нормализуем альфа к диапазону 0-1
         let textInfluence = (textAlpha / 255) * textInfluenceFactor;
@@ -314,22 +322,25 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
 
   updatePixels();
   
-  // Отрисовываем текст поверх фигур Хладни
-  image(textGraphics, 0, 0);
+  // Для отладки - рисуем текст поверх всего
+  if (textVisible) {
+    image(textGraphics, 0, 0);
+  }
   
   textGraphics.remove(); // Удаляем временную графику для экономии памяти
 }
 
 // Функция для рисования размытого текста
 function drawBlurredText(graphics, txt, x, y, blurAmount) {
-  // Убираем фон вокруг текста - больше не нужен
+  // Рисуем полупрозрачный фон для лучшей видимости текста
+  graphics.fill(invertedMode ? 0 : 255, 70);
+  graphics.rectMode(CENTER);
+  let textWidth = graphics.textWidth(txt);
+  graphics.rect(x, y, textWidth + 60, textSizeValue * 1.8, 25);
   
   // Рисуем текст с несколькими смещенными копиями для эффекта размытия
-  let alpha = 180; // Настраиваем непрозрачность для размытия
-  let step = max(0.3, blurAmount / 20); // Уменьшаем шаг для более плотного размытия
-  
-  // Очищаем графический буфер для текста
-  graphics.clear();
+  let alpha = 200; // Увеличиваем непрозрачность для лучшей видимости
+  let step = max(0.5, blurAmount / 15); // Уменьшаем шаг для более плотного размытия
   
   for (let i = -blurAmount; i <= blurAmount; i += step) {
     for (let j = -blurAmount; j <= blurAmount; j += step) {
@@ -337,17 +348,21 @@ function drawBlurredText(graphics, txt, x, y, blurAmount) {
       let distance = sqrt(i*i + j*j);
       let opacity = map(distance, 0, blurAmount, alpha, 0);
       
-      // Всегда используем белый цвет для текста
-      graphics.fill(255, opacity);
+      graphics.fill(invertedMode ? 0 : 255, opacity);
       graphics.text(txt, x + i, y + j);
     }
   }
   
-  // Рисуем основной текст поверх с высокой непрозрачностью
-  graphics.fill(255, 220);
+  // Рисуем основной текст поверх с полной непрозрачностью
+  graphics.fill(invertedMode ? 0 : 255, 255);
   graphics.text(txt, x, y);
   
-  // Убираем контрастную обводку текста - больше не нужна
+  // Добавляем контрастную обводку для ещё большей видимости
+  graphics.fill(invertedMode ? 255 : 0, 150);
+  graphics.text(txt, x+1, y+1);
+  graphics.text(txt, x-1, y-1);
+  graphics.text(txt, x+1, y-1);
+  graphics.text(txt, x-1, y+1);
 }
 
 function realChladniFormula(x, y, nX, nY) {
