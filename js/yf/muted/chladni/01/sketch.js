@@ -507,65 +507,89 @@ function setupInterface() {
   // Добавляем функциональность кнопке экспорта SVG
   exportSVGButton.mousePressed(() => {
     try {
-      // Проверка наличия библиотеки SVG
-      if (typeof SVG !== 'undefined') {
-        console.log("Начинаем экспорт SVG...");
-        
-        // Создаем временный SVG канвас с тем же размером
-        let svgCanvas = createCanvas(width, height, SVG);
-        
-        // Отрисовываем текущую фигуру Хладни на SVG канвасе
-        background(invertedMode ? 255 : 0);
-        
-        // Определяем параметры для рисования
-        let drawParams;
-        if (isPaused && lastFrameState) {
-          // Если на паузе, используем последнее состояние
-          drawParams = {
-            nX: lastFrameState.nX,
-            nY: lastFrameState.nY,
-            amplitude: lastFrameState.amplitude,
-            threshold: lastFrameState.threshold
-          };
-        } else if (isRunning) {
-          // Если запущен микрофон, используем текущие параметры
-          drawParams = {
-            nX: int(currentNX),
-            nY: int(currentNY),
-            amplitude: currentAmplitude,
-            threshold: thresholdValue
-          };
-        } else {
-          // Если остановлен, используем статические параметры
-          drawParams = {
-            nX: modeX,
-            nY: modeY,
-            amplitude: 1,
-            threshold: thresholdValue
-          };
-        }
-        
-        // Рисуем контуры фигуры Хладни для SVG
-        drawSVGChladniPattern(drawParams.nX, drawParams.nY, drawParams.amplitude, drawParams.threshold);
-        
-        // Сохраняем SVG файл
-        save('chladni_pattern.svg');
-        
-        // Возвращаемся к обычному канвасу
-        createCanvas(width, height);
-        
-        // Перерисовываем текущее состояние на обычном канвасе
-        if (isPaused && lastFrameState) {
-          drawChladniPattern(lastFrameState.nX, lastFrameState.nY, lastFrameState.amplitude, lastFrameState.threshold);
-        } else if (!isRunning) {
-          drawStaticPattern(modeX, modeY);
-        }
-        
-        console.log("SVG экспортирован успешно!");
+      console.log("Начинаем экспорт SVG...");
+
+      // Определяем параметры для рисования
+      let params;
+      if (isPaused && lastFrameState) {
+        // Если на паузе, используем последнее состояние
+        params = {
+          nX: lastFrameState.nX,
+          nY: lastFrameState.nY,
+          amplitude: lastFrameState.amplitude,
+          threshold: lastFrameState.threshold
+        };
+      } else if (isRunning) {
+        // Если запущен микрофон, используем текущие параметры
+        params = {
+          nX: int(currentNX),
+          nY: int(currentNY),
+          amplitude: currentAmplitude,
+          threshold: thresholdValue
+        };
       } else {
-        console.error("Библиотека p5.js-svg не загружена");
-        alert('Экспорт в SVG не работает. Библиотека p5.js-svg не загружена.');
+        // Если остановлен, используем статические параметры
+        params = {
+          nX: modeX,
+          nY: modeY,
+          amplitude: 1,
+          threshold: thresholdValue
+        };
       }
+
+      // Создаем новый SVG для экспорта - используем временный невидимый контейнер
+      let svgContainer = document.createElement('div');
+      svgContainer.style.position = 'absolute';
+      svgContainer.style.top = '-9999px';
+      document.body.appendChild(svgContainer);
+      
+      // Создаем новый элемент SVG с нужными размерами
+      let svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svgElement.setAttribute('width', width);
+      svgElement.setAttribute('height', height);
+      svgElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      svgElement.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      svgContainer.appendChild(svgElement);
+      
+      // Задаем фон SVG
+      let background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      background.setAttribute('width', width);
+      background.setAttribute('height', height);
+      background.setAttribute('fill', invertedMode ? 'white' : 'black');
+      svgElement.appendChild(background);
+      
+      // Генерируем контуры фигуры Хладни
+      generateSVGChladniContours(svgElement, params.nX, params.nY, params.amplitude, params.threshold);
+      
+      // Если текст видим - добавляем его
+      if (textVisible) {
+        let textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        textElement.setAttribute('x', width/2);
+        textElement.setAttribute('y', height/2);
+        textElement.setAttribute('font-family', 'Rooftop Mono');
+        textElement.setAttribute('font-size', textSizeValue);
+        textElement.setAttribute('fill', invertedMode ? 'black' : 'white');
+        textElement.setAttribute('text-anchor', 'middle');
+        textElement.setAttribute('dominant-baseline', 'middle');
+        textElement.textContent = customText;
+        svgElement.appendChild(textElement);
+      }
+      
+      // Получаем SVG как строку
+      let svgString = new XMLSerializer().serializeToString(svgElement);
+      
+      // Создаем и скачиваем файл
+      let blob = new Blob([svgString], {type: 'image/svg+xml'});
+      let link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'chladni_pattern.svg';
+      link.click();
+      
+      // Очищаем ресурсы
+      URL.revokeObjectURL(link.href);
+      document.body.removeChild(svgContainer);
+      
+      console.log("SVG экспортирован успешно!");
     } catch (error) {
       console.error("Ошибка при экспорте SVG:", error);
       alert('Произошла ошибка при экспорте в SVG: ' + error.message);
@@ -685,7 +709,102 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
   textGraphics.remove(); // Удаляем временную графику для экономии памяти
 }
 
-// Функция для отрисовки контуров Хладни в SVG
+// Функция для генерации контуров фигуры Хладни в SVG
+function generateSVGChladniContours(svgElement, nX, nY, amplitude, threshold) {
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const scale = min(width, height) / 2;
+  
+  // Определяем шаг сетки для рисования контуров
+  const gridSize = 100; // Размер сетки (количество ячеек)
+  const cellWidth = width / gridSize;
+  const cellHeight = height / gridSize;
+  
+  // Предварительно вычисляем максимальное значение волны для нормализации
+  let maxWaveValue = 0;
+  for (let x = 0; x < width; x += cellWidth * 5) {
+    for (let y = 0; y < height; y += cellHeight * 5) {
+      let normX = (x - centerX) / scale;
+      let normY = (y - centerY) / scale;
+      let value = abs(realChladniFormula(normX, normY, nX, nY) * amplitude);
+      maxWaveValue = max(maxWaveValue, value);
+    }
+  }
+  maxWaveValue = max(1.0, maxWaveValue);
+  
+  // Порог для определения линий
+  const dynamicThreshold = threshold * maxWaveValue;
+  
+  // Создаем 2D-массив значений
+  let valueGrid = new Array(gridSize + 1);
+  for (let i = 0; i <= gridSize; i++) {
+    valueGrid[i] = new Array(gridSize + 1);
+    for (let j = 0; j <= gridSize; j++) {
+      let x = i * cellWidth;
+      let y = j * cellHeight;
+      let normX = (x - centerX) / scale;
+      let normY = (y - centerY) / scale;
+      let value = abs(realChladniFormula(normX, normY, nX, nY) * amplitude);
+      // Бинаризуем значения относительно порога
+      valueGrid[i][j] = value < dynamicThreshold ? 0 : 1;
+    }
+  }
+  
+  // Цвет контуров
+  const strokeColor = invertedMode ? 'black' : 'white';
+  
+  // Находим и рисуем замкнутые контуры
+  for (let i = 0; i < gridSize; i++) {
+    for (let j = 0; j < gridSize; j++) {
+      // Проверяем каждую ячейку сетки
+      if (valueGrid[i][j] !== valueGrid[i+1][j] || 
+          valueGrid[i][j] !== valueGrid[i][j+1] || 
+          valueGrid[i][j] !== valueGrid[i+1][j+1]) {
+        
+        // Создаем путь для контура этой ячейки
+        let contourPath = [];
+        
+        // Добавляем точки контура в зависимости от смены значений
+        
+        // Верхняя сторона ячейки
+        if (valueGrid[i][j] !== valueGrid[i+1][j]) {
+          contourPath.push([i * cellWidth, j * cellHeight, (i+1) * cellWidth, j * cellHeight]);
+        }
+        
+        // Правая сторона ячейки
+        if (valueGrid[i+1][j] !== valueGrid[i+1][j+1]) {
+          contourPath.push([(i+1) * cellWidth, j * cellHeight, (i+1) * cellWidth, (j+1) * cellHeight]);
+        }
+        
+        // Нижняя сторона ячейки
+        if (valueGrid[i][j+1] !== valueGrid[i+1][j+1]) {
+          contourPath.push([i * cellWidth, (j+1) * cellHeight, (i+1) * cellWidth, (j+1) * cellHeight]);
+        }
+        
+        // Левая сторона ячейки
+        if (valueGrid[i][j] !== valueGrid[i][j+1]) {
+          contourPath.push([i * cellWidth, j * cellHeight, i * cellWidth, (j+1) * cellHeight]);
+        }
+        
+        // Если нашли контур, добавляем его в SVG
+        if (contourPath.length > 0) {
+          for (let k = 0; k < contourPath.length; k++) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', contourPath[k][0]);
+            line.setAttribute('y1', contourPath[k][1]);
+            line.setAttribute('x2', contourPath[k][2]);
+            line.setAttribute('y2', contourPath[k][3]);
+            line.setAttribute('stroke', strokeColor);
+            line.setAttribute('stroke-width', '1');
+            svgElement.appendChild(line);
+          }
+        }
+      }
+    }
+  }
+}
+
+// Функция для отрисовки контуров Хладни в SVG (старая версия - не используется)
 function drawSVGChladniPattern(nX, nY, amplitude, threshold) {
   noFill();
   stroke(invertedMode ? 0 : 255);
