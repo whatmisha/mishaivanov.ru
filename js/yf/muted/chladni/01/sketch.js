@@ -595,14 +595,6 @@ function setupInterface() {
       alert('Произошла ошибка при экспорте в SVG: ' + error.message);
     }
   });
-  
-  // Добавляем кнопку для переключения видимости текста для отладки
-  const debugButton = createButton('Отладка текста');
-  debugButton.position(10, 10);
-  debugButton.mousePressed(() => {
-    textVisible = !textVisible;
-    console.log('Отладка текста:', textVisible);
-  });
 }
 
 // Функция для отрисовки на экспортируемом канвасе
