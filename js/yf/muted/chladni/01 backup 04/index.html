@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Фигуры Хладни</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Генератор фигур Хладни</h1>
+    
+    <div class="main-content">
+      <!-- Левая колонка с холстом -->
+      <div class="canvas-column">
+        <div id="canvas-container"></div>
+        <div class="controls">
+          <button id="start-button">Начать</button>
+          <button id="stop-button">Остановить</button>
+          <button id="invert-button">Инвертировать</button>
+        </div>
+      </div>
+      
+      <!-- Правая колонка с настройками -->
+      <div class="settings-column">
+        <div class="slider-controls">
+          <h3>Параметры отображения</h3>
+          <div class="slider-group">
+            <label for="threshold-slider-container">Контрастность линий:</label>
+            <div id="threshold-slider-container" title="Регулирует порог для контрастности линий"></div>
+          </div>
+          <div class="slider-group">
+            <label for="modeX-slider-container">Горизонтальный режим (n<sub>x</sub>):</label>
+            <div id="modeX-slider-container" title="Количество горизонтальных узловых линий"></div>
+          </div>
+          <div class="slider-group">
+            <label for="modeY-slider-container">Вертикальный режим (n<sub>y</sub>):</label>
+            <div id="modeY-slider-container" title="Количество вертикальных узловых линий"></div>
+          </div>
+          
+          <div class="checkbox-group">
+            <label for="gradient-checkbox-container">Отключить контраст (градиентный режим):</label>
+            <div id="gradient-checkbox-container" title="Показывает фигуры в градиентном режиме без порогового значения"></div>
+          </div>
+          
+          <h3>Текст на холсте</h3>
+          <div class="slider-group">
+            <label for="text-input-container">Текст:</label>
+            <div id="text-input-container" title="Текст, который будет отображаться на холсте"></div>
+          </div>
+          <div class="slider-group">
+            <label for="text-size-slider-container">Размер текста:</label>
+            <div id="text-size-slider-container" title="Размер шрифта текста"></div>
+          </div>
+          <div class="slider-group">
+            <label for="text-blur-slider-container">Размытие текста:</label>
+            <div id="text-blur-slider-container" title="Степень размытия текста для мягкой интеграции с фигурами"></div>
+          </div>
+          <div class="slider-group highlight">
+            <label for="text-influence-slider-container">Влияние текста:</label>
+            <div id="text-influence-slider-container" title="Увеличьте, если текст недостаточно заметен на фигурах"></div>
+          </div>
+          
+          <h3>Параметры звука</h3>
+          <div class="slider-group">
+            <label for="sensitivity-slider-container">Чувствительность микрофона:</label>
+            <div id="sensitivity-slider-container" title="Чувствительность к входящему звуковому сигналу"></div>
+          </div>
+          <div class="slider-group">
+            <label for="smoothing-slider-container">Сглаживание анимации:</label>
+            <div id="smoothing-slider-container" title="Сглаживание переходов между состояниями фигур"></div>
+          </div>
+          
+          <div class="info">
+            <h3>Подсказки</h3>
+            <p><strong>Если текст не виден:</strong> увеличьте параметр "Влияние текста".</p>
+            <p>Используйте микрофон, чтобы увидеть, как звук влияет на фигуры Хладни.</p>
+            <p>Отключите контраст, чтобы увидеть градиентную версию фигур.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="sketch.js"></script>
+</body>
+</html> 
