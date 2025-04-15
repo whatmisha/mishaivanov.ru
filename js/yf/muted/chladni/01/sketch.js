@@ -324,8 +324,7 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   
   // Для отладки - рисуем текст поверх всего
   if (textVisible) {
-    // Раскомментируйте следующую строку для отображения только текста
-    // image(textGraphics, 0, 0);
+    image(textGraphics, 0, 0);
   }
   
   textGraphics.remove(); // Удаляем временную графику для экономии памяти
