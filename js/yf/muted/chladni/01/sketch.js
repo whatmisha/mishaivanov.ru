@@ -16,12 +16,15 @@ let currentNY = 2;
 let currentAmplitude = 1.0;
 // Параметры для текста
 let customText = "THE SOUND OF SILENCE";
-let textSizeValue = 48;
-let textBlurValue = 8;
+let textSizeValue = 64; // Увеличиваем размер текста по умолчанию
+let textBlurValue = 5; // Уменьшаем значение размытия по умолчанию
 let textSizeSlider, textBlurSlider;
 let textInput;
 let gradientModeCheckbox;
 let useGradientMode = false;
+let textInfluenceFactor = 3.0; // Увеличиваем влияние текста на волны
+let textVisible = true; // Для отладки
+let textInfluenceSlider;
 
 function setup() {
   // Создаем холст и помещаем его в контейнер
@@ -36,8 +39,8 @@ function setup() {
 
   noStroke();
   
-  // Настройка шрифта
-  textFont('Arial');
+  // Настройка шрифта - используем жирный шрифт для лучшей видимости
+  textFont('Arial Bold');
   textAlign(CENTER, CENTER);
   
   // Создаем ползунок для регулировки порогового значения и режимов
@@ -190,6 +193,17 @@ function createControlSliders() {
     }
   });
   
+  // Ползунок для влияния текста
+  textInfluenceSlider = createSlider(1, 10, textInfluenceFactor, 0.5);
+  textInfluenceSlider.parent('text-influence-slider-container');
+  textInfluenceSlider.style('width', '100%');
+  textInfluenceSlider.input(() => {
+    textInfluenceFactor = textInfluenceSlider.value();
+    if (!isRunning) {
+      drawStaticPattern(modeX, modeY);
+    }
+  });
+  
   // Чекбокс для отображения градиентного режима
   gradientModeCheckbox = createCheckbox('', useGradientMode);
   gradientModeCheckbox.parent('gradient-checkbox-container');
@@ -210,7 +224,7 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   textGraphics.background(invertedMode ? 255 : 0, 0); // Прозрачный фон
   textGraphics.fill(invertedMode ? 0 : 255);
   textGraphics.noStroke();
-  textGraphics.textFont('Arial');
+  textGraphics.textFont('Arial Bold'); // Жирный шрифт для текста
   textGraphics.textAlign(CENTER, CENTER);
   textGraphics.textSize(textSizeValue);
   
@@ -218,6 +232,13 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   if (textBlurValue > 0) {
     drawBlurredText(textGraphics, customText, width/2, height/2, textBlurValue);
   } else {
+    // Для текста без размытия добавляем фон для лучшей видимости
+    textGraphics.fill(invertedMode ? 0 : 255, 70);
+    textGraphics.rectMode(CENTER);
+    let textWidth = textGraphics.textWidth(customText);
+    textGraphics.rect(width/2, height/2, textWidth + 60, textSizeValue * 1.8, 25);
+    
+    textGraphics.fill(invertedMode ? 0 : 255);
     textGraphics.text(customText, width/2, height/2);
   }
   
@@ -229,6 +250,18 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   const centerX = width / 2;
   const centerY = height / 2;
   const scale = min(width, height) / 2;
+  
+  // Предварительно вычисляем максимальное значение волны, чтобы масштабировать контраст
+  let maxWaveValue = 0;
+  for (let x = 0; x < width; x += 5) { // Проверяем каждый 5-й пиксель для скорости
+    for (let y = 0; y < height; y += 5) {
+      let normX = (x - centerX) / scale;
+      let normY = (y - centerY) / scale;
+      let value = abs(realChladniFormula(normX, normY, nX, nY) * amplitude);
+      maxWaveValue = max(maxWaveValue, value);
+    }
+  }
+  maxWaveValue = max(1.0, maxWaveValue); // Избегаем деления на ноль
   
   for (let x = 0; x < width; x++) {
     for (let y = 0; y < height; y++) {
@@ -249,20 +282,34 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
       if (textAlpha > 0) {
         // Если есть текст в данной точке, влияем на значение фигуры
         // Нормализуем альфа к диапазону 0-1
-        let textInfluence = textAlpha / 255;
+        let textInfluence = (textAlpha / 255) * textInfluenceFactor;
         
-        // Увеличиваем значение там, где текст
-        value = value * (1 + textInfluence);
+        // Можно выбрать один из нескольких методов взаимодействия:
+        
+        // 1. Увеличиваем значение там, где текст
+        value = value * (1 + textInfluence * 2);
+        
+        // 2. Для более сильного контраста, инвертируем значение в области текста
+        if (textAlpha > 150) {
+          value = maxWaveValue - value;
+        }
+        
+        // 3. Задаем фиксированное значение для текста
+        if (textAlpha > 200) {
+          value = invertedMode ? 0.0 : 1.0;
+        }
       }
       
       // Применяем пороговое значение или используем градиент
       let pixelValue;
       if (useGradientMode) {
         // Градиентный режим - используем значение напрямую, без порога
-        pixelValue = map(abs(value), 0, 1, 0, 255);
+        pixelValue = map(abs(value), 0, maxWaveValue, 0, 255);
       } else {
         // Контрастный режим с порогом
-        pixelValue = abs(value) < threshold ? 0 : 255;
+        // Используем динамический порог в зависимости от максимального значения
+        let dynamicThreshold = threshold * maxWaveValue;
+        pixelValue = abs(value) < dynamicThreshold ? 0 : 255;
       }
       
       let index = (x + y * width) * 4;
@@ -274,14 +321,27 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   }
 
   updatePixels();
+  
+  // Для отладки - рисуем текст поверх всего
+  if (textVisible) {
+    // Раскомментируйте следующую строку для отображения только текста
+    // image(textGraphics, 0, 0);
+  }
+  
   textGraphics.remove(); // Удаляем временную графику для экономии памяти
 }
 
 // Функция для рисования размытого текста
 function drawBlurredText(graphics, txt, x, y, blurAmount) {
+  // Рисуем полупрозрачный фон для лучшей видимости текста
+  graphics.fill(invertedMode ? 0 : 255, 70);
+  graphics.rectMode(CENTER);
+  let textWidth = graphics.textWidth(txt);
+  graphics.rect(x, y, textWidth + 60, textSizeValue * 1.8, 25);
+  
   // Рисуем текст с несколькими смещенными копиями для эффекта размытия
-  let alpha = 100; // Начальная прозрачность
-  let step = blurAmount / 10; // Шаг смещения
+  let alpha = 200; // Увеличиваем непрозрачность для лучшей видимости
+  let step = max(0.5, blurAmount / 15); // Уменьшаем шаг для более плотного размытия
   
   for (let i = -blurAmount; i <= blurAmount; i += step) {
     for (let j = -blurAmount; j <= blurAmount; j += step) {
@@ -294,9 +354,16 @@ function drawBlurredText(graphics, txt, x, y, blurAmount) {
     }
   }
   
-  // Рисуем основной текст поверх
-  graphics.fill(invertedMode ? 0 : 255);
+  // Рисуем основной текст поверх с полной непрозрачностью
+  graphics.fill(invertedMode ? 0 : 255, 255);
   graphics.text(txt, x, y);
+  
+  // Добавляем контрастную обводку для ещё большей видимости
+  graphics.fill(invertedMode ? 255 : 0, 150);
+  graphics.text(txt, x+1, y+1);
+  graphics.text(txt, x-1, y-1);
+  graphics.text(txt, x+1, y-1);
+  graphics.text(txt, x-1, y+1);
 }
 
 function realChladniFormula(x, y, nX, nY) {
@@ -357,5 +424,13 @@ function setupInterface() {
     if (!isRunning) {
       drawStaticPattern(modeX, modeY);
     }
+  });
+  
+  // Добавляем кнопку для переключения видимости текста для отладки
+  const debugButton = createButton('Отладка текста');
+  debugButton.position(10, 10);
+  debugButton.mousePressed(() => {
+    textVisible = !textVisible;
+    console.log('Отладка текста:', textVisible);
   });
 } 
