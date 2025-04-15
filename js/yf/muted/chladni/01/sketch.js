@@ -24,7 +24,7 @@ let gradientModeCheckbox;
 let useGradientMode = true; // Включаем градиентный режим по умолчанию (контраст отключен)
 let textInfluenceFactor = 3.0; // Увеличиваем влияние текста на волны
 let textInfluenceSlider;
-let textVisible = false; // Отключаем наложение текста поверх для полной интеграции
+let textVisible = true; // Включаем отображение текста
 
 function setup() {
   // Создаем холст и помещаем его в контейнер
@@ -269,9 +269,9 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
       // Получаем значение альфа-канала текста (0-255)
       let textAlpha = textPixels[txtIndex + 3];
       
-      // Интегрируем текст с фигурой Хладни
-      // Модифицируем значение фигуры на основе текста
-      if (textAlpha > 0) {
+      // Интегрируем текст с фигурой Хладни только если textVisible = false
+      // Иначе будем отображать текст поверх в конце функции
+      if (!textVisible && textAlpha > 0) {
         // Если есть текст в данной точке, влияем на значение фигуры
         // Нормализуем альфа к диапазону 0-1
         let textInfluence = (textAlpha / 255) * textInfluenceFactor;
@@ -307,8 +307,10 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
 
   updatePixels();
   
-  // Больше не накладываем текст поверх
-  // Вместо этого он полностью интегрирован в фигуры Хладни
+  // Если textVisible = true, отображаем текст поверх фигур Хладни
+  if (textVisible) {
+    image(textGraphics, 0, 0);
+  }
   
   textGraphics.remove(); // Удаляем временную графику для экономии памяти
 }
