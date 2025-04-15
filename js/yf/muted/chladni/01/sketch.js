@@ -222,15 +222,11 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   // Временно создаем буфер для размытия текста
   let textGraphics = createGraphics(width, height);
   textGraphics.background(0, 0); // Полностью прозрачный фон
-  textGraphics.fill(255); // Всегда белый текст
-  textGraphics.noStroke();
-  textGraphics.textFont('Arial Bold'); // Жирный шрифт для текста
-  textGraphics.textAlign(CENTER, CENTER);
-  textGraphics.textSize(textSizeValue);
   
-  // Создаем размытый текст
-  // Всегда применяем размытие, игнорируя значение textBlurValue = 0
-  let effectiveBlur = max(5, textBlurValue); // Минимальное размытие 5
+  // Определяем эффективное размытие (минимум 2.0 для гауссового размытия)
+  let effectiveBlur = max(2.0, textBlurValue);
+  
+  // Рисуем текст с гауссовым размытием
   drawBlurredText(textGraphics, customText, width/2, height/2, effectiveBlur);
   
   loadPixels();
@@ -244,7 +240,7 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   
   // Предварительно вычисляем максимальное значение волны, чтобы масштабировать контраст
   let maxWaveValue = 0;
-  for (let x = 0; x < width; x += 5) { // Проверяем каждый 5-й пиксель для скорости
+  for (let x = 0; x < width; x += 5) {
     for (let y = 0; y < height; y += 5) {
       let normX = (x - centerX) / scale;
       let normY = (y - centerY) / scale;
@@ -252,54 +248,35 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
       maxWaveValue = max(maxWaveValue, value);
     }
   }
-  maxWaveValue = max(1.0, maxWaveValue); // Избегаем деления на ноль
+  maxWaveValue = max(1.0, maxWaveValue);
   
   for (let x = 0; x < width; x++) {
     for (let y = 0; y < height; y++) {
-      // Нормализуем координаты к квадрату [-1, 1] x [-1, 1]
       let normX = (x - centerX) / scale;
       let normY = (y - centerY) / scale;
       
-      // Вычисляем фигуру Хладни по формуле для прямоугольной пластины
       let value = realChladniFormula(normX, normY, nX, nY) * amplitude;
       
-      // Получаем индекс пикселя в текстовой графике
       let txtIndex = (x + y * width) * 4;
-      
-      // Получаем значение альфа-канала текста (0-255)
       let textAlpha = textPixels[txtIndex + 3];
       
-      // Смешиваем значение фигуры с текстом только в режиме интеграции
-      // (но не когда текст отображается поверх)
       if (!textVisible && textAlpha > 0) {
-        // Если есть текст в данной точке, влияем на значение фигуры
-        // Нормализуем альфа к диапазону 0-1
         let textInfluence = (textAlpha / 255) * textInfluenceFactor;
-        
-        // Можно выбрать один из нескольких методов взаимодействия:
-        
-        // 1. Увеличиваем значение там, где текст
         value = value * (1 + textInfluence * 2);
         
-        // 2. Для более сильного контраста, инвертируем значение в области текста
         if (textAlpha > 150) {
           value = maxWaveValue - value;
         }
         
-        // 3. Задаем фиксированное значение для текста
         if (textAlpha > 200) {
           value = invertedMode ? 0.0 : 1.0;
         }
       }
       
-      // Применяем пороговое значение или используем градиент
       let pixelValue;
       if (useGradientMode) {
-        // Градиентный режим - используем значение напрямую, без порога
         pixelValue = map(abs(value), 0, maxWaveValue, 0, 255);
       } else {
-        // Контрастный режим с порогом
-        // Используем динамический порог в зависимости от максимального значения
         let dynamicThreshold = threshold * maxWaveValue;
         pixelValue = abs(value) < dynamicThreshold ? 0 : 255;
       }
@@ -317,37 +294,149 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   // Отрисовываем текст поверх фигур Хладни
   image(textGraphics, 0, 0);
   
-  textGraphics.remove(); // Удаляем временную графику для экономии памяти
+  textGraphics.remove();
 }
 
-// Функция для рисования размытого текста
+// Функция для рисования текста с гауссовым размытием
 function drawBlurredText(graphics, txt, x, y, blurAmount) {
-  // Убираем фон вокруг текста - больше не нужен
-  
-  // Рисуем текст с несколькими смещенными копиями для эффекта размытия
-  let alpha = 180; // Настраиваем непрозрачность для размытия
-  let step = max(0.3, blurAmount / 20); // Уменьшаем шаг для более плотного размытия
-  
   // Очищаем графический буфер для текста
   graphics.clear();
   
-  for (let i = -blurAmount; i <= blurAmount; i += step) {
-    for (let j = -blurAmount; j <= blurAmount; j += step) {
-      // Рассчитываем непрозрачность на основе расстояния от центра
-      let distance = sqrt(i*i + j*j);
-      let opacity = map(distance, 0, blurAmount, alpha, 0);
-      
-      // Всегда используем белый цвет для текста
-      graphics.fill(255, opacity);
-      graphics.text(txt, x + i, y + j);
-    }
+  // Создаем второй буфер для применения гауссового размытия
+  let blurBuffer = createGraphics(width, height);
+  blurBuffer.clear();
+  
+  // Рисуем текст в буфере для размытия
+  blurBuffer.textFont('Arial Bold');
+  blurBuffer.textAlign(CENTER, CENTER);
+  blurBuffer.textSize(textSizeValue);
+  blurBuffer.fill(255);
+  blurBuffer.noStroke();
+  blurBuffer.text(txt, x, y);
+  
+  // Применяем гауссовое размытие к буферу
+  applyGaussianBlur(blurBuffer, graphics, blurAmount);
+  
+  // Удаляем временный буфер
+  blurBuffer.remove();
+}
+
+// Функция для применения гауссового размытия
+function applyGaussianBlur(sourceBuffer, targetBuffer, sigma) {
+  // Получаем пиксели из исходного буфера
+  let sourcePixels = sourceBuffer.get().pixels;
+  
+  // Создаем временные массивы для хранения промежуточных результатов
+  let tempPixels = new Uint8ClampedArray(sourcePixels.length);
+  let resultPixels = new Uint8ClampedArray(sourcePixels.length);
+  
+  // Копируем исходные пиксели во временный массив
+  for (let i = 0; i < sourcePixels.length; i++) {
+    tempPixels[i] = sourcePixels[i];
+    resultPixels[i] = sourcePixels[i];
   }
   
-  // Рисуем основной текст поверх с высокой непрозрачностью
-  graphics.fill(255, 220);
-  graphics.text(txt, x, y);
+  // Размер ядра Гаусса (должен быть нечетным)
+  let kernelSize = Math.ceil(sigma * 6);
+  if (kernelSize % 2 === 0) kernelSize++;
   
-  // Убираем контрастную обводку текста - больше не нужна
+  // Создаем ядро Гаусса
+  let kernel = createGaussianKernel(sigma, kernelSize);
+  
+  // Применяем размытие по горизонтали
+  blurHorizontal(sourcePixels, tempPixels, width, height, kernel, kernelSize);
+  
+  // Применяем размытие по вертикали
+  blurVertical(tempPixels, resultPixels, width, height, kernel, kernelSize);
+  
+  // Загружаем размытое изображение в целевой буфер
+  targetBuffer.loadPixels();
+  for (let i = 0; i < resultPixels.length; i++) {
+    targetBuffer.pixels[i] = resultPixels[i];
+  }
+  targetBuffer.updatePixels();
+}
+
+// Создаем ядро Гаусса
+function createGaussianKernel(sigma, size) {
+  const kernel = [];
+  const halfSize = Math.floor(size / 2);
+  let sum = 0;
+  
+  // Вычисляем коэффициенты ядра
+  for (let i = 0; i < size; i++) {
+    const x = i - halfSize;
+    const g = Math.exp(-(x * x) / (2 * sigma * sigma));
+    kernel.push(g);
+    sum += g;
+  }
+  
+  // Нормализуем ядро, чтобы сумма коэффициентов была равна 1
+  for (let i = 0; i < size; i++) {
+    kernel[i] /= sum;
+  }
+  
+  return kernel;
+}
+
+// Применяем размытие по горизонтали
+function blurHorizontal(sourcePixels, targetPixels, width, height, kernel, kernelSize) {
+  const halfKernel = Math.floor(kernelSize / 2);
+  
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      let r = 0, g = 0, b = 0, a = 0;
+      
+      // Свертка с ядром Гаусса
+      for (let i = 0; i < kernelSize; i++) {
+        const sampleX = Math.min(Math.max(x + i - halfKernel, 0), width - 1);
+        const idx = (y * width + sampleX) * 4;
+        
+        // Учитываем весовой коэффициент из ядра
+        r += sourcePixels[idx] * kernel[i];
+        g += sourcePixels[idx + 1] * kernel[i];
+        b += sourcePixels[idx + 2] * kernel[i];
+        a += sourcePixels[idx + 3] * kernel[i];
+      }
+      
+      // Записываем результат в целевой массив
+      const targetIdx = (y * width + x) * 4;
+      targetPixels[targetIdx] = r;
+      targetPixels[targetIdx + 1] = g;
+      targetPixels[targetIdx + 2] = b;
+      targetPixels[targetIdx + 3] = a;
+    }
+  }
+}
+
+// Применяем размытие по вертикали
+function blurVertical(sourcePixels, targetPixels, width, height, kernel, kernelSize) {
+  const halfKernel = Math.floor(kernelSize / 2);
+  
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      let r = 0, g = 0, b = 0, a = 0;
+      
+      // Свертка с ядром Гаусса
+      for (let i = 0; i < kernelSize; i++) {
+        const sampleY = Math.min(Math.max(y + i - halfKernel, 0), height - 1);
+        const idx = (sampleY * width + x) * 4;
+        
+        // Учитываем весовой коэффициент из ядра
+        r += sourcePixels[idx] * kernel[i];
+        g += sourcePixels[idx + 1] * kernel[i];
+        b += sourcePixels[idx + 2] * kernel[i];
+        a += sourcePixels[idx + 3] * kernel[i];
+      }
+      
+      // Записываем результат в целевой массив
+      const targetIdx = (y * width + x) * 4;
+      targetPixels[targetIdx] = r;
+      targetPixels[targetIdx + 1] = g;
+      targetPixels[targetIdx + 2] = b;
+      targetPixels[targetIdx + 3] = a;
+    }
+  }
 }
 
 function realChladniFormula(x, y, nX, nY) {
