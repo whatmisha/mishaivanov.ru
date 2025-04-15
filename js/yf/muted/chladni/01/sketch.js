@@ -2,14 +2,14 @@ let mic, fft;
 let resolution = 300;
 let isRunning = false;
 let thresholdSlider; // Ползунок для порогового значения
-let thresholdValue = 0.05; // Значение по умолчанию
+let thresholdValue = 0.01; // Минимальное значение для максимальной контрастности (было 0.05)
 let invertedMode = false; // Режим инверсии (белые линии на черном или черные линии на белом)
 let modeXSlider, modeYSlider; // Слайдеры для режимов
 let modeX = 3, modeY = 2; // Начальные значения режимов
 let sensitivitySlider; // Ползунок для чувствительности
-let sensitivity = 2.0; // Значение чувствительности по умолчанию
+let sensitivity = 5.0; // Максимальная чувствительность микрофона (было 2.0)
 let smoothingSlider; // Ползунок для сглаживания
-let smoothingValue = 0.8; // Значение сглаживания по умолчанию
+let smoothingValue = 0.0; // Минимальное сглаживание (было 0.8)
 // Параметры для сглаживания
 let currentNX = 3;
 let currentNY = 2;
@@ -23,8 +23,8 @@ let textInput;
 let gradientModeCheckbox;
 let useGradientMode = false;
 let textInfluenceFactor = 3.0; // Увеличиваем влияние текста на волны
-let textVisible = true; // Для отладки
 let textInfluenceSlider;
+let textVisible = true; // Для отладки
 
 function setup() {
   // Создаем холст и помещаем его в контейнер
