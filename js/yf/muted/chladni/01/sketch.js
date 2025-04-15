@@ -21,7 +21,7 @@ let textBlurValue = 5; // Уменьшаем значение размытия �
 let textSizeSlider, textBlurSlider;
 let textInput;
 let gradientModeCheckbox;
-let useGradientMode = false;
+let useGradientMode = true; // Включаем градиентный режим по умолчанию (контраст отключен)
 let textInfluenceFactor = 3.0; // Увеличиваем влияние текста на волны
 let textInfluenceSlider;
 let textVisible = false; // Отключаем наложение текста поверх для полной интеграции
