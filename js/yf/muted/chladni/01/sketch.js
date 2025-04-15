@@ -18,9 +18,9 @@ let currentAmplitude = 1.0;
 // Text parameters
 let customText = "THE SOUND OF SILENCE";
 let textSizeValue = 32; // Reduced text size by half (was 64)
-let textBlurValue = 5; // Reduced default blur value
+let textStrokeValue = 3; // Default stroke width
 let textSizeInput; // Text input for font size instead of slider
-let textBlurSlider;
+let textStrokeSlider;
 let textInput;
 let gradientModeCheckbox;
 let useGradientMode = false; // Disable gradient mode by default (enable contrast)
@@ -220,12 +220,12 @@ function createControlSliders() {
     }
   });
   
-  // Slider for text blur
-  textBlurSlider = createSlider(0, 20, textBlurValue, 1);
-  textBlurSlider.parent('text-blur-slider-container');
-  textBlurSlider.style('width', '100%');
-  textBlurSlider.input(() => {
-    textBlurValue = textBlurSlider.value();
+  // Slider for text stroke width
+  textStrokeSlider = createSlider(0, 20, textStrokeValue, 1);
+  textStrokeSlider.parent('text-stroke-slider-container');
+  textStrokeSlider.style('width', '100%');
+  textStrokeSlider.input(() => {
+    textStrokeValue = textStrokeSlider.value();
     if (!isRunning) {
       drawStaticPattern(modeX, modeY);
     }
@@ -276,23 +276,6 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   // Set background based on inversion mode
   background(invertedMode ? 255 : 0);
   
-  // Temporarily create buffer for blurred text
-  let textGraphics = createGraphics(width, height);
-  textGraphics.background(0, 0); // Fully transparent background
-  textGraphics.fill(255); // Always white text
-  textGraphics.noStroke();
-  textGraphics.textFont(myFont); // Use loaded font
-  textGraphics.textAlign(CENTER, CENTER);
-  textGraphics.textSize(textSizeValue);
-  
-  // Create blurred text
-  // Always apply blur, ignoring textBlurValue = 0
-  let effectiveBlur = max(5, textBlurValue); // Minimum blur 5
-  drawBlurredText(textGraphics, customText, width/2, height/2, effectiveBlur);
-  
-  // Get text graphics pixels
-  let textPixels = textGraphics.get().pixels;
-  
   loadPixels();
 
   const centerX = width / 2;
@@ -320,28 +303,6 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
       // Calculate Chladni figure using formula for rectangular plate
       let value = realChladniFormula(normX, normY, nX, nY) * amplitude;
       
-      // Get text graphics pixel index
-      let txtIndex = (x + y * width) * 4;
-      
-      // Get text alpha channel value (0-255)
-      let textAlpha = textPixels[txtIndex + 3];
-      
-      // Integrate text with Chladni figure only if textVisible = false
-      // Otherwise we'll display text on top at the end of the function
-      if (!textVisible && textAlpha > 0) {
-        // If there's text at this point, influence figure value
-        // Normalize alpha to range 0-1
-        let textInfluence = (textAlpha / 255);
-        
-        // Increase value where text, to enhance contrast
-        value = value * (1 + textInfluence);
-        
-        // For stronger contrast, we can invert value
-        if (textAlpha > 100) {
-          value = invertedMode ? maxWaveValue - value : value + maxWaveValue * 0.2;
-        }
-      }
-      
       // Apply threshold or use gradient
       let pixelValue;
       if (useGradientMode) {
@@ -364,38 +325,61 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
 
   updatePixels();
   
-  // If textVisible = true, display text on top of Chladni figures
+  // If textVisible, draw the text with background rectangle
   if (textVisible) {
-    image(textGraphics, 0, 0);
+    drawTextWithBackground(customText, width/2, height/2);
   }
-  
-  textGraphics.remove(); // Remove temporary graphics for memory efficiency
 }
 
-// Function to draw blurred text
-function drawBlurredText(graphics, txt, x, y, blurAmount) {
-  // Clear graphics buffer for text
-  graphics.clear();
+// New function to draw text with background rectangle
+function drawTextWithBackground(txt, x, y) {
+  push();
   
-  // Draw text with multiple shifted copies for blur effect
-  let alpha = 180; // Set opacity for blur
-  let step = max(0.3, blurAmount / 20); // Reduce step for denser blur
+  // Calculate text dimensions
+  textFont(myFont);
+  textSize(textSizeValue);
+  textAlign(CENTER, CENTER);
   
-  for (let i = -blurAmount; i <= blurAmount; i += step) {
-    for (let j = -blurAmount; j <= blurAmount; j += step) {
-      // Calculate opacity based on distance from center
-      let distance = sqrt(i*i + j*j);
-      let opacity = map(distance, 0, blurAmount, alpha, 0);
-      
-      // Always use white color for text
-      graphics.fill(255, opacity);
-      graphics.text(txt, x + i, y + j);
-    }
+  // Measure text dimensions approximately
+  let textWidth = txt.length * textSizeValue * 0.6; // Approximate width
+  let textHeight = textSizeValue * 1.4; // Approximate height
+  
+  // Draw blurred background rectangle
+  noStroke();
+  fill(invertedMode ? 0 : 255, 120); // Semi-transparent background
+  
+  // Add blur effect to the rectangle using multiple overlapping rectangles
+  const blurAmount = 20;
+  const blurSteps = 10;
+  
+  for (let i = 0; i < blurSteps; i++) {
+    let alpha = map(i, 0, blurSteps - 1, 10, 30);
+    let growFactor = map(i, 0, blurSteps - 1, 1, 1.5);
+    
+    fill(invertedMode ? 0 : 255, alpha);
+    rectMode(CENTER);
+    rect(x, y, textWidth * growFactor, textHeight * growFactor, 10);
   }
   
-  // Draw main text on top with high opacity
-  graphics.fill(255, 220);
-  graphics.text(txt, x, y);
+  // Draw the text with stroke
+  textFont(myFont);
+  textSize(textSizeValue);
+  textAlign(CENTER, CENTER);
+  
+  // Draw the stroke
+  if (textStrokeValue > 0) {
+    fill(invertedMode ? 0 : 255);
+    stroke(invertedMode ? 255 : 0);
+    strokeWeight(textStrokeValue);
+    text(txt, x, y);
+  }
+  
+  // Draw the text fill
+  noStroke();
+  fill(invertedMode ? 255 : 0);
+  text(txt, x, y);
+  
+  pop();
 }
 
 function realChladniFormula(x, y, nX, nY) {
@@ -563,16 +547,56 @@ function setupInterface() {
       // Generate Chladni figure contours
       generateSVGChladniContours(svgElement, params.nX, params.nY, params.amplitude, params.threshold);
       
-      // If text is visible - add it
+      // If text is visible - add it with background rectangle
       if (textVisible) {
+        // Calculate text dimensions approximately
+        let textWidth = customText.length * textSizeValue * 0.6; // Approximate width
+        let textHeight = textSizeValue * 1.4; // Approximate height
+        
+        // Create blurred background rectangle
+        let rectBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rectBg.setAttribute('x', width/2 - textWidth/2 - 20);
+        rectBg.setAttribute('y', height/2 - textHeight/2 - 10);
+        rectBg.setAttribute('width', textWidth + 40);
+        rectBg.setAttribute('height', textHeight + 20);
+        rectBg.setAttribute('rx', '10');
+        rectBg.setAttribute('ry', '10');
+        rectBg.setAttribute('fill', invertedMode ? 'black' : 'white');
+        rectBg.setAttribute('fill-opacity', '0.5');
+        rectBg.setAttribute('filter', 'blur(10px)');
+        
+        // Create the filter for blur
+        let filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
+        filter.setAttribute('id', 'blur');
+        filter.setAttribute('x', '-50%');
+        filter.setAttribute('y', '-50%');
+        filter.setAttribute('width', '200%');
+        filter.setAttribute('height', '200%');
+        
+        let gaussianBlur = document.createElementNS('http://www.w3.org/2000/svg', 'feGaussianBlur');
+        gaussianBlur.setAttribute('in', 'SourceGraphic');
+        gaussianBlur.setAttribute('stdDeviation', '10');
+        filter.appendChild(gaussianBlur);
+        svgElement.appendChild(filter);
+        
+        svgElement.appendChild(rectBg);
+        
+        // Add text element
         let textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         textElement.setAttribute('x', width/2);
         textElement.setAttribute('y', height/2);
         textElement.setAttribute('font-family', 'Rooftop Mono');
         textElement.setAttribute('font-size', textSizeValue);
-        textElement.setAttribute('fill', invertedMode ? 'black' : 'white');
+        textElement.setAttribute('fill', invertedMode ? 'white' : 'black');
         textElement.setAttribute('text-anchor', 'middle');
         textElement.setAttribute('dominant-baseline', 'middle');
+        
+        // Add stroke if needed
+        if (textStrokeValue > 0) {
+          textElement.setAttribute('stroke', invertedMode ? 'black' : 'white');
+          textElement.setAttribute('stroke-width', textStrokeValue);
+        }
+        
         textElement.textContent = customText;
         svgElement.appendChild(textElement);
       }
@@ -608,22 +632,6 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
   targetCanvas.textFont(myFont);
   targetCanvas.textAlign(CENTER, CENTER);
   
-  // Temporarily create buffer for blurred text
-  let textGraphics = createGraphics(targetCanvas.width, targetCanvas.height);
-  textGraphics.background(0, 0); // Fully transparent background
-  textGraphics.fill(255); // Always white text
-  textGraphics.noStroke();
-  textGraphics.textFont(myFont); // Use loaded font
-  textGraphics.textAlign(CENTER, CENTER);
-  textGraphics.textSize(textSizeValue * 2); // Double size for export
-  
-  // Create blurred text with doubled parameters
-  let effectiveBlur = max(5, textBlurValue) * 2; // Double blur
-  drawBlurredText(textGraphics, customText, targetCanvas.width/2, targetCanvas.height/2, effectiveBlur);
-  
-  // Get text graphics pixels
-  let textPixels = textGraphics.get().pixels;
-  
   targetCanvas.loadPixels();
 
   const centerX = targetCanvas.width / 2;
@@ -651,28 +659,6 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
       // Calculate Chladni figure using formula for rectangular plate
       let value = realChladniFormula(normX, normY, nX, nY) * amplitude;
       
-      // Get text graphics pixel index
-      let txtIndex = (x + y * targetCanvas.width) * 4;
-      
-      // Get text alpha channel value (0-255)
-      let textAlpha = textPixels[txtIndex + 3];
-      
-      // Integrate text with Chladni figure only if textVisible = false
-      // Otherwise we'll display text on top at the end of the function
-      if (!textVisible && textAlpha > 0) {
-        // If there's text at this point, influence figure value
-        // Normalize alpha to range 0-1
-        let textInfluence = (textAlpha / 255);
-        
-        // Increase value where text, to enhance contrast
-        value = value * (1 + textInfluence);
-        
-        // For stronger contrast, we can invert value
-        if (textAlpha > 100) {
-          value = invertedMode ? maxWaveValue - value : value + maxWaveValue * 0.2;
-        }
-      }
-      
       // Apply threshold or use gradient
       let pixelValue;
       if (useGradientMode) {
@@ -695,12 +681,56 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
 
   targetCanvas.updatePixels();
   
-  // If textVisible = true, display text on top of Chladni figures
+  // If text is visible, draw the text with background rectangle
   if (textVisible) {
-    targetCanvas.image(textGraphics, 0, 0);
+    targetCanvas.push();
+    
+    // Calculate text dimensions
+    targetCanvas.textFont(myFont);
+    targetCanvas.textSize(textSizeValue * 2); // Double size for export
+    targetCanvas.textAlign(CENTER, CENTER);
+    
+    // Measure text dimensions approximately
+    let textWidth = customText.length * textSizeValue * 2 * 0.6; // Approximate width, doubled for export
+    let textHeight = textSizeValue * 2 * 1.4; // Approximate height, doubled for export
+    
+    // Draw blurred background rectangle
+    targetCanvas.noStroke();
+    targetCanvas.fill(invertedMode ? 0 : 255, 120); // Semi-transparent background
+    
+    // Add blur effect to the rectangle using multiple overlapping rectangles
+    const blurAmount = 40; // Double for export
+    const blurSteps = 10;
+    
+    for (let i = 0; i < blurSteps; i++) {
+      let alpha = map(i, 0, blurSteps - 1, 10, 30);
+      let growFactor = map(i, 0, blurSteps - 1, 1, 1.5);
+      
+      targetCanvas.fill(invertedMode ? 0 : 255, alpha);
+      targetCanvas.rectMode(CENTER);
+      targetCanvas.rect(centerX, centerY, textWidth * growFactor, textHeight * growFactor, 20);
+    }
+    
+    // Draw the text with stroke
+    targetCanvas.textFont(myFont);
+    targetCanvas.textSize(textSizeValue * 2); // Double size for export
+    targetCanvas.textAlign(CENTER, CENTER);
+    
+    // Draw the stroke
+    if (textStrokeValue > 0) {
+      targetCanvas.fill(invertedMode ? 0 : 255);
+      targetCanvas.stroke(invertedMode ? 255 : 0);
+      targetCanvas.strokeWeight(textStrokeValue * 2); // Double stroke for export
+      targetCanvas.text(customText, centerX, centerY);
+    }
+    
+    // Draw the text fill
+    targetCanvas.noStroke();
+    targetCanvas.fill(invertedMode ? 255 : 0);
+    targetCanvas.text(customText, centerX, centerY);
+    
+    targetCanvas.pop();
   }
-  
-  textGraphics.remove(); // Remove temporary graphics for memory efficiency
 }
 
 // Function to generate Chladni figure contours in SVG
