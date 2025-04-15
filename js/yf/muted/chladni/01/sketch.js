@@ -22,7 +22,7 @@ let textSizeSlider, textBlurSlider;
 let textInput;
 let gradientModeCheckbox;
 let useGradientMode = false;
-let textInfluenceFactor = 3.0; // Увеличиваем влияние текста на волны
+let textInfluenceFactor = 5.0; // Увеличиваем влияние текста на волны (было 3.0)
 let textInfluenceSlider;
 let textVisible = false; // Отключаем наложение текста поверх для полной интеграции
 
@@ -276,12 +276,13 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
         // Нормализуем альфа к диапазону 0-1
         let textInfluence = (textAlpha / 255) * textInfluenceFactor;
         
-        // Увеличиваем значение там, где текст, чтобы усилить контрастность
-        value = value * (1 + textInfluence);
-        
-        // Для более сильного контраста можно инвертировать значение
+        // Более агрессивно влияем на значение в местах, где есть текст
         if (textAlpha > 100) {
-          value = invertedMode ? maxWaveValue - value : value + maxWaveValue * 0.2;
+          // Инвертируем значение в области текста для максимального контраста
+          value = invertedMode ? -value : maxWaveValue - value;
+        } else {
+          // Усиливаем контраст вокруг текста
+          value = value * (1 + textInfluence * 3);
         }
       }
       
@@ -318,15 +319,15 @@ function drawBlurredText(graphics, txt, x, y, blurAmount) {
   // Очищаем графический буфер для текста
   graphics.clear();
   
-  // Рисуем текст с несколькими смещенными копиями для эффекта размытия
-  let alpha = 180; // Настраиваем непрозрачность для размытия
-  let step = max(0.3, blurAmount / 20); // Уменьшаем шаг для более плотного размытия
+  // Увеличиваем непрозрачность и плотность размытия
+  let alpha = 230; // Увеличиваем непрозрачность для лучшей видимости (было 180)
+  let step = max(0.2, blurAmount / 25); // Делаем шаг меньше для более плотного размытия
   
   for (let i = -blurAmount; i <= blurAmount; i += step) {
     for (let j = -blurAmount; j <= blurAmount; j += step) {
       // Рассчитываем непрозрачность на основе расстояния от центра
       let distance = sqrt(i*i + j*j);
-      let opacity = map(distance, 0, blurAmount, alpha, 0);
+      let opacity = map(distance, 0, blurAmount, alpha, 10); // Минимальная непрозрачность 10 (было 0)
       
       // Всегда используем белый цвет для текста
       graphics.fill(255, opacity);
@@ -334,8 +335,8 @@ function drawBlurredText(graphics, txt, x, y, blurAmount) {
     }
   }
   
-  // Рисуем основной текст поверх с высокой непрозрачностью
-  graphics.fill(255, 220);
+  // Рисуем основной текст поверх с максимальной непрозрачностью
+  graphics.fill(255, 255); // Увеличиваем до полной непрозрачности (было 220)
   graphics.text(txt, x, y);
 }
 
