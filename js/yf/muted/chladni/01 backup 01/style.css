@@ -45,15 +45,7 @@ h1 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
-}
-
-.slider-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 300px;
+  gap: 10px;
 }
 
 .slider-controls label {
@@ -61,11 +53,8 @@ h1 {
   margin-bottom: 5px;
 }
 
-#threshold-slider-container,
-#modeX-slider-container,
-#modeY-slider-container {
-  width: 100%;
-  margin-top: 5px;
+#slider-container {
+  width: 200px;
 }
 
 button {
