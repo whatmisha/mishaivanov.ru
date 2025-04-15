@@ -1,6 +1,7 @@
 let mic, fft;
 let resolution = 300;
 let isRunning = false;
+let isPaused = false; // Новая переменная для паузы
 let thresholdSlider; // Ползунок для порогового значения
 let thresholdValue = 0.2; // Максимальное значение для максимальной контрастности (было 0.01)
 let invertedMode = false; // Режим инверсии (белые линии на черном или черные линии на белом)
@@ -28,7 +29,8 @@ let textInfluenceSlider;
 let textVisible = true; // Включаем отображение текста
 let myFont; // Переменная для хранения шрифта
 let diagLinesCheckbox; // Чекбокс для диагональных линий
-let showDiagLines = true; // По умолчанию диагональные линии включены
+let showDiagLines = false; // По умолчанию диагональные линии выключены
+let lastFrameState = null; // Для хранения последнего состояния при паузе
 
 function preload() {
   // Загружаем шрифт перед началом работы скетча
@@ -63,7 +65,13 @@ function setup() {
 }
 
 function draw() {
-  if (!isRunning) return;
+  if (!isRunning || isPaused) {
+    // Если на паузе и у нас есть сохраненное состояние - ничего не делаем
+    if (isPaused && lastFrameState !== null) return;
+    
+    // Если не на паузе или нет сохраненного состояния - просто выходим
+    if (!isPaused) return;
+  }
   
   // Получаем аудиоспектр
   let spectrum = fft.analyze();
@@ -110,6 +118,16 @@ function draw() {
   
   // Рисуем фигуру Хладни с динамическим порогом
   drawChladniPattern(nX, nY, currentAmplitude, dynamicThreshold);
+  
+  // Сохраняем последнее состояние для паузы
+  if (isRunning) {
+    lastFrameState = {
+      nX: nX,
+      nY: nY,
+      amplitude: currentAmplitude,
+      threshold: dynamicThreshold
+    };
+  }
 }
 
 // Функция для нормализации энергии звука с усилением слабых сигналов
@@ -404,6 +422,9 @@ function setupInterface() {
   const startButton = select('#start-button');
   const stopButton = select('#stop-button');
   const invertButton = select('#invert-button');
+  const pauseButton = select('#pause-button'); // Новая кнопка паузы
+  const exportPNGButton = select('#export-png-button'); // Кнопка экспорта PNG
+  const exportSVGButton = select('#export-svg-button'); // Кнопка экспорта SVG
   
   startButton.mousePressed(() => {
     if (!isRunning) {
@@ -413,6 +434,7 @@ function setupInterface() {
         // Устанавливаем высокий уровень усиления для микрофона
         mic.amp(1.0);
         isRunning = true;
+        isPaused = false; // При старте сбрасываем паузу
         console.log('Микрофон активирован');
       }).catch(err => {
         console.error('Ошибка доступа к микрофону:', err);
@@ -425,6 +447,7 @@ function setupInterface() {
     if (isRunning) {
       mic.stop();
       isRunning = false;
+      isPaused = false; // При остановке сбрасываем паузу
       console.log('Микрофон остановлен');
       // Отрисовываем статическую фигуру
       drawStaticPattern(modeX, modeY);
@@ -434,9 +457,71 @@ function setupInterface() {
   invertButton.mousePressed(() => {
     invertedMode = !invertedMode;
     // Обновляем отображение
-    if (!isRunning) {
-      drawStaticPattern(modeX, modeY);
+    if (!isRunning || isPaused) {
+      if (isPaused && lastFrameState) {
+        // Если на паузе, используем последнее состояние
+        drawChladniPattern(
+          lastFrameState.nX, 
+          lastFrameState.nY, 
+          lastFrameState.amplitude, 
+          lastFrameState.threshold
+        );
+      } else {
+        drawStaticPattern(modeX, modeY);
+      }
     }
+  });
+  
+  // Добавляем функциональность кнопке паузы
+  pauseButton.mousePressed(() => {
+    if (isRunning) {
+      isPaused = !isPaused;
+      console.log(isPaused ? 'Пауза активирована' : 'Пауза деактивирована');
+    }
+  });
+  
+  // Добавляем функциональность кнопке экспорта PNG
+  exportPNGButton.mousePressed(() => {
+    // Создаем временный канвас с удвоенным разрешением
+    let tempCanvas = createGraphics(width * 2, height * 2);
+    tempCanvas.pixelDensity(1);
+    
+    // Рисуем текущую фигуру Хладни на временном канвасе с удвоенным масштабом
+    if (isPaused && lastFrameState) {
+      // Если на паузе, используем последнее состояние
+      drawExportChladniPattern(
+        tempCanvas, 
+        lastFrameState.nX, 
+        lastFrameState.nY, 
+        lastFrameState.amplitude, 
+        lastFrameState.threshold
+      );
+    } else if (isRunning) {
+      // Если запущен микрофон, используем текущие параметры
+      drawExportChladniPattern(
+        tempCanvas, 
+        int(currentNX), 
+        int(currentNY), 
+        currentAmplitude, 
+        thresholdValue
+      );
+    } else {
+      // Если остановлен, используем статические параметры
+      drawExportChladniPattern(tempCanvas, modeX, modeY, 1, thresholdValue);
+    }
+    
+    // Сохраняем изображение
+    saveCanvas(tempCanvas, 'chladni_pattern', 'png');
+    
+    // Удаляем временный канвас
+    tempCanvas.remove();
+  });
+  
+  // Добавляем функциональность кнопке экспорта SVG
+  exportSVGButton.mousePressed(() => {
+    alert('Экспорт в SVG не реализован в текущей версии');
+    // Примечание: реализация SVG требует дополнительной библиотеки и 
+    // переписывания алгоритма отрисовки фигур Хладни для векторного формата
   });
   
   // Добавляем кнопку для переключения видимости текста для отладки
@@ -446,4 +531,108 @@ function setupInterface() {
     textVisible = !textVisible;
     console.log('Отладка текста:', textVisible);
   });
+}
+
+// Функция для отрисовки на экспортируемом канвасе
+function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
+  // Устанавливаем фон в зависимости от режима инверсии
+  targetCanvas.background(invertedMode ? 255 : 0);
+  
+  // Настраиваем шрифт на временном канвасе
+  targetCanvas.textFont(myFont);
+  targetCanvas.textAlign(CENTER, CENTER);
+  
+  // Временно создаем буфер для размытого текста
+  let textGraphics = createGraphics(targetCanvas.width, targetCanvas.height);
+  textGraphics.background(0, 0); // Полностью прозрачный фон
+  textGraphics.fill(255); // Всегда белый текст
+  textGraphics.noStroke();
+  textGraphics.textFont(myFont); // Используем загруженный шрифт
+  textGraphics.textAlign(CENTER, CENTER);
+  textGraphics.textSize(textSizeValue * 2); // Удваиваем размер для экспорта
+  
+  // Создаем размытый текст с удвоенными параметрами
+  let effectiveBlur = max(5, textBlurValue) * 2; // Удваиваем размытие
+  drawBlurredText(textGraphics, customText, targetCanvas.width/2, targetCanvas.height/2, effectiveBlur);
+  
+  // Получаем пиксели текстовой графики
+  let textPixels = textGraphics.get().pixels;
+  
+  targetCanvas.loadPixels();
+
+  const centerX = targetCanvas.width / 2;
+  const centerY = targetCanvas.height / 2;
+  const scale = min(targetCanvas.width, targetCanvas.height) / 2;
+  
+  // Предварительно вычисляем максимальное значение волны, чтобы масштабировать контраст
+  let maxWaveValue = 0;
+  for (let x = 0; x < targetCanvas.width; x += 10) { // Проверяем каждый 10-й пиксель для скорости
+    for (let y = 0; y < targetCanvas.height; y += 10) {
+      let normX = (x - centerX) / scale;
+      let normY = (y - centerY) / scale;
+      let value = abs(realChladniFormula(normX, normY, nX, nY) * amplitude);
+      maxWaveValue = max(maxWaveValue, value);
+    }
+  }
+  maxWaveValue = max(1.0, maxWaveValue); // Избегаем деления на ноль
+  
+  for (let x = 0; x < targetCanvas.width; x++) {
+    for (let y = 0; y < targetCanvas.height; y++) {
+      // Нормализуем координаты к квадрату [-1, 1] x [-1, 1]
+      let normX = (x - centerX) / scale;
+      let normY = (y - centerY) / scale;
+      
+      // Вычисляем фигуру Хладни по формуле для прямоугольной пластины
+      let value = realChladniFormula(normX, normY, nX, nY) * amplitude;
+      
+      // Получаем индекс пикселя в текстовой графике
+      let txtIndex = (x + y * targetCanvas.width) * 4;
+      
+      // Получаем значение альфа-канала текста (0-255)
+      let textAlpha = textPixels[txtIndex + 3];
+      
+      // Интегрируем текст с фигурой Хладни только если textVisible = false
+      // Иначе будем отображать текст поверх в конце функции
+      if (!textVisible && textAlpha > 0) {
+        // Если есть текст в данной точке, влияем на значение фигуры
+        // Нормализуем альфа к диапазону 0-1
+        let textInfluence = (textAlpha / 255) * textInfluenceFactor;
+        
+        // Увеличиваем значение там, где текст, чтобы усилить контрастность
+        value = value * (1 + textInfluence);
+        
+        // Для более сильного контраста можно инвертировать значение
+        if (textAlpha > 100) {
+          value = invertedMode ? maxWaveValue - value : value + maxWaveValue * 0.2;
+        }
+      }
+      
+      // Применяем пороговое значение или используем градиент
+      let pixelValue;
+      if (useGradientMode) {
+        // Градиентный режим - используем значение напрямую, без порога
+        pixelValue = map(abs(value), 0, maxWaveValue * 1.2, 0, 255);
+      } else {
+        // Контрастный режим с порогом
+        // Используем динамический порог в зависимости от максимального значения
+        let dynamicThreshold = threshold * maxWaveValue;
+        pixelValue = abs(value) < dynamicThreshold ? 0 : 255;
+      }
+      
+      let index = (x + y * targetCanvas.width) * 4;
+      targetCanvas.pixels[index] = invertedMode ? (255 - pixelValue) : pixelValue;
+      targetCanvas.pixels[index + 1] = invertedMode ? (255 - pixelValue) : pixelValue;
+      targetCanvas.pixels[index + 2] = invertedMode ? (255 - pixelValue) : pixelValue;
+      targetCanvas.pixels[index + 3] = 255;
+    }
+  }
+
+  targetCanvas.updatePixels();
+  
+  // Если textVisible = true, отображаем текст поверх фигур Хладни
+  if (textVisible) {
+    targetCanvas.image(textGraphics, 0, 0);
+  }
+  
+  textGraphics.remove(); // Удаляем временную графику для экономии памяти
 } 

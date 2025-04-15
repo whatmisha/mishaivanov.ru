@@ -78,6 +78,14 @@ h3 {
   width: 100%;
 }
 
+.export-controls {
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+}
+
 .slider-controls {
   display: flex;
   flex-direction: column;
@@ -211,12 +219,36 @@ button:hover {
   background-color: #d32f2f;
 }
 
+#pause-button {
+  background-color: #FF9800;
+}
+
+#pause-button:hover {
+  background-color: #F57C00;
+}
+
 #invert-button {
   background-color: #673AB7;
 }
 
 #invert-button:hover {
   background-color: #512DA8;
+}
+
+#export-png-button {
+  background-color: #2196F3;
+}
+
+#export-png-button:hover {
+  background-color: #1976D2;
+}
+
+#export-svg-button {
+  background-color: #009688;
+}
+
+#export-svg-button:hover {
+  background-color: #00796B;
 }
 
 .info {
