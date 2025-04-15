@@ -6,14 +6,6 @@ let thresholdValue = 0.05; // Значение по умолчанию
 let invertedMode = false; // Режим инверсии (белые линии на черном или черные линии на белом)
 let modeXSlider, modeYSlider; // Слайдеры для режимов
 let modeX = 3, modeY = 2; // Начальные значения режимов
-let sensitivitySlider; // Ползунок для чувствительности
-let sensitivity = 2.0; // Значение чувствительности по умолчанию
-let smoothingSlider; // Ползунок для сглаживания
-let smoothingValue = 0.8; // Значение сглаживания по умолчанию
-// Параметры для сглаживания
-let currentNX = 3;
-let currentNY = 2;
-let currentAmplitude = 1.0;
 
 function setup() {
   // Создаем холст и помещаем его в контейнер
@@ -23,7 +15,7 @@ function setup() {
 
   // Настраиваем аудио-анализаторы
   mic = new p5.AudioIn();
-  fft = new p5.FFT(smoothingValue, 1024); // Увеличиваем размер FFT для лучшего разрешения
+  fft = new p5.FFT();
   fft.setInput(mic);
 
   noStroke();
@@ -43,62 +35,27 @@ function draw() {
   
   // Получаем аудиоспектр
   let spectrum = fft.analyze();
-  
-  // Измеряем общую громкость микрофона
-  let volume = mic.getLevel();
-  
-  // Получаем энергию в разных диапазонах
-  let bass = fft.getEnergy("bass") * sensitivity;
-  let lowMid = fft.getEnergy("lowMid") * sensitivity;
-  let mid = fft.getEnergy("mid") * sensitivity;
-  let highMid = fft.getEnergy("highMid") * sensitivity;
-  let treble = fft.getEnergy("treble") * sensitivity;
-  
-  // Нормализуем значения, чтобы они реагировали даже на тихие звуки
-  let bassNorm = normalizeEnergy(bass);
-  let trebleNorm = normalizeEnergy(treble);
+  let bass = fft.getEnergy("bass");
+  let mid = fft.getEnergy("mid");
+  let treble = fft.getEnergy("treble");
 
-  // Применяем более чувствительное преобразование звука в параметры волны
-  let targetNX = map(bassNorm, 0, 1, 1, 15); // Расширяем диапазон
-  let targetNY = map(trebleNorm, 0, 1, 1, 15);
-  let targetAmplitude = map(mid, 0, 255 * sensitivity, 0.5, 3);
-  
-  // Сглаживаем переходы для более плавной анимации
-  currentNX = lerp(currentNX, targetNX, 1 - smoothingValue);
-  currentNY = lerp(currentNY, targetNY, 1 - smoothingValue);
-  currentAmplitude = lerp(currentAmplitude, targetAmplitude, 1 - smoothingValue);
-  
-  // Округляем значения волновых чисел до целых
-  let nX = int(currentNX);
-  let nY = int(currentNY);
-  
-  // Минимум 1 для избежания ошибок
-  nX = max(1, nX);
-  nY = max(1, nY);
-  
-  // Выводим информацию о текущих параметрах и уровне звука
-  console.log(`Громкость: ${volume.toFixed(4)}, Басы: ${bassNorm.toFixed(2)}, Высокие: ${trebleNorm.toFixed(2)}, nX: ${nX}, nY: ${nY}, Амплитуда: ${currentAmplitude.toFixed(2)}`);
+  // Преобразуем громкость в параметры волны
+  let nX = int(map(bass, 0, 255, 1, 10));
+  let nY = int(map(treble, 0, 255, 1, 10));
+  let amplitude = map(mid, 0, 255, 0.5, 2);
 
-  // Динамически меняем пороговое значение в зависимости от громкости
-  let dynamicThreshold = map(volume, 0, 0.1, thresholdValue * 2, thresholdValue * 0.8);
-  dynamicThreshold = constrain(dynamicThreshold, 0.01, 0.2);
-  
-  // Рисуем фигуру Хладни с динамическим порогом
-  drawChladniPattern(nX, nY, currentAmplitude, dynamicThreshold);
-}
+  // Выводим информацию о текущих параметрах в консоль
+  console.log(`Басы: ${bass}, Средние: ${mid}, Высокие: ${treble}, nX: ${nX}, nY: ${nY}, Амплитуда: ${amplitude.toFixed(2)}`);
 
-// Функция для нормализации энергии звука с усилением слабых сигналов
-function normalizeEnergy(energy) {
-  // Нелинейное преобразование для усиления слабых сигналов
-  // Используем квадратный корень для более равномерного отклика
-  return pow(constrain(energy / (255 * sensitivity), 0, 1), 0.5);
+  // Рисуем фигуру Хладни
+  drawChladniPattern(nX, nY, amplitude);
 }
 
 function createControlSliders() {
   // Создаем ползунок для регулировки порогового значения
   thresholdSlider = createSlider(0.01, 0.2, thresholdValue, 0.01);
   thresholdSlider.parent('threshold-slider-container');
-  thresholdSlider.style('width', '100%');
+  thresholdSlider.style('width', '200px');
   thresholdSlider.input(() => {
     thresholdValue = thresholdSlider.value();
     // Обновляем статический паттерн при изменении порога, если не активен микрофон
@@ -108,9 +65,9 @@ function createControlSliders() {
   });
   
   // Создаем ползунки для режимов X и Y
-  modeXSlider = createSlider(1, 15, modeX, 1);
+  modeXSlider = createSlider(1, 12, modeX, 1);
   modeXSlider.parent('modeX-slider-container');
-  modeXSlider.style('width', '100%');
+  modeXSlider.style('width', '200px');
   modeXSlider.input(() => {
     modeX = modeXSlider.value();
     if (!isRunning) {
@@ -118,35 +75,18 @@ function createControlSliders() {
     }
   });
   
-  modeYSlider = createSlider(1, 15, modeY, 1);
+  modeYSlider = createSlider(1, 12, modeY, 1);
   modeYSlider.parent('modeY-slider-container');
-  modeYSlider.style('width', '100%');
+  modeYSlider.style('width', '200px');
   modeYSlider.input(() => {
     modeY = modeYSlider.value();
     if (!isRunning) {
       drawStaticPattern(modeX, modeY);
     }
   });
-  
-  // Добавляем ползунок для регулировки чувствительности
-  sensitivitySlider = createSlider(0.5, 5, sensitivity, 0.1);
-  sensitivitySlider.parent('sensitivity-slider-container');
-  sensitivitySlider.style('width', '100%');
-  sensitivitySlider.input(() => {
-    sensitivity = sensitivitySlider.value();
-  });
-  
-  // Добавляем ползунок для регулировки сглаживания
-  smoothingSlider = createSlider(0, 0.95, smoothingValue, 0.05);
-  smoothingSlider.parent('smoothing-slider-container');
-  smoothingSlider.style('width', '100%');
-  smoothingSlider.input(() => {
-    smoothingValue = smoothingSlider.value();
-    fft.smooth(smoothingValue);
-  });
 }
 
-function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
+function drawChladniPattern(nX, nY, amplitude = 1) {
   // Устанавливаем фон в зависимости от режима инверсии
   background(invertedMode ? 255 : 0);
   loadPixels();
@@ -162,10 +102,11 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
       let normY = (y - centerY) / scale;
       
       // Вычисляем фигуру Хладни по формуле для прямоугольной пластины
+      // A*sin(nπx/a)*sin(mπy/b) + B*sin(mπx/a)*sin(nπy/b)
       let value = realChladniFormula(normX, normY, nX, nY) * amplitude;
       
       // Применяем пороговое значение
-      let bright = abs(value) < threshold ? 0 : 255;
+      let bright = abs(value) < thresholdValue ? 0 : 255;
       
       let index = (x + y * width) * 4;
       pixels[index] = invertedMode ? (255 - bright) : bright;
@@ -206,11 +147,9 @@ function setupInterface() {
   
   startButton.mousePressed(() => {
     if (!isRunning) {
-      // Запрашиваем доступ к микрофону с усиленными параметрами
+      // Запрашиваем доступ к микрофону
       userStartAudio().then(() => {
         mic.start();
-        // Устанавливаем высокий уровень усиления для микрофона
-        mic.amp(1.0);
         isRunning = true;
         console.log('Микрофон активирован');
       }).catch(err => {
