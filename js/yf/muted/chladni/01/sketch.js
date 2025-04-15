@@ -239,13 +239,7 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   let effectiveBlur = max(5, textBlurValue); // Минимальное размытие 5
   drawBlurredText(textGraphics, customText, width/2, height/2, effectiveBlur);
   
-  // Получаем пиксели текстовой графики
-  let textPixels = textGraphics.get().pixels;
-  
-  // Создаем буфер для общего изображения
-  let combinedGraphics = createGraphics(width, height);
-  combinedGraphics.background(invertedMode ? 255 : 0);
-  
+  // Сначала рисуем фигуры Хладни без влияния текста
   loadPixels();
 
   const centerX = width / 2;
@@ -273,33 +267,13 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
       // Вычисляем фигуру Хладни по формуле для прямоугольной пластины
       let value = realChladniFormula(normX, normY, nX, nY) * amplitude;
       
-      // Получаем индекс пикселя в текстовой графике
-      let txtIndex = (x + y * width) * 4;
-      
-      // Получаем значение альфа-канала текста (0-255)
-      let textAlpha = textPixels[txtIndex + 3];
-      
-      // Увеличиваем значение волны там, где есть текст
-      if (textAlpha > 0) {
-        // Усиливаем влияние текста для лучшей видимости
-        let textInfluence = (textAlpha / 255) * textInfluenceFactor;
-        
-        // Для более сильного эффекта добавляем фиксированное смещение
-        if (textAlpha > 100) {
-          // Значительно усиливаем эффект текста на фигуры
-          value = value * (1 + textInfluence) + maxWaveValue * 0.3;
-        } else {
-          value = value * (1 + textInfluence);
-        }
-      }
-      
       // Применяем пороговое значение или используем градиент
       let pixelValue;
       if (useGradientMode) {
         // Градиентный режим - используем значение напрямую, без порога
         pixelValue = map(abs(value), 0, maxWaveValue * 1.5, 0, 255);
       } else {
-        // Контрастный режим с порогом применяется и к фигурам, и к тексту
+        // Контрастный режим с порогом
         let dynamicThreshold = threshold * maxWaveValue;
         pixelValue = abs(value) < dynamicThreshold ? 0 : 255;
       }
@@ -314,8 +288,8 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
 
   updatePixels();
   
-  // Больше не используем отдельное наложение текста
-  // Теперь контраст применяется ко всему изображению в пикселях
+  // Отображаем текст поверх фигур Хладни
+  image(textGraphics, 0, 0);
   
   textGraphics.remove(); // Удаляем временную графику для экономии памяти
 }
@@ -326,7 +300,7 @@ function drawBlurredText(graphics, txt, x, y, blurAmount) {
   graphics.clear();
   
   // Рисуем текст с несколькими смещенными копиями для эффекта размытия
-  let alpha = 220; // Увеличиваем непрозрачность для лучшего размытия
+  let alpha = 40; // Уменьшаем непрозрачность для первых слоев размытия
   let step = max(0.2, blurAmount / 25); // Уменьшаем шаг для более плотного размытия
   
   for (let i = -blurAmount; i <= blurAmount; i += step) {
@@ -335,7 +309,17 @@ function drawBlurredText(graphics, txt, x, y, blurAmount) {
       let distance = sqrt(i*i + j*j);
       let opacity = map(distance, 0, blurAmount, alpha, 0);
       
-      // Всегда используем белый цвет для текста
+      // Используем белый цвет для текста
+      graphics.fill(255, opacity);
+      graphics.text(txt, x + i, y + j);
+    }
+  }
+  
+  // Рисуем более толстый внутренний слой размытия
+  for (let i = -blurAmount/2; i <= blurAmount/2; i += step/2) {
+    for (let j = -blurAmount/2; j <= blurAmount/2; j += step/2) {
+      let distance = sqrt(i*i + j*j);
+      let opacity = map(distance, 0, blurAmount/2, 150, 30);
       graphics.fill(255, opacity);
       graphics.text(txt, x + i, y + j);
     }
