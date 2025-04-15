@@ -81,8 +81,9 @@ function draw() {
   let trebleNorm = normalizeEnergy(treble);
 
   // Применяем более чувствительное преобразование звука в параметры волны
-  let targetNX = map(bassNorm, 0, 1, 1, 15); // Расширяем диапазон
-  let targetNY = map(trebleNorm, 0, 1, 1, 15);
+  // Используем значения слайдеров как базовые и добавляем к ним влияние звука
+  let targetNX = modeX + map(bassNorm, 0, 1, 0, 5); // Звук влияет в диапазоне +0 до +5
+  let targetNY = modeY + map(trebleNorm, 0, 1, 0, 5);
   let targetAmplitude = map(mid, 0, 255 * sensitivity, 0.5, 3);
   
   // Сглаживаем переходы для более плавной анимации
@@ -135,6 +136,9 @@ function createControlSliders() {
   modeXSlider.style('width', '100%');
   modeXSlider.input(() => {
     modeX = modeXSlider.value();
+    // Обновляем текущее состояние nX, чтобы сразу видеть изменения
+    currentNX = modeX;
+    // Обновляем изображение, если микрофон не активен
     if (!isRunning) {
       drawStaticPattern(modeX, modeY);
     }
@@ -145,6 +149,9 @@ function createControlSliders() {
   modeYSlider.style('width', '100%');
   modeYSlider.input(() => {
     modeY = modeYSlider.value();
+    // Обновляем текущее состояние nY, чтобы сразу видеть изменения
+    currentNY = modeY;
+    // Обновляем изображение, если микрофон не активен
     if (!isRunning) {
       drawStaticPattern(modeX, modeY);
     }
