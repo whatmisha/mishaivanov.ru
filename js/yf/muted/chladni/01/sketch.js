@@ -14,6 +14,14 @@ let smoothingValue = 0.8; // Значение сглаживания по умо
 let currentNX = 3;
 let currentNY = 2;
 let currentAmplitude = 1.0;
+// Параметры для текста
+let customText = "THE SOUND OF SILENCE";
+let textSizeValue = 48;
+let textBlurValue = 8;
+let textSizeSlider, textBlurSlider;
+let textInput;
+let gradientModeCheckbox;
+let useGradientMode = false;
 
 function setup() {
   // Создаем холст и помещаем его в контейнер
@@ -27,6 +35,10 @@ function setup() {
   fft.setInput(mic);
 
   noStroke();
+  
+  // Настройка шрифта
+  textFont('Arial');
+  textAlign(CENTER, CENTER);
   
   // Создаем ползунок для регулировки порогового значения и режимов
   createControlSliders();
@@ -144,12 +156,75 @@ function createControlSliders() {
     smoothingValue = smoothingSlider.value();
     fft.smooth(smoothingValue);
   });
+  
+  // Поле ввода для текста
+  textInput = createInput(customText);
+  textInput.parent('text-input-container');
+  textInput.style('width', '100%');
+  textInput.input(() => {
+    customText = textInput.value();
+    if (!isRunning) {
+      drawStaticPattern(modeX, modeY);
+    }
+  });
+  
+  // Ползунок для размера текста
+  textSizeSlider = createSlider(12, 120, textSizeValue, 2);
+  textSizeSlider.parent('text-size-slider-container');
+  textSizeSlider.style('width', '100%');
+  textSizeSlider.input(() => {
+    textSizeValue = textSizeSlider.value();
+    if (!isRunning) {
+      drawStaticPattern(modeX, modeY);
+    }
+  });
+  
+  // Ползунок для размытия текста
+  textBlurSlider = createSlider(0, 20, textBlurValue, 1);
+  textBlurSlider.parent('text-blur-slider-container');
+  textBlurSlider.style('width', '100%');
+  textBlurSlider.input(() => {
+    textBlurValue = textBlurSlider.value();
+    if (!isRunning) {
+      drawStaticPattern(modeX, modeY);
+    }
+  });
+  
+  // Чекбокс для отображения градиентного режима
+  gradientModeCheckbox = createCheckbox('', useGradientMode);
+  gradientModeCheckbox.parent('gradient-checkbox-container');
+  gradientModeCheckbox.changed(() => {
+    useGradientMode = gradientModeCheckbox.checked();
+    if (!isRunning) {
+      drawStaticPattern(modeX, modeY);
+    }
+  });
 }
 
 function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   // Устанавливаем фон в зависимости от режима инверсии
   background(invertedMode ? 255 : 0);
+  
+  // Временно создаем буфер для размытия текста
+  let textGraphics = createGraphics(width, height);
+  textGraphics.background(invertedMode ? 255 : 0, 0); // Прозрачный фон
+  textGraphics.fill(invertedMode ? 0 : 255);
+  textGraphics.noStroke();
+  textGraphics.textFont('Arial');
+  textGraphics.textAlign(CENTER, CENTER);
+  textGraphics.textSize(textSizeValue);
+  
+  // Создаем размытый текст, если задано размытие
+  if (textBlurValue > 0) {
+    drawBlurredText(textGraphics, customText, width/2, height/2, textBlurValue);
+  } else {
+    textGraphics.text(customText, width/2, height/2);
+  }
+  
   loadPixels();
+  
+  // Получаем пиксели текстовой графики
+  let textPixels = textGraphics.get().pixels;
 
   const centerX = width / 2;
   const centerY = height / 2;
@@ -164,18 +239,64 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
       // Вычисляем фигуру Хладни по формуле для прямоугольной пластины
       let value = realChladniFormula(normX, normY, nX, nY) * amplitude;
       
-      // Применяем пороговое значение
-      let bright = abs(value) < threshold ? 0 : 255;
+      // Получаем индекс пикселя в текстовой графике
+      let txtIndex = (x + y * width) * 4;
+      
+      // Получаем значение альфа-канала текста (0-255)
+      let textAlpha = textPixels[txtIndex + 3];
+      
+      // Смешиваем значение фигуры с текстом
+      if (textAlpha > 0) {
+        // Если есть текст в данной точке, влияем на значение фигуры
+        // Нормализуем альфа к диапазону 0-1
+        let textInfluence = textAlpha / 255;
+        
+        // Увеличиваем значение там, где текст
+        value = value * (1 + textInfluence);
+      }
+      
+      // Применяем пороговое значение или используем градиент
+      let pixelValue;
+      if (useGradientMode) {
+        // Градиентный режим - используем значение напрямую, без порога
+        pixelValue = map(abs(value), 0, 1, 0, 255);
+      } else {
+        // Контрастный режим с порогом
+        pixelValue = abs(value) < threshold ? 0 : 255;
+      }
       
       let index = (x + y * width) * 4;
-      pixels[index] = invertedMode ? (255 - bright) : bright;
-      pixels[index + 1] = invertedMode ? (255 - bright) : bright;
-      pixels[index + 2] = invertedMode ? (255 - bright) : bright;
+      pixels[index] = invertedMode ? (255 - pixelValue) : pixelValue;
+      pixels[index + 1] = invertedMode ? (255 - pixelValue) : pixelValue;
+      pixels[index + 2] = invertedMode ? (255 - pixelValue) : pixelValue;
       pixels[index + 3] = 255;
     }
   }
 
   updatePixels();
+  textGraphics.remove(); // Удаляем временную графику для экономии памяти
+}
+
+// Функция для рисования размытого текста
+function drawBlurredText(graphics, txt, x, y, blurAmount) {
+  // Рисуем текст с несколькими смещенными копиями для эффекта размытия
+  let alpha = 100; // Начальная прозрачность
+  let step = blurAmount / 10; // Шаг смещения
+  
+  for (let i = -blurAmount; i <= blurAmount; i += step) {
+    for (let j = -blurAmount; j <= blurAmount; j += step) {
+      // Рассчитываем непрозрачность на основе расстояния от центра
+      let distance = sqrt(i*i + j*j);
+      let opacity = map(distance, 0, blurAmount, alpha, 0);
+      
+      graphics.fill(invertedMode ? 0 : 255, opacity);
+      graphics.text(txt, x + i, y + j);
+    }
+  }
+  
+  // Рисуем основной текст поверх
+  graphics.fill(invertedMode ? 0 : 255);
+  graphics.text(txt, x, y);
 }
 
 function realChladniFormula(x, y, nX, nY) {
