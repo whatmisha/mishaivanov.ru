@@ -107,6 +107,15 @@ h3 {
   width: 100%;
   max-height: 600px;
   overflow-y: auto;
+  position: relative;
+}
+
+.export-controls {
+  display: flex;
+  gap: 10px;
+  position: absolute;
+  top: 20px;
+  right: 20px;
 }
 
 .slider-group {
