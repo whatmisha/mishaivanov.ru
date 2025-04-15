@@ -27,6 +27,8 @@ let textInfluenceFactor = 3.0; // Увеличиваем влияние текс
 let textInfluenceSlider;
 let textVisible = true; // Включаем отображение текста
 let myFont; // Переменная для хранения шрифта
+let diagLinesCheckbox; // Чекбокс для диагональных линий
+let showDiagLines = true; // По умолчанию диагональные линии включены
 
 function preload() {
   // Загружаем шрифт перед началом работы скетча
@@ -232,6 +234,16 @@ function createControlSliders() {
       drawStaticPattern(modeX, modeY);
     }
   });
+  
+  // Чекбокс для отображения диагональных линий
+  diagLinesCheckbox = createCheckbox('', showDiagLines);
+  diagLinesCheckbox.parent('diag-lines-checkbox-container');
+  diagLinesCheckbox.changed(() => {
+    showDiagLines = diagLinesCheckbox.checked();
+    if (!isRunning) {
+      drawStaticPattern(modeX, modeY);
+    }
+  });
 }
 
 function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
@@ -368,7 +380,7 @@ function realChladniFormula(x, y, nX, nY) {
   let ratio = 0.7;
   
   // Дополнительный коэффициент для диагональных компонентов
-  let diagRatio = 0.3;
+  let diagRatio = showDiagLines ? 0.3 : 0.0; // Если диагональные линии отключены, устанавливаем вес в 0
   
   // Основная формула для квадратной пластины (горизонтальные и вертикальные моды)
   let term1 = sin(nX * PI * x) * sin(nY * PI * y);
