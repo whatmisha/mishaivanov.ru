@@ -242,6 +242,10 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   // Получаем пиксели текстовой графики
   let textPixels = textGraphics.get().pixels;
   
+  // Создаем буфер для общего изображения
+  let combinedGraphics = createGraphics(width, height);
+  combinedGraphics.background(invertedMode ? 255 : 0);
+  
   loadPixels();
 
   const centerX = width / 2;
@@ -275,20 +279,10 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
       // Получаем значение альфа-канала текста (0-255)
       let textAlpha = textPixels[txtIndex + 3];
       
-      // Интегрируем текст с фигурой Хладни только если textVisible = false
-      // Иначе будем отображать текст поверх в конце функции
-      if (!textVisible && textAlpha > 0) {
-        // Если есть текст в данной точке, влияем на значение фигуры
-        // Нормализуем альфа к диапазону 0-1
+      // Увеличиваем значение волны там, где есть текст
+      if (textVisible && textAlpha > 0) {
         let textInfluence = (textAlpha / 255) * textInfluenceFactor;
-        
-        // Увеличиваем значение там, где текст, чтобы усилить контрастность
         value = value * (1 + textInfluence);
-        
-        // Для более сильного контраста можно инвертировать значение
-        if (textAlpha > 100) {
-          value = invertedMode ? maxWaveValue - value : value + maxWaveValue * 0.2;
-        }
       }
       
       // Применяем пороговое значение или используем градиент
@@ -297,8 +291,7 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
         // Градиентный режим - используем значение напрямую, без порога
         pixelValue = map(abs(value), 0, maxWaveValue * 1.2, 0, 255);
       } else {
-        // Контрастный режим с порогом
-        // Используем динамический порог в зависимости от максимального значения
+        // Контрастный режим с порогом применяется и к фигурам, и к тексту
         let dynamicThreshold = threshold * maxWaveValue;
         pixelValue = abs(value) < dynamicThreshold ? 0 : 255;
       }
@@ -313,10 +306,8 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
 
   updatePixels();
   
-  // Если textVisible = true, отображаем текст поверх фигур Хладни
-  if (textVisible) {
-    image(textGraphics, 0, 0);
-  }
+  // Больше не используем отдельное наложение текста
+  // Теперь контраст применяется ко всему изображению в пикселях
   
   textGraphics.remove(); // Удаляем временную графику для экономии памяти
 }
