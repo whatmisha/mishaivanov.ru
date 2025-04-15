@@ -347,15 +347,17 @@ function drawTextWithStroke(txt, x, y) {
   
   // Draw the stroke
   if (textStrokeValue > 0) {
-    fill(invertedMode ? 0 : 255);
-    stroke(invertedMode ? 255 : 0);
+    fill(255); // Always white text
+    stroke(255); // Always white stroke
     strokeWeight(textStrokeValue);
+    strokeJoin(ROUND); // Round join for smoother corners
+    strokeCap(ROUND); // Round caps for smoother endings
     text(txt, x, y);
   }
   
   // Draw the text fill
   noStroke();
-  fill(invertedMode ? 255 : 0);
+  fill(255); // Always white text
   text(txt, x, y);
   
   pop();
@@ -534,14 +536,16 @@ function setupInterface() {
         textElement.setAttribute('y', height/2);
         textElement.setAttribute('font-family', 'Rooftop Mono');
         textElement.setAttribute('font-size', textSizeValue);
-        textElement.setAttribute('fill', invertedMode ? 'white' : 'black');
+        textElement.setAttribute('fill', 'white'); // Always white text
         textElement.setAttribute('text-anchor', 'middle');
         textElement.setAttribute('dominant-baseline', 'middle');
         
         // Add stroke if needed
         if (textStrokeValue > 0) {
-          textElement.setAttribute('stroke', invertedMode ? 'black' : 'white');
+          textElement.setAttribute('stroke', 'white'); // Always white stroke
           textElement.setAttribute('stroke-width', textStrokeValue);
+          textElement.setAttribute('stroke-linejoin', 'round'); // Round join for smoother corners
+          textElement.setAttribute('stroke-linecap', 'round'); // Round caps for smoother endings
         }
         
         textElement.textContent = customText;
@@ -644,15 +648,17 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
     
     // Draw the stroke
     if (textStrokeValue > 0) {
-      targetCanvas.fill(invertedMode ? 0 : 255);
-      targetCanvas.stroke(invertedMode ? 255 : 0);
+      targetCanvas.fill(255); // Always white text
+      targetCanvas.stroke(255); // Always white stroke
       targetCanvas.strokeWeight(textStrokeValue * 2); // Double stroke for export
+      targetCanvas.strokeJoin(ROUND); // Round join for smoother corners
+      targetCanvas.strokeCap(ROUND); // Round caps for smoother endings
       targetCanvas.text(customText, centerX, centerY);
     }
     
     // Draw the text fill
     targetCanvas.noStroke();
-    targetCanvas.fill(invertedMode ? 255 : 0);
+    targetCanvas.fill(255); // Always white text
     targetCanvas.text(customText, centerX, centerY);
     
     targetCanvas.pop();
