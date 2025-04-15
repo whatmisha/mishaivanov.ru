@@ -1,123 +1,124 @@
 let mic, fft;
 let resolution = 300;
 let isRunning = false;
-let isPaused = false; // Новая переменная для паузы
-let thresholdSlider; // Ползунок для порогового значения
-let thresholdValue = 0.2; // Максимальное значение для максимальной контрастности (было 0.01)
-let invertedMode = false; // Режим инверсии (белые линии на черном или черные линии на белом)
-let modeXSlider, modeYSlider; // Слайдеры для режимов
-let modeX = 3, modeY = 2; // Начальные значения режимов
-let sensitivitySlider; // Ползунок для чувствительности
-let sensitivity = 5.0; // Максимальная чувствительность микрофона
-let smoothingSlider; // Ползунок для сглаживания
-let smoothingValue = 0.0; // Минимальное сглаживание
-// Параметры для сглаживания
+let isPaused = false; // Pause variable
+let thresholdSlider; // Threshold slider
+let thresholdValue = 0.2; // Maximum value for maximum contrast (was 0.01)
+let invertedMode = false; // Inversion mode (white lines on black or black lines on white)
+let modeXSlider, modeYSlider; // Mode sliders
+let modeX = 3, modeY = 2; // Initial mode values
+let sensitivitySlider; // Sensitivity slider
+let sensitivity = 5.0; // Maximum microphone sensitivity
+let smoothingSlider; // Smoothing slider
+let smoothingValue = 0.0; // Minimum smoothing
+// Smoothing parameters
 let currentNX = 3;
 let currentNY = 2;
 let currentAmplitude = 1.0;
-// Параметры для текста
+// Text parameters
 let customText = "THE SOUND OF SILENCE";
-let textSizeValue = 32; // Уменьшаем размер текста в два раза (было 64)
-let textBlurValue = 5; // Уменьшаем значение размытия по умолчанию
-let textSizeInput; // Текстовый ввод для размера шрифта вместо слайдера
+let textSizeValue = 32; // Reduced text size by half (was 64)
+let textBlurValue = 5; // Reduced default blur value
+let textSizeInput; // Text input for font size instead of slider
 let textBlurSlider;
 let textInput;
 let gradientModeCheckbox;
-let useGradientMode = false; // Отключаем градиентный режим по умолчанию (включаем контраст)
-let textVisible = true; // Включаем отображение текста
-let myFont; // Переменная для хранения шрифта
-let diagLinesCheckbox; // Чекбокс для диагональных линий
-let showDiagLines = false; // По умолчанию диагональные линии выключены
-let lastFrameState = null; // Для хранения последнего состояния при паузе
+let useGradientMode = false; // Disable gradient mode by default (enable contrast)
+let textVisible = true; // Enable text display
+let myFont; // Variable to store the font
+let diagLinesCheckbox; // Checkbox for diagonal lines
+let showDiagLines = false; // Diagonal lines are off by default
+let invertCheckbox; // Checkbox for color inversion
+let lastFrameState = null; // To store the last state on pause
 
 function preload() {
-  // Загружаем шрифт перед началом работы скетча
+  // Load font before starting sketch
   myFont = loadFont('Rooftop Mono-Regular-Desktop.otf');
 }
 
 function setup() {
-  // Создаем холст и помещаем его в контейнер
+  // Create canvas and place it in the container
   const canvas = createCanvas(600, 600);
   canvas.parent('canvas-container');
   pixelDensity(1);
 
-  // Настраиваем аудио-анализаторы
+  // Setup audio analyzers
   mic = new p5.AudioIn();
-  fft = new p5.FFT(smoothingValue, 1024); // Увеличиваем размер FFT для лучшего разрешения
+  fft = new p5.FFT(smoothingValue, 1024); // Increased FFT size for better resolution
   fft.setInput(mic);
 
   noStroke();
   
-  // Настройка шрифта - используем загруженный шрифт
+  // Font setup - use loaded font
   textFont(myFont);
   textAlign(CENTER, CENTER);
   
-  // Создаем ползунок для регулировки порогового значения и режимов
+  // Create sliders for threshold and modes
   createControlSliders();
   
-  // Подготавливаем интерфейс
+  // Setup interface
   setupInterface();
   
-  // Отрисовываем начальное состояние
+  // Draw initial state
   drawStaticPattern(modeX, modeY);
 }
 
 function draw() {
   if (!isRunning || isPaused) {
-    // Если на паузе и у нас есть сохраненное состояние - ничего не делаем
+    // If paused and we have a saved state - do nothing
     if (isPaused && lastFrameState !== null) return;
     
-    // Если не на паузе или нет сохраненного состояния - просто выходим
+    // If not paused or no saved state - just exit
     if (!isPaused) return;
   }
   
-  // Получаем аудиоспектр
+  // Get audio spectrum
   let spectrum = fft.analyze();
   
-  // Измеряем общую громкость микрофона
+  // Measure overall microphone volume
   let volume = mic.getLevel();
   
-  // Получаем энергию в разных диапазонах
+  // Get energy in different ranges
   let bass = fft.getEnergy("bass") * sensitivity;
   let lowMid = fft.getEnergy("lowMid") * sensitivity;
   let mid = fft.getEnergy("mid") * sensitivity;
   let highMid = fft.getEnergy("highMid") * sensitivity;
   let treble = fft.getEnergy("treble") * sensitivity;
   
-  // Нормализуем значения, чтобы они реагировали даже на тихие звуки
+  // Normalize values to react even to quiet sounds
   let bassNorm = normalizeEnergy(bass);
   let trebleNorm = normalizeEnergy(treble);
 
-  // Применяем более чувствительное преобразование звука в параметры волны
-  // Используем значения слайдеров как базовые и добавляем к ним влияние звука
-  let targetNX = modeX + map(bassNorm, 0, 1, 0, 5); // Звук влияет в диапазоне +0 до +5
+  // Apply more sensitive transformation of sound to wave parameters
+  // Use slider values as base and add sound influence
+  let targetNX = modeX + map(bassNorm, 0, 1, 0, 5); // Sound influences in range +0 to +5
   let targetNY = modeY + map(trebleNorm, 0, 1, 0, 5);
   let targetAmplitude = map(mid, 0, 255 * sensitivity, 0.5, 3);
   
-  // Сглаживаем переходы для более плавной анимации
+  // Smooth transitions for more fluid animation
   currentNX = lerp(currentNX, targetNX, 1 - smoothingValue);
   currentNY = lerp(currentNY, targetNY, 1 - smoothingValue);
   currentAmplitude = lerp(currentAmplitude, targetAmplitude, 1 - smoothingValue);
   
-  // Округляем значения волновых чисел до целых
+  // Round wave numbers to integers
   let nX = int(currentNX);
   let nY = int(currentNY);
   
-  // Минимум 1 для избежания ошибок
+  // Minimum 1 to avoid errors
   nX = max(1, nX);
   nY = max(1, nY);
   
-  // Выводим информацию о текущих параметрах и уровне звука
-  console.log(`Громкость: ${volume.toFixed(4)}, Басы: ${bassNorm.toFixed(2)}, Высокие: ${trebleNorm.toFixed(2)}, nX: ${nX}, nY: ${nY}, Амплитуда: ${currentAmplitude.toFixed(2)}`);
+  // Output information about current parameters and sound level
+  console.log(`Volume: ${volume.toFixed(4)}, Bass: ${bassNorm.toFixed(2)}, Treble: ${trebleNorm.toFixed(2)}, nX: ${nX}, nY: ${nY}, Amplitude: ${currentAmplitude.toFixed(2)}`);
 
-  // Динамически меняем пороговое значение в зависимости от громкости
+  // Dynamically change threshold value based on volume
   let dynamicThreshold = map(volume, 0, 0.1, thresholdValue * 2, thresholdValue * 0.8);
   dynamicThreshold = constrain(dynamicThreshold, 0.01, 0.2);
   
-  // Рисуем фигуру Хладни с динамическим порогом
+  // Draw Chladni figure with dynamic threshold
   drawChladniPattern(nX, nY, currentAmplitude, dynamicThreshold);
   
-  // Сохраняем последнее состояние для паузы
+  // Save last state for pause
   if (isRunning) {
     lastFrameState = {
       nX: nX,
@@ -128,35 +129,35 @@ function draw() {
   }
 }
 
-// Функция для нормализации энергии звука с усилением слабых сигналов
+// Function to normalize sound energy with amplification of weak signals
 function normalizeEnergy(energy) {
-  // Нелинейное преобразование для усиления слабых сигналов
-  // Используем квадратный корень для более равномерного отклика
+  // Non-linear transformation to amplify weak signals
+  // Use square root for more even response
   return pow(constrain(energy / (255 * sensitivity), 0, 1), 0.5);
 }
 
 function createControlSliders() {
-  // Создаем ползунок для регулировки порогового значения
+  // Create slider for threshold adjustment
   thresholdSlider = createSlider(0.01, 0.2, thresholdValue, 0.01);
   thresholdSlider.parent('threshold-slider-container');
   thresholdSlider.style('width', '100%');
   thresholdSlider.input(() => {
     thresholdValue = thresholdSlider.value();
-    // Обновляем статический паттерн при изменении порога, если не активен микрофон
+    // Update static pattern if microphone is not active
     if (!isRunning) {
       drawStaticPattern(modeX, modeY);
     }
   });
   
-  // Создаем ползунки для режимов X и Y
+  // Create sliders for X and Y modes
   modeXSlider = createSlider(1, 15, modeX, 1);
   modeXSlider.parent('modeX-slider-container');
   modeXSlider.style('width', '100%');
   modeXSlider.input(() => {
     modeX = modeXSlider.value();
-    // Обновляем текущее состояние nX, чтобы сразу видеть изменения
+    // Update current state nX immediately
     currentNX = modeX;
-    // Обновляем изображение, если микрофон не активен
+    // Update image if microphone is not active
     if (!isRunning) {
       drawStaticPattern(modeX, modeY);
     }
@@ -167,15 +168,15 @@ function createControlSliders() {
   modeYSlider.style('width', '100%');
   modeYSlider.input(() => {
     modeY = modeYSlider.value();
-    // Обновляем текущее состояние nY, чтобы сразу видеть изменения
+    // Update current state nY immediately
     currentNY = modeY;
-    // Обновляем изображение, если микрофон не активен
+    // Update image if microphone is not active
     if (!isRunning) {
       drawStaticPattern(modeX, modeY);
     }
   });
   
-  // Добавляем ползунок для регулировки чувствительности
+  // Add slider for sensitivity adjustment
   sensitivitySlider = createSlider(0.5, 5, sensitivity, 0.1);
   sensitivitySlider.parent('sensitivity-slider-container');
   sensitivitySlider.style('width', '100%');
@@ -183,7 +184,7 @@ function createControlSliders() {
     sensitivity = sensitivitySlider.value();
   });
   
-  // Добавляем ползунок для регулировки сглаживания
+  // Add slider for smoothing adjustment
   smoothingSlider = createSlider(0, 0.95, smoothingValue, 0.05);
   smoothingSlider.parent('smoothing-slider-container');
   smoothingSlider.style('width', '100%');
@@ -192,7 +193,7 @@ function createControlSliders() {
     fft.smooth(smoothingValue);
   });
   
-  // Поле ввода для текста
+  // Text input field
   textInput = createInput(customText);
   textInput.parent('text-input-container');
   textInput.style('width', '100%');
@@ -203,14 +204,14 @@ function createControlSliders() {
     }
   });
   
-  // Заменяем ползунок для размера текста на текстовый ввод
+  // Replace slider for text size with text input
   textSizeInput = createInput(textSizeValue.toString());
   textSizeInput.parent('text-size-input-container');
   textSizeInput.style('width', '100%');
   textSizeInput.input(() => {
-    // Преобразуем введенное значение в число
+    // Convert entered value to number
     let newSize = parseInt(textSizeInput.value());
-    // Проверяем, является ли значение числом и находится ли в допустимых пределах
+    // Check if value is a number and within acceptable limits
     if (!isNaN(newSize) && newSize >= 10 && newSize <= 200) {
       textSizeValue = newSize;
       if (!isRunning) {
@@ -219,7 +220,7 @@ function createControlSliders() {
     }
   });
   
-  // Ползунок для размытия текста
+  // Slider for text blur
   textBlurSlider = createSlider(0, 20, textBlurValue, 1);
   textBlurSlider.parent('text-blur-slider-container');
   textBlurSlider.style('width', '100%');
@@ -230,7 +231,7 @@ function createControlSliders() {
     }
   });
   
-  // Чекбокс для отображения градиентного режима
+  // Checkbox for gradient mode
   gradientModeCheckbox = createCheckbox('', useGradientMode);
   gradientModeCheckbox.parent('gradient-checkbox-container');
   gradientModeCheckbox.changed(() => {
@@ -240,7 +241,7 @@ function createControlSliders() {
     }
   });
   
-  // Чекбокс для отображения диагональных линий
+  // Checkbox for diagonal lines
   diagLinesCheckbox = createCheckbox('', showDiagLines);
   diagLinesCheckbox.parent('diag-lines-checkbox-container');
   diagLinesCheckbox.changed(() => {
@@ -249,27 +250,47 @@ function createControlSliders() {
       drawStaticPattern(modeX, modeY);
     }
   });
+  
+  // Checkbox for color inversion
+  invertCheckbox = createCheckbox('', invertedMode);
+  invertCheckbox.parent('invert-checkbox-container');
+  invertCheckbox.changed(() => {
+    invertedMode = invertCheckbox.checked();
+    if (!isRunning || isPaused) {
+      if (isPaused && lastFrameState) {
+        // If paused, use last state
+        drawChladniPattern(
+          lastFrameState.nX, 
+          lastFrameState.nY, 
+          lastFrameState.amplitude, 
+          lastFrameState.threshold
+        );
+      } else {
+        drawStaticPattern(modeX, modeY);
+      }
+    }
+  });
 }
 
 function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
-  // Устанавливаем фон в зависимости от режима инверсии
+  // Set background based on inversion mode
   background(invertedMode ? 255 : 0);
   
-  // Временно создаем буфер для размытого текста
+  // Temporarily create buffer for blurred text
   let textGraphics = createGraphics(width, height);
-  textGraphics.background(0, 0); // Полностью прозрачный фон
-  textGraphics.fill(255); // Всегда белый текст
+  textGraphics.background(0, 0); // Fully transparent background
+  textGraphics.fill(255); // Always white text
   textGraphics.noStroke();
-  textGraphics.textFont(myFont); // Используем загруженный шрифт
+  textGraphics.textFont(myFont); // Use loaded font
   textGraphics.textAlign(CENTER, CENTER);
   textGraphics.textSize(textSizeValue);
   
-  // Создаем размытый текст
-  // Всегда применяем размытие, игнорируя значение textBlurValue = 0
-  let effectiveBlur = max(5, textBlurValue); // Минимальное размытие 5
+  // Create blurred text
+  // Always apply blur, ignoring textBlurValue = 0
+  let effectiveBlur = max(5, textBlurValue); // Minimum blur 5
   drawBlurredText(textGraphics, customText, width/2, height/2, effectiveBlur);
   
-  // Получаем пиксели текстовой графики
+  // Get text graphics pixels
   let textPixels = textGraphics.get().pixels;
   
   loadPixels();
@@ -278,9 +299,9 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   const centerY = height / 2;
   const scale = min(width, height) / 2;
   
-  // Предварительно вычисляем максимальное значение волны, чтобы масштабировать контраст
+  // Pre-calculate maximum wave value to scale contrast
   let maxWaveValue = 0;
-  for (let x = 0; x < width; x += 5) { // Проверяем каждый 5-й пиксель для скорости
+  for (let x = 0; x < width; x += 5) { // Check every 5th pixel for speed
     for (let y = 0; y < height; y += 5) {
       let normX = (x - centerX) / scale;
       let normY = (y - centerY) / scale;
@@ -288,47 +309,47 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
       maxWaveValue = max(maxWaveValue, value);
     }
   }
-  maxWaveValue = max(1.0, maxWaveValue); // Избегаем деления на ноль
+  maxWaveValue = max(1.0, maxWaveValue); // Avoid division by zero
   
   for (let x = 0; x < width; x++) {
     for (let y = 0; y < height; y++) {
-      // Нормализуем координаты к квадрату [-1, 1] x [-1, 1]
+      // Normalize coordinates to square [-1, 1] x [-1, 1]
       let normX = (x - centerX) / scale;
       let normY = (y - centerY) / scale;
       
-      // Вычисляем фигуру Хладни по формуле для прямоугольной пластины
+      // Calculate Chladni figure using formula for rectangular plate
       let value = realChladniFormula(normX, normY, nX, nY) * amplitude;
       
-      // Получаем индекс пикселя в текстовой графике
+      // Get text graphics pixel index
       let txtIndex = (x + y * width) * 4;
       
-      // Получаем значение альфа-канала текста (0-255)
+      // Get text alpha channel value (0-255)
       let textAlpha = textPixels[txtIndex + 3];
       
-      // Интегрируем текст с фигурой Хладни только если textVisible = false
-      // Иначе будем отображать текст поверх в конце функции
+      // Integrate text with Chladni figure only if textVisible = false
+      // Otherwise we'll display text on top at the end of the function
       if (!textVisible && textAlpha > 0) {
-        // Если есть текст в данной точке, влияем на значение фигуры
-        // Нормализуем альфа к диапазону 0-1
+        // If there's text at this point, influence figure value
+        // Normalize alpha to range 0-1
         let textInfluence = (textAlpha / 255);
         
-        // Увеличиваем значение там, где текст, чтобы усилить контрастность
+        // Increase value where text, to enhance contrast
         value = value * (1 + textInfluence);
         
-        // Для более сильного контраста можно инвертировать значение
+        // For stronger contrast, we can invert value
         if (textAlpha > 100) {
           value = invertedMode ? maxWaveValue - value : value + maxWaveValue * 0.2;
         }
       }
       
-      // Применяем пороговое значение или используем градиент
+      // Apply threshold or use gradient
       let pixelValue;
       if (useGradientMode) {
-        // Градиентный режим - используем значение напрямую, без порога
+        // Gradient mode - use value directly, without threshold
         pixelValue = map(abs(value), 0, maxWaveValue * 1.2, 0, 255);
       } else {
-        // Контрастный режим с порогом
-        // Используем динамический порог в зависимости от максимального значения
+        // Contrast mode with threshold
+        // Use dynamic threshold based on maximum value
         let dynamicThreshold = threshold * maxWaveValue;
         pixelValue = abs(value) < dynamicThreshold ? 0 : 255;
       }
@@ -343,89 +364,88 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
 
   updatePixels();
   
-  // Если textVisible = true, отображаем текст поверх фигур Хладни
+  // If textVisible = true, display text on top of Chladni figures
   if (textVisible) {
     image(textGraphics, 0, 0);
   }
   
-  textGraphics.remove(); // Удаляем временную графику для экономии памяти
+  textGraphics.remove(); // Remove temporary graphics for memory efficiency
 }
 
-// Функция для рисования размытого текста
+// Function to draw blurred text
 function drawBlurredText(graphics, txt, x, y, blurAmount) {
-  // Очищаем графический буфер для текста
+  // Clear graphics buffer for text
   graphics.clear();
   
-  // Рисуем текст с несколькими смещенными копиями для эффекта размытия
-  let alpha = 180; // Настраиваем непрозрачность для размытия
-  let step = max(0.3, blurAmount / 20); // Уменьшаем шаг для более плотного размытия
+  // Draw text with multiple shifted copies for blur effect
+  let alpha = 180; // Set opacity for blur
+  let step = max(0.3, blurAmount / 20); // Reduce step for denser blur
   
   for (let i = -blurAmount; i <= blurAmount; i += step) {
     for (let j = -blurAmount; j <= blurAmount; j += step) {
-      // Рассчитываем непрозрачность на основе расстояния от центра
+      // Calculate opacity based on distance from center
       let distance = sqrt(i*i + j*j);
       let opacity = map(distance, 0, blurAmount, alpha, 0);
       
-      // Всегда используем белый цвет для текста
+      // Always use white color for text
       graphics.fill(255, opacity);
       graphics.text(txt, x + i, y + j);
     }
   }
   
-  // Рисуем основной текст поверх с высокой непрозрачностью
+  // Draw main text on top with high opacity
   graphics.fill(255, 220);
   graphics.text(txt, x, y);
 }
 
 function realChladniFormula(x, y, nX, nY) {
-  // Более реалистичная формула для фигур Хладни на квадратной пластине
-  // Используем тригонометрические функции с волновыми числами
+  // More realistic formula for Chladni figures on square plate
+  // Use trigonometric functions with wave numbers
   
-  // Коэффициент относительного вклада каждой моды
+  // Relative contribution coefficient of each mode
   let ratio = 0.7;
   
-  // Дополнительный коэффициент для диагональных компонентов
-  let diagRatio = showDiagLines ? 0.3 : 0.0; // Если диагональные линии отключены, устанавливаем вес в 0
+  // Additional coefficient for diagonal components
+  let diagRatio = showDiagLines ? 0.3 : 0.0; // If diagonal lines are off, set weight to 0
   
-  // Основная формула для квадратной пластины (горизонтальные и вертикальные моды)
+  // Main formula for square plate (horizontal and vertical modes)
   let term1 = sin(nX * PI * x) * sin(nY * PI * y);
   let term2 = sin(nY * PI * x) * sin(nX * PI * y);
   
-  // Диагональные компоненты (комбинации x+y и x-y)
+  // Diagonal components (combinations x+y and x-y)
   let diagTerm1 = sin(nX * PI * (x + y) * 0.5) * sin(nY * PI * (x - y) * 0.5);
   let diagTerm2 = sin(nX * PI * (x - y) * 0.5) * sin(nY * PI * (x + y) * 0.5);
   
-  // Комбинируем все компоненты с соответствующими весами
+  // Combine all components with corresponding weights
   return ratio * (term1 + term2) + diagRatio * (diagTerm1 + diagTerm2);
 }
 
 function drawStaticPattern(nX, nY) {
-  // Отрисовываем статическую фигуру для начального состояния
+  // Draw static figure for initial state
   drawChladniPattern(nX, nY, 1);
 }
 
 function setupInterface() {
-  // Настройка кнопок
+  // Button setup
   const startButton = select('#start-button');
   const stopButton = select('#stop-button');
-  const invertButton = select('#invert-button');
-  const pauseButton = select('#pause-button'); // Новая кнопка паузы
-  const exportPNGButton = select('#export-png-button'); // Кнопка экспорта PNG
-  const exportSVGButton = select('#export-svg-button'); // Кнопка экспорта SVG
+  const pauseButton = select('#pause-button'); // Pause button
+  const exportPNGButton = select('#export-png-button'); // PNG export button
+  const exportSVGButton = select('#export-svg-button'); // SVG export button
   
   startButton.mousePressed(() => {
     if (!isRunning) {
-      // Запрашиваем доступ к микрофону с усиленными параметрами
+      // Request microphone access with enhanced parameters
       userStartAudio().then(() => {
         mic.start();
-        // Устанавливаем высокий уровень усиления для микрофона
+        // Set high gain level for microphone
         mic.amp(1.0);
         isRunning = true;
-        isPaused = false; // При старте сбрасываем паузу
-        console.log('Микрофон активирован');
+        isPaused = false; // Reset pause on start
+        console.log('Microphone activated');
       }).catch(err => {
-        console.error('Ошибка доступа к микрофону:', err);
-        alert('Не удалось получить доступ к микрофону. Пожалуйста, разрешите доступ и попробуйте снова.');
+        console.error('Microphone access error:', err);
+        alert('Failed to access microphone. Please allow access and try again.');
       });
     }
   });
@@ -434,48 +454,30 @@ function setupInterface() {
     if (isRunning) {
       mic.stop();
       isRunning = false;
-      isPaused = false; // При остановке сбрасываем паузу
-      console.log('Микрофон остановлен');
-      // Отрисовываем статическую фигуру
+      isPaused = false; // Reset pause on stop
+      console.log('Microphone stopped');
+      // Draw static pattern
       drawStaticPattern(modeX, modeY);
     }
   });
   
-  invertButton.mousePressed(() => {
-    invertedMode = !invertedMode;
-    // Обновляем отображение
-    if (!isRunning || isPaused) {
-      if (isPaused && lastFrameState) {
-        // Если на паузе, используем последнее состояние
-        drawChladniPattern(
-          lastFrameState.nX, 
-          lastFrameState.nY, 
-          lastFrameState.amplitude, 
-          lastFrameState.threshold
-        );
-      } else {
-        drawStaticPattern(modeX, modeY);
-      }
-    }
-  });
-  
-  // Добавляем функциональность кнопке паузы
+  // Add functionality to pause button
   pauseButton.mousePressed(() => {
     if (isRunning) {
       isPaused = !isPaused;
-      console.log(isPaused ? 'Пауза активирована' : 'Пауза деактивирована');
+      console.log(isPaused ? 'Pause activated' : 'Pause deactivated');
     }
   });
   
-  // Добавляем функциональность кнопке экспорта PNG
+  // Add functionality to PNG export button
   exportPNGButton.mousePressed(() => {
-    // Создаем временный канвас с удвоенным разрешением
+    // Create temporary canvas with double resolution
     let tempCanvas = createGraphics(width * 2, height * 2);
     tempCanvas.pixelDensity(1);
     
-    // Рисуем текущую фигуру Хладни на временном канвасе с удвоенным масштабом
+    // Draw current Chladni figure on temporary canvas with double scale
     if (isPaused && lastFrameState) {
-      // Если на паузе, используем последнее состояние
+      // If paused, use last state
       drawExportChladniPattern(
         tempCanvas, 
         lastFrameState.nX, 
@@ -484,7 +486,7 @@ function setupInterface() {
         lastFrameState.threshold
       );
     } else if (isRunning) {
-      // Если запущен микрофон, используем текущие параметры
+      // If microphone is running, use current parameters
       drawExportChladniPattern(
         tempCanvas, 
         int(currentNX), 
@@ -493,26 +495,26 @@ function setupInterface() {
         thresholdValue
       );
     } else {
-      // Если остановлен, используем статические параметры
+      // If stopped, use static parameters
       drawExportChladniPattern(tempCanvas, modeX, modeY, 1, thresholdValue);
     }
     
-    // Сохраняем изображение
+    // Save image
     saveCanvas(tempCanvas, 'chladni_pattern', 'png');
     
-    // Удаляем временный канвас
+    // Remove temporary canvas
     tempCanvas.remove();
   });
   
-  // Добавляем функциональность кнопке экспорта SVG
+  // Add functionality to SVG export button
   exportSVGButton.mousePressed(() => {
     try {
-      console.log("Начинаем экспорт SVG...");
+      console.log("Starting SVG export...");
 
-      // Определяем параметры для рисования
+      // Define parameters for drawing
       let params;
       if (isPaused && lastFrameState) {
-        // Если на паузе, используем последнее состояние
+        // If paused, use last state
         params = {
           nX: lastFrameState.nX,
           nY: lastFrameState.nY,
@@ -520,7 +522,7 @@ function setupInterface() {
           threshold: lastFrameState.threshold
         };
       } else if (isRunning) {
-        // Если запущен микрофон, используем текущие параметры
+        // If microphone is running, use current parameters
         params = {
           nX: int(currentNX),
           nY: int(currentNY),
@@ -528,7 +530,7 @@ function setupInterface() {
           threshold: thresholdValue
         };
       } else {
-        // Если остановлен, используем статические параметры
+        // If stopped, use static parameters
         params = {
           nX: modeX,
           nY: modeY,
@@ -537,13 +539,13 @@ function setupInterface() {
         };
       }
 
-      // Создаем новый SVG для экспорта - используем временный невидимый контейнер
+      // Create new SVG for export - use temporary invisible container
       let svgContainer = document.createElement('div');
       svgContainer.style.position = 'absolute';
       svgContainer.style.top = '-9999px';
       document.body.appendChild(svgContainer);
       
-      // Создаем новый элемент SVG с нужными размерами
+      // Create new SVG element with required dimensions
       let svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       svgElement.setAttribute('width', width);
       svgElement.setAttribute('height', height);
@@ -551,17 +553,17 @@ function setupInterface() {
       svgElement.setAttribute('viewBox', `0 0 ${width} ${height}`);
       svgContainer.appendChild(svgElement);
       
-      // Задаем фон SVG
+      // Set SVG background
       let background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       background.setAttribute('width', width);
       background.setAttribute('height', height);
       background.setAttribute('fill', invertedMode ? 'white' : 'black');
       svgElement.appendChild(background);
       
-      // Генерируем контуры фигуры Хладни
+      // Generate Chladni figure contours
       generateSVGChladniContours(svgElement, params.nX, params.nY, params.amplitude, params.threshold);
       
-      // Если текст видим - добавляем его
+      // If text is visible - add it
       if (textVisible) {
         let textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         textElement.setAttribute('x', width/2);
@@ -575,51 +577,51 @@ function setupInterface() {
         svgElement.appendChild(textElement);
       }
       
-      // Получаем SVG как строку
+      // Get SVG as string
       let svgString = new XMLSerializer().serializeToString(svgElement);
       
-      // Создаем и скачиваем файл
+      // Create and download file
       let blob = new Blob([svgString], {type: 'image/svg+xml'});
       let link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = 'chladni_pattern.svg';
       link.click();
       
-      // Очищаем ресурсы
+      // Clean up resources
       URL.revokeObjectURL(link.href);
       document.body.removeChild(svgContainer);
       
-      console.log("SVG экспортирован успешно!");
+      console.log("SVG exported successfully!");
     } catch (error) {
-      console.error("Ошибка при экспорте SVG:", error);
-      alert('Произошла ошибка при экспорте в SVG: ' + error.message);
+      console.error("Error during SVG export:", error);
+      alert('Error occurred during SVG export: ' + error.message);
     }
   });
 }
 
-// Функция для отрисовки на экспортируемом канвасе
+// Function to draw on exportable canvas
 function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
-  // Устанавливаем фон в зависимости от режима инверсии
+  // Set background based on inversion mode
   targetCanvas.background(invertedMode ? 255 : 0);
   
-  // Настраиваем шрифт на временном канвасе
+  // Set up font on temporary canvas
   targetCanvas.textFont(myFont);
   targetCanvas.textAlign(CENTER, CENTER);
   
-  // Временно создаем буфер для размытого текста
+  // Temporarily create buffer for blurred text
   let textGraphics = createGraphics(targetCanvas.width, targetCanvas.height);
-  textGraphics.background(0, 0); // Полностью прозрачный фон
-  textGraphics.fill(255); // Всегда белый текст
+  textGraphics.background(0, 0); // Fully transparent background
+  textGraphics.fill(255); // Always white text
   textGraphics.noStroke();
-  textGraphics.textFont(myFont); // Используем загруженный шрифт
+  textGraphics.textFont(myFont); // Use loaded font
   textGraphics.textAlign(CENTER, CENTER);
-  textGraphics.textSize(textSizeValue * 2); // Удваиваем размер для экспорта
+  textGraphics.textSize(textSizeValue * 2); // Double size for export
   
-  // Создаем размытый текст с удвоенными параметрами
-  let effectiveBlur = max(5, textBlurValue) * 2; // Удваиваем размытие
+  // Create blurred text with doubled parameters
+  let effectiveBlur = max(5, textBlurValue) * 2; // Double blur
   drawBlurredText(textGraphics, customText, targetCanvas.width/2, targetCanvas.height/2, effectiveBlur);
   
-  // Получаем пиксели текстовой графики
+  // Get text graphics pixels
   let textPixels = textGraphics.get().pixels;
   
   targetCanvas.loadPixels();
@@ -628,9 +630,9 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
   const centerY = targetCanvas.height / 2;
   const scale = min(targetCanvas.width, targetCanvas.height) / 2;
   
-  // Предварительно вычисляем максимальное значение волны, чтобы масштабировать контраст
+  // Pre-calculate maximum wave value to scale contrast
   let maxWaveValue = 0;
-  for (let x = 0; x < targetCanvas.width; x += 10) { // Проверяем каждый 10-й пиксель для скорости
+  for (let x = 0; x < targetCanvas.width; x += 10) { // Check every 10th pixel for speed
     for (let y = 0; y < targetCanvas.height; y += 10) {
       let normX = (x - centerX) / scale;
       let normY = (y - centerY) / scale;
@@ -638,47 +640,47 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
       maxWaveValue = max(maxWaveValue, value);
     }
   }
-  maxWaveValue = max(1.0, maxWaveValue); // Избегаем деления на ноль
+  maxWaveValue = max(1.0, maxWaveValue); // Avoid division by zero
   
   for (let x = 0; x < targetCanvas.width; x++) {
     for (let y = 0; y < targetCanvas.height; y++) {
-      // Нормализуем координаты к квадрату [-1, 1] x [-1, 1]
+      // Normalize coordinates to square [-1, 1] x [-1, 1]
       let normX = (x - centerX) / scale;
       let normY = (y - centerY) / scale;
       
-      // Вычисляем фигуру Хладни по формуле для прямоугольной пластины
+      // Calculate Chladni figure using formula for rectangular plate
       let value = realChladniFormula(normX, normY, nX, nY) * amplitude;
       
-      // Получаем индекс пикселя в текстовой графике
+      // Get text graphics pixel index
       let txtIndex = (x + y * targetCanvas.width) * 4;
       
-      // Получаем значение альфа-канала текста (0-255)
+      // Get text alpha channel value (0-255)
       let textAlpha = textPixels[txtIndex + 3];
       
-      // Интегрируем текст с фигурой Хладни только если textVisible = false
-      // Иначе будем отображать текст поверх в конце функции
+      // Integrate text with Chladni figure only if textVisible = false
+      // Otherwise we'll display text on top at the end of the function
       if (!textVisible && textAlpha > 0) {
-        // Если есть текст в данной точке, влияем на значение фигуры
-        // Нормализуем альфа к диапазону 0-1
+        // If there's text at this point, influence figure value
+        // Normalize alpha to range 0-1
         let textInfluence = (textAlpha / 255);
         
-        // Увеличиваем значение там, где текст, чтобы усилить контрастность
+        // Increase value where text, to enhance contrast
         value = value * (1 + textInfluence);
         
-        // Для более сильного контраста можно инвертировать значение
+        // For stronger contrast, we can invert value
         if (textAlpha > 100) {
           value = invertedMode ? maxWaveValue - value : value + maxWaveValue * 0.2;
         }
       }
       
-      // Применяем пороговое значение или используем градиент
+      // Apply threshold or use gradient
       let pixelValue;
       if (useGradientMode) {
-        // Градиентный режим - используем значение напрямую, без порога
+        // Gradient mode - use value directly, without threshold
         pixelValue = map(abs(value), 0, maxWaveValue * 1.2, 0, 255);
       } else {
-        // Контрастный режим с порогом
-        // Используем динамический порог в зависимости от максимального значения
+        // Contrast mode with threshold
+        // Use dynamic threshold based on maximum value
         let dynamicThreshold = threshold * maxWaveValue;
         pixelValue = abs(value) < dynamicThreshold ? 0 : 255;
       }
@@ -693,26 +695,26 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
 
   targetCanvas.updatePixels();
   
-  // Если textVisible = true, отображаем текст поверх фигур Хладни
+  // If textVisible = true, display text on top of Chladni figures
   if (textVisible) {
     targetCanvas.image(textGraphics, 0, 0);
   }
   
-  textGraphics.remove(); // Удаляем временную графику для экономии памяти
+  textGraphics.remove(); // Remove temporary graphics for memory efficiency
 }
 
-// Функция для генерации контуров фигуры Хладни в SVG
+// Function to generate Chladni figure contours in SVG
 function generateSVGChladniContours(svgElement, nX, nY, amplitude, threshold) {
   const centerX = width / 2;
   const centerY = height / 2;
   const scale = min(width, height) / 2;
   
-  // Определяем шаг сетки для рисования контуров
-  const gridSize = 100; // Размер сетки (количество ячеек)
+  // Define grid step for drawing contours
+  const gridSize = 100; // Grid size (number of cells)
   const cellWidth = width / gridSize;
   const cellHeight = height / gridSize;
   
-  // Предварительно вычисляем максимальное значение волны для нормализации
+  // Pre-calculate maximum wave value for normalization
   let maxWaveValue = 0;
   for (let x = 0; x < width; x += cellWidth * 5) {
     for (let y = 0; y < height; y += cellHeight * 5) {
@@ -724,10 +726,10 @@ function generateSVGChladniContours(svgElement, nX, nY, amplitude, threshold) {
   }
   maxWaveValue = max(1.0, maxWaveValue);
   
-  // Порог для определения линий
+  // Threshold for determining lines
   const dynamicThreshold = threshold * maxWaveValue;
   
-  // Создаем 2D-массив значений
+  // Create 2D array of values
   let valueGrid = new Array(gridSize + 1);
   for (let i = 0; i <= gridSize; i++) {
     valueGrid[i] = new Array(gridSize + 1);
@@ -737,48 +739,48 @@ function generateSVGChladniContours(svgElement, nX, nY, amplitude, threshold) {
       let normX = (x - centerX) / scale;
       let normY = (y - centerY) / scale;
       let value = abs(realChladniFormula(normX, normY, nX, nY) * amplitude);
-      // Бинаризуем значения относительно порога
+      // Binary values relative to threshold
       valueGrid[i][j] = value < dynamicThreshold ? 0 : 1;
     }
   }
   
-  // Цвет контуров
+  // Contour color
   const strokeColor = invertedMode ? 'black' : 'white';
   
-  // Находим и рисуем замкнутые контуры
+  // Find and draw closed contours
   for (let i = 0; i < gridSize; i++) {
     for (let j = 0; j < gridSize; j++) {
-      // Проверяем каждую ячейку сетки
+      // Check each cell in grid
       if (valueGrid[i][j] !== valueGrid[i+1][j] || 
           valueGrid[i][j] !== valueGrid[i][j+1] || 
           valueGrid[i][j] !== valueGrid[i+1][j+1]) {
         
-        // Создаем путь для контура этой ячейки
+        // Create path for this cell's contour
         let contourPath = [];
         
-        // Добавляем точки контура в зависимости от смены значений
+        // Add contour points depending on value changes
         
-        // Верхняя сторона ячейки
+        // Top side of cell
         if (valueGrid[i][j] !== valueGrid[i+1][j]) {
           contourPath.push([i * cellWidth, j * cellHeight, (i+1) * cellWidth, j * cellHeight]);
         }
         
-        // Правая сторона ячейки
+        // Right side of cell
         if (valueGrid[i+1][j] !== valueGrid[i+1][j+1]) {
           contourPath.push([(i+1) * cellWidth, j * cellHeight, (i+1) * cellWidth, (j+1) * cellHeight]);
         }
         
-        // Нижняя сторона ячейки
+        // Bottom side of cell
         if (valueGrid[i][j+1] !== valueGrid[i+1][j+1]) {
           contourPath.push([i * cellWidth, (j+1) * cellHeight, (i+1) * cellWidth, (j+1) * cellHeight]);
         }
         
-        // Левая сторона ячейки
+        // Left side of cell
         if (valueGrid[i][j] !== valueGrid[i][j+1]) {
           contourPath.push([i * cellWidth, j * cellHeight, i * cellWidth, (j+1) * cellHeight]);
         }
         
-        // Если нашли контур, добавляем его в SVG
+        // If contour found, add it to SVG
         if (contourPath.length > 0) {
           for (let k = 0; k < contourPath.length; k++) {
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
@@ -796,7 +798,7 @@ function generateSVGChladniContours(svgElement, nX, nY, amplitude, threshold) {
   }
 }
 
-// Функция для отрисовки контуров Хладни в SVG (старая версия - не используется)
+// Function to draw Chladni contours in SVG (old version - not used)
 function drawSVGChladniPattern(nX, nY, amplitude, threshold) {
   noFill();
   stroke(invertedMode ? 0 : 255);
@@ -806,11 +808,11 @@ function drawSVGChladniPattern(nX, nY, amplitude, threshold) {
   const centerY = height / 2;
   const scale = min(width, height) / 2;
   
-  // Определяем шаг сетки для рисования контуров
-  // Меньший шаг даст более детальный SVG, но увеличит размер файла
+  // Define grid step for drawing contours
+  // Smaller step gives more detailed SVG, but increases file size
   const gridStep = 5;
   
-  // Предварительно вычисляем максимальное значение волны для нормализации
+  // Pre-calculate maximum wave value for normalization
   let maxWaveValue = 0;
   for (let x = 0; x < width; x += gridStep) {
     for (let y = 0; y < height; y += gridStep) {
@@ -822,13 +824,13 @@ function drawSVGChladniPattern(nX, nY, amplitude, threshold) {
   }
   maxWaveValue = max(1.0, maxWaveValue);
   
-  // Порог для определения линий
+  // Threshold for determining lines
   const dynamicThreshold = threshold * maxWaveValue;
   
-  // Находим и рисуем контуры с помощью контурных линий
+  // Find and draw contours using contour lines
   for (let x = 0; x < width - gridStep; x += gridStep) {
     for (let y = 0; y < height - gridStep; y += gridStep) {
-      // Вычисляем значения в четырех углах текущей ячейки
+      // Calculate values at four corners of current cell
       const values = [];
       const positions = [
         [x, y],
@@ -846,7 +848,7 @@ function drawSVGChladniPattern(nX, nY, amplitude, threshold) {
         values.push(value < dynamicThreshold ? 0 : 1);
       }
       
-      // Рисуем линии, если есть переход через порог
+      // Draw lines if there's transition through threshold
       if (values[0] !== values[1]) {
         const t = map(dynamicThreshold, values[0] * maxWaveValue, values[1] * maxWaveValue, 0, 1);
         const ix = map(t, 0, 1, positions[0][0], positions[1][0]);
@@ -873,9 +875,9 @@ function drawSVGChladniPattern(nX, nY, amplitude, threshold) {
     }
   }
   
-  // Добавляем текст, если он видим
+  // Add text if it's visible
   if (textVisible) {
-    // В SVG мы можем просто нарисовать текст напрямую
+    // In SVG we can simply draw text directly
     textFont(myFont);
     textAlign(CENTER, CENTER);
     textSize(textSizeValue);

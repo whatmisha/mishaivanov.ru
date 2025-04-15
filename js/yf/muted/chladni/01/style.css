@@ -218,14 +218,6 @@ button:hover {
   background-color: #f0f0f0;
 }
 
-#invert-button {
-  background-color: white;
-}
-
-#invert-button:hover {
-  background-color: #f0f0f0;
-}
-
 #export-png-button {
   background-color: white;
 }
