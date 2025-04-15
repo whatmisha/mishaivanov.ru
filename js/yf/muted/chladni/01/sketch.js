@@ -327,39 +327,18 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   
   // If textVisible, draw the text with background rectangle
   if (textVisible) {
-    drawTextWithBackground(customText, width/2, height/2);
+    drawTextWithStroke(customText, width/2, height/2);
   }
 }
 
-// New function to draw text with background rectangle
-function drawTextWithBackground(txt, x, y) {
+// New function to draw text with stroke
+function drawTextWithStroke(txt, x, y) {
   push();
   
   // Calculate text dimensions
   textFont(myFont);
   textSize(textSizeValue);
   textAlign(CENTER, CENTER);
-  
-  // Measure text dimensions approximately
-  let textWidth = txt.length * textSizeValue * 0.6; // Approximate width
-  let textHeight = textSizeValue * 1.4; // Approximate height
-  
-  // Draw blurred background rectangle
-  noStroke();
-  fill(invertedMode ? 0 : 255, 120); // Semi-transparent background
-  
-  // Add blur effect to the rectangle using multiple overlapping rectangles
-  const blurAmount = 20;
-  const blurSteps = 10;
-  
-  for (let i = 0; i < blurSteps; i++) {
-    let alpha = map(i, 0, blurSteps - 1, 10, 30);
-    let growFactor = map(i, 0, blurSteps - 1, 1, 1.5);
-    
-    fill(invertedMode ? 0 : 255, alpha);
-    rectMode(CENTER);
-    rect(x, y, textWidth * growFactor, textHeight * growFactor, 10);
-  }
   
   // Draw the text with stroke
   textFont(myFont);
@@ -549,38 +528,6 @@ function setupInterface() {
       
       // If text is visible - add it with background rectangle
       if (textVisible) {
-        // Calculate text dimensions approximately
-        let textWidth = customText.length * textSizeValue * 0.6; // Approximate width
-        let textHeight = textSizeValue * 1.4; // Approximate height
-        
-        // Create blurred background rectangle
-        let rectBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rectBg.setAttribute('x', width/2 - textWidth/2 - 20);
-        rectBg.setAttribute('y', height/2 - textHeight/2 - 10);
-        rectBg.setAttribute('width', textWidth + 40);
-        rectBg.setAttribute('height', textHeight + 20);
-        rectBg.setAttribute('rx', '10');
-        rectBg.setAttribute('ry', '10');
-        rectBg.setAttribute('fill', invertedMode ? 'black' : 'white');
-        rectBg.setAttribute('fill-opacity', '0.5');
-        rectBg.setAttribute('filter', 'blur(10px)');
-        
-        // Create the filter for blur
-        let filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
-        filter.setAttribute('id', 'blur');
-        filter.setAttribute('x', '-50%');
-        filter.setAttribute('y', '-50%');
-        filter.setAttribute('width', '200%');
-        filter.setAttribute('height', '200%');
-        
-        let gaussianBlur = document.createElementNS('http://www.w3.org/2000/svg', 'feGaussianBlur');
-        gaussianBlur.setAttribute('in', 'SourceGraphic');
-        gaussianBlur.setAttribute('stdDeviation', '10');
-        filter.appendChild(gaussianBlur);
-        svgElement.appendChild(filter);
-        
-        svgElement.appendChild(rectBg);
-        
         // Add text element
         let textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         textElement.setAttribute('x', width/2);
@@ -689,27 +636,6 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
     targetCanvas.textFont(myFont);
     targetCanvas.textSize(textSizeValue * 2); // Double size for export
     targetCanvas.textAlign(CENTER, CENTER);
-    
-    // Measure text dimensions approximately
-    let textWidth = customText.length * textSizeValue * 2 * 0.6; // Approximate width, doubled for export
-    let textHeight = textSizeValue * 2 * 1.4; // Approximate height, doubled for export
-    
-    // Draw blurred background rectangle
-    targetCanvas.noStroke();
-    targetCanvas.fill(invertedMode ? 0 : 255, 120); // Semi-transparent background
-    
-    // Add blur effect to the rectangle using multiple overlapping rectangles
-    const blurAmount = 40; // Double for export
-    const blurSteps = 10;
-    
-    for (let i = 0; i < blurSteps; i++) {
-      let alpha = map(i, 0, blurSteps - 1, 10, 30);
-      let growFactor = map(i, 0, blurSteps - 1, 1, 1.5);
-      
-      targetCanvas.fill(invertedMode ? 0 : 255, alpha);
-      targetCanvas.rectMode(CENTER);
-      targetCanvas.rect(centerX, centerY, textWidth * growFactor, textHeight * growFactor, 20);
-    }
     
     // Draw the text with stroke
     targetCanvas.textFont(myFont);
