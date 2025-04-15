@@ -288,10 +288,38 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
 
   updatePixels();
   
-  // Отображаем текст поверх фигур Хладни
-  image(textGraphics, 0, 0);
+  // Создаем контрастный или градиентный текст в зависимости от настроек
+  let processedTextGraphics = createGraphics(width, height);
   
-  textGraphics.remove(); // Удаляем временную графику для экономии памяти
+  // Получаем пиксели текстовой графики
+  let textPixels = textGraphics.get().pixels;
+  
+  // Обрабатываем текстовую графику с учетом режима контраста
+  if (!useGradientMode) {
+    // Применяем контраст к текстовой графике
+    processedTextGraphics.loadPixels();
+    for (let i = 0; i < textPixels.length; i += 4) {
+      // Применяем порог к альфа-каналу текста
+      let alpha = textPixels[i + 3];
+      let contrastAlpha = alpha < 128 ? 0 : 255;
+      
+      processedTextGraphics.pixels[i] = 255; // R
+      processedTextGraphics.pixels[i + 1] = 255; // G
+      processedTextGraphics.pixels[i + 2] = 255; // B
+      processedTextGraphics.pixels[i + 3] = contrastAlpha;
+    }
+    processedTextGraphics.updatePixels();
+    
+    // Отображаем контрастный текст
+    image(processedTextGraphics, 0, 0);
+  } else {
+    // В градиентном режиме просто отображаем оригинальный размытый текст
+    image(textGraphics, 0, 0);
+  }
+  
+  // Удаляем графические объекты для экономии памяти
+  textGraphics.remove();
+  processedTextGraphics.remove();
 }
 
 // Функция для рисования размытого текста
