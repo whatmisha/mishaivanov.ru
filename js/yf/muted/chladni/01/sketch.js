@@ -2,14 +2,14 @@ let mic, fft;
 let resolution = 300;
 let isRunning = false;
 let thresholdSlider; // Ползунок для порогового значения
-let thresholdValue = 0.01; // Минимальное значение для максимальной контрастности (было 0.05)
+let thresholdValue = 0.2; // Максимальное значение для максимальной контрастности (было 0.01)
 let invertedMode = false; // Режим инверсии (белые линии на черном или черные линии на белом)
 let modeXSlider, modeYSlider; // Слайдеры для режимов
 let modeX = 3, modeY = 2; // Начальные значения режимов
 let sensitivitySlider; // Ползунок для чувствительности
-let sensitivity = 5.0; // Максимальная чувствительность микрофона (было 2.0)
+let sensitivity = 5.0; // Максимальная чувствительность микрофона
 let smoothingSlider; // Ползунок для сглаживания
-let smoothingValue = 0.0; // Минимальное сглаживание (было 0.8)
+let smoothingValue = 0.0; // Минимальное сглаживание
 // Параметры для сглаживания
 let currentNX = 3;
 let currentNY = 2;
