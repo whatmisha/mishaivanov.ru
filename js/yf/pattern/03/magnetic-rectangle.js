@@ -22,9 +22,8 @@
     let mouseY = -1000;
     let isMouseOverCanvas = false; // Флаг нахождения курсора над холстом
     
-    // Минимальный и максимальный радиус магнитного поля
-    const MIN_MAGNETIC_RADIUS = 50;
-    const MAX_MAGNETIC_RADIUS = 500;
+    // Минимальный радиус магнитного поля
+    const MIN_MAGNETIC_RADIUS = 1;
     
     // Минимальная и максимальная сила магнитного поля
     const MIN_MAGNETIC_FORCE = 0;
@@ -183,10 +182,8 @@
                 
                 // Обновляем отображение в элементе управления
                 const radiusInput = document.getElementById('magnetic-rect-magneticRadius');
-                const radiusValue = document.getElementById('magnetic-rect-magneticRadiusValue');
-                if (radiusInput && radiusValue) {
+                if (radiusInput) {
                     radiusInput.value = magneticRadius;
-                    radiusValue.textContent = magneticRadius;
                 }
                 
                 needsRedraw = true;
@@ -194,15 +191,13 @@
             
             // Клавиша '}' - увеличение радиуса магнитного поля
             if (event.key === '}') {
-                // Увеличиваем радиус на 10px, но не больше максимального
-                magneticRadius = Math.min(MAX_MAGNETIC_RADIUS, magneticRadius + 10);
+                // Увеличиваем радиус на 10px
+                magneticRadius += 10;
                 
                 // Обновляем отображение в элементе управления
                 const radiusInput = document.getElementById('magnetic-rect-magneticRadius');
-                const radiusValue = document.getElementById('magnetic-rect-magneticRadiusValue');
-                if (radiusInput && radiusValue) {
+                if (radiusInput) {
                     radiusInput.value = magneticRadius;
-                    radiusValue.textContent = magneticRadius;
                 }
                 
                 needsRedraw = true;
@@ -330,9 +325,9 @@
                 <input type="range" id="magnetic-rect-magneticForce" min="0" max="100" value="${magneticForce}" step="1">
             </div>
             
-            <div class="control-group">
-                <label for="magnetic-rect-magneticRadius">Magnetic radius: <span id="magnetic-rect-magneticRadiusValue" class="value-display">${magneticRadius}</span>px</label>
-                <input type="range" id="magnetic-rect-magneticRadius" min="50" max="500" value="${magneticRadius}" step="10">
+            <div class="control-group text-input-group">
+                <label for="magnetic-rect-magneticRadius">Magnetic radius (px):</label>
+                <input type="number" id="magnetic-rect-magneticRadius" value="${magneticRadius}" min="${MIN_MAGNETIC_RADIUS}">
             </div>
             
             <div class="control-group checkbox-control">
@@ -449,9 +444,21 @@
         });
         
         document.getElementById('magnetic-rect-magneticRadius').addEventListener('input', function() {
-            magneticRadius = parseInt(this.value);
-            document.getElementById('magnetic-rect-magneticRadiusValue').textContent = magneticRadius;
-            drawCanvas();
+            const value = parseInt(this.value);
+            if (!isNaN(value) && value >= MIN_MAGNETIC_RADIUS) {
+                magneticRadius = value;
+                drawCanvas();
+            }
+        });
+        
+        document.getElementById('magnetic-rect-magneticRadius').addEventListener('change', function() {
+            const value = parseInt(this.value);
+            if (!isNaN(value) && value >= MIN_MAGNETIC_RADIUS) {
+                magneticRadius = value;
+                drawCanvas();
+            } else {
+                this.value = magneticRadius;
+            }
         });
         
         document.getElementById('magnetic-rect-roundedLineCaps').addEventListener('change', function() {
