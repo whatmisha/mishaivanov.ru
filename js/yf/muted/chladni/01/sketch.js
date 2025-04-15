@@ -25,8 +25,6 @@ let useGradientMode = false;
 let textInfluenceFactor = 5.0; // Увеличиваем влияние текста на волны (было 3.0)
 let textInfluenceSlider;
 let textVisible = false; // Отключаем наложение текста поверх для полной интеграции
-let textModeSelect; // Добавляем селектор режима текста
-let textMode = "multiply"; // Режим смешивания текста
 
 function setup() {
   // Создаем холст и помещаем его в контейнер
@@ -215,108 +213,36 @@ function createControlSliders() {
       drawStaticPattern(modeX, modeY);
     }
   });
-  
-  // Добавляем селектор режима текста
-  textModeSelect = createSelect();
-  textModeSelect.parent('text-mode-container');
-  textModeSelect.option('Умножение', 'multiply');
-  textModeSelect.option('Исключение', 'difference');
-  textModeSelect.option('Маска', 'mask');
-  textModeSelect.option('Перекрытие', 'overlay');
-  textModeSelect.changed(() => {
-    textMode = textModeSelect.value();
-    if (!isRunning) {
-      drawStaticPattern(modeX, modeY);
-    }
-  });
 }
 
 function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
-  // Создаем отдельные буферы для фигур и текста
-  let patternBuffer = createGraphics(width, height);
-  let textBuffer = createGraphics(width, height);
-  
-  // Рисуем фигуры Хладни в patternBuffer
-  renderChladniToBuffer(patternBuffer, nX, nY, amplitude, threshold);
-  
-  // Рисуем текст в textBuffer с высоким контрастом
-  renderTextToBuffer(textBuffer);
-  
-  // Очищаем основной холст
+  // Устанавливаем фон в зависимости от режима инверсии
   background(invertedMode ? 255 : 0);
   
-  // Теперь комбинируем буферы в основной холст
-  image(patternBuffer, 0, 0);
+  // Создаем текстовый буфер с черным текстом на белом фоне
+  let textGraphics = createGraphics(width, height);
+  textGraphics.background(0);
+  textGraphics.fill(255);
+  textGraphics.noStroke();
+  textGraphics.textFont('Arial');
+  textGraphics.textAlign(CENTER, CENTER);
+  textGraphics.textSize(textSizeValue);
+  textGraphics.text(customText, width/2, height/2);
   
-  // Применяем выбранный режим смешивания для текста
-  blendMode(BLEND); // Сначала сбрасываем режим
+  // Размываем текст для мягких краев
+  let textImage = textGraphics.get();
+  textImage.filter(BLUR, textBlurValue);
+  textImage.loadPixels();
   
-  if (textMode === 'multiply') {
-    // Режим умножения для текста (работает хорошо на светлом фоне)
-    blendMode(MULTIPLY);
-    image(textBuffer, 0, 0);
-  } else if (textMode === 'difference') {
-    // Режим разницы - отлично подходит для высокого контраста
-    blendMode(DIFFERENCE);
-    image(textBuffer, 0, 0);
-  } else if (textMode === 'mask') {
-    // Режим маски - используем текст как маску
-    let compositedImg = createImage(width, height);
-    
-    // Загружаем пиксели из обоих буферов
-    patternBuffer.loadPixels();
-    textBuffer.loadPixels();
-    compositedImg.loadPixels();
-    
-    // Создаем композит, где текст является маской
-    for (let x = 0; x < width; x++) {
-      for (let y = 0; y < height; y++) {
-        let index = (x + y * width) * 4;
-        
-        // Получаем яркость текста (0-255)
-        let textBrightness = textBuffer.pixels[index];
-        
-        // Если текст светлый, инвертируем фигуру
-        if (textBrightness > 100) {
-          compositedImg.pixels[index] = 255 - patternBuffer.pixels[index];
-          compositedImg.pixels[index+1] = 255 - patternBuffer.pixels[index+1];
-          compositedImg.pixels[index+2] = 255 - patternBuffer.pixels[index+2];
-        } else {
-          compositedImg.pixels[index] = patternBuffer.pixels[index];
-          compositedImg.pixels[index+1] = patternBuffer.pixels[index+1];
-          compositedImg.pixels[index+2] = patternBuffer.pixels[index+2];
-        }
-        compositedImg.pixels[index+3] = 255;
-      }
-    }
-    
-    compositedImg.updatePixels();
-    image(compositedImg, 0, 0);
-    compositedImg.remove();
-  } else if (textMode === 'overlay') {
-    // Режим перекрытия - сначала рисуем фигуры, затем текст поверх
-    blendMode(OVERLAY);
-    image(textBuffer, 0, 0);
-  }
-  
-  // Возвращаем обычный режим смешивания
-  blendMode(BLEND);
-  
-  // Очищаем ресурсы
-  patternBuffer.remove();
-  textBuffer.remove();
-}
-
-// Функция для рендеринга фигур Хладни в буфер
-function renderChladniToBuffer(buffer, nX, nY, amplitude, threshold) {
-  // Устанавливаем фон в зависимости от режима инверсии
-  buffer.background(invertedMode ? 255 : 0);
+  // Создаем буфер для хранения модифицированной фигуры Хладни
+  let chladniBuffer = createGraphics(width, height);
+  chladniBuffer.loadPixels();
   
   const centerX = width / 2;
   const centerY = height / 2;
   const scale = min(width, height) / 2;
   
-  // Предварительно вычисляем максимальное значение волны
+  // Вычисляем максимальное значение волны
   let maxWaveValue = 0;
   for (let x = 0; x < width; x += 5) {
     for (let y = 0; y < height; y += 5) {
@@ -328,77 +254,80 @@ function renderChladniToBuffer(buffer, nX, nY, amplitude, threshold) {
   }
   maxWaveValue = max(1.0, maxWaveValue);
   
-  buffer.loadPixels();
-  
+  // Рисуем фигуру Хладни в буфер
   for (let x = 0; x < width; x++) {
     for (let y = 0; y < height; y++) {
-      // Нормализуем координаты 
       let normX = (x - centerX) / scale;
       let normY = (y - centerY) / scale;
       
-      // Вычисляем фигуру Хладни
-      let value = realChladniFormula(normX, normY, nX, nY) * amplitude;
+      // Получаем значение текстовой маски (0-1)
+      let maskIndex = (x + y * width) * 4;
+      let maskValue = textImage.pixels[maskIndex] / 255.0;
       
-      // Применяем пороговое значение или используем градиент
+      // Создаем гибридную функцию Хладни-Текст
+      // Используем разные моды для текста и основной формы
+      let textMode = (maskValue > 0.1);
+      
+      // Выбираем моды фигуры в зависимости от наличия текста
+      let modeXToUse = textMode ? nX + 2 : nX;
+      let modeYToUse = textMode ? nY + 2 : nY;
+      
+      // Усиливаем контраст в области текста
+      let amplitudeToUse = textMode ? amplitude * 1.5 : amplitude;
+      
+      // Вычисляем значение фигуры с выбранными модами
+      let value = realChladniFormula(normX, normY, modeXToUse, modeYToUse) * amplitudeToUse;
+      
+      // В области текста дополнительно модифицируем значение
+      if (textMode) {
+        // Инвертируем значение и добавляем фазовый сдвиг
+        value = -value;
+      }
+      
+      // Применяем порог или градиент
       let pixelValue;
       if (useGradientMode) {
-        pixelValue = map(abs(value), 0, maxWaveValue, 0, 255);
+        pixelValue = map(abs(value), 0, maxWaveValue * 1.5, 0, 255);
       } else {
-        let dynamicThreshold = threshold * maxWaveValue;
+        // Если это текст, используем более низкий порог для создания более толстых линий
+        let effectiveThreshold = textMode ? threshold * 0.7 : threshold;
+        let dynamicThreshold = effectiveThreshold * maxWaveValue;
         pixelValue = abs(value) < dynamicThreshold ? 0 : 255;
       }
       
-      let index = (x + y * width) * 4;
-      buffer.pixels[index] = invertedMode ? (255 - pixelValue) : pixelValue;
-      buffer.pixels[index+1] = invertedMode ? (255 - pixelValue) : pixelValue;
-      buffer.pixels[index+2] = invertedMode ? (255 - pixelValue) : pixelValue;
-      buffer.pixels[index+3] = 255;
+      let index = (x + y * chladniBuffer.width) * 4;
+      chladniBuffer.pixels[index] = pixelValue;
+      chladniBuffer.pixels[index + 1] = pixelValue;
+      chladniBuffer.pixels[index + 2] = pixelValue;
+      chladniBuffer.pixels[index + 3] = 255;
     }
   }
   
-  buffer.updatePixels();
+  chladniBuffer.updatePixels();
+  
+  // Рисуем буфер на основной холст с инверсией при необходимости
+  if (invertedMode) {
+    // Инвертируем цвета при отрисовке
+    push();
+    blendMode(DIFFERENCE);
+    image(chladniBuffer, 0, 0);
+    pop();
+  } else {
+    // Обычная отрисовка
+    image(chladniBuffer, 0, 0);
+  }
+  
+  textGraphics.remove();
+  chladniBuffer.remove();
+  textImage.remove();
 }
 
-// Функция для рендеринга текста в буфер
-function renderTextToBuffer(buffer) {
-  // Очищаем буфер с прозрачным фоном
-  buffer.clear();
-  
-  // Настраиваем стиль текста
-  buffer.textFont('Arial');
-  buffer.textAlign(CENTER, CENTER);
-  buffer.textSize(textSizeValue);
-  
-  // Сначала рисуем с сильным размытием для создания свечения
-  let bigBlur = textBlurValue * 2;
-  for (let i = -bigBlur; i <= bigBlur; i += 2) {
-    for (let j = -bigBlur; j <= bigBlur; j += 2) {
-      let distance = sqrt(i*i + j*j);
-      let opacity = map(distance, 0, bigBlur, 50, 0);
-      
-      buffer.fill(255, opacity);
-      buffer.text(customText, width/2 + i, height/2 + j);
-    }
-  }
-  
-  // Затем рисуем с меньшим размытием для создания края
-  let smallBlur = textBlurValue * 0.7;
-  for (let i = -smallBlur; i <= smallBlur; i += 1) {
-    for (let j = -smallBlur; j <= smallBlur; j += 1) {
-      let distance = sqrt(i*i + j*j);
-      let opacity = map(distance, 0, smallBlur, 120, 0);
-      
-      buffer.fill(255, opacity);
-      buffer.text(customText, width/2 + i, height/2 + j);
-    }
-  }
-  
-  // И наконец основной текст
-  buffer.fill(255, 255);
-  buffer.text(customText, width/2, height/2);
-  
-  // Применяем контрастность для усиления
-  buffer.filter(POSTERIZE, 3);
+// Функция для рисования размытого текста - больше не используется в основном рендеринге
+function drawBlurredText(graphics, txt, x, y, blurAmount) {
+  graphics.clear();
+  graphics.fill(255, 255);
+  graphics.textSize(textSizeValue);
+  graphics.text(txt, x, y);
 }
 
 function realChladniFormula(x, y, nX, nY) {
@@ -468,12 +397,4 @@ function setupInterface() {
     textVisible = !textVisible;
     console.log('Отладка текста:', textVisible);
   });
-  
-  // Обновляем контейнер для селектора режима текста
-  const textModeContainer = createDiv('');
-  textModeContainer.id('text-mode-container');
-  textModeContainer.parent('controls');
-  
-  const textModeLabel = createP('Режим текста:');
-  textModeLabel.parent('text-mode-container');
 } 
