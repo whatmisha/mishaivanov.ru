@@ -126,19 +126,20 @@ h3 {
 #modeY-slider-container,
 #sensitivity-slider-container,
 #smoothing-slider-container,
-#text-size-slider-container,
 #text-blur-slider-container,
 #text-influence-slider-container {
   width: 100%;
   margin-top: 5px;
 }
 
-#text-input-container {
+#text-input-container,
+#text-size-input-container {
   width: 100%;
   margin-top: 5px;
 }
 
-#text-input-container input {
+#text-input-container input,
+#text-size-input-container input {
   width: 100%;
   padding: 8px;
   background-color: #333;

@@ -16,12 +16,13 @@ let currentNY = 2;
 let currentAmplitude = 1.0;
 // Параметры для текста
 let customText = "THE SOUND OF SILENCE";
-let textSizeValue = 64; // Увеличиваем размер текста по умолчанию
+let textSizeValue = 32; // Уменьшаем размер текста в два раза (было 64)
 let textBlurValue = 5; // Уменьшаем значение размытия по умолчанию
-let textSizeSlider, textBlurSlider;
+let textSizeInput; // Текстовый ввод для размера шрифта вместо слайдера
+let textBlurSlider;
 let textInput;
 let gradientModeCheckbox;
-let useGradientMode = true; // Включаем градиентный режим по умолчанию (контраст отключен)
+let useGradientMode = false; // Отключаем градиентный режим по умолчанию (включаем контраст)
 let textInfluenceFactor = 3.0; // Увеличиваем влияние текста на волны
 let textInfluenceSlider;
 let textVisible = true; // Включаем отображение текста
@@ -177,14 +178,19 @@ function createControlSliders() {
     }
   });
   
-  // Ползунок для размера текста
-  textSizeSlider = createSlider(12, 120, textSizeValue, 2);
-  textSizeSlider.parent('text-size-slider-container');
-  textSizeSlider.style('width', '100%');
-  textSizeSlider.input(() => {
-    textSizeValue = textSizeSlider.value();
-    if (!isRunning) {
-      drawStaticPattern(modeX, modeY);
+  // Заменяем ползунок для размера текста на текстовый ввод
+  textSizeInput = createInput(textSizeValue.toString());
+  textSizeInput.parent('text-size-input-container');
+  textSizeInput.style('width', '100%');
+  textSizeInput.input(() => {
+    // Преобразуем введенное значение в число
+    let newSize = parseInt(textSizeInput.value());
+    // Проверяем, является ли значение числом и находится ли в допустимых пределах
+    if (!isNaN(newSize) && newSize >= 10 && newSize <= 200) {
+      textSizeValue = newSize;
+      if (!isRunning) {
+        drawStaticPattern(modeX, modeY);
+      }
     }
   });
   
