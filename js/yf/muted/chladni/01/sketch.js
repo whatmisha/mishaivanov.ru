@@ -25,6 +25,12 @@ let useGradientMode = true; // Включаем градиентный режи�
 let textInfluenceFactor = 3.0; // Увеличиваем влияние текста на волны
 let textInfluenceSlider;
 let textVisible = true; // Включаем отображение текста
+let monoFont; // Переменная для хранения шрифта
+
+// Предварительная загрузка шрифта
+function preload() {
+  monoFont = loadFont('Rooftop Mono-Regular-Desktop.otf');
+}
 
 function setup() {
   // Создаем холст и помещаем его в контейнер
@@ -39,8 +45,8 @@ function setup() {
 
   noStroke();
   
-  // Настройка шрифта - используем обычный шрифт вместо жирного
-  textFont('Arial');
+  // Настройка шрифта - используем загруженный шрифт Rooftop Mono
+  textFont(monoFont);
   textAlign(CENTER, CENTER);
   
   // Создаем ползунок для регулировки порогового значения и режимов
@@ -224,7 +230,7 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   textGraphics.background(0, 0); // Полностью прозрачный фон
   textGraphics.fill(255); // Всегда белый текст
   textGraphics.noStroke();
-  textGraphics.textFont('Arial'); // Обычный шрифт для текста
+  textGraphics.textFont(monoFont); // Используем Rooftop Mono
   textGraphics.textAlign(CENTER, CENTER);
   textGraphics.textSize(textSizeValue);
   
