@@ -519,9 +519,70 @@ function setupInterface() {
   
   // Добавляем функциональность кнопке экспорта SVG
   exportSVGButton.mousePressed(() => {
-    alert('Экспорт в SVG не реализован в текущей версии');
-    // Примечание: реализация SVG требует дополнительной библиотеки и 
-    // переписывания алгоритма отрисовки фигур Хладни для векторного формата
+    try {
+      // Проверка наличия библиотеки SVG
+      if (typeof SVG !== 'undefined') {
+        console.log("Начинаем экспорт SVG...");
+        
+        // Создаем временный SVG канвас с тем же размером
+        let svgCanvas = createCanvas(width, height, SVG);
+        
+        // Отрисовываем текущую фигуру Хладни на SVG канвасе
+        background(invertedMode ? 255 : 0);
+        
+        // Определяем параметры для рисования
+        let drawParams;
+        if (isPaused && lastFrameState) {
+          // Если на паузе, используем последнее состояние
+          drawParams = {
+            nX: lastFrameState.nX,
+            nY: lastFrameState.nY,
+            amplitude: lastFrameState.amplitude,
+            threshold: lastFrameState.threshold
+          };
+        } else if (isRunning) {
+          // Если запущен микрофон, используем текущие параметры
+          drawParams = {
+            nX: int(currentNX),
+            nY: int(currentNY),
+            amplitude: currentAmplitude,
+            threshold: thresholdValue
+          };
+        } else {
+          // Если остановлен, используем статические параметры
+          drawParams = {
+            nX: modeX,
+            nY: modeY,
+            amplitude: 1,
+            threshold: thresholdValue
+          };
+        }
+        
+        // Рисуем контуры фигуры Хладни для SVG
+        drawSVGChladniPattern(drawParams.nX, drawParams.nY, drawParams.amplitude, drawParams.threshold);
+        
+        // Сохраняем SVG файл
+        save('chladni_pattern.svg');
+        
+        // Возвращаемся к обычному канвасу
+        createCanvas(width, height);
+        
+        // Перерисовываем текущее состояние на обычном канвасе
+        if (isPaused && lastFrameState) {
+          drawChladniPattern(lastFrameState.nX, lastFrameState.nY, lastFrameState.amplitude, lastFrameState.threshold);
+        } else if (!isRunning) {
+          drawStaticPattern(modeX, modeY);
+        }
+        
+        console.log("SVG экспортирован успешно!");
+      } else {
+        console.error("Библиотека p5.js-svg не загружена");
+        alert('Экспорт в SVG не работает. Библиотека p5.js-svg не загружена.');
+      }
+    } catch (error) {
+      console.error("Ошибка при экспорте SVG:", error);
+      alert('Произошла ошибка при экспорте в SVG: ' + error.message);
+    }
   });
   
   // Добавляем кнопку для переключения видимости текста для отладки
@@ -635,4 +696,91 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
   }
   
   textGraphics.remove(); // Удаляем временную графику для экономии памяти
+}
+
+// Функция для отрисовки контуров Хладни в SVG
+function drawSVGChladniPattern(nX, nY, amplitude, threshold) {
+  noFill();
+  stroke(invertedMode ? 0 : 255);
+  strokeWeight(1);
+  
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const scale = min(width, height) / 2;
+  
+  // Определяем шаг сетки для рисования контуров
+  // Меньший шаг даст более детальный SVG, но увеличит размер файла
+  const gridStep = 5;
+  
+  // Предварительно вычисляем максимальное значение волны для нормализации
+  let maxWaveValue = 0;
+  for (let x = 0; x < width; x += gridStep) {
+    for (let y = 0; y < height; y += gridStep) {
+      let normX = (x - centerX) / scale;
+      let normY = (y - centerY) / scale;
+      let value = abs(realChladniFormula(normX, normY, nX, nY) * amplitude);
+      maxWaveValue = max(maxWaveValue, value);
+    }
+  }
+  maxWaveValue = max(1.0, maxWaveValue);
+  
+  // Порог для определения линий
+  const dynamicThreshold = threshold * maxWaveValue;
+  
+  // Находим и рисуем контуры с помощью контурных линий
+  for (let x = 0; x < width - gridStep; x += gridStep) {
+    for (let y = 0; y < height - gridStep; y += gridStep) {
+      // Вычисляем значения в четырех углах текущей ячейки
+      const values = [];
+      const positions = [
+        [x, y],
+        [x + gridStep, y],
+        [x + gridStep, y + gridStep],
+        [x, y + gridStep]
+      ];
+      
+      for (let i = 0; i < 4; i++) {
+        let px = positions[i][0];
+        let py = positions[i][1];
+        let normX = (px - centerX) / scale;
+        let normY = (py - centerY) / scale;
+        let value = abs(realChladniFormula(normX, normY, nX, nY) * amplitude);
+        values.push(value < dynamicThreshold ? 0 : 1);
+      }
+      
+      // Рисуем линии, если есть переход через порог
+      if (values[0] !== values[1]) {
+        const t = map(dynamicThreshold, values[0] * maxWaveValue, values[1] * maxWaveValue, 0, 1);
+        const ix = map(t, 0, 1, positions[0][0], positions[1][0]);
+        line(ix, positions[0][1], ix, positions[0][1]);
+      }
+      
+      if (values[1] !== values[2]) {
+        const t = map(dynamicThreshold, values[1] * maxWaveValue, values[2] * maxWaveValue, 0, 1);
+        const iy = map(t, 0, 1, positions[1][1], positions[2][1]);
+        line(positions[1][0], iy, positions[1][0], iy);
+      }
+      
+      if (values[2] !== values[3]) {
+        const t = map(dynamicThreshold, values[2] * maxWaveValue, values[3] * maxWaveValue, 0, 1);
+        const ix = map(t, 0, 1, positions[2][0], positions[3][0]);
+        line(ix, positions[2][1], ix, positions[2][1]);
+      }
+      
+      if (values[3] !== values[0]) {
+        const t = map(dynamicThreshold, values[3] * maxWaveValue, values[0] * maxWaveValue, 0, 1);
+        const iy = map(t, 0, 1, positions[3][1], positions[0][1]);
+        line(positions[3][0], iy, positions[3][0], iy);
+      }
+    }
+  }
+  
+  // Добавляем текст, если он видим
+  if (textVisible) {
+    // В SVG мы можем просто нарисовать текст напрямую
+    textFont(myFont);
+    textAlign(CENTER, CENTER);
+    textSize(textSizeValue);
+    text(customText, width/2, height/2);
+  }
 } 
