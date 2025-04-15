@@ -24,8 +24,6 @@ let textBlurSlider;
 let textInput;
 let gradientModeCheckbox;
 let useGradientMode = false; // Отключаем градиентный режим по умолчанию (включаем контраст)
-let textInfluenceFactor = 3.0; // Увеличиваем влияние текста на волны
-let textInfluenceSlider;
 let textVisible = true; // Включаем отображение текста
 let myFont; // Переменная для хранения шрифта
 let diagLinesCheckbox; // Чекбокс для диагональных линий
@@ -232,17 +230,6 @@ function createControlSliders() {
     }
   });
   
-  // Ползунок для влияния текста
-  textInfluenceSlider = createSlider(1, 10, textInfluenceFactor, 0.5);
-  textInfluenceSlider.parent('text-influence-slider-container');
-  textInfluenceSlider.style('width', '100%');
-  textInfluenceSlider.input(() => {
-    textInfluenceFactor = textInfluenceSlider.value();
-    if (!isRunning) {
-      drawStaticPattern(modeX, modeY);
-    }
-  });
-  
   // Чекбокс для отображения градиентного режима
   gradientModeCheckbox = createCheckbox('', useGradientMode);
   gradientModeCheckbox.parent('gradient-checkbox-container');
@@ -323,7 +310,7 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
       if (!textVisible && textAlpha > 0) {
         // Если есть текст в данной точке, влияем на значение фигуры
         // Нормализуем альфа к диапазону 0-1
-        let textInfluence = (textAlpha / 255) * textInfluenceFactor;
+        let textInfluence = (textAlpha / 255);
         
         // Увеличиваем значение там, где текст, чтобы усилить контрастность
         value = value * (1 + textInfluence);
@@ -657,7 +644,7 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
       if (!textVisible && textAlpha > 0) {
         // Если есть текст в данной точке, влияем на значение фигуры
         // Нормализуем альфа к диапазону 0-1
-        let textInfluence = (textAlpha / 255) * textInfluenceFactor;
+        let textInfluence = (textAlpha / 255);
         
         // Увеличиваем значение там, где текст, чтобы усилить контрастность
         value = value * (1 + textInfluence);
