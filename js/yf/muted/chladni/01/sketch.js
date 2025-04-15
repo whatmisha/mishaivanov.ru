@@ -63,6 +63,15 @@ function setup() {
   drawStaticPattern(modeX, modeY);
 }
 
+// Add keyPressed function to handle spacebar for pause
+function keyPressed() {
+  if (key === ' ' && isRunning) { // Check for spacebar and if mic is running
+    isPaused = !isPaused;
+    console.log(isPaused ? 'Pause activated' : 'Pause deactivated');
+  }
+  return false; // Prevent default behavior
+}
+
 function draw() {
   if (!isRunning || isPaused) {
     // If paused and we have a saved state - do nothing
