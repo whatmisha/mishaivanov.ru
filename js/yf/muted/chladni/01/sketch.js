@@ -22,7 +22,7 @@ let textSizeSlider, textBlurSlider;
 let textInput;
 let gradientModeCheckbox;
 let useGradientMode = true; // Включаем градиентный режим по умолчанию (контраст отключен)
-let textInfluenceFactor = 3.0; // Увеличиваем влияние текста на волны
+let textInfluenceFactor = 8.0; // Значительно увеличиваем влияние текста на волны
 let textInfluenceSlider;
 let textVisible = true; // Включаем отображение текста
 let monoFont; // Переменная для хранения шрифта
@@ -200,7 +200,7 @@ function createControlSliders() {
   });
   
   // Ползунок для влияния текста
-  textInfluenceSlider = createSlider(1, 10, textInfluenceFactor, 0.5);
+  textInfluenceSlider = createSlider(1, 20, textInfluenceFactor, 0.5);
   textInfluenceSlider.parent('text-influence-slider-container');
   textInfluenceSlider.style('width', '100%');
   textInfluenceSlider.input(() => {
@@ -280,16 +280,24 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
       let textAlpha = textPixels[txtIndex + 3];
       
       // Увеличиваем значение волны там, где есть текст
-      if (textVisible && textAlpha > 0) {
+      if (textAlpha > 0) {
+        // Усиливаем влияние текста для лучшей видимости
         let textInfluence = (textAlpha / 255) * textInfluenceFactor;
-        value = value * (1 + textInfluence);
+        
+        // Для более сильного эффекта добавляем фиксированное смещение
+        if (textAlpha > 100) {
+          // Значительно усиливаем эффект текста на фигуры
+          value = value * (1 + textInfluence) + maxWaveValue * 0.3;
+        } else {
+          value = value * (1 + textInfluence);
+        }
       }
       
       // Применяем пороговое значение или используем градиент
       let pixelValue;
       if (useGradientMode) {
         // Градиентный режим - используем значение напрямую, без порога
-        pixelValue = map(abs(value), 0, maxWaveValue * 1.2, 0, 255);
+        pixelValue = map(abs(value), 0, maxWaveValue * 1.5, 0, 255);
       } else {
         // Контрастный режим с порогом применяется и к фигурам, и к тексту
         let dynamicThreshold = threshold * maxWaveValue;
@@ -318,8 +326,8 @@ function drawBlurredText(graphics, txt, x, y, blurAmount) {
   graphics.clear();
   
   // Рисуем текст с несколькими смещенными копиями для эффекта размытия
-  let alpha = 180; // Настраиваем непрозрачность для размытия
-  let step = max(0.3, blurAmount / 20); // Уменьшаем шаг для более плотного размытия
+  let alpha = 220; // Увеличиваем непрозрачность для лучшего размытия
+  let step = max(0.2, blurAmount / 25); // Уменьшаем шаг для более плотного размытия
   
   for (let i = -blurAmount; i <= blurAmount; i += step) {
     for (let j = -blurAmount; j <= blurAmount; j += step) {
@@ -334,7 +342,7 @@ function drawBlurredText(graphics, txt, x, y, blurAmount) {
   }
   
   // Рисуем основной текст поверх с высокой непрозрачностью
-  graphics.fill(255, 220);
+  graphics.fill(255, 255);
   graphics.text(txt, x, y);
 }
 
