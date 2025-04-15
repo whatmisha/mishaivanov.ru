@@ -22,7 +22,7 @@ let textSizeSlider, textBlurSlider;
 let textInput;
 let gradientModeCheckbox;
 let useGradientMode = false;
-let textInfluenceFactor = 5.0; // Увеличиваем влияние текста на волны (было 3.0)
+let textInfluenceFactor = 3.0; // Увеличиваем влияние текста на волны
 let textInfluenceSlider;
 let textVisible = false; // Отключаем наложение текста поверх для полной интеграции
 
@@ -219,32 +219,32 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   // Устанавливаем фон в зависимости от режима инверсии
   background(invertedMode ? 255 : 0);
   
-  // Создаем текстовый буфер с черным текстом на белом фоне
+  // Временно создаем буфер для размытого текста
   let textGraphics = createGraphics(width, height);
-  textGraphics.background(0);
-  textGraphics.fill(255);
+  textGraphics.background(0, 0); // Полностью прозрачный фон
+  textGraphics.fill(255); // Всегда белый текст
   textGraphics.noStroke();
-  textGraphics.textFont('Arial');
+  textGraphics.textFont('Arial'); // Обычный шрифт для текста
   textGraphics.textAlign(CENTER, CENTER);
   textGraphics.textSize(textSizeValue);
-  textGraphics.text(customText, width/2, height/2);
   
-  // Размываем текст для мягких краев
-  let textImage = textGraphics.get();
-  textImage.filter(BLUR, textBlurValue);
-  textImage.loadPixels();
+  // Создаем размытый текст
+  // Всегда применяем размытие, игнорируя значение textBlurValue = 0
+  let effectiveBlur = max(5, textBlurValue); // Минимальное размытие 5
+  drawBlurredText(textGraphics, customText, width/2, height/2, effectiveBlur);
   
-  // Создаем буфер для хранения модифицированной фигуры Хладни
-  let chladniBuffer = createGraphics(width, height);
-  chladniBuffer.loadPixels();
+  // Получаем пиксели текстовой графики
+  let textPixels = textGraphics.get().pixels;
   
+  loadPixels();
+
   const centerX = width / 2;
   const centerY = height / 2;
   const scale = min(width, height) / 2;
   
-  // Вычисляем максимальное значение волны
+  // Предварительно вычисляем максимальное значение волны, чтобы масштабировать контраст
   let maxWaveValue = 0;
-  for (let x = 0; x < width; x += 5) {
+  for (let x = 0; x < width; x += 5) { // Проверяем каждый 5-й пиксель для скорости
     for (let y = 0; y < height; y += 5) {
       let normX = (x - centerX) / scale;
       let normY = (y - centerY) / scale;
@@ -252,81 +252,90 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
       maxWaveValue = max(maxWaveValue, value);
     }
   }
-  maxWaveValue = max(1.0, maxWaveValue);
+  maxWaveValue = max(1.0, maxWaveValue); // Избегаем деления на ноль
   
-  // Рисуем фигуру Хладни в буфер
   for (let x = 0; x < width; x++) {
     for (let y = 0; y < height; y++) {
+      // Нормализуем координаты к квадрату [-1, 1] x [-1, 1]
       let normX = (x - centerX) / scale;
       let normY = (y - centerY) / scale;
       
-      // Получаем значение текстовой маски (0-1)
-      let maskIndex = (x + y * width) * 4;
-      let maskValue = textImage.pixels[maskIndex] / 255.0;
+      // Вычисляем фигуру Хладни по формуле для прямоугольной пластины
+      let value = realChladniFormula(normX, normY, nX, nY) * amplitude;
       
-      // Создаем гибридную функцию Хладни-Текст
-      // Используем разные моды для текста и основной формы
-      let textMode = (maskValue > 0.1);
+      // Получаем индекс пикселя в текстовой графике
+      let txtIndex = (x + y * width) * 4;
       
-      // Выбираем моды фигуры в зависимости от наличия текста
-      let modeXToUse = textMode ? nX + 2 : nX;
-      let modeYToUse = textMode ? nY + 2 : nY;
+      // Получаем значение альфа-канала текста (0-255)
+      let textAlpha = textPixels[txtIndex + 3];
       
-      // Усиливаем контраст в области текста
-      let amplitudeToUse = textMode ? amplitude * 1.5 : amplitude;
-      
-      // Вычисляем значение фигуры с выбранными модами
-      let value = realChladniFormula(normX, normY, modeXToUse, modeYToUse) * amplitudeToUse;
-      
-      // В области текста дополнительно модифицируем значение
-      if (textMode) {
-        // Инвертируем значение и добавляем фазовый сдвиг
-        value = -value;
+      // Интегрируем текст с фигурой Хладни
+      // Модифицируем значение фигуры на основе текста
+      if (textAlpha > 0) {
+        // Если есть текст в данной точке, влияем на значение фигуры
+        // Нормализуем альфа к диапазону 0-1
+        let textInfluence = (textAlpha / 255) * textInfluenceFactor;
+        
+        // Увеличиваем значение там, где текст, чтобы усилить контрастность
+        value = value * (1 + textInfluence);
+        
+        // Для более сильного контраста можно инвертировать значение
+        if (textAlpha > 100) {
+          value = invertedMode ? maxWaveValue - value : value + maxWaveValue * 0.2;
+        }
       }
       
-      // Применяем порог или градиент
+      // Применяем пороговое значение или используем градиент
       let pixelValue;
       if (useGradientMode) {
-        pixelValue = map(abs(value), 0, maxWaveValue * 1.5, 0, 255);
+        // Градиентный режим - используем значение напрямую, без порога
+        pixelValue = map(abs(value), 0, maxWaveValue * 1.2, 0, 255);
       } else {
-        // Если это текст, используем более низкий порог для создания более толстых линий
-        let effectiveThreshold = textMode ? threshold * 0.7 : threshold;
-        let dynamicThreshold = effectiveThreshold * maxWaveValue;
+        // Контрастный режим с порогом
+        // Используем динамический порог в зависимости от максимального значения
+        let dynamicThreshold = threshold * maxWaveValue;
         pixelValue = abs(value) < dynamicThreshold ? 0 : 255;
       }
       
-      let index = (x + y * chladniBuffer.width) * 4;
-      chladniBuffer.pixels[index] = pixelValue;
-      chladniBuffer.pixels[index + 1] = pixelValue;
-      chladniBuffer.pixels[index + 2] = pixelValue;
-      chladniBuffer.pixels[index + 3] = 255;
+      let index = (x + y * width) * 4;
+      pixels[index] = invertedMode ? (255 - pixelValue) : pixelValue;
+      pixels[index + 1] = invertedMode ? (255 - pixelValue) : pixelValue;
+      pixels[index + 2] = invertedMode ? (255 - pixelValue) : pixelValue;
+      pixels[index + 3] = 255;
+    }
+  }
+
+  updatePixels();
+  
+  // Больше не накладываем текст поверх
+  // Вместо этого он полностью интегрирован в фигуры Хладни
+  
+  textGraphics.remove(); // Удаляем временную графику для экономии памяти
+}
+
+// Функция для рисования размытого текста
+function drawBlurredText(graphics, txt, x, y, blurAmount) {
+  // Очищаем графический буфер для текста
+  graphics.clear();
+  
+  // Рисуем текст с несколькими смещенными копиями для эффекта размытия
+  let alpha = 180; // Настраиваем непрозрачность для размытия
+  let step = max(0.3, blurAmount / 20); // Уменьшаем шаг для более плотного размытия
+  
+  for (let i = -blurAmount; i <= blurAmount; i += step) {
+    for (let j = -blurAmount; j <= blurAmount; j += step) {
+      // Рассчитываем непрозрачность на основе расстояния от центра
+      let distance = sqrt(i*i + j*j);
+      let opacity = map(distance, 0, blurAmount, alpha, 0);
+      
+      // Всегда используем белый цвет для текста
+      graphics.fill(255, opacity);
+      graphics.text(txt, x + i, y + j);
     }
   }
   
-  chladniBuffer.updatePixels();
-  
-  // Рисуем буфер на основной холст с инверсией при необходимости
-  if (invertedMode) {
-    // Инвертируем цвета при отрисовке
-    push();
-    blendMode(DIFFERENCE);
-    image(chladniBuffer, 0, 0);
-    pop();
-  } else {
-    // Обычная отрисовка
-    image(chladniBuffer, 0, 0);
-  }
-  
-  textGraphics.remove();
-  chladniBuffer.remove();
-  textImage.remove();
-}
-
-// Функция для рисования размытого текста - больше не используется в основном рендеринге
-function drawBlurredText(graphics, txt, x, y, blurAmount) {
-  graphics.clear();
-  graphics.fill(255, 255);
-  graphics.textSize(textSizeValue);
+  // Рисуем основной текст поверх с высокой непрозрачностью
+  graphics.fill(255, 220);
   graphics.text(txt, x, y);
 }
 
