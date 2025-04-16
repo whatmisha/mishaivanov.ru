@@ -34,15 +34,15 @@
         <div class="slider-controls">
           <h3>Display Parameters</h3>
           <div class="slider-group">
-            <label for="threshold-slider-container">Line Contrast (↓ больше контраста):</label>
-            <div id="threshold-slider-container" title="Adjusts the threshold for line contrast. Lower values give higher contrast."></div>
+            <label for="threshold-slider-container">Line Contrast (0.01-0.2):</label>
+            <div id="threshold-slider-container" title="Adjusts the threshold for line contrast"></div>
           </div>
           <div class="slider-group">
-            <label for="modeX-slider-container">Horizontal Mode (n<sub>x</sub>):</label>
+            <label for="modeX-slider-container">Horizontal Mode (1-15):</label>
             <div id="modeX-slider-container" title="Number of horizontal nodal lines"></div>
           </div>
           <div class="slider-group">
-            <label for="modeY-slider-container">Vertical Mode (n<sub>y</sub>):</label>
+            <label for="modeY-slider-container">Vertical Mode (1-15):</label>
             <div id="modeY-slider-container" title="Number of vertical nodal lines"></div>
           </div>
           
@@ -72,21 +72,21 @@
             <input type="text" id="text-input" title="Text to display on the canvas" value="THE SOUND OF SILENCE" />
           </div>
           <div class="slider-group">
-            <label for="text-size-input">Text Size (px):</label>
+            <label for="text-size-input">Text Size (10-200px):</label>
             <input type="number" id="text-size-input" min="10" max="200" value="32" title="Font size in pixels" />
           </div>
           <div class="slider-group">
-            <label for="text-stroke-slider-container">Text Stroke Width:</label>
+            <label for="text-stroke-slider-container">Text Stroke Width (0-20):</label>
             <div id="text-stroke-slider-container" title="Width of text stroke outline"></div>
           </div>
           
           <h3>Sound Parameters</h3>
           <div class="slider-group">
-            <label for="sensitivity-slider-container">Microphone Sensitivity:</label>
+            <label for="sensitivity-slider-container">Microphone Sensitivity (0.5-5):</label>
             <div id="sensitivity-slider-container" title="Sensitivity to incoming audio signal"></div>
           </div>
           <div class="slider-group">
-            <label for="smoothing-slider-container">Animation Smoothing:</label>
+            <label for="smoothing-slider-container">Animation Smoothing (0-0.95):</label>
             <div id="smoothing-slider-container" title="Smoothness of transitions between figure states"></div>
           </div>
           

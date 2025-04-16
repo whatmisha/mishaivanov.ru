@@ -3,17 +3,17 @@ let resolution = 300;
 let isRunning = false;
 let isPaused = false; // Pause variable
 let thresholdSlider; // Threshold slider
-let thresholdValue = 0.2; // Maximum value for maximum contrast (was 0.01)
-let invertedMode = false; // Inversion mode (white lines on black or black lines on white)
+let thresholdValue = 0.2; // Maximum contrast
+let invertedMode = true; // Inversion mode (white lines on black or black lines on white)
 let modeXSlider, modeYSlider; // Mode sliders
-let modeX = 3, modeY = 2; // Initial mode values
+let modeX = 1, modeY = 8; // Initial mode values: min X, medium Y
 let sensitivitySlider; // Sensitivity slider
 let sensitivity = 5.0; // Maximum microphone sensitivity
 let smoothingSlider; // Smoothing slider
-let smoothingValue = 0.0; // Minimum smoothing
+let smoothingValue = 0.5; // Medium smoothing
 // Smoothing parameters
-let currentNX = 3;
-let currentNY = 2;
+let currentNX = 1;
+let currentNY = 8;
 let currentAmplitude = 1.0;
 // Text parameters
 let customText = "THE SOUND OF SILENCE";
@@ -25,7 +25,7 @@ let textInput;
 let gradientModeCheckbox;
 let useGradientMode = false; // Disable gradient mode by default (enable contrast)
 let noiseCheckbox; // Checkbox for noise effect
-let useNoiseEffect = false; // Noise effect is off by default
+let useNoiseEffect = true; // Noise effect is on by default
 let textVisible = true; // Enable text display
 let myFont; // Variable to store the font
 let diagLinesCheckbox; // Checkbox for diagonal lines
