@@ -328,24 +328,44 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
       // Calculate Chladni figure using formula for rectangular plate
       let value = realChladniFormula(normX, normY, nX, nY) * amplitude;
       
+      // Calculate raw value for noise application
+      let rawValue = abs(value);
+      let normalizedValue = map(rawValue, 0, maxWaveValue * 1.2, 0, 255);
+      
       // Apply threshold or use gradient
       let pixelValue;
       if (useGradientMode) {
         // Gradient mode - use value directly, without threshold
-        pixelValue = map(abs(value), 0, maxWaveValue * 1.2, 0, 255);
-        
-        // Add noise effect if enabled
-        if (useNoiseEffect) {
-          // Generate noise with intensity proportional to the figure's value
-          let noiseAmount = map(pixelValue, 0, 255, 0, 30); // Max noise intensity
-          let noiseValue = random(-noiseAmount, noiseAmount);
-          pixelValue = constrain(pixelValue + noiseValue, 0, 255);
-        }
+        pixelValue = normalizedValue;
       } else {
         // Contrast mode with threshold
         // Use dynamic threshold based on maximum value
         let dynamicThreshold = threshold * maxWaveValue;
-        pixelValue = abs(value) < dynamicThreshold ? 0 : 255;
+        pixelValue = rawValue < dynamicThreshold ? 0 : 255;
+      }
+      
+      // Add noise effect if enabled (for both modes)
+      if (useNoiseEffect) {
+        // In gradient mode, noise varies with intensity
+        // In contrast mode, noise is applied only to areas above threshold
+        if (useGradientMode) {
+          // Noise intensity proportional to the figure's value
+          let noiseAmount = map(normalizedValue, 0, 255, 0, 30); // Max noise intensity
+          let noiseValue = random(-noiseAmount, noiseAmount);
+          pixelValue = constrain(pixelValue + noiseValue, 0, 255);
+        } else {
+          // For contrast mode, only add noise to visible lines
+          if (pixelValue > 0) {
+            // Apply subtle noise to edges
+            let edgeDist = abs(rawValue - dynamicThreshold);
+            let edgeNormalized = map(edgeDist, 0, maxWaveValue * 0.1, 15, 0);
+            edgeNormalized = constrain(edgeNormalized, 0, 15);
+            
+            let noiseValue = random(-edgeNormalized, edgeNormalized);
+            // Make sure noise doesn't make white pixels black or vice versa
+            pixelValue = constrain(pixelValue + noiseValue, 200, 255);
+          }
+        }
       }
       
       let index = (x + y * width) * 4;
@@ -559,7 +579,7 @@ function setupInterface() {
       svgElement.appendChild(background);
       
       // For gradient mode with noise, add a noise texture filter
-      if (useGradientMode && useNoiseEffect) {
+      if (useNoiseEffect) { // Apply to both gradient and contrast modes
         // Add noise filter definition
         let defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
         svgElement.appendChild(defs);
@@ -593,18 +613,28 @@ function setupInterface() {
         composite.setAttribute('in', 'SourceGraphic');
         composite.setAttribute('in2', 'coloredNoise');
         composite.setAttribute('operator', 'arithmetic');
-        composite.setAttribute('k1', '0');
-        composite.setAttribute('k2', '0.1');
-        composite.setAttribute('k3', '0.3');
-        composite.setAttribute('k4', '0');
+        
+        // Different noise intensity based on mode
+        if (useGradientMode) {
+          composite.setAttribute('k1', '0');
+          composite.setAttribute('k2', '0.1');
+          composite.setAttribute('k3', '0.3');
+          composite.setAttribute('k4', '0');
+        } else {
+          // For contrast mode, more subtle noise
+          composite.setAttribute('k1', '0');
+          composite.setAttribute('k2', '0.05');
+          composite.setAttribute('k3', '0.15');
+          composite.setAttribute('k4', '0');
+        }
         filter.appendChild(composite);
       }
       
       // Generate Chladni figure contours
       generateSVGChladniContours(svgElement, params.nX, params.nY, params.amplitude, params.threshold);
       
-      // If using gradient mode with noise, apply the noise filter to the SVG
-      if (useGradientMode && useNoiseEffect) {
+      // If using noise effect, apply the noise filter to the SVG
+      if (useNoiseEffect) { // Apply to both gradient and contrast modes
         // Apply noise filter to a rectangle covering the entire SVG
         let noiseOverlay = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         noiseOverlay.setAttribute('width', width);
@@ -700,24 +730,44 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
       // Calculate Chladni figure using formula for rectangular plate
       let value = realChladniFormula(normX, normY, nX, nY) * amplitude;
       
+      // Calculate raw value for noise application
+      let rawValue = abs(value);
+      let normalizedValue = map(rawValue, 0, maxWaveValue * 1.2, 0, 255);
+      
       // Apply threshold or use gradient
       let pixelValue;
       if (useGradientMode) {
         // Gradient mode - use value directly, without threshold
-        pixelValue = map(abs(value), 0, maxWaveValue * 1.2, 0, 255);
-        
-        // Add noise effect if enabled
-        if (useNoiseEffect) {
-          // Generate noise with intensity proportional to the figure's value
-          let noiseAmount = map(pixelValue, 0, 255, 0, 30); // Max noise intensity
-          let noiseValue = random(-noiseAmount, noiseAmount);
-          pixelValue = constrain(pixelValue + noiseValue, 0, 255);
-        }
+        pixelValue = normalizedValue;
       } else {
         // Contrast mode with threshold
         // Use dynamic threshold based on maximum value
         let dynamicThreshold = threshold * maxWaveValue;
-        pixelValue = abs(value) < dynamicThreshold ? 0 : 255;
+        pixelValue = rawValue < dynamicThreshold ? 0 : 255;
+      }
+      
+      // Add noise effect if enabled (for both modes)
+      if (useNoiseEffect) {
+        // In gradient mode, noise varies with intensity
+        // In contrast mode, noise is applied only to areas above threshold
+        if (useGradientMode) {
+          // Noise intensity proportional to the figure's value
+          let noiseAmount = map(normalizedValue, 0, 255, 0, 30); // Max noise intensity, doubled for export
+          let noiseValue = random(-noiseAmount, noiseAmount);
+          pixelValue = constrain(pixelValue + noiseValue, 0, 255);
+        } else {
+          // For contrast mode, only add noise to visible lines
+          if (pixelValue > 0) {
+            // Apply subtle noise to edges
+            let edgeDist = abs(rawValue - dynamicThreshold);
+            let edgeNormalized = map(edgeDist, 0, maxWaveValue * 0.1, 15, 0);
+            edgeNormalized = constrain(edgeNormalized, 0, 15);
+            
+            let noiseValue = random(-edgeNormalized, edgeNormalized);
+            // Make sure noise doesn't make white pixels black or vice versa
+            pixelValue = constrain(pixelValue + noiseValue, 200, 255);
+          }
+        }
       }
       
       let index = (x + y * targetCanvas.width) * 4;
@@ -733,11 +783,6 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
   // If text is visible, draw the text with background rectangle
   if (textVisible) {
     targetCanvas.push();
-    
-    // Calculate text dimensions
-    targetCanvas.textFont(myFont);
-    targetCanvas.textSize(textSizeValue * 2); // Double size for export
-    targetCanvas.textAlign(CENTER, CENTER);
     
     // Draw the text with stroke
     targetCanvas.textFont(myFont);
