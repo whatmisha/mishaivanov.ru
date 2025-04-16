@@ -97,7 +97,16 @@ function draw() {
   if (useAudioReactiveXMode) {
     // Calculate X mode directly from audio (more dramatic effect)
     // Инвертируем зависимость - высокий уровень басов даёт низкие значения X
-    targetNX = map(bassNorm, 0, 1, 12, 1); // Инвертированный диапазон (12-1)
+    // Используем sensitivity для влияния на диапазон изменения
+    const minX = 1;
+    const maxX = 12;
+    // При высокой чувствительности - больший диапазон изменения параметра
+    const rangeX = map(sensitivity, 0.5, 5, (maxX - minX) * 0.3, maxX - minX);
+    // Центр диапазона и диапазон изменения зависят от чувствительности
+    const centerX = maxX - rangeX / 2;
+    targetNX = map(bassNorm, 0, 1, centerX + rangeX/2, centerX - rangeX/2);
+    // Ограничиваем значения
+    targetNX = constrain(targetNX, minX, maxX);
     
     // Update X slider position visually
     modeXSlider.value(targetNX);
@@ -112,7 +121,16 @@ function draw() {
   // Handle Y mode based on audio reactivity setting
   if (useAudioReactiveYMode) {
     // Calculate Y mode directly from audio (more dramatic effect)
-    targetNY = map(trebleNorm, 0, 1, 1, 12); // Treble affects vertical mode (1-12)
+    // Используем sensitivity для влияния на диапазон изменения
+    const minY = 1;
+    const maxY = 12;
+    // При высокой чувствительности - больший диапазон изменения параметра
+    const rangeY = map(sensitivity, 0.5, 5, (maxY - minY) * 0.3, maxY - minY);
+    // Центр диапазона и диапазон изменения зависят от чувствительности
+    const centerY = minY + rangeY / 2;
+    targetNY = map(trebleNorm, 0, 1, centerY - rangeY/2, centerY + rangeY/2);
+    // Ограничиваем значения
+    targetNY = constrain(targetNY, minY, maxY);
     
     // Update Y slider position visually
     modeYSlider.value(targetNY);
