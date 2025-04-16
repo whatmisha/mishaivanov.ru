@@ -63,6 +63,20 @@ function setup() {
   
   // Draw initial state
   drawStaticPattern(modeX, modeY);
+  
+  // Update version timestamp
+  updateVersionTimestamp();
+}
+
+// Function to update the version timestamp
+function updateVersionTimestamp() {
+  const now = new Date();
+  const date = now.toLocaleDateString();
+  const time = now.toLocaleTimeString();
+  const timestampElement = document.getElementById('version-timestamp');
+  if (timestampElement) {
+    timestampElement.textContent = `${date} ${time}`;
+  }
 }
 
 // Add keyPressed function to handle spacebar for pause
@@ -208,7 +222,7 @@ function createControlSliders() {
   textInput = createInput(customText);
   textInput.parent('text-input-container');
   textInput.style('width', '100%');
-  textInput.input(() => {
+  textInput.changed(() => {
     customText = textInput.value();
     if (!isRunning) {
       drawStaticPattern(modeX, modeY);
@@ -323,8 +337,8 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   let particleMap = [];
   if (useNoiseEffect) {
     // Calculate the particle density based on the Chladni pattern
-    for (let x = 0; x < width; x += 2) { // Increase sampling density for more particles
-      for (let y = 0; y < height; y += 2) { // Increase sampling density for more particles
+    for (let x = 0; x < width; x += 4) { // Sample fewer points for performance
+      for (let y = 0; y < height; y += 4) {
         let normX = (x - centerX) / scale;
         let normY = (y - centerY) / scale;
         let value = abs(realChladniFormula(normX, normY, nX, nY) * amplitude);
@@ -334,13 +348,13 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
         
         if (useGradientMode) {
           // In gradient mode, place particles based on value intensity
-          if (random() < pow(normalizedValue, 2) * 0.4) { // Increase probability for more particles
+          if (random() < pow(normalizedValue, 2) * 0.3) {
             particleMap.push({x, y, intensity: normalizedValue});
           }
         } else {
           // In contrast mode, concentrate particles along the lines (around threshold value)
           let proximity = abs(normalizedValue - (threshold / maxWaveValue));
-          if (proximity < 0.08 && random() < 0.9) { // Wider proximity band and higher probability
+          if (proximity < 0.05 && random() < 0.8) {
             particleMap.push({x, y, intensity: 1.0});
           }
         }
@@ -388,8 +402,8 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
     
     // Draw each particle
     for (let particle of particleMap) {
-      let size = random(1.5, 4); // Increase particle size range
-      let alpha = map(particle.intensity, 0, 1, 150, 255); // Increase minimum alpha for better visibility
+      let size = random(1, 3);
+      let alpha = map(particle.intensity, 0, 1, 100, 255);
       particleBuffer.fill(255, alpha);
       
       // Add some randomness to the position
@@ -445,34 +459,25 @@ function drawTextWithStroke(txt, x, y) {
 }
 
 function realChladniFormula(x, y, nX, nY) {
-  // Formula for Chladni figures on square plate, optimized for more distinct patterns
+  // More realistic formula for Chladni figures on square plate
   // Use trigonometric functions with wave numbers
   
-  // Relative contribution coefficient for different modes
-  // Use different ratio for better pattern formation
-  let ratio = 1.0; // Increased from 0.7 to get more pronounced patterns
+  // Relative contribution coefficient of each mode
+  let ratio = 0.7;
   
   // Additional coefficient for diagonal components
   let diagRatio = showDiagLines ? 0.3 : 0.0; // If diagonal lines are off, set weight to 0
   
-  // Main formula for square plate modes (using product of sines)
-  // This creates classic Chladni patterns with clear nodal lines
+  // Main formula for square plate (horizontal and vertical modes)
   let term1 = sin(nX * PI * x) * sin(nY * PI * y);
   let term2 = sin(nY * PI * x) * sin(nX * PI * y);
   
-  // Combine horizontal and vertical modes with equal weights
-  // This enhances the symmetry and clarity of the patterns
-  let mainTerm = term1 * term2;
-  
   // Diagonal components (combinations x+y and x-y)
-  // These create additional complexity in the patterns
   let diagTerm1 = sin(nX * PI * (x + y) * 0.5) * sin(nY * PI * (x - y) * 0.5);
   let diagTerm2 = sin(nX * PI * (x - y) * 0.5) * sin(nY * PI * (x + y) * 0.5);
   
   // Combine all components with corresponding weights
-  // Note: multiplying terms instead of adding them creates more distinct nodal lines
-  // that better resemble physical Chladni figures
-  return ratio * mainTerm + diagRatio * (diagTerm1 + diagTerm2);
+  return ratio * (term1 + term2) + diagRatio * (diagTerm1 + diagTerm2);
 }
 
 function drawStaticPattern(nX, nY) {
@@ -646,8 +651,8 @@ function setupInterface() {
         maxWaveValue = max(1.0, maxWaveValue);
         
         // Create particles with similar distribution as in canvas drawing
-        for (let x = 0; x < width; x += 2) { // Increased sampling density
-          for (let y = 0; y < height; y += 2) { // Increased sampling density
+        for (let x = 0; x < width; x += 4) {
+          for (let y = 0; y < height; y += 4) {
             let normX = (x - centerX) / scale;
             let normY = (y - centerY) / scale;
             let value = abs(realChladniFormula(normX, normY, params.nX, params.nY) * params.amplitude);
@@ -658,11 +663,11 @@ function setupInterface() {
             
             if (useGradientMode) {
               // In gradient mode, place particles based on intensity
-              shouldCreateParticle = random() < pow(normalizedValue, 2) * 0.4; // Increased probability
+              shouldCreateParticle = random() < pow(normalizedValue, 2) * 0.3;
             } else {
               // In contrast mode, place particles along the lines
               let proximity = abs(normalizedValue - (params.threshold / maxWaveValue));
-              shouldCreateParticle = proximity < 0.08 && random() < 0.9; // Wider band and higher probability
+              shouldCreateParticle = proximity < 0.05 && random() < 0.8;
             }
             
             if (shouldCreateParticle) {
@@ -671,7 +676,7 @@ function setupInterface() {
               let jitterY = random(-2, 2);
               
               // Random particle size
-              let size = random(1.5, 4); // Increased particle size range
+              let size = random(1, 3);
               
               // Create the particle
               let particle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -680,7 +685,7 @@ function setupInterface() {
               particle.setAttribute('r', size / 2);
               
               // Set opacity based on intensity
-              let opacity = useGradientMode ? map(normalizedValue, 0, 1, 0.6, 1.0) : 1.0; // Increased minimum opacity
+              let opacity = useGradientMode ? map(normalizedValue, 0, 1, 0.4, 1.0) : 1.0;
               
               // Set color
               particle.setAttribute('fill', invertedMode ? 'black' : 'white');
@@ -773,8 +778,8 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
   let particleMap = [];
   if (useNoiseEffect) {
     // Calculate the particle density based on the Chladni pattern
-    for (let x = 0; x < targetCanvas.width; x += 2) { // Increased sampling density
-      for (let y = 0; y < targetCanvas.height; y += 2) { // Increased sampling density
+    for (let x = 0; x < targetCanvas.width; x += 4) { // Sample fewer points for performance
+      for (let y = 0; y < targetCanvas.height; y += 4) {
         let normX = (x - centerX) / scale;
         let normY = (y - centerY) / scale;
         let value = abs(realChladniFormula(normX, normY, nX, nY) * amplitude);
@@ -784,13 +789,13 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
         
         if (useGradientMode) {
           // In gradient mode, place particles based on value intensity
-          if (random() < pow(normalizedValue, 2) * 0.4) { // Increased probability
+          if (random() < pow(normalizedValue, 2) * 0.3) {
             particleMap.push({x, y, intensity: normalizedValue});
           }
         } else {
           // In contrast mode, concentrate particles along the lines (around threshold value)
           let proximity = abs(normalizedValue - (threshold / maxWaveValue));
-          if (proximity < 0.08 && random() < 0.9) { // Wider band and higher probability
+          if (proximity < 0.05 && random() < 0.8) {
             particleMap.push({x, y, intensity: 1.0});
           }
         }
@@ -838,8 +843,8 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
     
     // Draw each particle
     for (let particle of particleMap) {
-      let size = random(1.5, 4) * 2; // Double the size for export, with increased base size
-      let alpha = map(particle.intensity, 0, 1, 150, 255); // Increased minimum alpha
+      let size = random(1, 3) * 2; // Double the size for export
+      let alpha = map(particle.intensity, 0, 1, 100, 255);
       particleBuffer.fill(255, alpha);
       
       // Add some randomness to the position
