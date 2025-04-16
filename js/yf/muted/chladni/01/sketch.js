@@ -197,12 +197,17 @@ function normalizeEnergy(energy) {
 }
 
 function createControlSliders() {
-  // Create slider for threshold adjustment
-  thresholdSlider = createSlider(0.01, 0.2, thresholdValue, 0.01);
+  // Create slider for threshold adjustment - инвертированная шкала
+  // Инвертированное начальное значение для слайдера (0.01 для максимального контраста 0.2)
+  let initialSliderValue = 0.21 - thresholdValue;
+  thresholdSlider = createSlider(0.01, 0.2, initialSliderValue, 0.01);
   thresholdSlider.parent('threshold-slider-container');
   thresholdSlider.style('width', '100%');
   thresholdSlider.input(() => {
-    thresholdValue = thresholdSlider.value();
+    // Инвертируем значение слайдера: 
+    // Когда слайдер на минимуме (0.01), используем максимальное значение контраста (0.2)
+    // Когда слайдер на максимуме (0.2), используем минимальное значение контраста (0.01)
+    thresholdValue = 0.21 - thresholdSlider.value();
     // Update static pattern if microphone is not active
     if (!isRunning) {
       drawStaticPattern(modeX, modeY);
