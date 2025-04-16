@@ -319,6 +319,35 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   randomSeed(42);
   noiseSeed(42);
   
+  // Create a density map for particles if noise is enabled
+  let particleMap = [];
+  if (useNoiseEffect) {
+    // Calculate the particle density based on the Chladni pattern
+    for (let x = 0; x < width; x += 4) { // Sample fewer points for performance
+      for (let y = 0; y < height; y += 4) {
+        let normX = (x - centerX) / scale;
+        let normY = (y - centerY) / scale;
+        let value = abs(realChladniFormula(normX, normY, nX, nY) * amplitude);
+        
+        // Determine where to place particles based on the pattern
+        let normalizedValue = value / maxWaveValue;
+        
+        if (useGradientMode) {
+          // In gradient mode, place particles based on value intensity
+          if (random() < pow(normalizedValue, 2) * 0.3) {
+            particleMap.push({x, y, intensity: normalizedValue});
+          }
+        } else {
+          // In contrast mode, concentrate particles along the lines (around threshold value)
+          let proximity = abs(normalizedValue - (threshold / maxWaveValue));
+          if (proximity < 0.05 && random() < 0.8) {
+            particleMap.push({x, y, intensity: 1.0});
+          }
+        }
+      }
+    }
+  }
+  
   for (let x = 0; x < width; x++) {
     for (let y = 0; y < height; y++) {
       // Normalize coordinates to square [-1, 1] x [-1, 1]
@@ -328,44 +357,16 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
       // Calculate Chladni figure using formula for rectangular plate
       let value = realChladniFormula(normX, normY, nX, nY) * amplitude;
       
-      // Calculate raw value for noise application
-      let rawValue = abs(value);
-      let normalizedValue = map(rawValue, 0, maxWaveValue * 1.2, 0, 255);
-      
       // Apply threshold or use gradient
       let pixelValue;
       if (useGradientMode) {
         // Gradient mode - use value directly, without threshold
-        pixelValue = normalizedValue;
+        pixelValue = map(abs(value), 0, maxWaveValue * 1.2, 0, 255);
       } else {
         // Contrast mode with threshold
         // Use dynamic threshold based on maximum value
         let dynamicThreshold = threshold * maxWaveValue;
-        pixelValue = rawValue < dynamicThreshold ? 0 : 255;
-      }
-      
-      // Add noise effect if enabled (for both modes)
-      if (useNoiseEffect) {
-        // In gradient mode, noise varies with intensity
-        // In contrast mode, noise is applied only to areas above threshold
-        if (useGradientMode) {
-          // Noise intensity proportional to the figure's value
-          let noiseAmount = map(normalizedValue, 0, 255, 0, 30); // Max noise intensity
-          let noiseValue = random(-noiseAmount, noiseAmount);
-          pixelValue = constrain(pixelValue + noiseValue, 0, 255);
-        } else {
-          // For contrast mode, only add noise to visible lines
-          if (pixelValue > 0) {
-            // Apply subtle noise to edges
-            let edgeDist = abs(rawValue - dynamicThreshold);
-            let edgeNormalized = map(edgeDist, 0, maxWaveValue * 0.1, 15, 0);
-            edgeNormalized = constrain(edgeNormalized, 0, 15);
-            
-            let noiseValue = random(-edgeNormalized, edgeNormalized);
-            // Make sure noise doesn't make white pixels black or vice versa
-            pixelValue = constrain(pixelValue + noiseValue, 200, 255);
-          }
-        }
+        pixelValue = abs(value) < dynamicThreshold ? 0 : 255;
       }
       
       let index = (x + y * width) * 4;
@@ -377,6 +378,33 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   }
 
   updatePixels();
+  
+  // Draw noise particles on top if enabled
+  if (useNoiseEffect && particleMap.length > 0) {
+    // Create a temporary graphics buffer for the particles
+    let particleBuffer = createGraphics(width, height);
+    particleBuffer.background(0, 0); // Transparent background
+    particleBuffer.noStroke();
+    
+    // Draw each particle
+    for (let particle of particleMap) {
+      let size = random(1, 3);
+      let alpha = map(particle.intensity, 0, 1, 100, 255);
+      particleBuffer.fill(255, alpha);
+      
+      // Add some randomness to the position
+      let jitterX = random(-2, 2);
+      let jitterY = random(-2, 2);
+      
+      particleBuffer.ellipse(particle.x + jitterX, particle.y + jitterY, size, size);
+    }
+    
+    // Add the particle layer
+    blend(particleBuffer, 0, 0, width, height, 0, 0, width, height, ADD);
+    
+    // Clean up the buffer
+    particleBuffer.remove();
+  }
   
   // If textVisible, draw the text with background rectangle
   if (textVisible) {
@@ -578,73 +606,84 @@ function setupInterface() {
       background.setAttribute('fill', invertedMode ? 'white' : 'black');
       svgElement.appendChild(background);
       
-      // For gradient mode with noise, add a noise texture filter
-      if (useNoiseEffect) { // Apply to both gradient and contrast modes
-        // Add noise filter definition
-        let defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-        svgElement.appendChild(defs);
-        
-        let filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
-        filter.setAttribute('id', 'noise');
-        filter.setAttribute('x', '0%');
-        filter.setAttribute('y', '0%');
-        filter.setAttribute('width', '100%');
-        filter.setAttribute('height', '100%');
-        defs.appendChild(filter);
-        
-        // Add turbulence for noise effect
-        let turbulence = document.createElementNS('http://www.w3.org/2000/svg', 'feTurbulence');
-        turbulence.setAttribute('type', 'fractalNoise');
-        turbulence.setAttribute('baseFrequency', '0.65');
-        turbulence.setAttribute('numOctaves', '3');
-        turbulence.setAttribute('seed', '42');
-        turbulence.setAttribute('result', 'noise');
-        filter.appendChild(turbulence);
-        
-        // Add color matrix to adjust noise contrast
-        let colorMatrix = document.createElementNS('http://www.w3.org/2000/svg', 'feColorMatrix');
-        colorMatrix.setAttribute('type', 'matrix');
-        colorMatrix.setAttribute('values', '0.3 0 0 0 0 0 0.3 0 0 0 0 0 0.3 0 0 0 0 0 1 0');
-        colorMatrix.setAttribute('result', 'coloredNoise');
-        filter.appendChild(colorMatrix);
-        
-        // Blend the noise with the original image
-        let composite = document.createElementNS('http://www.w3.org/2000/svg', 'feComposite');
-        composite.setAttribute('in', 'SourceGraphic');
-        composite.setAttribute('in2', 'coloredNoise');
-        composite.setAttribute('operator', 'arithmetic');
-        
-        // Different noise intensity based on mode
-        if (useGradientMode) {
-          composite.setAttribute('k1', '0');
-          composite.setAttribute('k2', '0.1');
-          composite.setAttribute('k3', '0.3');
-          composite.setAttribute('k4', '0');
-        } else {
-          // For contrast mode, more subtle noise
-          composite.setAttribute('k1', '0');
-          composite.setAttribute('k2', '0.05');
-          composite.setAttribute('k3', '0.15');
-          composite.setAttribute('k4', '0');
-        }
-        filter.appendChild(composite);
-      }
-      
       // Generate Chladni figure contours
       generateSVGChladniContours(svgElement, params.nX, params.nY, params.amplitude, params.threshold);
       
-      // If using noise effect, apply the noise filter to the SVG
-      if (useNoiseEffect) { // Apply to both gradient and contrast modes
-        // Apply noise filter to a rectangle covering the entire SVG
-        let noiseOverlay = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        noiseOverlay.setAttribute('width', width);
-        noiseOverlay.setAttribute('height', height);
-        noiseOverlay.setAttribute('fill', 'none');
-        noiseOverlay.setAttribute('filter', 'url(#noise)');
-        svgElement.appendChild(noiseOverlay);
+      // Add noise particles if enabled
+      if (useNoiseEffect) {
+        // Create a new group for particles
+        let particleGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        svgElement.appendChild(particleGroup);
+        
+        // Initialize random seed for consistent noise
+        randomSeed(42);
+        noiseSeed(42);
+        
+        // Calculate the density map using the same logic as in drawing function
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const scale = min(width, height) / 2;
+        
+        // Pre-calculate max wave value
+        let maxWaveValue = 0;
+        for (let x = 0; x < width; x += 10) {
+          for (let y = 0; y < height; y += 10) {
+            let normX = (x - centerX) / scale;
+            let normY = (y - centerY) / scale;
+            let value = abs(realChladniFormula(normX, normY, params.nX, params.nY) * params.amplitude);
+            maxWaveValue = max(maxWaveValue, value);
+          }
+        }
+        maxWaveValue = max(1.0, maxWaveValue);
+        
+        // Create particles with similar distribution as in canvas drawing
+        for (let x = 0; x < width; x += 4) {
+          for (let y = 0; y < height; y += 4) {
+            let normX = (x - centerX) / scale;
+            let normY = (y - centerY) / scale;
+            let value = abs(realChladniFormula(normX, normY, params.nX, params.nY) * params.amplitude);
+            
+            // Determine where to place particles
+            let normalizedValue = value / maxWaveValue;
+            let shouldCreateParticle = false;
+            
+            if (useGradientMode) {
+              // In gradient mode, place particles based on intensity
+              shouldCreateParticle = random() < pow(normalizedValue, 2) * 0.3;
+            } else {
+              // In contrast mode, place particles along the lines
+              let proximity = abs(normalizedValue - (params.threshold / maxWaveValue));
+              shouldCreateParticle = proximity < 0.05 && random() < 0.8;
+            }
+            
+            if (shouldCreateParticle) {
+              // Add jitter to position
+              let jitterX = random(-2, 2);
+              let jitterY = random(-2, 2);
+              
+              // Random particle size
+              let size = random(1, 3);
+              
+              // Create the particle
+              let particle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+              particle.setAttribute('cx', x + jitterX);
+              particle.setAttribute('cy', y + jitterY);
+              particle.setAttribute('r', size / 2);
+              
+              // Set opacity based on intensity
+              let opacity = useGradientMode ? map(normalizedValue, 0, 1, 0.4, 1.0) : 1.0;
+              
+              // Set color
+              particle.setAttribute('fill', invertedMode ? 'black' : 'white');
+              particle.setAttribute('fill-opacity', opacity);
+              
+              particleGroup.appendChild(particle);
+            }
+          }
+        }
       }
       
-      // If text is visible - add it with background rectangle
+      // If text is visible - add it
       if (textVisible) {
         // Add text element
         let textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -721,6 +760,35 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
   randomSeed(42);
   noiseSeed(42);
   
+  // Create a density map for particles if noise is enabled
+  let particleMap = [];
+  if (useNoiseEffect) {
+    // Calculate the particle density based on the Chladni pattern
+    for (let x = 0; x < targetCanvas.width; x += 4) { // Sample fewer points for performance
+      for (let y = 0; y < targetCanvas.height; y += 4) {
+        let normX = (x - centerX) / scale;
+        let normY = (y - centerY) / scale;
+        let value = abs(realChladniFormula(normX, normY, nX, nY) * amplitude);
+        
+        // Determine where to place particles based on the pattern
+        let normalizedValue = value / maxWaveValue;
+        
+        if (useGradientMode) {
+          // In gradient mode, place particles based on value intensity
+          if (random() < pow(normalizedValue, 2) * 0.3) {
+            particleMap.push({x, y, intensity: normalizedValue});
+          }
+        } else {
+          // In contrast mode, concentrate particles along the lines (around threshold value)
+          let proximity = abs(normalizedValue - (threshold / maxWaveValue));
+          if (proximity < 0.05 && random() < 0.8) {
+            particleMap.push({x, y, intensity: 1.0});
+          }
+        }
+      }
+    }
+  }
+  
   for (let x = 0; x < targetCanvas.width; x++) {
     for (let y = 0; y < targetCanvas.height; y++) {
       // Normalize coordinates to square [-1, 1] x [-1, 1]
@@ -730,44 +798,16 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
       // Calculate Chladni figure using formula for rectangular plate
       let value = realChladniFormula(normX, normY, nX, nY) * amplitude;
       
-      // Calculate raw value for noise application
-      let rawValue = abs(value);
-      let normalizedValue = map(rawValue, 0, maxWaveValue * 1.2, 0, 255);
-      
       // Apply threshold or use gradient
       let pixelValue;
       if (useGradientMode) {
         // Gradient mode - use value directly, without threshold
-        pixelValue = normalizedValue;
+        pixelValue = map(abs(value), 0, maxWaveValue * 1.2, 0, 255);
       } else {
         // Contrast mode with threshold
         // Use dynamic threshold based on maximum value
         let dynamicThreshold = threshold * maxWaveValue;
-        pixelValue = rawValue < dynamicThreshold ? 0 : 255;
-      }
-      
-      // Add noise effect if enabled (for both modes)
-      if (useNoiseEffect) {
-        // In gradient mode, noise varies with intensity
-        // In contrast mode, noise is applied only to areas above threshold
-        if (useGradientMode) {
-          // Noise intensity proportional to the figure's value
-          let noiseAmount = map(normalizedValue, 0, 255, 0, 30); // Max noise intensity, doubled for export
-          let noiseValue = random(-noiseAmount, noiseAmount);
-          pixelValue = constrain(pixelValue + noiseValue, 0, 255);
-        } else {
-          // For contrast mode, only add noise to visible lines
-          if (pixelValue > 0) {
-            // Apply subtle noise to edges
-            let edgeDist = abs(rawValue - dynamicThreshold);
-            let edgeNormalized = map(edgeDist, 0, maxWaveValue * 0.1, 15, 0);
-            edgeNormalized = constrain(edgeNormalized, 0, 15);
-            
-            let noiseValue = random(-edgeNormalized, edgeNormalized);
-            // Make sure noise doesn't make white pixels black or vice versa
-            pixelValue = constrain(pixelValue + noiseValue, 200, 255);
-          }
-        }
+        pixelValue = abs(value) < dynamicThreshold ? 0 : 255;
       }
       
       let index = (x + y * targetCanvas.width) * 4;
@@ -780,9 +820,42 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
 
   targetCanvas.updatePixels();
   
-  // If text is visible, draw the text with background rectangle
+  // Draw noise particles on top if enabled
+  if (useNoiseEffect && particleMap.length > 0) {
+    // Create a temporary graphics buffer for the particles
+    let particleBuffer = createGraphics(targetCanvas.width, targetCanvas.height);
+    particleBuffer.background(0, 0); // Transparent background
+    particleBuffer.noStroke();
+    
+    // Draw each particle
+    for (let particle of particleMap) {
+      let size = random(1, 3) * 2; // Double the size for export
+      let alpha = map(particle.intensity, 0, 1, 100, 255);
+      particleBuffer.fill(255, alpha);
+      
+      // Add some randomness to the position
+      let jitterX = random(-2, 2) * 2; // Double the jitter for export
+      let jitterY = random(-2, 2) * 2;
+      
+      particleBuffer.ellipse(particle.x + jitterX, particle.y + jitterY, size, size);
+    }
+    
+    // Add the particle layer
+    targetCanvas.blend(particleBuffer, 0, 0, targetCanvas.width, targetCanvas.height, 
+                      0, 0, targetCanvas.width, targetCanvas.height, ADD);
+    
+    // Clean up the buffer
+    particleBuffer.remove();
+  }
+  
+  // If text is visible, draw the text
   if (textVisible) {
     targetCanvas.push();
+    
+    // Calculate text dimensions
+    targetCanvas.textFont(myFont);
+    targetCanvas.textSize(textSizeValue * 2); // Double size for export
+    targetCanvas.textAlign(CENTER, CENTER);
     
     // Draw the text with stroke
     targetCanvas.textFont(myFont);
