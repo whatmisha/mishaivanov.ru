@@ -111,16 +111,16 @@ function draw() {
   currentNY = lerp(currentNY, targetNY, 1 - smoothingValue);
   currentAmplitude = lerp(currentAmplitude, targetAmplitude, 1 - smoothingValue);
   
-  // Round wave numbers to integers
-  let nX = int(currentNX);
-  let nY = int(currentNY);
+  // No need to round to integers anymore since we allow fractional values
+  let nX = currentNX;
+  let nY = currentNY;
   
   // Minimum 1 to avoid errors
   nX = max(1, nX);
   nY = max(1, nY);
   
   // Output information about current parameters and sound level
-  console.log(`Volume: ${volume.toFixed(4)}, Bass: ${bassNorm.toFixed(2)}, Treble: ${trebleNorm.toFixed(2)}, nX: ${nX}, nY: ${nY}, Amplitude: ${currentAmplitude.toFixed(2)}`);
+  console.log(`Volume: ${volume.toFixed(4)}, Bass: ${bassNorm.toFixed(2)}, Treble: ${trebleNorm.toFixed(2)}, nX: ${nX.toFixed(2)}, nY: ${nY.toFixed(2)}, Amplitude: ${currentAmplitude.toFixed(2)}`);
 
   // Dynamically change threshold value based on volume
   let dynamicThreshold = map(volume, 0, 0.1, thresholdValue * 2, thresholdValue * 0.8);
@@ -161,7 +161,7 @@ function createControlSliders() {
   });
   
   // Create sliders for X and Y modes
-  modeXSlider = createSlider(1, 15, modeX, 1);
+  modeXSlider = createSlider(1, 15, modeX, 0.1);
   modeXSlider.parent('modeX-slider-container');
   modeXSlider.style('width', '100%');
   modeXSlider.input(() => {
@@ -174,7 +174,7 @@ function createControlSliders() {
     }
   });
   
-  modeYSlider = createSlider(1, 15, modeY, 1);
+  modeYSlider = createSlider(1, 15, modeY, 0.1);
   modeYSlider.parent('modeY-slider-container');
   modeYSlider.style('width', '100%');
   modeYSlider.input(() => {
@@ -535,8 +535,8 @@ function setupInterface() {
       // If microphone is running, use current parameters
       drawExportChladniPattern(
         tempCanvas, 
-        int(currentNX), 
-        int(currentNY), 
+        currentNX, // Use raw value instead of int()
+        currentNY, // Use raw value instead of int()
         currentAmplitude, 
         thresholdValue
       );
@@ -570,8 +570,8 @@ function setupInterface() {
       } else if (isRunning) {
         // If microphone is running, use current parameters
         params = {
-          nX: int(currentNX),
-          nY: int(currentNY),
+          nX: currentNX, // Use raw value instead of int()
+          nY: currentNY, // Use raw value instead of int()
           amplitude: currentAmplitude,
           threshold: thresholdValue
         };
