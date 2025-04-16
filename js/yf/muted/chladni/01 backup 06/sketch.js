@@ -24,8 +24,6 @@ let textStrokeSlider;
 let textInput;
 let gradientModeCheckbox;
 let useGradientMode = false; // Disable gradient mode by default (enable contrast)
-let noiseCheckbox; // Checkbox for noise effect
-let useNoiseEffect = false; // Noise effect is off by default
 let textVisible = true; // Enable text display
 let myFont; // Variable to store the font
 let diagLinesCheckbox; // Checkbox for diagonal lines
@@ -252,16 +250,6 @@ function createControlSliders() {
     }
   });
   
-  // Checkbox for noise effect
-  noiseCheckbox = createCheckbox('', useNoiseEffect);
-  noiseCheckbox.parent('noise-checkbox-container');
-  noiseCheckbox.changed(() => {
-    useNoiseEffect = noiseCheckbox.checked();
-    if (!isRunning) {
-      drawStaticPattern(modeX, modeY);
-    }
-  });
-  
   // Checkbox for diagonal lines
   diagLinesCheckbox = createCheckbox('', showDiagLines);
   diagLinesCheckbox.parent('diag-lines-checkbox-container');
@@ -315,10 +303,6 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
   }
   maxWaveValue = max(1.0, maxWaveValue); // Avoid division by zero
   
-  // Initialize random seed for consistent noise
-  randomSeed(42);
-  noiseSeed(42);
-  
   for (let x = 0; x < width; x++) {
     for (let y = 0; y < height; y++) {
       // Normalize coordinates to square [-1, 1] x [-1, 1]
@@ -333,14 +317,6 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
       if (useGradientMode) {
         // Gradient mode - use value directly, without threshold
         pixelValue = map(abs(value), 0, maxWaveValue * 1.2, 0, 255);
-        
-        // Add noise effect if enabled
-        if (useNoiseEffect) {
-          // Generate noise with intensity proportional to the figure's value
-          let noiseAmount = map(pixelValue, 0, 255, 0, 30); // Max noise intensity
-          let noiseValue = random(-noiseAmount, noiseAmount);
-          pixelValue = constrain(pixelValue + noiseValue, 0, 255);
-        }
       } else {
         // Contrast mode with threshold
         // Use dynamic threshold based on maximum value
@@ -558,61 +534,8 @@ function setupInterface() {
       background.setAttribute('fill', invertedMode ? 'white' : 'black');
       svgElement.appendChild(background);
       
-      // For gradient mode with noise, add a noise texture filter
-      if (useGradientMode && useNoiseEffect) {
-        // Add noise filter definition
-        let defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-        svgElement.appendChild(defs);
-        
-        let filter = document.createElementNS('http://www.w3.org/2000/svg', 'filter');
-        filter.setAttribute('id', 'noise');
-        filter.setAttribute('x', '0%');
-        filter.setAttribute('y', '0%');
-        filter.setAttribute('width', '100%');
-        filter.setAttribute('height', '100%');
-        defs.appendChild(filter);
-        
-        // Add turbulence for noise effect
-        let turbulence = document.createElementNS('http://www.w3.org/2000/svg', 'feTurbulence');
-        turbulence.setAttribute('type', 'fractalNoise');
-        turbulence.setAttribute('baseFrequency', '0.65');
-        turbulence.setAttribute('numOctaves', '3');
-        turbulence.setAttribute('seed', '42');
-        turbulence.setAttribute('result', 'noise');
-        filter.appendChild(turbulence);
-        
-        // Add color matrix to adjust noise contrast
-        let colorMatrix = document.createElementNS('http://www.w3.org/2000/svg', 'feColorMatrix');
-        colorMatrix.setAttribute('type', 'matrix');
-        colorMatrix.setAttribute('values', '0.3 0 0 0 0 0 0.3 0 0 0 0 0 0.3 0 0 0 0 0 1 0');
-        colorMatrix.setAttribute('result', 'coloredNoise');
-        filter.appendChild(colorMatrix);
-        
-        // Blend the noise with the original image
-        let composite = document.createElementNS('http://www.w3.org/2000/svg', 'feComposite');
-        composite.setAttribute('in', 'SourceGraphic');
-        composite.setAttribute('in2', 'coloredNoise');
-        composite.setAttribute('operator', 'arithmetic');
-        composite.setAttribute('k1', '0');
-        composite.setAttribute('k2', '0.1');
-        composite.setAttribute('k3', '0.3');
-        composite.setAttribute('k4', '0');
-        filter.appendChild(composite);
-      }
-      
       // Generate Chladni figure contours
       generateSVGChladniContours(svgElement, params.nX, params.nY, params.amplitude, params.threshold);
-      
-      // If using gradient mode with noise, apply the noise filter to the SVG
-      if (useGradientMode && useNoiseEffect) {
-        // Apply noise filter to a rectangle covering the entire SVG
-        let noiseOverlay = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        noiseOverlay.setAttribute('width', width);
-        noiseOverlay.setAttribute('height', height);
-        noiseOverlay.setAttribute('fill', 'none');
-        noiseOverlay.setAttribute('filter', 'url(#noise)');
-        svgElement.appendChild(noiseOverlay);
-      }
       
       // If text is visible - add it with background rectangle
       if (textVisible) {
@@ -687,10 +610,6 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
   }
   maxWaveValue = max(1.0, maxWaveValue); // Avoid division by zero
   
-  // Initialize random seed for consistent noise
-  randomSeed(42);
-  noiseSeed(42);
-  
   for (let x = 0; x < targetCanvas.width; x++) {
     for (let y = 0; y < targetCanvas.height; y++) {
       // Normalize coordinates to square [-1, 1] x [-1, 1]
@@ -705,14 +624,6 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
       if (useGradientMode) {
         // Gradient mode - use value directly, without threshold
         pixelValue = map(abs(value), 0, maxWaveValue * 1.2, 0, 255);
-        
-        // Add noise effect if enabled
-        if (useNoiseEffect) {
-          // Generate noise with intensity proportional to the figure's value
-          let noiseAmount = map(pixelValue, 0, 255, 0, 30); // Max noise intensity
-          let noiseValue = random(-noiseAmount, noiseAmount);
-          pixelValue = constrain(pixelValue + noiseValue, 0, 255);
-        }
       } else {
         // Contrast mode with threshold
         // Use dynamic threshold based on maximum value
