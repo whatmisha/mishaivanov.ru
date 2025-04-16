@@ -135,8 +135,7 @@ h3 {
 #modeX-slider-container,
 #modeY-slider-container,
 #sensitivity-slider-container,
-#smoothing-slider-container,
-#text-stroke-slider-container {
+#smoothing-slider-container {
   width: 100%;
   margin-top: 5px;
 }
