@@ -15,28 +15,14 @@ let smoothingValue = 0.5; // Medium smoothing
 let currentNX = 1;
 let currentNY = 8;
 let currentAmplitude = 1.0;
-// Text parameters
-let customText = "THE SOUND OF SILENCE";
-let textSizeValue = 32; // Reduced text size by half (was 64)
-let textStrokeValue = 3; // Default stroke width
-let textSizeInput; // Text input for font size instead of slider
-let textStrokeSlider;
-let textInput;
 let gradientModeCheckbox;
 let useGradientMode = false; // Disable gradient mode by default (enable contrast)
 let noiseCheckbox; // Checkbox for noise effect
 let useNoiseEffect = true; // Noise effect is on by default
-let textVisible = true; // Enable text display
-let myFont; // Variable to store the font
 let diagLinesCheckbox; // Checkbox for diagonal lines
 let showDiagLines = false; // Diagonal lines are off by default
 let invertCheckbox; // Checkbox for color inversion
 let lastFrameState = null; // To store the last state on pause
-
-function preload() {
-  // Load font before starting sketch
-  myFont = loadFont('Rooftop Mono-Regular-Desktop.otf');
-}
 
 function setup() {
   // Create canvas and place it in the container
@@ -51,67 +37,14 @@ function setup() {
 
   noStroke();
   
-  // Font setup - use loaded font
-  textFont(myFont);
-  textAlign(CENTER, CENTER);
-  
   // Create sliders for threshold and modes
   createControlSliders();
   
   // Setup interface
   setupInterface();
   
-  // Add direct event handlers to DOM elements
-  setupDOMEventHandlers();
-  
   // Draw initial state
   drawStaticPattern(modeX, modeY);
-}
-
-// Function to set up direct DOM event handlers
-function setupDOMEventHandlers() {
-  // Get text input element directly from DOM
-  const domTextInput = document.getElementById('text-input');
-  if (domTextInput) {
-    // Set initial value
-    domTextInput.value = customText;
-    
-    // Add event listeners
-    domTextInput.addEventListener('input', function(e) {
-      customText = this.value;
-      console.log('DOM Text input event:', customText);
-      if (!isRunning) {
-        drawStaticPattern(modeX, modeY);
-      }
-    });
-    
-    domTextInput.addEventListener('change', function(e) {
-      customText = this.value;
-      console.log('DOM Text change event:', customText);
-      if (!isRunning) {
-        drawStaticPattern(modeX, modeY);
-      }
-    });
-  }
-  
-  // Get text size input element directly from DOM
-  const domTextSizeInput = document.getElementById('text-size-input');
-  if (domTextSizeInput) {
-    // Set initial value
-    domTextSizeInput.value = textSizeValue;
-    
-    // Add event listeners
-    domTextSizeInput.addEventListener('input', function(e) {
-      const newSize = parseInt(this.value);
-      if (!isNaN(newSize) && newSize >= 10 && newSize <= 200) {
-        textSizeValue = newSize;
-        console.log('DOM Text size change:', textSizeValue);
-        if (!isRunning) {
-          drawStaticPattern(modeX, modeY);
-        }
-      }
-    });
-  }
 }
 
 // Add keyPressed function to handle spacebar for pause
@@ -296,25 +229,6 @@ function createControlSliders() {
     fft.smooth(smoothingValue);
   });
   
-  // Slider for text stroke width
-  textStrokeSlider = createSlider(0, 20, textStrokeValue, 1);
-  textStrokeSlider.parent('text-stroke-slider-container');
-  textStrokeSlider.style('width', '100%');
-  // Добавляем метки минимального и максимального значений
-  let textStrokeLabels = createDiv('<span style="float:left">0</span><span style="float:right">20</span>');
-  textStrokeLabels.parent('text-stroke-slider-container');
-  textStrokeLabels.style('width', '100%');
-  textStrokeLabels.style('font-size', '12px');
-  textStrokeLabels.style('color', '#999');
-  textStrokeLabels.style('margin-top', '2px');
-  
-  textStrokeSlider.input(() => {
-    textStrokeValue = textStrokeSlider.value();
-    if (!isRunning) {
-      drawStaticPattern(modeX, modeY);
-    }
-  });
-  
   // Checkbox for gradient mode
   gradientModeCheckbox = createCheckbox('', useGradientMode);
   gradientModeCheckbox.parent('gradient-checkbox-container');
@@ -478,43 +392,6 @@ function drawChladniPattern(nX, nY, amplitude = 1, threshold = thresholdValue) {
     // Clean up the buffer
     particleBuffer.remove();
   }
-  
-  // If textVisible, draw the text with background rectangle
-  if (textVisible) {
-    drawTextWithStroke(customText, width/2, height/2);
-  }
-}
-
-// New function to draw text with stroke
-function drawTextWithStroke(txt, x, y) {
-  push();
-  
-  // Calculate text dimensions
-  textFont(myFont);
-  textSize(textSizeValue);
-  textAlign(CENTER, CENTER);
-  
-  // Draw the text with stroke
-  textFont(myFont);
-  textSize(textSizeValue);
-  textAlign(CENTER, CENTER);
-  
-  // Draw the stroke
-  if (textStrokeValue > 0) {
-    fill(255); // Always white text
-    stroke(255); // Always white stroke
-    strokeWeight(textStrokeValue);
-    strokeJoin(ROUND); // Round join for smoother corners
-    strokeCap(ROUND); // Round caps for smoother endings
-    text(txt, x, y);
-  }
-  
-  // Draw the text fill
-  noStroke();
-  fill(255); // Always white text
-  text(txt, x, y);
-  
-  pop();
 }
 
 function realChladniFormula(x, y, nX, nY) {
@@ -630,10 +507,6 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
   // Set background based on inversion mode
   targetCanvas.background(invertedMode ? 255 : 0);
   
-  // Set up font on temporary canvas
-  targetCanvas.textFont(myFont);
-  targetCanvas.textAlign(CENTER, CENTER);
-  
   targetCanvas.loadPixels();
 
   const centerX = targetCanvas.width / 2;
@@ -742,37 +615,5 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
     
     // Clean up the buffer
     particleBuffer.remove();
-  }
-  
-  // If text is visible, draw the text
-  if (textVisible) {
-    targetCanvas.push();
-    
-    // Calculate text dimensions
-    targetCanvas.textFont(myFont);
-    targetCanvas.textSize(textSizeValue * 2); // Double size for export
-    targetCanvas.textAlign(CENTER, CENTER);
-    
-    // Draw the text with stroke
-    targetCanvas.textFont(myFont);
-    targetCanvas.textSize(textSizeValue * 2); // Double size for export
-    targetCanvas.textAlign(CENTER, CENTER);
-    
-    // Draw the stroke
-    if (textStrokeValue > 0) {
-      targetCanvas.fill(255); // Always white text
-      targetCanvas.stroke(255); // Always white stroke
-      targetCanvas.strokeWeight(textStrokeValue * 2); // Double stroke for export
-      targetCanvas.strokeJoin(ROUND); // Round join for smoother corners
-      targetCanvas.strokeCap(ROUND); // Round caps for smoother endings
-      targetCanvas.text(customText, centerX, centerY);
-    }
-    
-    // Draw the text fill
-    targetCanvas.noStroke();
-    targetCanvas.fill(255); // Always white text
-    targetCanvas.text(customText, centerX, centerY);
-    
-    targetCanvas.pop();
   }
 } 

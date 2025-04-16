@@ -140,25 +140,6 @@ h3 {
   margin-top: 5px;
 }
 
-#text-input-container,
-#text-size-input-container {
-  width: 100%;
-  margin-top: 5px;
-}
-
-#text-input-container input,
-#text-size-input-container input,
-#text-input,
-#text-size-input {
-  width: 100%;
-  padding: 8px;
-  background-color: #333;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
 #gradient-checkbox-container {
   display: flex;
   justify-content: flex-end;
