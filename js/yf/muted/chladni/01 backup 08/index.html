@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/p5.js-svg@1.6.0/dist/p5.svg.js"></script>
 </head>
 <body>
   <div class="container">
@@ -22,6 +23,7 @@
             <button id="stop-button">Stop</button>
             <button id="pause-button">Pause</button>
             <button id="export-png-button">PNG</button>
+            <button id="export-svg-button">SVG</button>
           </div>
           <div class="spacebar-hint">Press SPACEBAR to pause/resume</div>
         </div>
@@ -31,26 +33,16 @@
       <div class="settings-column">
         <div class="slider-controls">
           <h3>Display Parameters</h3>
-          <div class="checkbox-group">
-            <label for="invert-checkbox-container">Invert Colors:</label>
-            <div id="invert-checkbox-container" title="Switch between white-on-black and black-on-white"></div>
-          </div>
-          
-          <div class="checkbox-group">
-            <label for="noise-checkbox-container">Add Noise Effect:</label>
-            <div id="noise-checkbox-container" title="Adds noise texture to gradient mode"></div>
-          </div>
-          
           <div class="slider-group">
-            <label for="threshold-slider-container">Line Contrast:</label>
+            <label for="threshold-slider-container">Line Contrast (0.01-0.2):</label>
             <div id="threshold-slider-container" title="Adjusts the threshold for line contrast"></div>
           </div>
           <div class="slider-group">
-            <label for="modeX-slider-container">Horizontal Mode:</label>
+            <label for="modeX-slider-container">Horizontal Mode (1-15):</label>
             <div id="modeX-slider-container" title="Number of horizontal nodal lines"></div>
           </div>
           <div class="slider-group">
-            <label for="modeY-slider-container">Vertical Mode:</label>
+            <label for="modeY-slider-container">Vertical Mode (1-15):</label>
             <div id="modeY-slider-container" title="Number of vertical nodal lines"></div>
           </div>
           
@@ -60,8 +52,18 @@
           </div>
           
           <div class="checkbox-group">
+            <label for="noise-checkbox-container">Add Noise Effect:</label>
+            <div id="noise-checkbox-container" title="Adds noise texture to gradient mode"></div>
+          </div>
+          
+          <div class="checkbox-group">
             <label for="diag-lines-checkbox-container">Show Diagonal Lines:</label>
             <div id="diag-lines-checkbox-container" title="Enables or disables diagonal lines in figures"></div>
+          </div>
+          
+          <div class="checkbox-group">
+            <label for="invert-checkbox-container">Invert Colors:</label>
+            <div id="invert-checkbox-container" title="Switch between white-on-black and black-on-white"></div>
           </div>
           
           <h3>Canvas Text</h3>
@@ -70,7 +72,7 @@
             <input type="text" id="text-input" title="Text to display on the canvas" value="THE SOUND OF SILENCE" />
           </div>
           <div class="slider-group">
-            <label for="text-size-input">Text Size:</label>
+            <label for="text-size-input">Text Size (10-200px):</label>
             <input type="number" id="text-size-input" min="10" max="200" value="32" title="Font size in pixels" />
           </div>
           <div class="slider-group">

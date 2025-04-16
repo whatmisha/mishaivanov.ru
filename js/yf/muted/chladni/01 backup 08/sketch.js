@@ -197,21 +197,16 @@ function normalizeEnergy(energy) {
 }
 
 function createControlSliders() {
-  // Create slider for threshold adjustment
-  // Максимальный контраст по умолчанию (0.2)
-  thresholdSlider = createSlider(0.01, 0.2, 0.01, 0.01);
+  // Create slider for threshold adjustment - инвертированная шкала
+  // Инвертированное начальное значение для слайдера (0.01 для максимального контраста 0.2)
+  let initialSliderValue = 0.21 - thresholdValue;
+  thresholdSlider = createSlider(0.01, 0.2, initialSliderValue, 0.01);
   thresholdSlider.parent('threshold-slider-container');
   thresholdSlider.style('width', '100%');
-  // Добавляем метки минимального и максимального значений
-  let thresholdLabels = createDiv('<span style="float:left">0.01</span><span style="float:right">0.2</span>');
-  thresholdLabels.parent('threshold-slider-container');
-  thresholdLabels.style('width', '100%');
-  thresholdLabels.style('font-size', '12px');
-  thresholdLabels.style('color', '#999');
-  thresholdLabels.style('margin-top', '2px');
-  
   thresholdSlider.input(() => {
-    // Инвертируем значение слайдера
+    // Инвертируем значение слайдера: 
+    // Когда слайдер на минимуме (0.01), используем максимальное значение контраста (0.2)
+    // Когда слайдер на максимуме (0.2), используем минимальное значение контраста (0.01)
     thresholdValue = 0.21 - thresholdSlider.value();
     // Update static pattern if microphone is not active
     if (!isRunning) {
@@ -223,14 +218,6 @@ function createControlSliders() {
   modeXSlider = createSlider(1, 15, modeX, 0.1);
   modeXSlider.parent('modeX-slider-container');
   modeXSlider.style('width', '100%');
-  // Добавляем метки минимального и максимального значений
-  let modeXLabels = createDiv('<span style="float:left">1</span><span style="float:right">15</span>');
-  modeXLabels.parent('modeX-slider-container');
-  modeXLabels.style('width', '100%');
-  modeXLabels.style('font-size', '12px');
-  modeXLabels.style('color', '#999');
-  modeXLabels.style('margin-top', '2px');
-  
   modeXSlider.input(() => {
     modeX = modeXSlider.value();
     // Update current state nX immediately
@@ -244,14 +231,6 @@ function createControlSliders() {
   modeYSlider = createSlider(1, 15, modeY, 0.1);
   modeYSlider.parent('modeY-slider-container');
   modeYSlider.style('width', '100%');
-  // Добавляем метки минимального и максимального значений
-  let modeYLabels = createDiv('<span style="float:left">1</span><span style="float:right">15</span>');
-  modeYLabels.parent('modeY-slider-container');
-  modeYLabels.style('width', '100%');
-  modeYLabels.style('font-size', '12px');
-  modeYLabels.style('color', '#999');
-  modeYLabels.style('margin-top', '2px');
-  
   modeYSlider.input(() => {
     modeY = modeYSlider.value();
     // Update current state nY immediately
@@ -266,14 +245,6 @@ function createControlSliders() {
   sensitivitySlider = createSlider(0.5, 5, sensitivity, 0.1);
   sensitivitySlider.parent('sensitivity-slider-container');
   sensitivitySlider.style('width', '100%');
-  // Добавляем метки минимального и максимального значений
-  let sensitivityLabels = createDiv('<span style="float:left">0.5</span><span style="float:right">5</span>');
-  sensitivityLabels.parent('sensitivity-slider-container');
-  sensitivityLabels.style('width', '100%');
-  sensitivityLabels.style('font-size', '12px');
-  sensitivityLabels.style('color', '#999');
-  sensitivityLabels.style('margin-top', '2px');
-  
   sensitivitySlider.input(() => {
     sensitivity = sensitivitySlider.value();
   });
@@ -282,14 +253,6 @@ function createControlSliders() {
   smoothingSlider = createSlider(0, 0.95, smoothingValue, 0.05);
   smoothingSlider.parent('smoothing-slider-container');
   smoothingSlider.style('width', '100%');
-  // Добавляем метки минимального и максимального значений
-  let smoothingLabels = createDiv('<span style="float:left">0</span><span style="float:right">0.95</span>');
-  smoothingLabels.parent('smoothing-slider-container');
-  smoothingLabels.style('width', '100%');
-  smoothingLabels.style('font-size', '12px');
-  smoothingLabels.style('color', '#999');
-  smoothingLabels.style('margin-top', '2px');
-  
   smoothingSlider.input(() => {
     smoothingValue = smoothingSlider.value();
     fft.smooth(smoothingValue);
@@ -299,14 +262,6 @@ function createControlSliders() {
   textStrokeSlider = createSlider(0, 20, textStrokeValue, 1);
   textStrokeSlider.parent('text-stroke-slider-container');
   textStrokeSlider.style('width', '100%');
-  // Добавляем метки минимального и максимального значений
-  let textStrokeLabels = createDiv('<span style="float:left">0</span><span style="float:right">20</span>');
-  textStrokeLabels.parent('text-stroke-slider-container');
-  textStrokeLabels.style('width', '100%');
-  textStrokeLabels.style('font-size', '12px');
-  textStrokeLabels.style('color', '#999');
-  textStrokeLabels.style('margin-top', '2px');
-  
   textStrokeSlider.input(() => {
     textStrokeValue = textStrokeSlider.value();
     if (!isRunning) {
@@ -549,6 +504,7 @@ function setupInterface() {
   const stopButton = select('#stop-button');
   const pauseButton = select('#pause-button'); // Pause button
   const exportPNGButton = select('#export-png-button'); // PNG export button
+  const exportSVGButton = select('#export-svg-button'); // SVG export button
   
   startButton.mousePressed(() => {
     if (!isRunning) {
@@ -621,6 +577,182 @@ function setupInterface() {
     
     // Remove temporary canvas
     tempCanvas.remove();
+  });
+  
+  // Add functionality to SVG export button
+  exportSVGButton.mousePressed(() => {
+    try {
+      console.log("Starting SVG export...");
+
+      // Define parameters for drawing
+      let params;
+      if (isPaused && lastFrameState) {
+        // If paused, use last state
+        params = {
+          nX: lastFrameState.nX,
+          nY: lastFrameState.nY,
+          amplitude: lastFrameState.amplitude,
+          threshold: lastFrameState.threshold
+        };
+      } else if (isRunning) {
+        // If microphone is running, use current parameters
+        params = {
+          nX: currentNX, // Use raw value instead of int()
+          nY: currentNY, // Use raw value instead of int()
+          amplitude: currentAmplitude,
+          threshold: thresholdValue
+        };
+      } else {
+        // If stopped, use static parameters
+        params = {
+          nX: modeX,
+          nY: modeY,
+          amplitude: 1,
+          threshold: thresholdValue
+        };
+      }
+
+      // Create new SVG for export - use temporary invisible container
+      let svgContainer = document.createElement('div');
+      svgContainer.style.position = 'absolute';
+      svgContainer.style.top = '-9999px';
+      document.body.appendChild(svgContainer);
+      
+      // Create new SVG element with required dimensions
+      let svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svgElement.setAttribute('width', width);
+      svgElement.setAttribute('height', height);
+      svgElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      svgElement.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      svgContainer.appendChild(svgElement);
+      
+      // Set SVG background
+      let background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      background.setAttribute('width', width);
+      background.setAttribute('height', height);
+      background.setAttribute('fill', invertedMode ? 'white' : 'black');
+      svgElement.appendChild(background);
+      
+      // Generate Chladni figure contours
+      generateSVGChladniContours(svgElement, params.nX, params.nY, params.amplitude, params.threshold);
+      
+      // Add noise particles if enabled
+      if (useNoiseEffect) {
+        // Create a new group for particles
+        let particleGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        svgElement.appendChild(particleGroup);
+        
+        // Initialize random seed for consistent noise
+        randomSeed(42);
+        noiseSeed(42);
+        
+        // Calculate the density map using the same logic as in drawing function
+        const centerX = width / 2;
+        const centerY = height / 2;
+        const scale = min(width, height) / 2;
+        
+        // Pre-calculate max wave value
+        let maxWaveValue = 0;
+        for (let x = 0; x < width; x += 10) {
+          for (let y = 0; y < height; y += 10) {
+            let normX = (x - centerX) / scale;
+            let normY = (y - centerY) / scale;
+            let value = abs(realChladniFormula(normX, normY, params.nX, params.nY) * params.amplitude);
+            maxWaveValue = max(maxWaveValue, value);
+          }
+        }
+        maxWaveValue = max(1.0, maxWaveValue);
+        
+        // Create particles with similar distribution as in canvas drawing
+        for (let x = 0; x < width; x += 4) {
+          for (let y = 0; y < height; y += 4) {
+            let normX = (x - centerX) / scale;
+            let normY = (y - centerY) / scale;
+            let value = abs(realChladniFormula(normX, normY, params.nX, params.nY) * params.amplitude);
+            
+            // Determine where to place particles
+            let normalizedValue = value / maxWaveValue;
+            let shouldCreateParticle = false;
+            
+            if (useGradientMode) {
+              // In gradient mode, place particles based on intensity
+              shouldCreateParticle = random() < pow(normalizedValue, 2) * 0.3;
+            } else {
+              // In contrast mode, place particles along the lines
+              let proximity = abs(normalizedValue - (params.threshold / maxWaveValue));
+              shouldCreateParticle = proximity < 0.05 && random() < 0.8;
+            }
+            
+            if (shouldCreateParticle) {
+              // Add jitter to position
+              let jitterX = random(-2, 2);
+              let jitterY = random(-2, 2);
+              
+              // Random particle size
+              let size = random(1, 3);
+              
+              // Create the particle
+              let particle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+              particle.setAttribute('cx', x + jitterX);
+              particle.setAttribute('cy', y + jitterY);
+              particle.setAttribute('r', size / 2);
+              
+              // Set opacity based on intensity
+              let opacity = useGradientMode ? map(normalizedValue, 0, 1, 0.4, 1.0) : 1.0;
+              
+              // Set color
+              particle.setAttribute('fill', invertedMode ? 'black' : 'white');
+              particle.setAttribute('fill-opacity', opacity);
+              
+              particleGroup.appendChild(particle);
+            }
+          }
+        }
+      }
+      
+      // If text is visible - add it
+      if (textVisible) {
+        // Add text element
+        let textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        textElement.setAttribute('x', width/2);
+        textElement.setAttribute('y', height/2);
+        textElement.setAttribute('font-family', 'Rooftop Mono');
+        textElement.setAttribute('font-size', textSizeValue);
+        textElement.setAttribute('fill', 'white'); // Always white text
+        textElement.setAttribute('text-anchor', 'middle');
+        textElement.setAttribute('dominant-baseline', 'middle');
+        
+        // Add stroke if needed
+        if (textStrokeValue > 0) {
+          textElement.setAttribute('stroke', 'white'); // Always white stroke
+          textElement.setAttribute('stroke-width', textStrokeValue);
+          textElement.setAttribute('stroke-linejoin', 'round'); // Round join for smoother corners
+          textElement.setAttribute('stroke-linecap', 'round'); // Round caps for smoother endings
+        }
+        
+        textElement.textContent = customText;
+        svgElement.appendChild(textElement);
+      }
+      
+      // Get SVG as string
+      let svgString = new XMLSerializer().serializeToString(svgElement);
+      
+      // Create and download file
+      let blob = new Blob([svgString], {type: 'image/svg+xml'});
+      let link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'chladni_pattern.svg';
+      link.click();
+      
+      // Clean up resources
+      URL.revokeObjectURL(link.href);
+      document.body.removeChild(svgContainer);
+      
+      console.log("SVG exported successfully!");
+    } catch (error) {
+      console.error("Error during SVG export:", error);
+      alert('Error occurred during SVG export: ' + error.message);
+    }
   });
 }
 
@@ -773,5 +905,187 @@ function drawExportChladniPattern(targetCanvas, nX, nY, amplitude, threshold) {
     targetCanvas.text(customText, centerX, centerY);
     
     targetCanvas.pop();
+  }
+}
+
+// Function to generate Chladni figure contours in SVG
+function generateSVGChladniContours(svgElement, nX, nY, amplitude, threshold) {
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const scale = min(width, height) / 2;
+  
+  // Define grid step for drawing contours
+  const gridSize = 100; // Grid size (number of cells)
+  const cellWidth = width / gridSize;
+  const cellHeight = height / gridSize;
+  
+  // Pre-calculate maximum wave value for normalization
+  let maxWaveValue = 0;
+  for (let x = 0; x < width; x += cellWidth * 5) {
+    for (let y = 0; y < height; y += cellHeight * 5) {
+      let normX = (x - centerX) / scale;
+      let normY = (y - centerY) / scale;
+      let value = abs(realChladniFormula(normX, normY, nX, nY) * amplitude);
+      maxWaveValue = max(maxWaveValue, value);
+    }
+  }
+  maxWaveValue = max(1.0, maxWaveValue);
+  
+  // Threshold for determining lines
+  const dynamicThreshold = threshold * maxWaveValue;
+  
+  // Create 2D array of values
+  let valueGrid = new Array(gridSize + 1);
+  for (let i = 0; i <= gridSize; i++) {
+    valueGrid[i] = new Array(gridSize + 1);
+    for (let j = 0; j <= gridSize; j++) {
+      let x = i * cellWidth;
+      let y = j * cellHeight;
+      let normX = (x - centerX) / scale;
+      let normY = (y - centerY) / scale;
+      let value = abs(realChladniFormula(normX, normY, nX, nY) * amplitude);
+      // Binary values relative to threshold
+      valueGrid[i][j] = value < dynamicThreshold ? 0 : 1;
+    }
+  }
+  
+  // Contour color
+  const strokeColor = invertedMode ? 'black' : 'white';
+  
+  // Find and draw closed contours
+  for (let i = 0; i < gridSize; i++) {
+    for (let j = 0; j < gridSize; j++) {
+      // Check each cell in grid
+      if (valueGrid[i][j] !== valueGrid[i+1][j] || 
+          valueGrid[i][j] !== valueGrid[i][j+1] || 
+          valueGrid[i][j] !== valueGrid[i+1][j+1]) {
+        
+        // Create path for this cell's contour
+        let contourPath = [];
+        
+        // Add contour points depending on value changes
+        
+        // Top side of cell
+        if (valueGrid[i][j] !== valueGrid[i+1][j]) {
+          contourPath.push([i * cellWidth, j * cellHeight, (i+1) * cellWidth, j * cellHeight]);
+        }
+        
+        // Right side of cell
+        if (valueGrid[i+1][j] !== valueGrid[i+1][j+1]) {
+          contourPath.push([(i+1) * cellWidth, j * cellHeight, (i+1) * cellWidth, (j+1) * cellHeight]);
+        }
+        
+        // Bottom side of cell
+        if (valueGrid[i][j+1] !== valueGrid[i+1][j+1]) {
+          contourPath.push([i * cellWidth, (j+1) * cellHeight, (i+1) * cellWidth, (j+1) * cellHeight]);
+        }
+        
+        // Left side of cell
+        if (valueGrid[i][j] !== valueGrid[i][j+1]) {
+          contourPath.push([i * cellWidth, j * cellHeight, i * cellWidth, (j+1) * cellHeight]);
+        }
+        
+        // If contour found, add it to SVG
+        if (contourPath.length > 0) {
+          for (let k = 0; k < contourPath.length; k++) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', contourPath[k][0]);
+            line.setAttribute('y1', contourPath[k][1]);
+            line.setAttribute('x2', contourPath[k][2]);
+            line.setAttribute('y2', contourPath[k][3]);
+            line.setAttribute('stroke', strokeColor);
+            line.setAttribute('stroke-width', '1');
+            svgElement.appendChild(line);
+          }
+        }
+      }
+    }
+  }
+}
+
+// Function to draw Chladni contours in SVG (old version - not used)
+function drawSVGChladniPattern(nX, nY, amplitude, threshold) {
+  noFill();
+  stroke(invertedMode ? 0 : 255);
+  strokeWeight(1);
+  
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const scale = min(width, height) / 2;
+  
+  // Define grid step for drawing contours
+  // Smaller step gives more detailed SVG, but increases file size
+  const gridStep = 5;
+  
+  // Pre-calculate maximum wave value for normalization
+  let maxWaveValue = 0;
+  for (let x = 0; x < width; x += gridStep) {
+    for (let y = 0; y < height; y += gridStep) {
+      let normX = (x - centerX) / scale;
+      let normY = (y - centerY) / scale;
+      let value = abs(realChladniFormula(normX, normY, nX, nY) * amplitude);
+      maxWaveValue = max(maxWaveValue, value);
+    }
+  }
+  maxWaveValue = max(1.0, maxWaveValue);
+  
+  // Threshold for determining lines
+  const dynamicThreshold = threshold * maxWaveValue;
+  
+  // Find and draw contours using contour lines
+  for (let x = 0; x < width - gridStep; x += gridStep) {
+    for (let y = 0; y < height - gridStep; y += gridStep) {
+      // Calculate values at four corners of current cell
+      const values = [];
+      const positions = [
+        [x, y],
+        [x + gridStep, y],
+        [x + gridStep, y + gridStep],
+        [x, y + gridStep]
+      ];
+      
+      for (let i = 0; i < 4; i++) {
+        let px = positions[i][0];
+        let py = positions[i][1];
+        let normX = (px - centerX) / scale;
+        let normY = (py - centerY) / scale;
+        let value = abs(realChladniFormula(normX, normY, nX, nY) * amplitude);
+        values.push(value < dynamicThreshold ? 0 : 1);
+      }
+      
+      // Draw lines if there's transition through threshold
+      if (values[0] !== values[1]) {
+        const t = map(dynamicThreshold, values[0] * maxWaveValue, values[1] * maxWaveValue, 0, 1);
+        const ix = map(t, 0, 1, positions[0][0], positions[1][0]);
+        line(ix, positions[0][1], ix, positions[0][1]);
+      }
+      
+      if (values[1] !== values[2]) {
+        const t = map(dynamicThreshold, values[1] * maxWaveValue, values[2] * maxWaveValue, 0, 1);
+        const iy = map(t, 0, 1, positions[1][1], positions[2][1]);
+        line(positions[1][0], iy, positions[1][0], iy);
+      }
+      
+      if (values[2] !== values[3]) {
+        const t = map(dynamicThreshold, values[2] * maxWaveValue, values[3] * maxWaveValue, 0, 1);
+        const ix = map(t, 0, 1, positions[2][0], positions[3][0]);
+        line(ix, positions[2][1], ix, positions[2][1]);
+      }
+      
+      if (values[3] !== values[0]) {
+        const t = map(dynamicThreshold, values[3] * maxWaveValue, values[0] * maxWaveValue, 0, 1);
+        const iy = map(t, 0, 1, positions[3][1], positions[0][1]);
+        line(positions[3][0], iy, positions[3][0], iy);
+      }
+    }
+  }
+  
+  // Add text if it's visible
+  if (textVisible) {
+    // In SVG we can simply draw text directly
+    textFont(myFont);
+    textAlign(CENTER, CENTER);
+    textSize(textSizeValue);
+    text(customText, width/2, height/2);
   }
 } 
