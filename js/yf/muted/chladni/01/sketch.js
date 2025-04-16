@@ -3,7 +3,7 @@ let resolution = 300;
 let isRunning = false;
 let isPaused = false; // Pause variable
 let thresholdSlider; // Threshold slider
-let thresholdValue = 0.2; // Maximum contrast
+let thresholdValue = 0.01; // Minimum contrast (due to slider inversion with 0.2)
 let invertedMode = true; // Inversion mode (white lines on black or black lines on white)
 let modeXSlider, modeYSlider; // Mode sliders
 let modeX = 1, modeY = 8; // Initial mode values: min X, medium Y
@@ -198,8 +198,9 @@ function normalizeEnergy(energy) {
 
 function createControlSliders() {
   // Create slider for threshold adjustment
+  // Значение 0.2 на слайдере соответствует минимальному контрасту (thresholdValue = 0.01)
   // Значение 0.01 на слайдере соответствует максимальному контрасту (thresholdValue = 0.2)
-  thresholdSlider = createSlider(0.01, 0.2, 0.01, 0.01);
+  thresholdSlider = createSlider(0.01, 0.2, 0.2, 0.01);
   thresholdSlider.parent('threshold-slider-container');
   thresholdSlider.style('width', '100%');
   // Добавляем метки минимального и максимального значений
