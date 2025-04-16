@@ -158,6 +158,20 @@ h3 {
   font-size: 14px;
 }
 
+/* Добавим стили для обычных input, которые используются вместо containerов */
+#text-input,
+#text-size-input {
+  width: 100%;
+  padding: 8px;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+  margin-top: 5px;
+}
+
 #gradient-checkbox-container {
   display: flex;
   justify-content: flex-end;

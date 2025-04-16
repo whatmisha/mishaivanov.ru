@@ -204,20 +204,40 @@ function createControlSliders() {
     fft.smooth(smoothingValue);
   });
   
-  // Text input field
-  textInput = select('#text-input');
-  textInput.attribute('autocomplete', 'off');
-  textInput.attribute('spellcheck', 'false');
-  textInput.value(customText);
-  textInput.style('width', '100%');
+  // Обработка элементов из DOM, а не создание новых
   
-  textInput.input(function() {
-    console.log('Text input change: ' + this.value());
-    customText = this.value();
-    if (!isRunning) {
-      drawStaticPattern(modeX, modeY);
-    }
-  });
+  // Текстовый ввод
+  textInput = select('#text-input');
+  if (textInput) {
+    textInput.value(customText);
+    textInput.input(() => {
+      console.log('Text input changed to:', textInput.value());
+      customText = textInput.value();
+      if (!isRunning) {
+        drawStaticPattern(modeX, modeY);
+      }
+    });
+  } else {
+    console.error('Text input field not found in DOM!');
+  }
+  
+  // Размер текста
+  textSizeInput = select('#text-size-input');
+  if (textSizeInput) {
+    textSizeInput.value(textSizeValue);
+    textSizeInput.input(() => {
+      console.log('Text size changed to:', textSizeInput.value());
+      let newSize = parseInt(textSizeInput.value());
+      if (!isNaN(newSize) && newSize >= 10 && newSize <= 200) {
+        textSizeValue = newSize;
+        if (!isRunning) {
+          drawStaticPattern(modeX, modeY);
+        }
+      }
+    });
+  } else {
+    console.error('Text size input field not found in DOM!');
+  }
   
   // Slider for text stroke width
   textStrokeSlider = createSlider(0, 20, textStrokeValue, 1);
