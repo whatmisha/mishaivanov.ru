@@ -204,39 +204,43 @@ function createControlSliders() {
     fft.smooth(smoothingValue);
   });
   
-  // Обработка элементов из DOM, а не создание новых
-  
-  // Текстовый ввод
+  // Get text input field directly from HTML
   textInput = select('#text-input');
   if (textInput) {
+    // Set initial value
     textInput.value(customText);
-    textInput.input(() => {
-      console.log('Text input changed to:', textInput.value());
-      customText = textInput.value();
+    
+    // Add input event handler
+    textInput.input(function() {
+      customText = this.value();
+      console.log('Text changed to:', customText);
       if (!isRunning) {
         drawStaticPattern(modeX, modeY);
       }
     });
   } else {
-    console.error('Text input field not found in DOM!');
+    console.error('Text input element not found!');
   }
   
-  // Размер текста
+  // Get text size input directly from HTML
   textSizeInput = select('#text-size-input');
   if (textSizeInput) {
+    // Set initial value
     textSizeInput.value(textSizeValue);
-    textSizeInput.input(() => {
-      console.log('Text size changed to:', textSizeInput.value());
-      let newSize = parseInt(textSizeInput.value());
+    
+    // Add input event handler
+    textSizeInput.input(function() {
+      let newSize = parseInt(this.value());
       if (!isNaN(newSize) && newSize >= 10 && newSize <= 200) {
         textSizeValue = newSize;
+        console.log('Text size changed to:', textSizeValue);
         if (!isRunning) {
           drawStaticPattern(modeX, modeY);
         }
       }
     });
   } else {
-    console.error('Text size input field not found in DOM!');
+    console.error('Text size input element not found!');
   }
   
   // Slider for text stroke width
