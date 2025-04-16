@@ -23,6 +23,9 @@ let diagLinesCheckbox; // Checkbox for diagonal lines
 let showDiagLines = false; // Diagonal lines are off by default
 let invertCheckbox; // Checkbox for color inversion
 let lastFrameState = null; // To store the last state on pause
+let audioReactiveXCheckbox, audioReactiveYCheckbox; // Отдельные чекбоксы для X и Y
+let useAudioReactiveXMode = true; // Аудио-реактивный режим для X включен по умолчанию
+let useAudioReactiveYMode = true; // Аудио-реактивный режим для Y включен по умолчанию
 
 function setup() {
   // Create canvas and place it in the container
@@ -39,6 +42,11 @@ function setup() {
   
   // Create sliders for threshold and modes
   createControlSliders();
+  
+  // Отключаем слайдеры X и Y при старте, так как аудио-реактивный режим включен по умолчанию
+  if (useAudioReactiveXMode || useAudioReactiveYMode) {
+    toggleSliderInteractivity(false);
+  }
   
   // Setup interface
   setupInterface();
@@ -82,10 +90,40 @@ function draw() {
   let bassNorm = normalizeEnergy(bass);
   let trebleNorm = normalizeEnergy(treble);
 
-  // Apply more sensitive transformation of sound to wave parameters
-  // Use slider values as base and add sound influence
-  let targetNX = modeX + map(bassNorm, 0, 1, 0, 5); // Sound influences in range +0 to +5
-  let targetNY = modeY + map(trebleNorm, 0, 1, 0, 5);
+  // Define target values based on audio
+  let targetNX, targetNY;
+  
+  // Handle X mode based on audio reactivity setting
+  if (useAudioReactiveXMode) {
+    // Calculate X mode directly from audio (more dramatic effect)
+    // Инвертируем зависимость - высокий уровень басов даёт низкие значения X
+    targetNX = map(bassNorm, 0, 1, 12, 1); // Инвертированный диапазон (12-1)
+    
+    // Update X slider position visually
+    modeXSlider.value(targetNX);
+    
+    // Update base value for smooth transitions
+    modeX = targetNX;
+  } else {
+    // Standard mode - X slider sets base value with subtle audio influence
+    targetNX = modeX + map(bassNorm, 0, 1, 0, 5); // Sound influences in range +0 to +5
+  }
+  
+  // Handle Y mode based on audio reactivity setting
+  if (useAudioReactiveYMode) {
+    // Calculate Y mode directly from audio (more dramatic effect)
+    targetNY = map(trebleNorm, 0, 1, 1, 12); // Treble affects vertical mode (1-12)
+    
+    // Update Y slider position visually
+    modeYSlider.value(targetNY);
+    
+    // Update base value for smooth transitions
+    modeY = targetNY;
+  } else {
+    // Standard mode - Y slider sets base value with subtle audio influence
+    targetNY = modeY + map(trebleNorm, 0, 1, 0, 5);
+  }
+  
   let targetAmplitude = map(mid, 0, 255 * sensitivity, 0.5, 3);
   
   // Smooth transitions for more fluid animation
@@ -119,6 +157,30 @@ function draw() {
       amplitude: currentAmplitude,
       threshold: dynamicThreshold
     };
+  }
+}
+
+// Function to toggle slider interactivity
+function toggleSliderInteractivity(enabled) {
+  // Now we need to handle X and Y sliders separately
+  if (modeXSlider) {
+    if (enabled && !useAudioReactiveXMode) {
+      modeXSlider.removeAttribute('disabled');
+      modeXSlider.style('opacity', '1');
+    } else {
+      modeXSlider.attribute('disabled', '');
+      modeXSlider.style('opacity', '0.5');
+    }
+  }
+  
+  if (modeYSlider) {
+    if (enabled && !useAudioReactiveYMode) {
+      modeYSlider.removeAttribute('disabled');
+      modeYSlider.style('opacity', '1');
+    } else {
+      modeYSlider.attribute('disabled', '');
+      modeYSlider.style('opacity', '0.5');
+    }
   }
 }
 
@@ -276,6 +338,34 @@ function createControlSliders() {
       } else {
         drawStaticPattern(modeX, modeY);
       }
+    }
+  });
+  
+  // Checkbox for audio-reactive X mode
+  audioReactiveXCheckbox = createCheckbox('', useAudioReactiveXMode);
+  audioReactiveXCheckbox.parent('audio-reactive-x-checkbox-container');
+  audioReactiveXCheckbox.changed(() => {
+    useAudioReactiveXMode = audioReactiveXCheckbox.checked();
+    
+    // Toggle slider interactivity based on audio-reactive mode
+    toggleSliderInteractivity(!useAudioReactiveXMode);
+    
+    if (!isRunning) {
+      drawStaticPattern(modeX, modeY);
+    }
+  });
+  
+  // Checkbox for audio-reactive Y mode
+  audioReactiveYCheckbox = createCheckbox('', useAudioReactiveYMode);
+  audioReactiveYCheckbox.parent('audio-reactive-y-checkbox-container');
+  audioReactiveYCheckbox.changed(() => {
+    useAudioReactiveYMode = audioReactiveYCheckbox.checked();
+    
+    // Toggle slider interactivity based on audio-reactive mode
+    toggleSliderInteractivity(!useAudioReactiveYMode);
+    
+    if (!isRunning) {
+      drawStaticPattern(modeX, modeY);
     }
   });
 }
@@ -438,6 +528,9 @@ function setupInterface() {
         isRunning = true;
         isPaused = false; // Reset pause on start
         console.log('Microphone activated');
+        
+        // Disable sliders based on audio-reactive modes
+        toggleSliderInteractivity(false);
       }).catch(err => {
         console.error('Microphone access error:', err);
         alert('Failed to access microphone. Please allow access and try again.');
@@ -453,6 +546,9 @@ function setupInterface() {
       console.log('Microphone stopped');
       // Draw static pattern
       drawStaticPattern(modeX, modeY);
+      
+      // Re-enable sliders when stopping microphone
+      toggleSliderInteractivity(true);
     }
   });
   
