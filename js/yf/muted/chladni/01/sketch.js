@@ -198,7 +198,7 @@ function normalizeEnergy(energy) {
 
 function createControlSliders() {
   // Create slider for threshold adjustment
-  // Максимальный контраст по умолчанию (0.2)
+  // Значение 0.01 на слайдере соответствует максимальному контрасту (thresholdValue = 0.2)
   thresholdSlider = createSlider(0.01, 0.2, 0.01, 0.01);
   thresholdSlider.parent('threshold-slider-container');
   thresholdSlider.style('width', '100%');
