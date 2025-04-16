@@ -61,8 +61,57 @@ function setup() {
   // Setup interface
   setupInterface();
   
+  // Add direct event handlers to DOM elements
+  setupDOMEventHandlers();
+  
   // Draw initial state
   drawStaticPattern(modeX, modeY);
+}
+
+// Function to set up direct DOM event handlers
+function setupDOMEventHandlers() {
+  // Get text input element directly from DOM
+  const domTextInput = document.getElementById('text-input');
+  if (domTextInput) {
+    // Set initial value
+    domTextInput.value = customText;
+    
+    // Add event listeners
+    domTextInput.addEventListener('input', function(e) {
+      customText = this.value;
+      console.log('DOM Text input event:', customText);
+      if (!isRunning) {
+        drawStaticPattern(modeX, modeY);
+      }
+    });
+    
+    domTextInput.addEventListener('change', function(e) {
+      customText = this.value;
+      console.log('DOM Text change event:', customText);
+      if (!isRunning) {
+        drawStaticPattern(modeX, modeY);
+      }
+    });
+  }
+  
+  // Get text size input element directly from DOM
+  const domTextSizeInput = document.getElementById('text-size-input');
+  if (domTextSizeInput) {
+    // Set initial value
+    domTextSizeInput.value = textSizeValue;
+    
+    // Add event listeners
+    domTextSizeInput.addEventListener('input', function(e) {
+      const newSize = parseInt(this.value);
+      if (!isNaN(newSize) && newSize >= 10 && newSize <= 200) {
+        textSizeValue = newSize;
+        console.log('DOM Text size change:', textSizeValue);
+        if (!isRunning) {
+          drawStaticPattern(modeX, modeY);
+        }
+      }
+    });
+  }
 }
 
 // Add keyPressed function to handle spacebar for pause
@@ -203,45 +252,6 @@ function createControlSliders() {
     smoothingValue = smoothingSlider.value();
     fft.smooth(smoothingValue);
   });
-  
-  // Get text input field directly from HTML
-  textInput = select('#text-input');
-  if (textInput) {
-    // Set initial value
-    textInput.value(customText);
-    
-    // Add input event handler
-    textInput.input(function() {
-      customText = this.value();
-      console.log('Text changed to:', customText);
-      if (!isRunning) {
-        drawStaticPattern(modeX, modeY);
-      }
-    });
-  } else {
-    console.error('Text input element not found!');
-  }
-  
-  // Get text size input directly from HTML
-  textSizeInput = select('#text-size-input');
-  if (textSizeInput) {
-    // Set initial value
-    textSizeInput.value(textSizeValue);
-    
-    // Add input event handler
-    textSizeInput.input(function() {
-      let newSize = parseInt(this.value());
-      if (!isNaN(newSize) && newSize >= 10 && newSize <= 200) {
-        textSizeValue = newSize;
-        console.log('Text size changed to:', textSizeValue);
-        if (!isRunning) {
-          drawStaticPattern(modeX, modeY);
-        }
-      }
-    });
-  } else {
-    console.error('Text size input element not found!');
-  }
   
   // Slider for text stroke width
   textStrokeSlider = createSlider(0, 20, textStrokeValue, 1);
