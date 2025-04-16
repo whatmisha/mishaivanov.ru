@@ -63,20 +63,6 @@ function setup() {
   
   // Draw initial state
   drawStaticPattern(modeX, modeY);
-  
-  // Update version timestamp
-  updateVersionTimestamp();
-}
-
-// Function to update the version timestamp
-function updateVersionTimestamp() {
-  const now = new Date();
-  const date = now.toLocaleDateString();
-  const time = now.toLocaleTimeString();
-  const timestampElement = document.getElementById('version-timestamp');
-  if (timestampElement) {
-    timestampElement.textContent = `${date} ${time}`;
-  }
 }
 
 // Add keyPressed function to handle spacebar for pause
@@ -219,29 +205,17 @@ function createControlSliders() {
   });
   
   // Text input field
-  textInput = createInput(customText);
-  textInput.parent('text-input-container');
+  textInput = select('#text-input');
+  textInput.attribute('autocomplete', 'off');
+  textInput.attribute('spellcheck', 'false');
+  textInput.value(customText);
   textInput.style('width', '100%');
-  textInput.changed(() => {
-    customText = textInput.value();
+  
+  textInput.input(function() {
+    console.log('Text input change: ' + this.value());
+    customText = this.value();
     if (!isRunning) {
       drawStaticPattern(modeX, modeY);
-    }
-  });
-  
-  // Replace slider for text size with text input
-  textSizeInput = createInput(textSizeValue.toString());
-  textSizeInput.parent('text-size-input-container');
-  textSizeInput.style('width', '100%');
-  textSizeInput.input(() => {
-    // Convert entered value to number
-    let newSize = parseInt(textSizeInput.value());
-    // Check if value is a number and within acceptable limits
-    if (!isNaN(newSize) && newSize >= 10 && newSize <= 200) {
-      textSizeValue = newSize;
-      if (!isRunning) {
-        drawStaticPattern(modeX, modeY);
-      }
     }
   });
   
