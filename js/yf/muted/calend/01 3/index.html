@@ -60,6 +60,7 @@
         .controls {
             display: flex;
             gap: 10px;
+            align-items: center;
         }
         
         .control-item {
@@ -76,12 +77,65 @@
         .control-item:hover {
             background-color: #333;
         }
+        
+        .slider-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 10px;
+            min-width: 150px;
+        }
+        
+        .slider-label {
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #1a1a1a;
+        }
+        
+        .slider {
+            width: 100%;
+            height: 5px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: #e6e6e6;
+            outline: none;
+            border-radius: 5px;
+        }
+        
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            cursor: pointer;
+        }
+        
+        .slider::-moz-range-thumb {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            cursor: pointer;
+        }
+        
+        .slider-value {
+            font-size: 12px;
+            margin-top: 5px;
+            color: #1a1a1a;
+        }
     </style>
 </head>
 <body>
     <div class="svg-container" id="svg-container"></div>
     
     <div class="controls">
+        <div class="slider-container">
+            <span class="slider-label">Степень перемещения</span>
+            <input type="range" min="10" max="300" value="30" class="slider" id="randomRange">
+            <span class="slider-value" id="rangeValue">30px</span>
+        </div>
         <button id="randomize" class="control-item">Случайная анимация</button>
         <button id="reset" class="control-item">Сбросить</button>
         <button id="exportSVG" class="control-item">Экспорт SVG</button>
@@ -138,18 +192,30 @@
                 const randomizeBtn = document.getElementById('randomize');
                 const resetBtn = document.getElementById('reset');
                 const exportSVGBtn = document.getElementById('exportSVG');
+                const randomRangeSlider = document.getElementById('randomRange');
+                const rangeValueDisplay = document.getElementById('rangeValue');
+                
+                // Обработчик изменения значения слайдера
+                randomRangeSlider.addEventListener('input', function() {
+                    const value = this.value;
+                    rangeValueDisplay.textContent = `${value}px`;
+                });
                 
                 // Функция для случайного размещения групп
                 function randomizeGroups() {
                     console.log('Выполняем случайное размещение групп...');
                     
+                    // Получаем текущее значение слайдера
+                    const randomRange = parseInt(randomRangeSlider.value);
+                    console.log(`Диапазон случайного перемещения: ±${randomRange}px`);
+                    
                     groups.forEach((group, index) => {
                         // Настраиваем анимацию перехода
                         group.style.transition = 'transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
                         
-                        // Генерируем случайные значения для трансформации
-                        const randomX = Math.random() * 300 - 150; // от -150px до 150px
-                        const randomY = Math.random() * 300 - 150; // от -150px до 150px
+                        // Генерируем случайные значения для трансформации с учетом выбранного диапазона
+                        const randomX = Math.random() * randomRange * 2 - randomRange; // от -randomRange до randomRange
+                        const randomY = Math.random() * randomRange * 2 - randomRange; // от -randomRange до randomRange
                         
                         // Применяем только перемещение
                         const transform = `translate(${randomX}px, ${randomY}px)`;
@@ -196,10 +262,13 @@
                         const groups = svgClone.querySelectorAll('g');
                         console.log(`Найдено ${groups.length} групп для экспорта`);
                         
+                        // Получаем текущее значение слайдера
+                        const randomRange = parseInt(randomRangeSlider.value);
+                        
                         // Применяем случайные перемещения к каждой группе
                         groups.forEach((group, index) => {
-                            const randomX = Math.random() * 300 - 150; // от -150px до 150px
-                            const randomY = Math.random() * 300 - 150; // от -150px до 150px
+                            const randomX = Math.random() * randomRange * 2 - randomRange; // от -randomRange до randomRange
+                            const randomY = Math.random() * randomRange * 2 - randomRange; // от -randomRange до randomRange
                             
                             // Получаем текущую трансформацию, если она есть
                             let currentTransform = group.getAttribute('transform') || '';
