@@ -245,9 +245,13 @@
                 const svgContainer = document.getElementById('svg-container');
                 svgContainer.innerHTML = '<div class="loading">Загрузка SVG...</div>';
                 
+                // Добавляем случайный параметр для предотвращения кеширования
+                const noCachePath = svgPath + '?v=' + new Date().getTime();
+                console.log('Путь с предотвращением кеширования:', noCachePath);
+                
                 // Используем XMLHttpRequest вместо fetch для лучшей поддержки локальных файлов
                 const xhr = new XMLHttpRequest();
-                xhr.open('GET', svgPath, true);
+                xhr.open('GET', noCachePath, true);
                 xhr.onreadystatechange = function() {
                     if (xhr.readyState === 4) {
                         if (xhr.status === 200) {
@@ -299,6 +303,10 @@
                 const groups = document.querySelectorAll('svg g');
                 console.log(`Найдено ${groups.length} групп`);
                 
+                // Получаем все анимируемые элементы SVG
+                const animatableElements = document.querySelectorAll('svg > :not(defs), svg > g > *, svg > g > g > *');
+                console.log(`Найдено ${animatableElements.length} анимируемых элементов`);
+                
                 // Добавляем обработчики для кнопок
                 const randomizeBtn = document.getElementById('randomize');
                 const resetBtn = document.getElementById('reset');
@@ -313,15 +321,15 @@
                 
                 // Функция для случайного размещения групп
                 function randomizeGroups() {
-                    console.log('Выполняем случайное размещение групп...');
+                    console.log('Выполняем случайное размещение элементов...');
                     
                     // Получаем текущее значение слайдера
                     const randomRange = parseInt(randomRangeSlider.value);
                     console.log(`Диапазон случайного перемещения: ±${randomRange}px`);
                     
-                    groups.forEach((group, index) => {
+                    animatableElements.forEach((element, index) => {
                         // Настраиваем анимацию перехода
-                        group.style.transition = 'transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
+                        element.style.transition = 'transform 1.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
                         
                         // Генерируем случайные значения для трансформации с учетом выбранного диапазона
                         const randomX = Math.random() * randomRange * 2 - randomRange; // от -randomRange до randomRange
@@ -330,22 +338,22 @@
                         // Применяем только перемещение
                         const transform = `translate(${randomX}px, ${randomY}px)`;
                         
-                        group.style.transform = transform;
-                        console.log(`Группа ${index} получила трансформацию: ${transform}`);
+                        element.style.transform = transform;
+                        console.log(`Элемент ${index} получил трансформацию: ${transform}`);
                     });
                 }
                 
                 // Функция для сброса положения групп
                 function resetGroups() {
-                    console.log('Сбрасываем положение групп...');
+                    console.log('Сбрасываем положение элементов...');
                     
-                    groups.forEach((group, index) => {
+                    animatableElements.forEach((element, index) => {
                         // Настраиваем анимацию возврата
-                        group.style.transition = 'transform 0.8s ease-in-out';
+                        element.style.transition = 'transform 0.8s ease-in-out';
                         
                         // Сбрасываем все трансформации
-                        group.style.transform = 'translate(0, 0)';
-                        console.log(`Группа ${index} сброшена в исходное положение`);
+                        element.style.transform = 'translate(0, 0)';
+                        console.log(`Элемент ${index} сброшен в исходное положение`);
                     });
                     
                     // Дополнительно форсируем перерисовку SVG
@@ -375,31 +383,31 @@
                         
                         const svgClone = svgElement.cloneNode(true);
                         
-                        // Получаем все группы в клонированном SVG
-                        const groups = svgClone.querySelectorAll('g');
-                        console.log(`Найдено ${groups.length} групп для экспорта`);
+                        // Получаем все анимируемые элементы в клонированном SVG
+                        const elements = svgClone.querySelectorAll(':not(defs), g > *, g > g > *');
+                        console.log(`Найдено ${elements.length} элементов для экспорта`);
                         
                         // Получаем текущее значение слайдера
                         const randomRange = parseInt(randomRangeSlider.value);
                         
-                        // Применяем случайные перемещения к каждой группе
-                        groups.forEach((group, index) => {
+                        // Применяем случайные перемещения к каждому элементу
+                        elements.forEach((element, index) => {
                             const randomX = Math.random() * randomRange * 2 - randomRange; // от -randomRange до randomRange
                             const randomY = Math.random() * randomRange * 2 - randomRange; // от -randomRange до randomRange
                             
                             // Получаем текущую трансформацию, если она есть
-                            let currentTransform = group.getAttribute('transform') || '';
+                            let currentTransform = element.getAttribute('transform') || '';
                             
                             // Добавляем перемещение к трансформации
                             let newTransform = `${currentTransform} translate(${randomX}, ${randomY})`;
                             newTransform = newTransform.trim();
                             
                             // Устанавливаем новую трансформацию
-                            group.setAttribute('transform', newTransform);
+                            element.setAttribute('transform', newTransform);
                             
                             // Удаляем инлайн стили, если они есть
-                            group.removeAttribute('style');
-                            console.log(`Группа ${index}: добавлена трансформация ${newTransform}`);
+                            element.removeAttribute('style');
+                            console.log(`Элемент ${index}: добавлена трансформация ${newTransform}`);
                         });
                         
                         // Получаем SVG как строку

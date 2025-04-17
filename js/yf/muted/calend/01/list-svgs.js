@@ -6,13 +6,15 @@ async function getSvgFiles() {
     };
     
     try {
+        // Добавляем метку времени к путям для предотвращения кеширования
+        const timestamp = new Date().getTime();
+        
         // Список SVG-файлов календаря
         const files = [
             { file: 'calend_01.svg', path: 'source/calend_01.svg', name: 'calend_01' },
             { file: 'calend_02.svg', path: 'source/calend_02.svg', name: 'calend_02' },
             { file: 'calend_03.svg', path: 'source/calend_03.svg', name: 'calend_03' },
-            { file: 'calend_04.svg', path: 'source/calend_04.svg', name: 'calend_04' },
-            { file: 'calend_05.svg', path: 'source/calend_05.svg', name: 'calend_05' }
+            { file: 'calend_04.svg', path: 'source/calend_04.svg', name: 'calend_04' }
         ];
         
         result.files = files;
