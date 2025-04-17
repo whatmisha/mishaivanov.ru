@@ -61,6 +61,9 @@
             display: flex;
             gap: 10px;
             align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 10px;
         }
         
         .control-item {
@@ -125,12 +128,44 @@
             margin-top: 5px;
             color: #1a1a1a;
         }
+        
+        .svg-select {
+            padding: 10px;
+            font-size: 16px;
+            background-color: #1a1a1a;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 10px;
+            min-width: 200px;
+        }
+        
+        .svg-select option {
+            padding: 5px;
+        }
+        
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            font-size: 18px;
+            color: #1a1a1a;
+        }
     </style>
 </head>
 <body>
-    <div class="svg-container" id="svg-container"></div>
+    <div class="svg-container" id="svg-container">
+        <div class="loading">Загрузка...</div>
+    </div>
     
     <div class="controls">
+        <select id="svgSelector" class="svg-select">
+            <option value="">Загрузка списка файлов...</option>
+        </select>
+        
         <div class="slider-container">
             <span class="slider-label">Степень перемещения</span>
             <input type="range" min="1" max="200" value="30" class="slider" id="randomRange">
@@ -141,38 +176,114 @@
         <button id="exportSVG" class="control-item">Экспорт SVG</button>
     </div>
     
+    <script src="list-svgs.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Используем XMLHttpRequest вместо fetch для лучшей поддержки локальных файлов
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', 'calend_01.svg', true);
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        const svgContainer = document.getElementById('svg-container');
-                        svgContainer.innerHTML = xhr.responseText;
-                        console.log('SVG успешно загружен через XMLHttpRequest');
-                        
-                        initializeCalendar();
-                    } else {
-                        console.error('Ошибка загрузки SVG:', xhr.statusText);
-                        
-                        // Если не удалось загрузить SVG, показываем сообщение
-                        const svgContainer = document.getElementById('svg-container');
-                        svgContainer.innerHTML = `
-                        <div style="padding: 20px; background-color: #f8d7da; color: #721c24; border-radius: 5px;">
-                            <p style="font-size: 18px;">Не удалось загрузить SVG файл.</p>
-                            <p>Вы открыли файл напрямую через протокол file://</p>
-                            <p>Для правильной работы необходимо:</p>
-                            <ol>
-                                <li>Запустить локальный сервер с помощью Python: <pre>python3 -m http.server 8000</pre></li>
-                                <li>Открыть страницу через URL: <a href="http://localhost:8000">http://localhost:8000</a></li>
-                            </ol>
-                        </div>`;
-                    }
+            // Загружаем список SVG файлов
+            loadSvgFilesList();
+            
+            // Обработчик выбора файла SVG
+            const svgSelector = document.getElementById('svgSelector');
+            svgSelector.addEventListener('change', function() {
+                if (this.value) {
+                    loadSvg(this.value);
                 }
-            };
-            xhr.send();
+            });
+            
+            // Функция для загрузки списка SVG файлов
+            async function loadSvgFilesList() {
+                try {
+                    // Используем функцию из list-svgs.js
+                    const data = await getSvgFiles();
+                    
+                    // Очищаем текущие опции
+                    svgSelector.innerHTML = '';
+                    
+                    // Проверяем успешность запроса
+                    if (!data.success) {
+                        throw new Error(data.error || 'Неизвестная ошибка');
+                    }
+                    
+                    const files = data.files || [];
+                    
+                    if (files.length === 0) {
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = 'Файлы SVG не найдены';
+                        svgSelector.appendChild(option);
+                    } else {
+                        // Добавляем опции для каждого файла
+                        files.forEach(file => {
+                            const option = document.createElement('option');
+                            option.value = file.path;
+                            option.textContent = file.name;
+                            svgSelector.appendChild(option);
+                        });
+                        
+                        // Загружаем первый файл из списка
+                        if (files.length > 0) {
+                            svgSelector.value = files[0].path;
+                            loadSvg(files[0].path);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Ошибка при загрузке списка файлов:', error);
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'Ошибка загрузки списка';
+                    svgSelector.innerHTML = '';
+                    svgSelector.appendChild(option);
+                    
+                    // Загружаем файл по умолчанию в случае ошибки
+                    loadSvg('source/calend_01.svg');
+                }
+            }
+            
+            // Функция для загрузки SVG
+            function loadSvg(svgPath) {
+                console.log('Загрузка SVG:', svgPath);
+                const svgContainer = document.getElementById('svg-container');
+                svgContainer.innerHTML = '<div class="loading">Загрузка SVG...</div>';
+                
+                // Используем XMLHttpRequest вместо fetch для лучшей поддержки локальных файлов
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', svgPath, true);
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                            svgContainer.innerHTML = xhr.responseText;
+                            console.log('SVG успешно загружен через XMLHttpRequest');
+                            
+                            // Форсируем перерисовку SVG после загрузки
+                            const svgElement = document.querySelector('svg');
+                            if (svgElement) {
+                                // Небольшая задержка для гарантии полной загрузки SVG
+                                setTimeout(() => {
+                                    // Принудительно вызываем перерисовку
+                                    svgElement.style.display = 'none';
+                                    // Используем getBoundingClientRect для принудительного обновления макета
+                                    svgElement.getBoundingClientRect();
+                                    svgElement.style.display = '';
+                                    
+                                    console.log('SVG перерисован для корректного отображения');
+                                }, 50);
+                            }
+                            
+                            initializeCalendar();
+                        } else {
+                            console.error('Ошибка загрузки SVG:', xhr.statusText);
+                            
+                            // Если не удалось загрузить SVG, показываем сообщение
+                            svgContainer.innerHTML = `
+                            <div style="padding: 20px; background-color: #f8d7da; color: #721c24; border-radius: 5px;">
+                                <p style="font-size: 18px;">Не удалось загрузить SVG файл.</p>
+                                <p>Ошибка: ${xhr.statusText || 'Файл не найден'}</p>
+                            </div>`;
+                        }
+                    }
+                };
+                xhr.send();
+            }
             
             function initializeCalendar() {
                 // Получаем SVG элемент
@@ -197,8 +308,7 @@
                 
                 // Обработчик изменения значения слайдера
                 randomRangeSlider.addEventListener('input', function() {
-                    const value = this.value;
-                    rangeValueDisplay.textContent = `${value}px`;
+                    rangeValueDisplay.textContent = `${this.value}px`;
                 });
                 
                 // Функция для случайного размещения групп
@@ -237,6 +347,13 @@
                         group.style.transform = 'translate(0, 0)';
                         console.log(`Группа ${index} сброшена в исходное положение`);
                     });
+                    
+                    // Дополнительно форсируем перерисовку SVG
+                    const svgElement = document.querySelector('svg');
+                    if (svgElement) {
+                        // Используем getBoundingClientRect для принудительного обновления макета
+                        svgElement.getBoundingClientRect();
+                    }
                 }
                 
                 // Привязываем обработчики событий
