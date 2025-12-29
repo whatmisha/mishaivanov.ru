@@ -17,12 +17,12 @@ class VoidTypeface {
                 stemMultiplier: 1.0, // множитель размера модуля
                 moduleSize: 12,
                 letterSpacingMultiplier: 1,
-                lineHeightMultiplier: 2,
+                lineHeightMultiplier: 6,
                 strokesNum: 2,
                 mode: 'fill',
                 letterColor: '#ffffff',
                 bgColor: '#000000',
-                text: 'Void\nTypeface\n2k26',
+                text: 'VOID TYPEFACE',
                 showGrid: true
             },
             get(key) { return this.values[key]; },
@@ -156,7 +156,7 @@ class VoidTypeface {
         this.sliderController.initSlider('lineHeightSlider', {
             valueId: 'lineHeightValue',
             setting: 'lineHeightMultiplier',
-            min: 0,
+            min: 5,
             max: 12,
             decimals: 0,
             baseStep: 1,
@@ -409,22 +409,9 @@ class VoidTypeface {
      */
     initExport() {
         const exportBtn = document.getElementById('exportBtn');
-        const copyBtn = document.getElementById('copyBtn');
         
         exportBtn.addEventListener('click', () => {
             this.exportSVG();
-        });
-
-        copyBtn.addEventListener('click', () => {
-            this.copySVG();
-        });
-
-        // Шорткат ⌘E (Cmd на Mac, Ctrl на Windows/Linux)
-        document.addEventListener('keydown', (e) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === 'e') {
-                e.preventDefault();
-                this.exportSVG();
-            }
         });
     }
 
@@ -467,13 +454,6 @@ class VoidTypeface {
      */
     exportSVG() {
         this.exporter.exportToSVG();
-    }
-
-    /**
-     * Копировать SVG в буфер обмена
-     */
-    async copySVG() {
-        await this.exporter.copySVG();
     }
 }
 

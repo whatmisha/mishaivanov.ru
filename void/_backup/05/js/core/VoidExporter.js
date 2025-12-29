@@ -10,14 +10,15 @@ export class VoidExporter {
     }
 
     /**
-     * Получить SVG контент (без скачивания)
+     * Экспорт текущего текста в SVG
      */
-    getSVGContent() {
+    exportToSVG() {
         const params = this.renderer.params;
         const text = params.text;
         
         if (!text) {
-            return null;
+            alert('Введите текст для экспорта');
+            return;
         }
 
         const lines = text.split('\n');
@@ -61,48 +62,8 @@ export class VoidExporter {
         svgContent += `  </g>\n`;
         svgContent += `</svg>`;
 
-        return svgContent;
-    }
-
-    /**
-     * Экспорт текущего текста в SVG
-     */
-    exportToSVG() {
-        const svgContent = this.getSVGContent();
-        
-        if (!svgContent) {
-            alert('Введите текст для экспорта');
-            return;
-        }
-
         // Скачать файл
         this.downloadSVG(svgContent, 'void-typeface.svg');
-    }
-
-    /**
-     * Копировать SVG в буфер обмена
-     */
-    async copySVG() {
-        const svgContent = this.getSVGContent();
-        
-        if (!svgContent) {
-            alert('Введите текст для копирования');
-            return;
-        }
-
-        try {
-            await navigator.clipboard.writeText(svgContent);
-            // Показать уведомление об успехе
-            const btn = document.getElementById('copyBtn');
-            const originalText = btn.textContent;
-            btn.textContent = 'Copied!';
-            setTimeout(() => {
-                btn.textContent = originalText;
-            }, 1000);
-        } catch (err) {
-            console.error('Ошибка копирования:', err);
-            alert('Не удалось скопировать в буфер обмена');
-        }
     }
 
     /**
@@ -136,8 +97,7 @@ export class VoidExporter {
                     moduleH, 
                     params.stem,
                     params.mode,
-                    params.strokesNum,
-                    params.gap || 2
+                    params.strokesNum
                 );
                 
                 if (moduleSVG) {
@@ -153,7 +113,7 @@ export class VoidExporter {
     /**
      * Отрисовать модуль в SVG
      */
-    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, gap) {
+    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum) {
         if (type === 'E') return ''; // Empty
 
         const angle = rotation * 90;
@@ -162,6 +122,7 @@ export class VoidExporter {
 
         let paths = '';
 
+        // Для простоты реализуем только Fill mode в первой версии
         if (mode === 'fill') {
             switch (type) {
                 case 'S':
@@ -181,28 +142,6 @@ export class VoidExporter {
                     break;
                 case 'B':
                     paths = this.renderBendSVG(0, 0, w, h, stem);
-                    break;
-            }
-        } else {
-            // Stripes mode
-            switch (type) {
-                case 'S':
-                    paths = this.renderStraightSVGStripes(0, 0, w, h, stem, strokesNum, gap);
-                    break;
-                case 'C':
-                    paths = this.renderCentralSVGStripes(0, 0, w, h, stem, strokesNum, gap);
-                    break;
-                case 'J':
-                    paths = this.renderJointSVGStripes(0, 0, w, h, stem, strokesNum, gap);
-                    break;
-                case 'L':
-                    paths = this.renderLinkSVGStripes(0, 0, w, h, stem, strokesNum, gap);
-                    break;
-                case 'R':
-                    paths = this.renderRoundSVGStripes(0, 0, w, h, stem, strokesNum, gap);
-                    break;
-                case 'B':
-                    paths = this.renderBendSVGStripes(0, 0, w, h, stem, strokesNum, gap);
                     break;
             }
         }
@@ -279,160 +218,6 @@ export class VoidExporter {
         path += `Z`;
         
         return `        <path d="${path}"/>\n`;
-    }
-
-    // ========== STRIPES MODE METHODS ==========
-
-    renderStraightSVGStripes(x, y, w, h, stem, strokesNum, gap) {
-        const w2 = (stem / 2 - gap * (strokesNum - 1)) / strokesNum;
-        let shift = 0;
-        let svg = '';
-        
-        for (let i = 0; i < strokesNum; i++) {
-            svg += `        <rect x="${shift - w/2}" y="${-h/2}" width="${w2}" height="${h}"/>\n`;
-            shift += w2 + gap;
-        }
-        
-        return svg;
-    }
-
-    renderCentralSVGStripes(x, y, w, h, stem, strokesNum, gap) {
-        const w2 = (stem / 2 - gap * (strokesNum - 1)) / strokesNum;
-        const lineWidth = (strokesNum * w2) + ((strokesNum - 1) * gap);
-        let shift = -lineWidth / 2;
-        let svg = '';
-        
-        for (let i = 0; i < strokesNum; i++) {
-            svg += `        <rect x="${shift}" y="${-h/2}" width="${w2}" height="${h}"/>\n`;
-            shift += w2 + gap;
-        }
-        
-        return svg;
-    }
-
-    renderJointSVGStripes(x, y, w, h, stem, strokesNum, gap) {
-        const w2 = (stem / 2 - gap * (strokesNum - 1)) / strokesNum;
-        let svg = '';
-        
-        // Вертикальные полоски
-        let shift = 0;
-        for (let i = 0; i < strokesNum; i++) {
-            svg += `        <rect x="${shift - w/2}" y="${-h/2}" width="${w2}" height="${h}"/>\n`;
-            shift += w2 + gap;
-        }
-        
-        // Горизонтальные полоски
-        const lineWidth = (strokesNum * w2) + ((strokesNum - 1) * gap);
-        shift = -lineWidth / 2;
-        for (let i = 0; i < strokesNum; i++) {
-            svg += `        <rect x="${-w/2}" y="${shift}" width="${w}" height="${w2}"/>\n`;
-            shift += w2 + gap;
-        }
-        
-        return svg;
-    }
-
-    renderLinkSVGStripes(x, y, w, h, stem, strokesNum, gap) {
-        const w2 = (stem / 2 - gap * (strokesNum - 1)) / strokesNum;
-        let svg = '';
-        
-        // Вертикальные полоски
-        let shift = 0;
-        for (let i = 0; i < strokesNum; i++) {
-            svg += `        <rect x="${shift - w/2}" y="${-h/2}" width="${w2}" height="${h}"/>\n`;
-            shift += w2 + gap;
-        }
-        
-        // Горизонтальные полоски (снизу)
-        shift = h / 2 - stem / 2;
-        for (let i = 0; i < strokesNum; i++) {
-            svg += `        <rect x="${-w/2}" y="${shift}" width="${w}" height="${w2}"/>\n`;
-            shift += w2 + gap;
-        }
-        
-        return svg;
-    }
-
-    renderRoundSVGStripes(x, y, w, h, stem, strokesNum, gap) {
-        const w2 = (stem / 2 - gap * (strokesNum - 1)) / strokesNum;
-        let shift = 0;
-        let svg = '';
-        
-        for (let j = 0; j < strokesNum; j++) {
-            const R1 = w - shift;
-            const R2 = R1 - w2;
-            
-            if (R2 > 0) {
-                const startAngle = Math.PI / 2;
-                const endAngle = Math.PI;
-                
-                const x1 = w/2 + R1 * Math.cos(startAngle);
-                const y1 = -h/2 + R1 * Math.sin(startAngle);
-                const x2 = w/2 + R1 * Math.cos(endAngle);
-                const y2 = -h/2 + R1 * Math.sin(endAngle);
-                
-                const x3 = w/2 + R2 * Math.cos(endAngle);
-                const y3 = -h/2 + R2 * Math.sin(endAngle);
-                const x4 = w/2 + R2 * Math.cos(startAngle);
-                const y4 = -h/2 + R2 * Math.sin(startAngle);
-                
-                let path = `M ${x1} ${y1} `;
-                path += `A ${R1} ${R1} 0 0 1 ${x2} ${y2} `;
-                path += `L ${x3} ${y3} `;
-                path += `A ${R2} ${R2} 0 0 0 ${x4} ${y4} `;
-                path += `Z`;
-                
-                svg += `        <path d="${path}"/>\n`;
-            }
-            
-            shift += w2 + gap;
-        }
-        
-        return svg;
-    }
-
-    renderBendSVGStripes(x, y, w, h, stem, strokesNum, gap) {
-        const w2 = (stem / 2 - gap * (strokesNum - 1)) / strokesNum;
-        let shift = 0;
-        let svg = '';
-        
-        for (let j = 0; j < strokesNum; j++) {
-            const R1 = stem / 2 - shift;
-            const R2 = R1 - w2;
-            
-            if (R2 >= 0 && R1 > 0) {
-                const startAngle = Math.PI / 2;
-                const endAngle = Math.PI;
-                
-                const x1 = w/2 + R1 * Math.cos(startAngle);
-                const y1 = -h/2 + R1 * Math.sin(startAngle);
-                const x2 = w/2 + R1 * Math.cos(endAngle);
-                const y2 = -h/2 + R1 * Math.sin(endAngle);
-                
-                let path = `M ${x1} ${y1} `;
-                path += `A ${R1} ${R1} 0 0 1 ${x2} ${y2} `;
-                
-                if (R2 > 0) {
-                    const x3 = w/2 + R2 * Math.cos(endAngle);
-                    const y3 = -h/2 + R2 * Math.sin(endAngle);
-                    const x4 = w/2 + R2 * Math.cos(startAngle);
-                    const y4 = -h/2 + R2 * Math.sin(startAngle);
-                    
-                    path += `L ${x3} ${y3} `;
-                    path += `A ${R2} ${R2} 0 0 0 ${x4} ${y4} `;
-                } else {
-                    path += `L ${w/2} ${-h/2} `;
-                }
-                
-                path += `Z`;
-                
-                svg += `        <path d="${path}"/>\n`;
-            }
-            
-            shift += w2 + gap;
-        }
-        
-        return svg;
     }
 
     /**
