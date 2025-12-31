@@ -56,8 +56,8 @@ export class VoidExporter {
      * Получить SVG контент (без скачивания)
      */
     getSVGContent() {
-        // НЕ очищаем кэш - используем те же значения, что были при рендеринге
-        // this.clearModuleTypeCache();
+        // Очистить кэш перед генерацией SVG
+        this.clearModuleTypeCache();
         
         const params = this.renderer.params;
         const text = params.text;
@@ -100,7 +100,7 @@ export class VoidExporter {
                 const char = line[charIndex];
                 const x = lineX + charIndex * (letterW + params.letterSpacing);
                 
-                svgContent += this.renderLetterToSVG(char, x, lineY, params, lineIndex, charIndex);
+                svgContent += this.renderLetterToSVG(char, x, lineY, params);
             }
         }
 
@@ -154,7 +154,7 @@ export class VoidExporter {
     /**
      * Отрисовать одну букву в SVG
      */
-    renderLetterToSVG(char, x, y, params, lineIndex = null, charIndex = null) {
+    renderLetterToSVG(char, x, y, params) {
         const glyphCode = getGlyph(char);
         const moduleW = params.moduleSize;
         const moduleH = params.moduleSize;
@@ -173,18 +173,13 @@ export class VoidExporter {
                 const moduleX = x + i * moduleW;
                 const moduleY = y + j * moduleH;
                 
-                // Для random mode используем те же значения, что были при рендеринге
+                // Для random mode генерируем случайные значения для каждого модуля
                 let stem = params.stem;
                 let strokesNum = params.strokesNum;
                 let strokeGapRatio = params.strokeGapRatio || 1.0;
                 
                 if (params.mode === 'random') {
-                    // Используем кэш из renderer вместо генерации новых значений
-                    // Используем тот же ключ, что и при рендеринге (позиция в тексте + позиция в модуле)
-                    const cacheKey = params.randomModeType === 'full' && lineIndex !== null && charIndex !== null
-                        ? `${lineIndex}_${charIndex}_${i}_${j}` 
-                        : null;
-                    const randomValues = this.renderer.getRandomModuleValues(moduleType, cacheKey);
+                    const randomValues = this.getRandomModuleValues(moduleType, params);
                     stem = randomValues.stem;
                     strokesNum = randomValues.strokesNum;
                     strokeGapRatio = randomValues.strokeGapRatio;
@@ -200,8 +195,7 @@ export class VoidExporter {
                     stem,
                     params.mode === 'random' ? 'stripes' : params.mode,
                     strokesNum,
-                    strokeGapRatio,
-                    params.cornerRadius || 0
+                    strokeGapRatio
                 );
                 
                 if (moduleSVG) {
@@ -217,7 +211,7 @@ export class VoidExporter {
     /**
      * Отрисовать модуль в SVG
      */
-    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, strokeGapRatio, cornerRadius = 0) {
+    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, strokeGapRatio) {
         if (type === 'E') return ''; // Empty
 
         const angle = rotation * 90;
@@ -229,16 +223,16 @@ export class VoidExporter {
         if (mode === 'fill') {
             switch (type) {
                 case 'S':
-                    paths = this.renderStraightSVG(0, 0, w, h, stem, cornerRadius);
+                    paths = this.renderStraightSVG(0, 0, w, h, stem);
                     break;
                 case 'C':
-                    paths = this.renderCentralSVG(0, 0, w, h, stem, cornerRadius);
+                    paths = this.renderCentralSVG(0, 0, w, h, stem);
                     break;
                 case 'J':
-                    paths = this.renderJointSVG(0, 0, w, h, stem, cornerRadius);
+                    paths = this.renderJointSVG(0, 0, w, h, stem);
                     break;
                 case 'L':
-                    paths = this.renderLinkSVG(0, 0, w, h, stem, cornerRadius);
+                    paths = this.renderLinkSVG(0, 0, w, h, stem);
                     break;
                 case 'R':
                     paths = this.renderRoundSVG(0, 0, w, h, stem);
@@ -251,16 +245,16 @@ export class VoidExporter {
             // Stripes mode
             switch (type) {
                 case 'S':
-                    paths = this.renderStraightSVGStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio, cornerRadius);
+                    paths = this.renderStraightSVGStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio);
                     break;
                 case 'C':
-                    paths = this.renderCentralSVGStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio, cornerRadius);
+                    paths = this.renderCentralSVGStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio);
                     break;
                 case 'J':
-                    paths = this.renderJointSVGStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio, cornerRadius);
+                    paths = this.renderJointSVGStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio);
                     break;
                 case 'L':
-                    paths = this.renderLinkSVGStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio, cornerRadius);
+                    paths = this.renderLinkSVGStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio);
                     break;
                 case 'R':
                     paths = this.renderRoundSVGStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio);
@@ -277,56 +271,25 @@ export class VoidExporter {
         return `      <g transform="translate(${centerX}, ${centerY}) rotate(${angle})">\n${paths}      </g>\n`;
     }
 
-    /**
-     * Создать SVG path для скругленного прямоугольника
-     */
-    createRoundedRectPath(x, y, width, height, radius) {
-        if (radius <= 0) {
-            return `M ${x} ${y} L ${x + width} ${y} L ${x + width} ${y + height} L ${x} ${y + height} Z`;
-        }
-        
-        // Ограничиваем радиус половиной меньшей стороны
-        const maxRadius = Math.min(width, height) / 2;
-        const r = Math.min(radius, maxRadius);
-        
-        let path = `M ${x + r} ${y} `;
-        path += `L ${x + width - r} ${y} `;
-        path += `Q ${x + width} ${y} ${x + width} ${y + r} `;
-        path += `L ${x + width} ${y + height - r} `;
-        path += `Q ${x + width} ${y + height} ${x + width - r} ${y + height} `;
-        path += `L ${x + r} ${y + height} `;
-        path += `Q ${x} ${y + height} ${x} ${y + height - r} `;
-        path += `L ${x} ${y + r} `;
-        path += `Q ${x} ${y} ${x + r} ${y} Z`;
-        
-        return path;
+    renderStraightSVG(x, y, w, h, stem) {
+        return `        <rect x="${-w/2}" y="${-h/2}" width="${stem/2}" height="${h}"/>\n`;
     }
 
-    renderStraightSVG(x, y, w, h, stem, cornerRadius = 0) {
-        const path = this.createRoundedRectPath(-w/2, -h/2, stem/2, h, cornerRadius);
-        return `        <path d="${path}"/>\n`;
+    renderCentralSVG(x, y, w, h, stem) {
+        return `        <rect x="${-stem/4}" y="${-h/2}" width="${stem/2}" height="${h}"/>\n`;
     }
 
-    renderCentralSVG(x, y, w, h, stem, cornerRadius = 0) {
-        const path = this.createRoundedRectPath(-stem/4, -h/2, stem/2, h, cornerRadius);
-        return `        <path d="${path}"/>\n`;
-    }
-
-    renderJointSVG(x, y, w, h, stem, cornerRadius = 0) {
+    renderJointSVG(x, y, w, h, stem) {
         let svg = '';
-        const path1 = this.createRoundedRectPath(-w/2, -h/2, stem/2, h, cornerRadius);
-        const path2 = this.createRoundedRectPath(-w/2, -stem/4, w, stem/2, cornerRadius);
-        svg += `        <path d="${path1}"/>\n`;
-        svg += `        <path d="${path2}"/>\n`;
+        svg += `        <rect x="${-w/2}" y="${-h/2}" width="${stem/2}" height="${h}"/>\n`;
+        svg += `        <rect x="${-w/2}" y="${-stem/4}" width="${w}" height="${stem/2}"/>\n`;
         return svg;
     }
 
-    renderLinkSVG(x, y, w, h, stem, cornerRadius = 0) {
+    renderLinkSVG(x, y, w, h, stem) {
         let svg = '';
-        const path1 = this.createRoundedRectPath(-w/2, -h/2, stem/2, h, cornerRadius);
-        const path2 = this.createRoundedRectPath(-w/2, h/2 - stem/2, w, stem/2, cornerRadius);
-        svg += `        <path d="${path1}"/>\n`;
-        svg += `        <path d="${path2}"/>\n`;
+        svg += `        <rect x="${-w/2}" y="${-h/2}" width="${stem/2}" height="${h}"/>\n`;
+        svg += `        <rect x="${-w/2}" y="${h/2 - stem/2}" width="${w}" height="${stem/2}"/>\n`;
         return svg;
     }
 
@@ -392,22 +355,21 @@ export class VoidExporter {
         return { gap, strokeWidth };
     }
 
-    renderStraightSVGStripes(x, y, w, h, stem, strokesNum, strokeGapRatio, cornerRadius = 0) {
+    renderStraightSVGStripes(x, y, w, h, stem, strokesNum, strokeGapRatio) {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         let shift = 0;
         let svg = '';
         
         for (let i = 0; i < strokesNum; i++) {
-            const path = this.createRoundedRectPath(shift - w/2, -h/2, strokeWidth, h, cornerRadius);
-            svg += `        <path d="${path}"/>\n`;
+            svg += `        <rect x="${shift - w/2}" y="${-h/2}" width="${strokeWidth}" height="${h}"/>\n`;
             shift += strokeWidth + gap;
         }
         
         return svg;
     }
 
-    renderCentralSVGStripes(x, y, w, h, stem, strokesNum, strokeGapRatio, cornerRadius = 0) {
+    renderCentralSVGStripes(x, y, w, h, stem, strokesNum, strokeGapRatio) {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         const lineWidth = (strokesNum * strokeWidth) + ((strokesNum - 1) * gap);
@@ -415,15 +377,14 @@ export class VoidExporter {
         let svg = '';
         
         for (let i = 0; i < strokesNum; i++) {
-            const path = this.createRoundedRectPath(shift, -h/2, strokeWidth, h, cornerRadius);
-            svg += `        <path d="${path}"/>\n`;
+            svg += `        <rect x="${shift}" y="${-h/2}" width="${strokeWidth}" height="${h}"/>\n`;
             shift += strokeWidth + gap;
         }
         
         return svg;
     }
 
-    renderJointSVGStripes(x, y, w, h, stem, strokesNum, strokeGapRatio, cornerRadius = 0) {
+    renderJointSVGStripes(x, y, w, h, stem, strokesNum, strokeGapRatio) {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         let svg = '';
@@ -431,8 +392,7 @@ export class VoidExporter {
         // Вертикальные полоски
         let shift = 0;
         for (let i = 0; i < strokesNum; i++) {
-            const path = this.createRoundedRectPath(shift - w/2, -h/2, strokeWidth, h, cornerRadius);
-            svg += `        <path d="${path}"/>\n`;
+            svg += `        <rect x="${shift - w/2}" y="${-h/2}" width="${strokeWidth}" height="${h}"/>\n`;
             shift += strokeWidth + gap;
         }
         
@@ -440,15 +400,14 @@ export class VoidExporter {
         const lineWidth = (strokesNum * strokeWidth) + ((strokesNum - 1) * gap);
         shift = -lineWidth / 2;
         for (let i = 0; i < strokesNum; i++) {
-            const path = this.createRoundedRectPath(-w/2, shift, w, strokeWidth, cornerRadius);
-            svg += `        <path d="${path}"/>\n`;
+            svg += `        <rect x="${-w/2}" y="${shift}" width="${w}" height="${strokeWidth}"/>\n`;
             shift += strokeWidth + gap;
         }
         
         return svg;
     }
 
-    renderLinkSVGStripes(x, y, w, h, stem, strokesNum, strokeGapRatio, cornerRadius = 0) {
+    renderLinkSVGStripes(x, y, w, h, stem, strokesNum, strokeGapRatio) {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         let svg = '';
@@ -456,16 +415,14 @@ export class VoidExporter {
         // Вертикальные полоски
         let shift = 0;
         for (let i = 0; i < strokesNum; i++) {
-            const path = this.createRoundedRectPath(shift - w/2, -h/2, strokeWidth, h, cornerRadius);
-            svg += `        <path d="${path}"/>\n`;
+            svg += `        <rect x="${shift - w/2}" y="${-h/2}" width="${strokeWidth}" height="${h}"/>\n`;
             shift += strokeWidth + gap;
         }
         
         // Горизонтальные полоски (снизу)
         shift = h / 2 - stem / 2;
         for (let i = 0; i < strokesNum; i++) {
-            const path = this.createRoundedRectPath(-w/2, shift, w, strokeWidth, cornerRadius);
-            svg += `        <path d="${path}"/>\n`;
+            svg += `        <rect x="${-w/2}" y="${shift}" width="${w}" height="${strokeWidth}"/>\n`;
             shift += strokeWidth + gap;
         }
         

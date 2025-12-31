@@ -11,7 +11,6 @@ export class ModuleDrawer {
         this.mode = mode; // 'fill' или 'stripes'
         this.strokesNum = 2; // количество полосок для stripes mode
         this.strokeGapRatio = 1.0; // отношение толщины штриха к промежутку
-        this.cornerRadius = 0; // радиус скругления углов (в пикселях)
     }
 
     /**
@@ -30,40 +29,6 @@ export class ModuleDrawer {
     }
 
     /**
-     * Установить радиус скругления углов
-     */
-    setCornerRadius(radius) {
-        this.cornerRadius = radius;
-    }
-
-    /**
-     * Вспомогательная функция для рисования скругленного прямоугольника
-     */
-    fillRoundedRect(ctx, x, y, width, height, radius) {
-        if (radius <= 0) {
-            ctx.fillRect(x, y, width, height);
-            return;
-        }
-        
-        // Ограничиваем радиус половиной меньшей стороны
-        const maxRadius = Math.min(width, height) / 2;
-        const r = Math.min(radius, maxRadius);
-        
-        ctx.beginPath();
-        ctx.moveTo(x + r, y);
-        ctx.lineTo(x + width - r, y);
-        ctx.quadraticCurveTo(x + width, y, x + width, y + r);
-        ctx.lineTo(x + width, y + height - r);
-        ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
-        ctx.lineTo(x + r, y + height);
-        ctx.quadraticCurveTo(x, y + height, x, y + height - r);
-        ctx.lineTo(x, y + r);
-        ctx.quadraticCurveTo(x, y, x + r, y);
-        ctx.closePath();
-        ctx.fill();
-    }
-
-    /**
      * Вычислить gap и strokeWidth на основе общей ширины
      * @param {number} totalWidth - общая ширина для размещения штрихов
      * @returns {Object} {gap, strokeWidth}
@@ -78,9 +43,8 @@ export class ModuleDrawer {
     /**
      * Отрисовать модуль по коду
      * @param {number} customStrokesNum - кастомное количество полосок (для random mode)
-     * @param {CanvasGradient|string} fillStyle - цвет или градиент для заливки
      */
-    drawModule(ctx, type, rotation, x, y, w, h, stem, color, customStrokesNum = null, fillStyle = null) {
+    drawModule(ctx, type, rotation, x, y, w, h, stem, color, customStrokesNum = null) {
         const angle = rotation * Math.PI / 2;
         
         // Для random mode используем stripes mode с кастомными параметрами
@@ -93,9 +57,8 @@ export class ModuleDrawer {
         }
         
         ctx.save();
-        // Используем переданный fillStyle или цвет по умолчанию
-        ctx.fillStyle = fillStyle || color;
-        ctx.strokeStyle = fillStyle || color;
+        ctx.fillStyle = color;
+        ctx.strokeStyle = color;
         
         switch (type) {
             case 'S':
@@ -139,15 +102,15 @@ export class ModuleDrawer {
         ctx.rotate(angle);
         
         if (this.mode === 'fill') {
-            // Сплошная заливка со скруглением
-            this.fillRoundedRect(ctx, -w / 2, -h / 2, stem / 2, h, this.cornerRadius);
+            // Сплошная заливка
+            ctx.fillRect(-w / 2, -h / 2, stem / 2, h);
         } else {
             // Stripes mode
             const totalWidth = stem / 2;
             const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
             let shift = 0;
             for (let i = 0; i < this.strokesNum; i++) {
-                this.fillRoundedRect(ctx, shift - w / 2, -h / 2, strokeWidth, h, this.cornerRadius);
+                ctx.fillRect(shift - w / 2, -h / 2, strokeWidth, h);
                 shift += strokeWidth + gap;
             }
         }
@@ -164,8 +127,8 @@ export class ModuleDrawer {
         ctx.rotate(angle);
         
         if (this.mode === 'fill') {
-            // Сплошная заливка по центру со скруглением
-            this.fillRoundedRect(ctx, -stem / 4, -h / 2, stem / 2, h, this.cornerRadius);
+            // Сплошная заливка по центру
+            ctx.fillRect(-stem / 4, -h / 2, stem / 2, h);
         } else {
             // Stripes mode по центру
             const totalWidth = stem / 2;
@@ -173,7 +136,7 @@ export class ModuleDrawer {
             const lineWidth = (this.strokesNum * strokeWidth) + ((this.strokesNum - 1) * gap);
             let shift = -lineWidth / 2;
             for (let i = 0; i < this.strokesNum; i++) {
-                this.fillRoundedRect(ctx, shift, -h / 2, strokeWidth, h, this.cornerRadius);
+                ctx.fillRect(shift, -h / 2, strokeWidth, h);
                 shift += strokeWidth + gap;
             }
         }
@@ -190,24 +153,24 @@ export class ModuleDrawer {
         ctx.rotate(angle);
         
         if (this.mode === 'fill') {
-            // Вертикальная линия слева со скруглением
-            this.fillRoundedRect(ctx, -w / 2, -h / 2, stem / 2, h, this.cornerRadius);
-            // Горизонтальная линия по центру со скруглением
-            this.fillRoundedRect(ctx, -w / 2, -stem / 4, w, stem / 2, this.cornerRadius);
+            // Вертикальная линия слева
+            ctx.fillRect(-w / 2, -h / 2, stem / 2, h);
+            // Горизонтальная линия по центру
+            ctx.fillRect(-w / 2, -stem / 4, w, stem / 2);
         } else {
             // Stripes для вертикали
             const totalWidth = stem / 2;
             const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
             let shift = 0;
             for (let i = 0; i < this.strokesNum; i++) {
-                this.fillRoundedRect(ctx, shift - w / 2, -h / 2, strokeWidth, h, this.cornerRadius);
+                ctx.fillRect(shift - w / 2, -h / 2, strokeWidth, h);
                 shift += strokeWidth + gap;
             }
             // Stripes для горизонтали (по центру)
             const lineWidth = (this.strokesNum * strokeWidth) + ((this.strokesNum - 1) * gap);
             shift = -lineWidth / 2;
             for (let i = 0; i < this.strokesNum; i++) {
-                this.fillRoundedRect(ctx, -w / 2, shift, w, strokeWidth, this.cornerRadius);
+                ctx.fillRect(-w / 2, shift, w, strokeWidth);
                 shift += strokeWidth + gap;
             }
         }
@@ -224,23 +187,23 @@ export class ModuleDrawer {
         ctx.rotate(angle);
         
         if (this.mode === 'fill') {
-            // Вертикальная линия слева со скруглением
-            this.fillRoundedRect(ctx, -w / 2, -h / 2, stem / 2, h, this.cornerRadius);
-            // Горизонтальная линия снизу со скруглением
-            this.fillRoundedRect(ctx, -w / 2, h / 2 - stem / 2, w, stem / 2, this.cornerRadius);
+            // Вертикальная линия слева
+            ctx.fillRect(-w / 2, -h / 2, stem / 2, h);
+            // Горизонтальная линия снизу
+            ctx.fillRect(-w / 2, h / 2 - stem / 2, w, stem / 2);
         } else {
             // Stripes для вертикали
             const totalWidth = stem / 2;
             const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
             let shift = 0;
             for (let i = 0; i < this.strokesNum; i++) {
-                this.fillRoundedRect(ctx, shift - w / 2, -h / 2, strokeWidth, h, this.cornerRadius);
+                ctx.fillRect(shift - w / 2, -h / 2, strokeWidth, h);
                 shift += strokeWidth + gap;
             }
             // Stripes для горизонтали (снизу)
             shift = h / 2 - stem / 2;
             for (let i = 0; i < this.strokesNum; i++) {
-                this.fillRoundedRect(ctx, -w / 2, shift, w, strokeWidth, this.cornerRadius);
+                ctx.fillRect(-w / 2, shift, w, strokeWidth);
                 shift += strokeWidth + gap;
             }
         }
