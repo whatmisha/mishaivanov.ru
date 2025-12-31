@@ -33,11 +33,7 @@ class VoidTypeface {
                 randomContrastMin: 0.1,
                 randomContrastMax: 8.0,
                 randomModeType: 'byType', // 'byType' или 'full'
-                cornerRadiusMultiplier: 0,
-                gradientType: 'none',
-                gradientColor1: '#ffffff',
-                gradientColor2: '#000000',
-                gradientAngle: 0
+                cornerRadiusMultiplier: 0
             },
             get(key) { return this.values[key]; },
             set(key, value) { 
@@ -239,7 +235,12 @@ class VoidTypeface {
             decimals: 1,
             baseStep: 0.1,
             shiftStep: 0.5,
-            onUpdate: (minValue, maxValue) => this.updateRenderer()
+            onUpdate: (minValue, maxValue) => {
+                if (this.renderer.clearModuleTypeCache) {
+                    this.renderer.clearModuleTypeCache();
+                }
+                this.updateRenderer();
+            }
         });
 
         // Strokes Range
@@ -253,7 +254,12 @@ class VoidTypeface {
             decimals: 0,
             baseStep: 1,
             shiftStep: 1,
-            onUpdate: (minValue, maxValue) => this.updateRenderer()
+            onUpdate: (minValue, maxValue) => {
+                if (this.renderer.clearModuleTypeCache) {
+                    this.renderer.clearModuleTypeCache();
+                }
+                this.updateRenderer();
+            }
         });
 
         // Contrast Range
@@ -267,7 +273,12 @@ class VoidTypeface {
             decimals: 1,
             baseStep: 0.1,
             shiftStep: 0.5,
-            onUpdate: (minValue, maxValue) => this.updateRenderer()
+            onUpdate: (minValue, maxValue) => {
+                if (this.renderer.clearModuleTypeCache) {
+                    this.renderer.clearModuleTypeCache();
+                }
+                this.updateRenderer();
+            }
         });
 
         // Обработчики для текстовых полей Stem Weight
@@ -281,6 +292,10 @@ class VoidTypeface {
                     const max = this.settings.get('randomStemMax');
                     const clampedValue = Math.max(0.1, Math.min(max, value));
                     this.rangeSliderController.setValues('randomStemRangeSlider', clampedValue, max, true);
+                    if (this.renderer.clearModuleTypeCache) {
+                        this.renderer.clearModuleTypeCache();
+                    }
+                    this.updateRenderer();
                 }
             });
         }
@@ -292,6 +307,10 @@ class VoidTypeface {
                     const min = this.settings.get('randomStemMin');
                     const clampedValue = Math.max(min, Math.min(3.0, value));
                     this.rangeSliderController.setValues('randomStemRangeSlider', min, clampedValue, true);
+                    if (this.renderer.clearModuleTypeCache) {
+                        this.renderer.clearModuleTypeCache();
+                    }
+                    this.updateRenderer();
                 }
             });
         }
@@ -307,6 +326,10 @@ class VoidTypeface {
                     const max = this.settings.get('randomStrokesMax');
                     const clampedValue = Math.max(1, Math.min(max, Math.round(value)));
                     this.rangeSliderController.setValues('randomStrokesRangeSlider', clampedValue, max, true);
+                    if (this.renderer.clearModuleTypeCache) {
+                        this.renderer.clearModuleTypeCache();
+                    }
+                    this.updateRenderer();
                 }
             });
         }
@@ -318,6 +341,10 @@ class VoidTypeface {
                     const min = this.settings.get('randomStrokesMin');
                     const clampedValue = Math.max(min, Math.min(5, Math.round(value)));
                     this.rangeSliderController.setValues('randomStrokesRangeSlider', min, clampedValue, true);
+                    if (this.renderer.clearModuleTypeCache) {
+                        this.renderer.clearModuleTypeCache();
+                    }
+                    this.updateRenderer();
                 }
             });
         }
@@ -333,6 +360,10 @@ class VoidTypeface {
                     const max = this.settings.get('randomContrastMax');
                     const clampedValue = Math.max(0.1, Math.min(max, value));
                     this.rangeSliderController.setValues('randomContrastRangeSlider', clampedValue, max, true);
+                    if (this.renderer.clearModuleTypeCache) {
+                        this.renderer.clearModuleTypeCache();
+                    }
+                    this.updateRenderer();
                 }
             });
         }
@@ -344,6 +375,10 @@ class VoidTypeface {
                     const min = this.settings.get('randomContrastMin');
                     const clampedValue = Math.max(min, Math.min(8.0, value));
                     this.rangeSliderController.setValues('randomContrastRangeSlider', min, clampedValue, true);
+                    if (this.renderer.clearModuleTypeCache) {
+                        this.renderer.clearModuleTypeCache();
+                    }
+                    this.updateRenderer();
                 }
             });
         }
@@ -389,87 +424,6 @@ class VoidTypeface {
             bgColorInput.select();
         });
 
-        // Gradient Color 1
-        const gradientColor1Input = document.getElementById('gradientColor1Input');
-        const gradientColor1Preview = document.getElementById('gradientColor1Preview');
-        
-        if (gradientColor1Input && gradientColor1Preview) {
-            gradientColor1Input.addEventListener('input', (e) => {
-                const value = e.target.value;
-                if (/^#[0-9A-F]{6}$/i.test(value)) {
-                    this.settings.set('gradientColor1', value);
-                    gradientColor1Preview.style.backgroundColor = value;
-                    this.updateRenderer();
-                }
-            });
-
-            gradientColor1Preview.addEventListener('click', () => {
-                gradientColor1Input.focus();
-                gradientColor1Input.select();
-            });
-        }
-
-        // Gradient Color 2
-        const gradientColor2Input = document.getElementById('gradientColor2Input');
-        const gradientColor2Preview = document.getElementById('gradientColor2Preview');
-        
-        if (gradientColor2Input && gradientColor2Preview) {
-            gradientColor2Input.addEventListener('input', (e) => {
-                const value = e.target.value;
-                if (/^#[0-9A-F]{6}$/i.test(value)) {
-                    this.settings.set('gradientColor2', value);
-                    gradientColor2Preview.style.backgroundColor = value;
-                    this.updateRenderer();
-                }
-            });
-
-            gradientColor2Preview.addEventListener('click', () => {
-                gradientColor2Input.focus();
-                gradientColor2Input.select();
-            });
-        }
-
-        // Gradient Type Select
-        const gradientTypeSelect = document.getElementById('gradientTypeSelect');
-        if (gradientTypeSelect) {
-            gradientTypeSelect.addEventListener('change', (e) => {
-                const gradientType = e.target.value;
-                this.settings.set('gradientType', gradientType);
-                this.updateGradientUI(gradientType);
-                this.updateRenderer();
-            });
-        }
-
-        // Gradient Angle Slider
-        const gradientAngleSlider = document.getElementById('gradientAngleSlider');
-        if (gradientAngleSlider) {
-            this.sliderController.initSlider('gradientAngleSlider', {
-                valueId: 'gradientAngleValue',
-                setting: 'gradientAngle',
-                min: 0,
-                max: 360,
-                decimals: 0,
-                baseStep: 1,
-                shiftStep: 15,
-                onUpdate: (value) => this.updateRenderer()
-            });
-        }
-    }
-
-    /**
-     * Обновить видимость UI элементов градиента
-     */
-    updateGradientUI(gradientType) {
-        const gradientColor1Group = document.getElementById('gradientColor1Group');
-        const gradientColor2Group = document.getElementById('gradientColor2Group');
-        const gradientAngleGroup = document.getElementById('gradientAngleGroup');
-        
-        const showColors = gradientType !== 'none';
-        const showAngle = gradientType === 'linear';
-        
-        if (gradientColor1Group) gradientColor1Group.style.display = showColors ? 'block' : 'none';
-        if (gradientColor2Group) gradientColor2Group.style.display = showColors ? 'block' : 'none';
-        if (gradientAngleGroup) gradientAngleGroup.style.display = showAngle ? 'block' : 'none';
     }
 
     /**
@@ -753,34 +707,6 @@ class VoidTypeface {
             randomFullRandomCheckbox.checked = this.settings.get('randomModeType') === 'full';
         }
 
-        // Обновить градиенты
-        const gradientTypeSelect = document.getElementById('gradientTypeSelect');
-        if (gradientTypeSelect) {
-            gradientTypeSelect.value = this.settings.get('gradientType') || 'none';
-            this.updateGradientUI(this.settings.get('gradientType') || 'none');
-        }
-        
-        const gradientColor1Input = document.getElementById('gradientColor1Input');
-        const gradientColor1Preview = document.getElementById('gradientColor1Preview');
-        if (gradientColor1Input && gradientColor1Preview) {
-            const color1 = this.settings.get('gradientColor1') || '#ffffff';
-            gradientColor1Input.value = color1;
-            gradientColor1Preview.style.backgroundColor = color1;
-        }
-        
-        const gradientColor2Input = document.getElementById('gradientColor2Input');
-        const gradientColor2Preview = document.getElementById('gradientColor2Preview');
-        if (gradientColor2Input && gradientColor2Preview) {
-            const color2 = this.settings.get('gradientColor2') || '#000000';
-            gradientColor2Input.value = color2;
-            gradientColor2Preview.style.backgroundColor = color2;
-        }
-        
-        const gradientAngleSlider = document.getElementById('gradientAngleSlider');
-        if (gradientAngleSlider) {
-            this.sliderController.setValue('gradientAngleSlider', this.settings.get('gradientAngle') || 0, false);
-        }
-
         // Отключить/включить Stem Weight в панели Metrics при режиме Random
         const stemSlider = document.getElementById('stemSlider');
         const stemValue = document.getElementById('stemValue');
@@ -863,10 +789,6 @@ class VoidTypeface {
             bgColor: this.settings.get('bgColor'),
             showGrid: this.settings.get('showGrid'),
             cornerRadius: moduleSize * (this.settings.get('cornerRadiusMultiplier') || 0),
-            gradientType: this.settings.get('gradientType') || 'none',
-            gradientColor1: this.settings.get('gradientColor1') || '#ffffff',
-            gradientColor2: this.settings.get('gradientColor2') || '#000000',
-            gradientAngle: this.settings.get('gradientAngle') || 0,
             randomStemMin: this.settings.get('randomStemMin'),
             randomStemMax: this.settings.get('randomStemMax'),
             randomStrokesMin: this.settings.get('randomStrokesMin'),

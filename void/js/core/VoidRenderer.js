@@ -24,13 +24,7 @@ export class VoidRenderer {
             color: '#ffffff',      // цвет букв
             bgColor: '#000000',    // цвет фона
             showGrid: true,        // показать сетку
-            cornerRadius: 0,       // радиус скругления углов
-            gradientType: 'none',  // 'none', 'linear', 'radial'
-            gradientColor1: '#ffffff', // первый цвет градиента
-            gradientColor2: '#000000', // второй цвет градиента
-            gradientAngle: 0,       // угол для линейного градиента (в градусах)
-            gradientX: 0.5,         // X позиция для радиального градиента (0-1)
-            gradientY: 0.5         // Y позиция для радиального градиента (0-1)
+            cornerRadius: 0        // радиус скругления углов
         };
         
         this.cols = 5; // колонок в сетке
@@ -125,52 +119,6 @@ export class VoidRenderer {
         this.moduleDrawer.setMode(this.params.mode);
         this.moduleDrawer.setStripesParams(this.params.strokesNum, this.params.strokeGapRatio);
         this.moduleDrawer.setCornerRadius(this.params.cornerRadius || 0);
-    }
-
-    /**
-     * Создать градиент для буквы
-     * @param {number} letterX - X позиция буквы
-     * @param {number} letterY - Y позиция буквы
-     * @param {number} letterW - ширина буквы
-     * @param {number} letterH - высота буквы
-     * @returns {CanvasGradient|string} градиент или цвет
-     */
-    createGradient(letterX, letterY, letterW, letterH) {
-        if (this.params.gradientType === 'none') {
-            return this.params.color;
-        }
-
-        const ctx = this.ctx;
-        let gradient;
-
-        if (this.params.gradientType === 'linear') {
-            // Линейный градиент для всей буквы
-            const angle = (this.params.gradientAngle * Math.PI) / 180;
-            const centerX = letterX + letterW / 2;
-            const centerY = letterY + letterH / 2;
-            const length = Math.sqrt(letterW * letterW + letterH * letterH);
-            
-            const x1 = centerX - (length / 2) * Math.cos(angle);
-            const y1 = centerY - (length / 2) * Math.sin(angle);
-            const x2 = centerX + (length / 2) * Math.cos(angle);
-            const y2 = centerY + (length / 2) * Math.sin(angle);
-            
-            gradient = ctx.createLinearGradient(x1, y1, x2, y2);
-        } else if (this.params.gradientType === 'radial') {
-            // Радиальный градиент для всей буквы
-            const centerX = letterX + letterW * this.params.gradientX;
-            const centerY = letterY + letterH * this.params.gradientY;
-            const radius = Math.max(letterW, letterH) / 2;
-            
-            gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-        } else {
-            return this.params.color;
-        }
-
-        gradient.addColorStop(0, this.params.gradientColor1);
-        gradient.addColorStop(1, this.params.gradientColor2);
-        
-        return gradient;
     }
 
     /**
@@ -290,9 +238,6 @@ export class VoidRenderer {
         const letterW = this.cols * moduleW;
         const letterH = this.rows * moduleH;
         
-        // Создать градиент для всей буквы (если включен)
-        const fillStyle = this.createGradient(x, y, letterW, letterH);
-        
         // Отрисовать каждый модуль в сетке 5×5
         for (let i = 0; i < this.cols; i++) {
             for (let j = 0; j < this.rows; j++) {
@@ -335,8 +280,7 @@ export class VoidRenderer {
                     moduleH,
                     stem,
                     this.params.color,
-                    this.params.mode === 'random' ? strokesNum : null,
-                    fillStyle
+                    this.params.mode === 'random' ? strokesNum : null
                 );
                 
                 // Восстановить оригинальное значение

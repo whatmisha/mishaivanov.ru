@@ -78,9 +78,8 @@ export class ModuleDrawer {
     /**
      * Отрисовать модуль по коду
      * @param {number} customStrokesNum - кастомное количество полосок (для random mode)
-     * @param {CanvasGradient|string} fillStyle - цвет или градиент для заливки
      */
-    drawModule(ctx, type, rotation, x, y, w, h, stem, color, customStrokesNum = null, fillStyle = null) {
+    drawModule(ctx, type, rotation, x, y, w, h, stem, color, customStrokesNum = null) {
         const angle = rotation * Math.PI / 2;
         
         // Для random mode используем stripes mode с кастомными параметрами
@@ -93,9 +92,8 @@ export class ModuleDrawer {
         }
         
         ctx.save();
-        // Используем переданный fillStyle или цвет по умолчанию
-        ctx.fillStyle = fillStyle || color;
-        ctx.strokeStyle = fillStyle || color;
+        ctx.fillStyle = color;
+        ctx.strokeStyle = color;
         
         switch (type) {
             case 'S':
