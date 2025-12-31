@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Void Typeface — Misha Ivanov</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Top Navigation -->
+        <div class="top-links">
+            <a href="https://mishaivanov.com/void" class="top-link">← Void</a>
+        </div>
+
+        <div class="main-content">
+            <!-- Main Canvas -->
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="mainCanvas"></canvas>
+            </div>
+
+            <!-- Control Panel (справа) -->
+            <aside class="controls-panel" id="controlsPanel">
+                <div class="panel-header" id="controlsPanelHeader">
+                    <span>Metrics</span>
+                    <span class="collapse-icon">
+                        <svg width="10" height="6" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                </div>
+                <div class="panel-content">
+                    <section class="control-section">
+                        <!-- Module -->
+                        <div class="control-group">
+                            <label for="moduleSizeSlider">
+                                <span>Module <span class="unit">px</span></span>
+                                <input type="text" class="value-display" id="moduleSizeValue" value="24">
+                            </label>
+                            <input type="range" id="moduleSizeSlider" min="4" max="64" value="24" step="1">
+                        </div>
+
+                        <!-- Stem Weight -->
+                        <div class="control-group">
+                            <label for="stemSlider">
+                                <span>Stem Weight <span class="unit">mod</span></span>
+                                <input type="text" class="value-display" id="stemValue" value="0.5">
+                            </label>
+                            <input type="range" id="stemSlider" min="0.1" max="3.0" value="0.5" step="0.1">
+                        </div>
+
+                        <!-- Letter Spacing -->
+                        <div class="control-group">
+                            <label for="letterSpacingSlider">
+                                <span>Letter Spacing <span class="unit">mod</span></span>
+                                <input type="text" class="value-display" id="letterSpacingValue" value="1">
+                            </label>
+                            <input type="range" id="letterSpacingSlider" min="0" max="16" value="1" step="1">
+                        </div>
+
+                        <!-- Line Height -->
+                        <div class="control-group">
+                            <label for="lineHeightSlider">
+                                <span>Line Height <span class="unit">mod</span></span>
+                                <input type="text" class="value-display" id="lineHeightValue" value="2">
+                            </label>
+                            <input type="range" id="lineHeightSlider" min="0" max="16" value="2" step="1">
+                        </div>
+
+                        <!-- Corner Radius -->
+                        <div class="control-group">
+                            <label for="cornerRadiusSlider">
+                                <span>Corner Radius <span class="unit">mod</span></span>
+                                <input type="text" class="value-display" id="cornerRadiusValue" value="0">
+                            </label>
+                            <input type="range" id="cornerRadiusSlider" min="0" max="2.0" value="0" step="0.1">
+                        </div>
+                    </section>
+                </div>
+            </aside>
+
+            <!-- Variability Panel (справа внизу) -->
+            <aside class="controls-panel controls-panel-presets" id="variabilityPanel">
+                <div class="panel-header" id="variabilityPanelHeader">
+                    <span>Variability</span>
+                    <span class="collapse-icon">
+                        <svg width="10" height="6" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                </div>
+                <div class="panel-content">
+                    <section class="control-section">
+                        <!-- Render Mode Toggle -->
+                        <fieldset>
+                            <div class="segmented-control segmented-control-compact">
+                                <input type="radio" name="renderMode" value="fill" id="modeFill" checked>
+                                <label for="modeFill">Fill</label>
+                                
+                                <input type="radio" name="renderMode" value="stripes" id="modeStripes">
+                                <label for="modeStripes">Stripes</label>
+                                
+                                <input type="radio" name="renderMode" value="random" id="modeRandom">
+                                <label for="modeRandom">Random</label>
+                            </div>
+                        </fieldset>
+
+                        <!-- Strokes Number (только для Stripes mode) -->
+                        <div class="control-group" id="strokesControlGroup" style="display: none; margin-top: var(--spacing-2xl);">
+                            <label for="strokesSlider">
+                                <span>Strokes</span>
+                                <input type="text" class="value-display" id="strokesValue" value="2">
+                            </label>
+                            <input type="range" id="strokesSlider" min="1" max="16" value="2" step="1">
+                        </div>
+
+                        <!-- Contrast (только для Stripes mode) -->
+                        <div class="control-group" id="strokeGapRatioControlGroup" style="display: none;">
+                            <label for="strokeGapRatioSlider">
+                                <span>Contrast</span>
+                                <input type="text" class="value-display" id="strokeGapRatioValue" value="1.0">
+                            </label>
+                            <input type="range" id="strokeGapRatioSlider" min="0.1" max="8" value="1.0" step="0.1">
+                        </div>
+
+                        <!-- Random Mode Controls -->
+                        <div class="control-group" id="randomControlGroup" style="display: none; margin-top: var(--spacing-2xl);">
+                            <label class="checkbox-label" for="randomFullRandomCheckbox">
+                                <input type="checkbox" id="randomFullRandomCheckbox">
+                                <span>Full Random</span>
+                            </label>
+                        </div>
+
+                        <div class="control-group" id="randomControlGroupStem" style="display: none; margin-top: var(--spacing-2xl);">
+                            <label>
+                                <span>Stem Weight <span class="unit">mod</span></span>
+                                <div style="display: flex; align-items: center;">
+                                    <input type="text" class="value-display" id="randomStemMinValue" value="0.5" style="width: 45px;">
+                                    <span style="color: var(--color-text-muted); margin: 0 6px;">–</span>
+                                    <input type="text" class="value-display" id="randomStemMaxValue" value="2.0" style="width: 30px; text-align: left;">
+                                </div>
+                            </label>
+                            <div id="randomStemRangeSlider" class="range-slider-container"></div>
+                        </div>
+
+                        <div class="control-group" id="randomControlGroup2" style="display: none; margin-top: var(--spacing-lg);">
+                            <label>
+                                <span>Strokes</span>
+                                <div style="display: flex; align-items: center;">
+                                    <input type="text" class="value-display" id="randomStrokesMinValue" value="1" style="width: 30px;">
+                                    <span style="color: var(--color-text-muted); margin: 0 6px;">–</span>
+                                    <input type="text" class="value-display" id="randomStrokesMaxValue" value="5" style="width: 30px; text-align: left;">
+                                </div>
+                            </label>
+                            <div id="randomStrokesRangeSlider" class="range-slider-container"></div>
+                        </div>
+
+                        <div class="control-group" id="randomControlGroup3" style="display: none; margin-top: var(--spacing-lg);">
+                            <label>
+                                <span>Contrast</span>
+                                <div style="display: flex; align-items: center;">
+                                    <input type="text" class="value-display" id="randomContrastMinValue" value="0.1" style="width: 45px;">
+                                    <span style="color: var(--color-text-muted); margin: 0 6px;">–</span>
+                                    <input type="text" class="value-display" id="randomContrastMaxValue" value="8" style="width: 30px; text-align: left;">
+                                </div>
+                            </label>
+                            <div id="randomContrastRangeSlider" class="range-slider-container"></div>
+                        </div>
+
+                        <div class="control-group" id="randomControlGroup5" style="display: none;">
+                            <button type="button" class="btn-secondary" id="renewRandomBtn" style="width: 100%;">Renew</button>
+                        </div>
+                    </section>
+                </div>
+            </aside>
+
+            <!-- View Panel (слева вверху) -->
+            <aside class="controls-panel controls-panel-left" id="viewColorsPanel">
+                <div class="panel-header" id="viewColorsPanelHeader">
+                    <span>View</span>
+                    <span class="collapse-icon">
+                        <svg width="10" height="6" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                </div>
+                <div class="panel-content">
+                    <!-- Show Grid Toggle -->
+                    <div class="control-group">
+                        <label class="checkbox-label" for="showGridCheckbox">
+                            <input type="checkbox" id="showGridCheckbox" checked>
+                            <span>Show Grid</span>
+                        </label>
+                    </div>
+
+                    <!-- Letter Color -->
+                    <div class="control-group" style="margin-top: var(--spacing-2xl);">
+                        <label>Letter Color</label>
+                        <div class="color-input-group">
+                            <button type="button" class="color-preview" id="letterColorPreview" style="background-color: #ffffff;"></button>
+                            <input type="text" id="letterColorInput" value="#ffffff">
+                        </div>
+                    </div>
+
+                    <!-- Background Color -->
+                    <div class="control-group">
+                        <label>Background</label>
+                        <div class="color-input-group">
+                            <button type="button" class="color-preview" id="bgColorPreview" style="background-color: #000000;"></button>
+                            <input type="text" id="bgColorInput" value="#000000">
+                        </div>
+                    </div>
+
+                </div>
+            </aside>
+
+            <!-- Text Input Panel (снизу слева) -->
+            <aside class="controls-panel controls-panel-text" id="textPanel">
+                <div class="panel-header" id="textPanelHeader">
+                    <span>Text</span>
+                    <span class="collapse-icon">
+                        <svg width="10" height="6" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                </div>
+                <div class="panel-content">
+                    <section class="control-section">
+                        <div class="control-group">
+                            <textarea id="textInput" rows="3" placeholder="Type your text here...">Void
+Typeface
+2k26</textarea>
+                        </div>
+                    </section>
+
+                    <section class="control-section">
+                        <!-- Preset Select -->
+                        <div class="control-group">
+                            <label for="presetSelect">Load Preset</label>
+                            <select id="presetSelect" class="select-input">
+                                <option value="">Select preset</option>
+                            </select>
+                        </div>
+
+                        <!-- Save Preset -->
+                        <div class="control-group">
+                            <label for="presetNameInput">Preset Name</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="presetNameInput" class="text-input" placeholder="Enter name..." style="flex: 1;">
+                                <button type="button" class="btn-secondary" id="savePresetBtn" style="white-space: nowrap;">Save</button>
+                            </div>
+                        </div>
+
+                        <!-- Delete Preset -->
+                        <div class="control-group">
+                            <button type="button" class="btn-secondary btn-danger" id="deletePresetBtn" style="width: 100%;">Delete Selected</button>
+                        </div>
+                    </section>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Bottom Action Buttons -->
+    <nav class="bottom-buttons">
+        <button class="btn-fixed" id="copyBtn">Copy SVG</button>
+        <button class="btn-fixed" id="exportBtn">Export SVG ⌘E</button>
+    </nav>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
