@@ -16,7 +16,7 @@ class VoidTypeface {
         this.settings = {
             values: {
                 stemMultiplier: 0.5, // множитель размера модуля (реальное значение)
-                moduleSize: 24,
+                moduleSize: 12,
                 letterSpacingMultiplier: 1,
                 lineHeightMultiplier: 2,
                 strokesNum: 2,
@@ -146,7 +146,7 @@ class VoidTypeface {
             valueId: 'stemValue',
             setting: 'stemMultiplier',
             min: 0.1,
-            max: 3.0,
+            max: 2.0,
             decimals: 1,
             baseStep: 0.1,
             shiftStep: 0.5,
@@ -215,7 +215,7 @@ class VoidTypeface {
             minValueId: 'randomStemMinValue',
             maxValueId: 'randomStemMaxValue',
             min: 0.1,
-            max: 3.0,
+            max: 2.0,
             decimals: 1,
             baseStep: 0.1,
             shiftStep: 0.5,
@@ -256,7 +256,7 @@ class VoidTypeface {
                 const value = parseFloat(stemMaxInput.value);
                 if (!isNaN(value)) {
                     const min = this.settings.get('randomStemMin');
-                    const clampedValue = Math.max(min, Math.min(3.0, value));
+                    const clampedValue = Math.max(min, Math.min(2.0, value));
                     this.rangeSliderController.setValues('randomStemRangeSlider', min, clampedValue, true);
                 }
             });
@@ -378,15 +378,6 @@ class VoidTypeface {
                 }
             });
             
-            // Отключить/включить Stem Weight в панели Metrics при режиме Random
-            const stemSlider = document.getElementById('stemSlider');
-            const stemValue = document.getElementById('stemValue');
-            if (stemSlider && stemValue) {
-                const isDisabled = mode === 'random';
-                stemSlider.disabled = isDisabled;
-                stemValue.disabled = isDisabled;
-            }
-            
             this.updateRenderer();
         };
 
@@ -488,7 +479,7 @@ class VoidTypeface {
         const presetSelect = document.getElementById('presetSelect');
         const names = this.presetManager.getPresetNames();
         
-        presetSelect.innerHTML = '<option value="">Select preset</option>';
+        presetSelect.innerHTML = '<option value="">-- Select preset --</option>';
         names.forEach(name => {
             const option = document.createElement('option');
             option.value = name;
@@ -565,15 +556,6 @@ class VoidTypeface {
                 group.style.display = mode === 'random' ? 'block' : 'none';
             }
         });
-
-        // Отключить/включить Stem Weight в панели Metrics при режиме Random
-        const stemSlider = document.getElementById('stemSlider');
-        const stemValue = document.getElementById('stemValue');
-        if (stemSlider && stemValue) {
-            const isDisabled = mode === 'random';
-            stemSlider.disabled = isDisabled;
-            stemValue.disabled = isDisabled;
-        }
 
         // Обновить цвета
         const letterColor = this.settings.get('letterColor');

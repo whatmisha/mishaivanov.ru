@@ -14,12 +14,12 @@ export class VoidRenderer {
         // Параметры шрифта (по умолчанию)
         this.params = {
             text: 'VOID TYPEFACE',
-            stem: 24,              // толщина штриха
-            moduleSize: 24,        // размер одного модуля (в пикселях)
-            letterSpacing: 24,     // отступ между буквами
-            lineHeight: 144,       // интерлиньяж
+            stem: 12,              // толщина штриха
+            moduleSize: 12,        // размер одного модуля (в пикселях)
+            letterSpacing: 12,     // отступ между буквами
+            lineHeight: 72,        // интерлиньяж
             strokesNum: 2,         // количество полосок (для stripes mode)
-            strokeGapRatio: 1.0,   // отношение толщины штриха к промежутку
+            gap: 2,                // промежуток между полосками
             mode: 'fill',          // 'fill' или 'stripes'
             color: '#ffffff',      // цвет букв
             bgColor: '#000000',    // цвет фона
@@ -56,7 +56,7 @@ export class VoidRenderer {
         
         // Обновить параметры модуля
         this.moduleDrawer.setMode(this.params.mode);
-        this.moduleDrawer.setStripesParams(this.params.strokesNum, this.params.strokeGapRatio);
+        this.moduleDrawer.setStripesParams(this.params.strokesNum, this.params.gap);
     }
 
     /**
@@ -189,12 +189,10 @@ export class VoidRenderer {
                 let strokesNum = this.params.strokesNum;
                 
                 if (this.params.mode === 'random') {
-                    // Случайная толщина в пределах min-max, игнорируя Stem Weight из Metrics
-                    // Используем moduleSize напрямую, умножаем на 2, так как в ModuleDrawer используется stem / 2
+                    // Случайная толщина в пределах min-max от базовой
                     const stemMin = this.params.randomStemMin || 0.5;
                     const stemMax = this.params.randomStemMax || 2.0;
-                    const randomMultiplier = stemMin + Math.random() * (stemMax - stemMin);
-                    stem = this.params.moduleSize * randomMultiplier * 2;
+                    stem = this.params.stem * (stemMin + Math.random() * (stemMax - stemMin));
                     
                     // Случайное количество полосок в пределах min-max
                     const strokesMin = this.params.randomStrokesMin || 1;

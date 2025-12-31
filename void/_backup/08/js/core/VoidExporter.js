@@ -132,12 +132,10 @@ export class VoidExporter {
                 let strokesNum = params.strokesNum;
                 
                 if (params.mode === 'random') {
-                    // Случайная толщина в пределах min-max, игнорируя Stem Weight из Metrics
-                    // Используем moduleSize напрямую, умножаем на 2, так как в ModuleDrawer используется stem / 2
+                    // Случайная толщина в пределах min-max от базовой
                     const stemMin = params.randomStemMin || 0.5;
                     const stemMax = params.randomStemMax || 2.0;
-                    const randomMultiplier = stemMin + Math.random() * (stemMax - stemMin);
-                    stem = params.moduleSize * randomMultiplier * 2;
+                    stem = params.stem * (stemMin + Math.random() * (stemMax - stemMin));
                     
                     // Случайное количество полосок в пределах min-max
                     const strokesMin = params.randomStrokesMin || 1;
@@ -155,7 +153,7 @@ export class VoidExporter {
                     stem,
                     params.mode === 'random' ? 'stripes' : params.mode,
                     strokesNum,
-                    params.strokeGapRatio || 1.0
+                    params.gap || 2
                 );
                 
                 if (moduleSVG) {
@@ -171,7 +169,7 @@ export class VoidExporter {
     /**
      * Отрисовать модуль в SVG
      */
-    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, strokeGapRatio) {
+    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, gap) {
         if (type === 'E') return ''; // Empty
 
         const angle = rotation * 90;
@@ -205,22 +203,22 @@ export class VoidExporter {
             // Stripes mode
             switch (type) {
                 case 'S':
-                    paths = this.renderStraightSVGStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio);
+                    paths = this.renderStraightSVGStripes(0, 0, w, h, stem, strokesNum, gap);
                     break;
                 case 'C':
-                    paths = this.renderCentralSVGStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio);
+                    paths = this.renderCentralSVGStripes(0, 0, w, h, stem, strokesNum, gap);
                     break;
                 case 'J':
-                    paths = this.renderJointSVGStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio);
+                    paths = this.renderJointSVGStripes(0, 0, w, h, stem, strokesNum, gap);
                     break;
                 case 'L':
-                    paths = this.renderLinkSVGStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio);
+                    paths = this.renderLinkSVGStripes(0, 0, w, h, stem, strokesNum, gap);
                     break;
                 case 'R':
-                    paths = this.renderRoundSVGStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio);
+                    paths = this.renderRoundSVGStripes(0, 0, w, h, stem, strokesNum, gap);
                     break;
                 case 'B':
-                    paths = this.renderBendSVGStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio);
+                    paths = this.renderBendSVGStripes(0, 0, w, h, stem, strokesNum, gap);
                     break;
             }
         }
@@ -301,103 +299,84 @@ export class VoidExporter {
 
     // ========== STRIPES MODE METHODS ==========
 
-    /**
-     * Вычислить gap и strokeWidth на основе общей ширины
-     * @param {number} totalWidth - общая ширина для размещения штрихов
-     * @param {number} strokesNum - количество штрихов
-     * @param {number} strokeGapRatio - отношение толщины штриха к промежутку
-     * @returns {Object} {gap, strokeWidth}
-     */
-    calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio) {
-        // gap = totalWidth / (strokesNum * (strokeGapRatio + 1) - 1)
-        const gap = totalWidth / (strokesNum * (strokeGapRatio + 1) - 1);
-        const strokeWidth = gap * strokeGapRatio;
-        return { gap, strokeWidth };
-    }
-
-    renderStraightSVGStripes(x, y, w, h, stem, strokesNum, strokeGapRatio) {
-        const totalWidth = stem / 2;
-        const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
+    renderStraightSVGStripes(x, y, w, h, stem, strokesNum, gap) {
+        const w2 = (stem / 2 - gap * (strokesNum - 1)) / strokesNum;
         let shift = 0;
         let svg = '';
         
         for (let i = 0; i < strokesNum; i++) {
-            svg += `        <rect x="${shift - w/2}" y="${-h/2}" width="${strokeWidth}" height="${h}"/>\n`;
-            shift += strokeWidth + gap;
+            svg += `        <rect x="${shift - w/2}" y="${-h/2}" width="${w2}" height="${h}"/>\n`;
+            shift += w2 + gap;
         }
         
         return svg;
     }
 
-    renderCentralSVGStripes(x, y, w, h, stem, strokesNum, strokeGapRatio) {
-        const totalWidth = stem / 2;
-        const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
-        const lineWidth = (strokesNum * strokeWidth) + ((strokesNum - 1) * gap);
+    renderCentralSVGStripes(x, y, w, h, stem, strokesNum, gap) {
+        const w2 = (stem / 2 - gap * (strokesNum - 1)) / strokesNum;
+        const lineWidth = (strokesNum * w2) + ((strokesNum - 1) * gap);
         let shift = -lineWidth / 2;
         let svg = '';
         
         for (let i = 0; i < strokesNum; i++) {
-            svg += `        <rect x="${shift}" y="${-h/2}" width="${strokeWidth}" height="${h}"/>\n`;
-            shift += strokeWidth + gap;
+            svg += `        <rect x="${shift}" y="${-h/2}" width="${w2}" height="${h}"/>\n`;
+            shift += w2 + gap;
         }
         
         return svg;
     }
 
-    renderJointSVGStripes(x, y, w, h, stem, strokesNum, strokeGapRatio) {
-        const totalWidth = stem / 2;
-        const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
+    renderJointSVGStripes(x, y, w, h, stem, strokesNum, gap) {
+        const w2 = (stem / 2 - gap * (strokesNum - 1)) / strokesNum;
         let svg = '';
         
         // Вертикальные полоски
         let shift = 0;
         for (let i = 0; i < strokesNum; i++) {
-            svg += `        <rect x="${shift - w/2}" y="${-h/2}" width="${strokeWidth}" height="${h}"/>\n`;
-            shift += strokeWidth + gap;
+            svg += `        <rect x="${shift - w/2}" y="${-h/2}" width="${w2}" height="${h}"/>\n`;
+            shift += w2 + gap;
         }
         
         // Горизонтальные полоски
-        const lineWidth = (strokesNum * strokeWidth) + ((strokesNum - 1) * gap);
+        const lineWidth = (strokesNum * w2) + ((strokesNum - 1) * gap);
         shift = -lineWidth / 2;
         for (let i = 0; i < strokesNum; i++) {
-            svg += `        <rect x="${-w/2}" y="${shift}" width="${w}" height="${strokeWidth}"/>\n`;
-            shift += strokeWidth + gap;
+            svg += `        <rect x="${-w/2}" y="${shift}" width="${w}" height="${w2}"/>\n`;
+            shift += w2 + gap;
         }
         
         return svg;
     }
 
-    renderLinkSVGStripes(x, y, w, h, stem, strokesNum, strokeGapRatio) {
-        const totalWidth = stem / 2;
-        const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
+    renderLinkSVGStripes(x, y, w, h, stem, strokesNum, gap) {
+        const w2 = (stem / 2 - gap * (strokesNum - 1)) / strokesNum;
         let svg = '';
         
         // Вертикальные полоски
         let shift = 0;
         for (let i = 0; i < strokesNum; i++) {
-            svg += `        <rect x="${shift - w/2}" y="${-h/2}" width="${strokeWidth}" height="${h}"/>\n`;
-            shift += strokeWidth + gap;
+            svg += `        <rect x="${shift - w/2}" y="${-h/2}" width="${w2}" height="${h}"/>\n`;
+            shift += w2 + gap;
         }
         
         // Горизонтальные полоски (снизу)
         shift = h / 2 - stem / 2;
         for (let i = 0; i < strokesNum; i++) {
-            svg += `        <rect x="${-w/2}" y="${shift}" width="${w}" height="${strokeWidth}"/>\n`;
-            shift += strokeWidth + gap;
+            svg += `        <rect x="${-w/2}" y="${shift}" width="${w}" height="${w2}"/>\n`;
+            shift += w2 + gap;
         }
         
         return svg;
     }
 
-    renderRoundSVGStripes(x, y, w, h, stem, strokesNum, strokeGapRatio) {
-        const totalWidth = stem / 2;
-        const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
+    renderRoundSVGStripes(x, y, w, h, stem, strokesNum, gap) {
+        const w2 = (stem / 2 - gap * (strokesNum - 1)) / strokesNum;
         let shift = 0;
         let svg = '';
         
         for (let j = 0; j < strokesNum; j++) {
             const R1 = w - shift;
-            const R2 = R1 - strokeWidth;
+            const R2 = R1 - w2;
             
             if (R2 > 0) {
                 const startAngle = Math.PI / 2;
@@ -422,21 +401,20 @@ export class VoidExporter {
                 svg += `        <path d="${path}"/>\n`;
             }
             
-            shift += strokeWidth + gap;
+            shift += w2 + gap;
         }
         
         return svg;
     }
 
-    renderBendSVGStripes(x, y, w, h, stem, strokesNum, strokeGapRatio) {
-        const totalWidth = stem / 2;
-        const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
+    renderBendSVGStripes(x, y, w, h, stem, strokesNum, gap) {
+        const w2 = (stem / 2 - gap * (strokesNum - 1)) / strokesNum;
         let shift = 0;
         let svg = '';
         
         for (let j = 0; j < strokesNum; j++) {
             const R1 = stem / 2 - shift;
-            const R2 = R1 - strokeWidth;
+            const R2 = R1 - w2;
             
             if (R2 >= 0 && R1 > 0) {
                 const startAngle = Math.PI / 2;
@@ -467,7 +445,7 @@ export class VoidExporter {
                 svg += `        <path d="${path}"/>\n`;
             }
             
-            shift += strokeWidth + gap;
+            shift += w2 + gap;
         }
         
         return svg;

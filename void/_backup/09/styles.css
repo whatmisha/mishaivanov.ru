@@ -616,32 +616,6 @@ body {
     box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-text);
 }
 
-/* Disabled State для слайдеров */
-.control-group input[type="range"]:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-.control-group input[type="range"]:disabled::-webkit-slider-thumb {
-    background: var(--color-text-muted);
-    cursor: not-allowed;
-    transform: none;
-}
-
-.control-group input[type="range"]:disabled::-moz-range-thumb {
-    background: var(--color-text-muted);
-    cursor: not-allowed;
-    transform: none;
-}
-
-.control-group input[type="range"]:disabled::-webkit-slider-runnable-track {
-    background: var(--color-text-subtle);
-}
-
-.control-group input[type="range"]:disabled::-moz-range-track {
-    background: var(--color-text-subtle);
-}
-
 /* Range Slider - слайдер с двумя ручками */
 .range-slider-container {
     width: 100%;
@@ -728,18 +702,6 @@ body {
 
 .value-display:focus {
     color: var(--color-text);
-}
-
-.value-display:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    color: var(--color-text-muted);
-}
-
-/* Визуальное выделение неактивной control-group */
-.control-group:has(input[type="range"]:disabled) label span:first-child {
-    opacity: 0.5;
-    color: var(--color-text-muted);
 }
 
 /* Unit Buttons - переключатели единиц измерения (mod/mm, mod/pt) */

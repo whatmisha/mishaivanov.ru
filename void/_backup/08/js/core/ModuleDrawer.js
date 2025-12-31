@@ -10,7 +10,7 @@ export class ModuleDrawer {
     constructor(mode = 'fill') {
         this.mode = mode; // 'fill' или 'stripes'
         this.strokesNum = 2; // количество полосок для stripes mode
-        this.strokeGapRatio = 1.0; // отношение толщины штриха к промежутку
+        this.gap = 2; // промежуток между полосками
     }
 
     /**
@@ -23,21 +23,9 @@ export class ModuleDrawer {
     /**
      * Установить параметры для stripes mode
      */
-    setStripesParams(strokesNum, strokeGapRatio) {
+    setStripesParams(strokesNum, gap) {
         this.strokesNum = strokesNum;
-        this.strokeGapRatio = strokeGapRatio;
-    }
-
-    /**
-     * Вычислить gap и strokeWidth на основе общей ширины
-     * @param {number} totalWidth - общая ширина для размещения штрихов
-     * @returns {Object} {gap, strokeWidth}
-     */
-    calculateGapAndStrokeWidth(totalWidth) {
-        // gap = totalWidth / (strokesNum * (strokeGapRatio + 1) - 1)
-        const gap = totalWidth / (this.strokesNum * (this.strokeGapRatio + 1) - 1);
-        const strokeWidth = gap * this.strokeGapRatio;
-        return { gap, strokeWidth };
+        this.gap = gap;
     }
 
     /**
@@ -106,12 +94,11 @@ export class ModuleDrawer {
             ctx.fillRect(-w / 2, -h / 2, stem / 2, h);
         } else {
             // Stripes mode
-            const totalWidth = stem / 2;
-            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            const w2 = (stem / 2 - this.gap * (this.strokesNum - 1)) / this.strokesNum;
             let shift = 0;
             for (let i = 0; i < this.strokesNum; i++) {
-                ctx.fillRect(shift - w / 2, -h / 2, strokeWidth, h);
-                shift += strokeWidth + gap;
+                ctx.fillRect(shift - w / 2, -h / 2, w2, h);
+                shift += w2 + this.gap;
             }
         }
         
@@ -131,13 +118,12 @@ export class ModuleDrawer {
             ctx.fillRect(-stem / 4, -h / 2, stem / 2, h);
         } else {
             // Stripes mode по центру
-            const totalWidth = stem / 2;
-            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
-            const lineWidth = (this.strokesNum * strokeWidth) + ((this.strokesNum - 1) * gap);
+            const w2 = (stem / 2 - this.gap * (this.strokesNum - 1)) / this.strokesNum;
+            const lineWidth = (this.strokesNum * w2) + ((this.strokesNum - 1) * this.gap);
             let shift = -lineWidth / 2;
             for (let i = 0; i < this.strokesNum; i++) {
-                ctx.fillRect(shift, -h / 2, strokeWidth, h);
-                shift += strokeWidth + gap;
+                ctx.fillRect(shift, -h / 2, w2, h);
+                shift += w2 + this.gap;
             }
         }
         
@@ -159,19 +145,18 @@ export class ModuleDrawer {
             ctx.fillRect(-w / 2, -stem / 4, w, stem / 2);
         } else {
             // Stripes для вертикали
-            const totalWidth = stem / 2;
-            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            const w2 = (stem / 2 - this.gap * (this.strokesNum - 1)) / this.strokesNum;
             let shift = 0;
             for (let i = 0; i < this.strokesNum; i++) {
-                ctx.fillRect(shift - w / 2, -h / 2, strokeWidth, h);
-                shift += strokeWidth + gap;
+                ctx.fillRect(shift - w / 2, -h / 2, w2, h);
+                shift += w2 + this.gap;
             }
             // Stripes для горизонтали (по центру)
-            const lineWidth = (this.strokesNum * strokeWidth) + ((this.strokesNum - 1) * gap);
+            const lineWidth = (this.strokesNum * w2) + ((this.strokesNum - 1) * this.gap);
             shift = -lineWidth / 2;
             for (let i = 0; i < this.strokesNum; i++) {
-                ctx.fillRect(-w / 2, shift, w, strokeWidth);
-                shift += strokeWidth + gap;
+                ctx.fillRect(-w / 2, shift, w, w2);
+                shift += w2 + this.gap;
             }
         }
         
@@ -193,18 +178,17 @@ export class ModuleDrawer {
             ctx.fillRect(-w / 2, h / 2 - stem / 2, w, stem / 2);
         } else {
             // Stripes для вертикали
-            const totalWidth = stem / 2;
-            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            const w2 = (stem / 2 - this.gap * (this.strokesNum - 1)) / this.strokesNum;
             let shift = 0;
             for (let i = 0; i < this.strokesNum; i++) {
-                ctx.fillRect(shift - w / 2, -h / 2, strokeWidth, h);
-                shift += strokeWidth + gap;
+                ctx.fillRect(shift - w / 2, -h / 2, w2, h);
+                shift += w2 + this.gap;
             }
             // Stripes для горизонтали (снизу)
             shift = h / 2 - stem / 2;
             for (let i = 0; i < this.strokesNum; i++) {
-                ctx.fillRect(-w / 2, shift, w, strokeWidth);
-                shift += strokeWidth + gap;
+                ctx.fillRect(-w / 2, shift, w, w2);
+                shift += w2 + this.gap;
             }
         }
         
@@ -251,13 +235,12 @@ export class ModuleDrawer {
             }
         } else {
             // Stripes mode - несколько концентрических дуг
-            const totalWidth = stem / 2;
-            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            const w2 = (stem / 2 - this.gap * (this.strokesNum - 1)) / this.strokesNum;
             let shift = 0;
             
             for (let j = 0; j < this.strokesNum; j++) {
                 const R1 = w - shift;
-                const R2 = R1 - strokeWidth;
+                const R2 = R1 - w2;
                 
                 if (R2 > 0) {
                     ctx.beginPath();
@@ -267,7 +250,7 @@ export class ModuleDrawer {
                     ctx.fill();
                 }
                 
-                shift += strokeWidth + gap;
+                shift += w2 + this.gap;
             }
         }
         
@@ -295,13 +278,12 @@ export class ModuleDrawer {
         } else {
             // Stripes mode
             // КЛЮЧЕВОЕ ОТЛИЧИЕ: начинаем с stem/2 (как в fill mode), а не w/2!
-            const totalWidth = stem / 2;
-            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            const w2 = (stem / 2 - this.gap * (this.strokesNum - 1)) / this.strokesNum;
             let shift = 0;
             
             for (let j = 0; j < this.strokesNum; j++) {
                 const R1 = stem / 2 - shift;
-                const R2 = R1 - strokeWidth;
+                const R2 = R1 - w2;
                 
                 // Изменили проверку с > 0 на >= 0, чтобы рисовать даже самые маленькие дуги
                 if (R2 >= 0 && R1 > 0) {
@@ -317,7 +299,7 @@ export class ModuleDrawer {
                     ctx.fill();
                 }
                 
-                shift += strokeWidth + gap;
+                shift += w2 + this.gap;
             }
         }
         

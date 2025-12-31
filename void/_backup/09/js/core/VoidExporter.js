@@ -132,12 +132,10 @@ export class VoidExporter {
                 let strokesNum = params.strokesNum;
                 
                 if (params.mode === 'random') {
-                    // Случайная толщина в пределах min-max, игнорируя Stem Weight из Metrics
-                    // Используем moduleSize напрямую, умножаем на 2, так как в ModuleDrawer используется stem / 2
+                    // Случайная толщина в пределах min-max от базовой
                     const stemMin = params.randomStemMin || 0.5;
                     const stemMax = params.randomStemMax || 2.0;
-                    const randomMultiplier = stemMin + Math.random() * (stemMax - stemMin);
-                    stem = params.moduleSize * randomMultiplier * 2;
+                    stem = params.stem * (stemMin + Math.random() * (stemMax - stemMin));
                     
                     // Случайное количество полосок в пределах min-max
                     const strokesMin = params.randomStrokesMin || 1;

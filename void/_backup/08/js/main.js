@@ -6,7 +6,6 @@ import { VoidRenderer } from './core/VoidRenderer.js';
 import { VoidExporter } from './core/VoidExporter.js';
 import { PresetManager } from './core/PresetManager.js';
 import { SliderController } from './ui/SliderController.js';
-import { RangeSliderController } from './ui/RangeSliderController.js';
 import { PanelManager } from './ui/PanelManager.js';
 import { MathUtils } from './utils/MathUtils.js';
 
@@ -15,12 +14,11 @@ class VoidTypeface {
         // Settings storage
         this.settings = {
             values: {
-                stemMultiplier: 0.5, // множитель размера модуля (реальное значение)
-                moduleSize: 24,
+                stemMultiplier: 1.0, // множитель размера модуля
+                moduleSize: 12,
                 letterSpacingMultiplier: 1,
                 lineHeightMultiplier: 2,
                 strokesNum: 2,
-                strokeGapRatio: 1.0,
                 mode: 'fill',
                 letterColor: '#ffffff',
                 bgColor: '#000000',
@@ -44,7 +42,6 @@ class VoidTypeface {
         this.initPresetManager();
         this.initPanels();
         this.initSliders();
-        this.initRangeSliders();
         this.initColorPickers();
         this.initTextInput();
         this.initModeToggle();
@@ -107,8 +104,8 @@ class VoidTypeface {
             persistent: true
         });
         
-        this.panelManager.registerPanel('variabilityPanel', {
-            headerId: 'variabilityPanelHeader',
+        this.panelManager.registerPanel('presetsPanel', {
+            headerId: 'presetsPanelHeader',
             draggable: true,
             persistent: true
         });
@@ -129,27 +126,27 @@ class VoidTypeface {
     initSliders() {
         this.sliderController = new SliderController(this.settings);
 
-        // Module (в пикселях)
-        this.sliderController.initSlider('moduleSizeSlider', {
-            valueId: 'moduleSizeValue',
-            setting: 'moduleSize',
-            min: 4,
-            max: 64,
-            decimals: 0,
-            baseStep: 1,
-            shiftStep: 4,
-            onUpdate: (value) => this.updateRenderer()
-        });
-
         // Stem Weight (относительно размера модуля)
         this.sliderController.initSlider('stemSlider', {
             valueId: 'stemValue',
             setting: 'stemMultiplier',
             min: 0.1,
-            max: 3.0,
+            max: 3,
             decimals: 1,
             baseStep: 0.1,
             shiftStep: 0.5,
+            onUpdate: (value) => this.updateRenderer()
+        });
+
+        // Letter Size (Module Size)
+        this.sliderController.initSlider('moduleSizeSlider', {
+            valueId: 'moduleSizeValue',
+            setting: 'moduleSize',
+            min: 4,
+            max: 24,
+            decimals: 0,
+            baseStep: 1,
+            shiftStep: 4,
             onUpdate: (value) => this.updateRenderer()
         });
 
@@ -158,7 +155,7 @@ class VoidTypeface {
             valueId: 'letterSpacingValue',
             setting: 'letterSpacingMultiplier',
             min: 0,
-            max: 16,
+            max: 4,
             decimals: 0,
             baseStep: 1,
             shiftStep: 1,
@@ -170,7 +167,7 @@ class VoidTypeface {
             valueId: 'lineHeightValue',
             setting: 'lineHeightMultiplier',
             min: 0,
-            max: 16,
+            max: 12,
             decimals: 0,
             baseStep: 1,
             shiftStep: 2,
@@ -182,111 +179,89 @@ class VoidTypeface {
             valueId: 'strokesValue',
             setting: 'strokesNum',
             min: 1,
-            max: 16,
+            max: 5,
             decimals: 0,
             baseStep: 1,
             shiftStep: 1,
             onUpdate: (value) => this.updateRenderer()
         });
 
-        // Contrast (для Stripes mode)
-        this.sliderController.initSlider('strokeGapRatioSlider', {
-            valueId: 'strokeGapRatioValue',
-            setting: 'strokeGapRatio',
+        // Random Mode Controls
+        this.sliderController.initSlider('randomStemMinSlider', {
+            valueId: 'randomStemMinValue',
+            setting: 'randomStemMin',
             min: 0.1,
-            max: 8.0,
+            max: 2,
             decimals: 1,
             baseStep: 0.1,
             shiftStep: 0.5,
-            onUpdate: (value) => this.updateRenderer()
+            onUpdate: (value) => {
+                // Убедиться, что min не больше max
+                const max = this.settings.get('randomStemMax');
+                if (value > max) {
+                    this.settings.set('randomStemMin', max);
+                    this.sliderController.setValue('randomStemMinSlider', max, false);
+                }
+                this.updateRenderer();
+            }
         });
-    }
 
-    /**
-     * Инициализация range-слайдеров (для Random mode)
-     */
-    initRangeSliders() {
-        this.rangeSliderController = new RangeSliderController(this.settings);
-
-        // Stem Weight Range
-        this.rangeSliderController.initRangeSlider('randomStemRangeSlider', {
-            minSetting: 'randomStemMin',
-            maxSetting: 'randomStemMax',
-            minValueId: 'randomStemMinValue',
-            maxValueId: 'randomStemMaxValue',
+        this.sliderController.initSlider('randomStemMaxSlider', {
+            valueId: 'randomStemMaxValue',
+            setting: 'randomStemMax',
             min: 0.1,
-            max: 3.0,
+            max: 3,
             decimals: 1,
             baseStep: 0.1,
             shiftStep: 0.5,
-            onUpdate: (minValue, maxValue) => this.updateRenderer()
+            onUpdate: (value) => {
+                // Убедиться, что max не меньше min
+                const min = this.settings.get('randomStemMin');
+                if (value < min) {
+                    this.settings.set('randomStemMax', min);
+                    this.sliderController.setValue('randomStemMaxSlider', min, false);
+                }
+                this.updateRenderer();
+            }
         });
 
-        // Strokes Range
-        this.rangeSliderController.initRangeSlider('randomStrokesRangeSlider', {
-            minSetting: 'randomStrokesMin',
-            maxSetting: 'randomStrokesMax',
-            minValueId: 'randomStrokesMinValue',
-            maxValueId: 'randomStrokesMaxValue',
+        this.sliderController.initSlider('randomStrokesMinSlider', {
+            valueId: 'randomStrokesMinValue',
+            setting: 'randomStrokesMin',
             min: 1,
             max: 5,
             decimals: 0,
             baseStep: 1,
             shiftStep: 1,
-            onUpdate: (minValue, maxValue) => this.updateRenderer()
+            onUpdate: (value) => {
+                // Убедиться, что min не больше max
+                const max = this.settings.get('randomStrokesMax');
+                if (value > max) {
+                    this.settings.set('randomStrokesMin', max);
+                    this.sliderController.setValue('randomStrokesMinSlider', max, false);
+                }
+                this.updateRenderer();
+            }
         });
 
-        // Обработчики для текстовых полей Stem Weight
-        const stemMinInput = document.getElementById('randomStemMinValue');
-        const stemMaxInput = document.getElementById('randomStemMaxValue');
-        
-        if (stemMinInput) {
-            stemMinInput.addEventListener('blur', () => {
-                const value = parseFloat(stemMinInput.value);
-                if (!isNaN(value)) {
-                    const max = this.settings.get('randomStemMax');
-                    const clampedValue = Math.max(0.1, Math.min(max, value));
-                    this.rangeSliderController.setValues('randomStemRangeSlider', clampedValue, max, true);
+        this.sliderController.initSlider('randomStrokesMaxSlider', {
+            valueId: 'randomStrokesMaxValue',
+            setting: 'randomStrokesMax',
+            min: 1,
+            max: 5,
+            decimals: 0,
+            baseStep: 1,
+            shiftStep: 1,
+            onUpdate: (value) => {
+                // Убедиться, что max не меньше min
+                const min = this.settings.get('randomStrokesMin');
+                if (value < min) {
+                    this.settings.set('randomStrokesMax', min);
+                    this.sliderController.setValue('randomStrokesMaxSlider', min, false);
                 }
-            });
-        }
-
-        if (stemMaxInput) {
-            stemMaxInput.addEventListener('blur', () => {
-                const value = parseFloat(stemMaxInput.value);
-                if (!isNaN(value)) {
-                    const min = this.settings.get('randomStemMin');
-                    const clampedValue = Math.max(min, Math.min(3.0, value));
-                    this.rangeSliderController.setValues('randomStemRangeSlider', min, clampedValue, true);
-                }
-            });
-        }
-
-        // Обработчики для текстовых полей Strokes
-        const strokesMinInput = document.getElementById('randomStrokesMinValue');
-        const strokesMaxInput = document.getElementById('randomStrokesMaxValue');
-        
-        if (strokesMinInput) {
-            strokesMinInput.addEventListener('blur', () => {
-                const value = parseFloat(strokesMinInput.value);
-                if (!isNaN(value)) {
-                    const max = this.settings.get('randomStrokesMax');
-                    const clampedValue = Math.max(1, Math.min(max, Math.round(value)));
-                    this.rangeSliderController.setValues('randomStrokesRangeSlider', clampedValue, max, true);
-                }
-            });
-        }
-
-        if (strokesMaxInput) {
-            strokesMaxInput.addEventListener('blur', () => {
-                const value = parseFloat(strokesMaxInput.value);
-                if (!isNaN(value)) {
-                    const min = this.settings.get('randomStrokesMin');
-                    const clampedValue = Math.max(min, Math.min(5, Math.round(value)));
-                    this.rangeSliderController.setValues('randomStrokesRangeSlider', min, clampedValue, true);
-                }
-            });
-        }
+                this.updateRenderer();
+            }
+        });
     }
 
     /**
@@ -353,7 +328,6 @@ class VoidTypeface {
         const stripesRadio = document.getElementById('modeStripes');
         const randomRadio = document.getElementById('modeRandom');
         const strokesControlGroup = document.getElementById('strokesControlGroup');
-        const strokeGapRatioControlGroup = document.getElementById('strokeGapRatioControlGroup');
 
         const updateMode = () => {
             let mode = 'fill';
@@ -365,11 +339,12 @@ class VoidTypeface {
             
             // Показать/скрыть контролы в зависимости от режима
             strokesControlGroup.style.display = mode === 'stripes' ? 'block' : 'none';
-            strokeGapRatioControlGroup.style.display = mode === 'stripes' ? 'block' : 'none';
             
             const randomGroups = [
                 document.getElementById('randomControlGroup'),
                 document.getElementById('randomControlGroup2'),
+                document.getElementById('randomControlGroup3'),
+                document.getElementById('randomControlGroup4'),
                 document.getElementById('randomControlGroup5')
             ];
             randomGroups.forEach(group => {
@@ -377,15 +352,6 @@ class VoidTypeface {
                     group.style.display = mode === 'random' ? 'block' : 'none';
                 }
             });
-            
-            // Отключить/включить Stem Weight в панели Metrics при режиме Random
-            const stemSlider = document.getElementById('stemSlider');
-            const stemValue = document.getElementById('stemValue');
-            if (stemSlider && stemValue) {
-                const isDisabled = mode === 'random';
-                stemSlider.disabled = isDisabled;
-                stemValue.disabled = isDisabled;
-            }
             
             this.updateRenderer();
         };
@@ -488,7 +454,7 @@ class VoidTypeface {
         const presetSelect = document.getElementById('presetSelect');
         const names = this.presetManager.getPresetNames();
         
-        presetSelect.innerHTML = '<option value="">Select preset</option>';
+        presetSelect.innerHTML = '<option value="">-- Select preset --</option>';
         names.forEach(name => {
             const option = document.createElement('option');
             option.value = name;
@@ -531,21 +497,10 @@ class VoidTypeface {
         this.sliderController.setValue('letterSpacingSlider', this.settings.get('letterSpacingMultiplier'), false);
         this.sliderController.setValue('lineHeightSlider', this.settings.get('lineHeightMultiplier'), false);
         this.sliderController.setValue('strokesSlider', this.settings.get('strokesNum'), false);
-        this.sliderController.setValue('strokeGapRatioSlider', this.settings.get('strokeGapRatio'), false);
-        
-        // Обновить range-слайдеры
-        if (this.rangeSliderController) {
-            this.rangeSliderController.setValues('randomStemRangeSlider', 
-                this.settings.get('randomStemMin'), 
-                this.settings.get('randomStemMax'), 
-                false
-            );
-            this.rangeSliderController.setValues('randomStrokesRangeSlider', 
-                this.settings.get('randomStrokesMin'), 
-                this.settings.get('randomStrokesMax'), 
-                false
-            );
-        }
+        this.sliderController.setValue('randomStemMinSlider', this.settings.get('randomStemMin'), false);
+        this.sliderController.setValue('randomStemMaxSlider', this.settings.get('randomStemMax'), false);
+        this.sliderController.setValue('randomStrokesMinSlider', this.settings.get('randomStrokesMin'), false);
+        this.sliderController.setValue('randomStrokesMaxSlider', this.settings.get('randomStrokesMax'), false);
 
         // Обновить режим отрисовки
         const mode = this.settings.get('mode');
@@ -553,11 +508,12 @@ class VoidTypeface {
         document.getElementById('modeStripes').checked = mode === 'stripes';
         document.getElementById('modeRandom').checked = mode === 'random';
         document.getElementById('strokesControlGroup').style.display = mode === 'stripes' ? 'block' : 'none';
-        document.getElementById('strokeGapRatioControlGroup').style.display = mode === 'stripes' ? 'block' : 'none';
         
         const randomGroups = [
             document.getElementById('randomControlGroup'),
             document.getElementById('randomControlGroup2'),
+            document.getElementById('randomControlGroup3'),
+            document.getElementById('randomControlGroup4'),
             document.getElementById('randomControlGroup5')
         ];
         randomGroups.forEach(group => {
@@ -565,15 +521,6 @@ class VoidTypeface {
                 group.style.display = mode === 'random' ? 'block' : 'none';
             }
         });
-
-        // Отключить/включить Stem Weight в панели Metrics при режиме Random
-        const stemSlider = document.getElementById('stemSlider');
-        const stemValue = document.getElementById('stemValue');
-        if (stemSlider && stemValue) {
-            const isDisabled = mode === 'random';
-            stemSlider.disabled = isDisabled;
-            stemValue.disabled = isDisabled;
-        }
 
         // Обновить цвета
         const letterColor = this.settings.get('letterColor');
@@ -631,8 +578,7 @@ class VoidTypeface {
      */
     updateRenderer() {
         const moduleSize = this.settings.get('moduleSize');
-        // Умножаем на 2, так как в ModuleDrawer используется stem / 2
-        const stem = moduleSize * this.settings.get('stemMultiplier') * 2;
+        const stem = moduleSize * this.settings.get('stemMultiplier');
         const letterSpacing = moduleSize * this.settings.get('letterSpacingMultiplier');
         const lineHeight = moduleSize * this.settings.get('lineHeightMultiplier');
         
@@ -642,7 +588,6 @@ class VoidTypeface {
             letterSpacing: letterSpacing,
             lineHeight: lineHeight,
             strokesNum: this.settings.get('strokesNum'),
-            strokeGapRatio: this.settings.get('strokeGapRatio'),
             mode: this.settings.get('mode'),
             color: this.settings.get('letterColor'),
             bgColor: this.settings.get('bgColor'),
