@@ -111,29 +111,35 @@
                 <div class="panel-content">
                     <section class="control-section">
                         <!-- Render Mode Toggle -->
-                        <fieldset>
-                            <div class="segmented-control segmented-control-compact">
-                                <input type="radio" name="renderMode" value="fill" id="modeFill" checked>
-                                <label for="modeFill">Fill</label>
-                                
-                                <input type="radio" name="renderMode" value="stripes" id="modeStripes">
-                                <label for="modeStripes">Stripes</label>
-                                
-                                <input type="radio" name="renderMode" value="random" id="modeRandom">
-                                <label for="modeRandom">Random</label>
-                            </div>
-                        </fieldset>
+                        <div class="control-group">
+                            <label>Render Mode</label>
+                            <fieldset>
+                                <div class="segmented-control segmented-control-compact">
+                                    <input type="radio" name="renderMethod" value="fill" id="renderMethodFill" checked>
+                                    <label for="renderMethodFill">Fill</label>
+                                    
+                                    <input type="radio" name="renderMethod" value="stroke" id="renderMethodStroke">
+                                    <label for="renderMethodStroke">Stroke</label>
+                                </div>
+                            </fieldset>
+                        </div>
 
-                        <!-- Render Method Toggle -->
-                        <fieldset style="margin-top: var(--spacing-2xl);">
-                            <div class="segmented-control segmented-control-compact">
-                                <input type="radio" name="renderMethod" value="fill" id="renderMethodFill" checked>
-                                <label for="renderMethodFill">Fill</label>
-                                
-                                <input type="radio" name="renderMethod" value="stroke" id="renderMethodStroke">
-                                <label for="renderMethodStroke">Stroke</label>
-                            </div>
-                        </fieldset>
+                        <!-- Style Toggle -->
+                        <div class="control-group" style="margin-top: var(--spacing-2xl);">
+                            <label>Style</label>
+                            <fieldset>
+                                <div class="segmented-control segmented-control-compact">
+                                    <input type="radio" name="renderMode" value="fill" id="modeFill" checked>
+                                    <label for="modeFill">Solid</label>
+                                    
+                                    <input type="radio" name="renderMode" value="stripes" id="modeStripes">
+                                    <label for="modeStripes">Stripes</label>
+                                    
+                                    <input type="radio" name="renderMode" value="random" id="modeRandom">
+                                    <label for="modeRandom">Random</label>
+                                </div>
+                            </fieldset>
+                        </div>
 
                         <!-- Strokes Number (только для Stripes mode) -->
                         <div class="control-group" id="strokesControlGroup" style="display: none; margin-top: var(--spacing-2xl);">
