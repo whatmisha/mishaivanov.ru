@@ -139,18 +139,13 @@ class VoidTypeface {
         if (exportBtn) exportBtn.style.display = 'none';
         if (copyBtn) copyBtn.style.display = 'none';
         
-        // Показать сообщение "ONLY DESKTOP" в режиме Random
-        const mobileMessage = document.getElementById('mobileMessage');
-        if (mobileMessage) {
-            mobileMessage.style.display = 'flex';
-        }
-        
         // Установить режим Random и текст
         this.settings.set('mode', 'random');
         this.settings.set('text', 'ONLY\nDESK\nTOP');
         
-        // Инициализировать renderer с этими настройками
-        this.updateRenderer();
+        // Вычислить оптимальный размер модуля, чтобы текст влезал в окно
+        // (updateRenderer будет вызван внутри calculateMobileModuleSize)
+        this.calculateMobileModuleSize();
         
         // Обработка изменения размера окна (на случай поворота экрана)
         window.addEventListener('resize', () => {
@@ -160,7 +155,66 @@ class VoidTypeface {
             // Если перешли с мобильного на десктоп, перезагрузить страницу
             if (wasMobile && !this.isMobile) {
                 window.location.reload();
+            } else if (this.isMobile) {
+                // Пересчитать размер модуля при изменении размера окна
+                // (updateRenderer будет вызван внутри calculateMobileModuleSize)
+                this.calculateMobileModuleSize();
             }
+        });
+    }
+
+    /**
+     * Вычислить оптимальный размер модуля для мобильного устройства
+     * чтобы текст "ONLY\nDESK\nTOP" влезал в окно без обрезки
+     */
+    calculateMobileModuleSize() {
+        // Дождаться следующего кадра, чтобы canvas успел получить размеры
+        requestAnimationFrame(() => {
+            const canvasContainer = document.getElementById('canvasContainer');
+            const canvas = document.getElementById('mainCanvas');
+            
+            // Получить размеры контейнера или окна
+            const containerRect = canvasContainer ? canvasContainer.getBoundingClientRect() : null;
+            const availableWidth = containerRect ? containerRect.width : window.innerWidth;
+            const availableHeight = containerRect ? containerRect.height : window.innerHeight;
+            
+            // Текст состоит из 3 строк: "ONLY", "DESK", "TOP"
+            // Самая длинная строка - "ONLY" и "DESK" (4 символа)
+            const maxLineLength = 4;
+            const numLines = 3;
+            
+            // Размеры одного символа: 5 модулей в ширину
+            const cols = 5;
+            const rows = 5;
+            
+            // Используем текущие значения multipliers из settings
+            const letterSpacingMultiplier = this.settings.get('letterSpacingMultiplier') || 1;
+            const lineHeightMultiplier = this.settings.get('lineHeightMultiplier') || 2;
+            
+            // Учитываем padding (10% с каждой стороны для безопасности)
+            const padding = 0.1;
+            const maxWidth = availableWidth * (1 - 2 * padding);
+            const maxHeight = availableHeight * (1 - 2 * padding);
+            
+            // Расчет по ширине:
+            // Ширина строки = maxLineLength * cols * moduleSize + (maxLineLength - 1) * letterSpacingMultiplier * moduleSize
+            // = moduleSize * (maxLineLength * cols + (maxLineLength - 1) * letterSpacingMultiplier)
+            const moduleSizeByWidth = maxWidth / (maxLineLength * cols + (maxLineLength - 1) * letterSpacingMultiplier);
+            
+            // Расчет по высоте:
+            // Высота текста = numLines * rows * moduleSize + (numLines - 1) * lineHeightMultiplier * moduleSize
+            // = moduleSize * (numLines * rows + (numLines - 1) * lineHeightMultiplier)
+            const moduleSizeByHeight = maxHeight / (numLines * rows + (numLines - 1) * lineHeightMultiplier);
+            
+            // Выбрать минимальный размер, чтобы влезло и по ширине, и по высоте
+            const optimalModuleSize = Math.floor(Math.min(moduleSizeByWidth, moduleSizeByHeight));
+            
+            // Установить размер модуля (но не меньше 8px и не больше 64px)
+            const finalModuleSize = Math.max(8, Math.min(64, optimalModuleSize));
+            this.settings.set('moduleSize', finalModuleSize);
+            
+            // Обновить renderer после установки размера модуля
+            this.updateRenderer();
         });
     }
 
