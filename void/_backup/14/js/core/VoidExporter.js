@@ -77,35 +77,9 @@ export class VoidExporter {
         const letterW = this.renderer.cols * params.moduleSize;
         const letterH = this.renderer.rows * params.moduleSize;
         
-        // Вычислить размеры контента с учетом разной ширины пробела
-        let contentWidth = 0;
-        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-            const line = lines[lineIndex];
-            let lineWidth = 0;
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                // Двойной пробел (и более) имеет ширину 5 модулей (3+2) без letter spacing между пробелами
-                let charWidth;
-                let addSpacing = true;
-                if (char === ' ') {
-                    // Если предыдущий символ тоже пробел, то этот пробел = 2 модуля и БЕЗ letter spacing перед ним
-                    if (i > 0 && line[i - 1] === ' ') {
-                        charWidth = 2 * params.moduleSize;
-                        addSpacing = false; // Не добавляем spacing между пробелами
-                    } else {
-                        charWidth = 3 * params.moduleSize;
-                    }
-                } else {
-                    charWidth = letterW;
-                }
-                lineWidth += charWidth + (addSpacing ? params.letterSpacing : 0);
-            }
-            // Убрать последний отступ (если последний символ не пробел после пробела)
-            if (line.length > 0 && !(line[line.length - 1] === ' ' && line.length > 1 && line[line.length - 2] === ' ')) {
-                lineWidth -= params.letterSpacing;
-            }
-            contentWidth = Math.max(contentWidth, lineWidth);
-        }
+        // Вычислить размеры контента
+        const maxLineLength = Math.max(...lines.map(line => line.length));
+        const contentWidth = maxLineLength * (letterW + params.letterSpacing) - params.letterSpacing;
         const contentHeight = lines.length * (letterH + params.lineHeight) - params.lineHeight;
         
         // Квадратный SVG: сторона = max(ширина, высота) + 2*moduleSize (по одному модулю с каждой стороны)
@@ -138,55 +112,17 @@ export class VoidExporter {
         // Отрисовать каждую строку
         for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
             const line = lines[lineIndex];
-            // Вычислить ширину строки с учетом разной ширины пробела
-            let lineWidth = 0;
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                // Двойной пробел (и более) имеет ширину 5 модулей (3+2) без letter spacing между пробелами
-                let charWidth;
-                let addSpacing = true;
-                if (char === ' ') {
-                    // Если предыдущий символ тоже пробел, то этот пробел = 2 модуля и БЕЗ letter spacing перед ним
-                    if (i > 0 && line[i - 1] === ' ') {
-                        charWidth = 2 * params.moduleSize;
-                        addSpacing = false; // Не добавляем spacing между пробелами
-                    } else {
-                        charWidth = 3 * params.moduleSize;
-                    }
-                } else {
-                    charWidth = letterW;
-                }
-                lineWidth += charWidth + (addSpacing ? params.letterSpacing : 0);
-            }
-            // Убрать последний отступ (если последний символ не пробел после пробела)
-            if (line.length > 0 && !(line[line.length - 1] === ' ' && line.length > 1 && line[line.length - 2] === ' ')) {
-                lineWidth -= params.letterSpacing;
-            }
+            const lineWidth = line.length * (letterW + params.letterSpacing) - params.letterSpacing;
             const lineX = (contentWidth - lineWidth) / 2;
             const lineY = lineIndex * (letterH + params.lineHeight);
             
             // Отрисовать каждую букву
-            let currentX = offsetX + lineX;
             for (let charIndex = 0; charIndex < line.length; charIndex++) {
                 const char = line[charIndex];
-                // Двойной пробел (и более) имеет ширину 5 модулей (3+2) без letter spacing между пробелами
-                let charWidth;
-                let addSpacing = true;
-                if (char === ' ') {
-                    // Если предыдущий символ тоже пробел, то этот пробел = 2 модуля и БЕЗ letter spacing перед ним
-                    if (charIndex > 0 && line[charIndex - 1] === ' ') {
-                        charWidth = 2 * params.moduleSize;
-                        addSpacing = false; // Не добавляем spacing между пробелами
-                    } else {
-                        charWidth = 3 * params.moduleSize;
-                    }
-                } else {
-                    charWidth = letterW;
-                }
+                const x = offsetX + lineX + charIndex * (letterW + params.letterSpacing);
                 const y = offsetY + lineY;
                 
-                svgContent += this.renderLetterToSVG(char, currentX, y, params, lineIndex, charIndex);
-                currentX += charWidth + (addSpacing ? params.letterSpacing : 0);
+                svgContent += this.renderLetterToSVG(char, x, y, params, lineIndex, charIndex);
             }
         }
 
@@ -292,29 +228,13 @@ export class VoidExporter {
         const glyphCode = getGlyph(char);
         const moduleW = params.moduleSize;
         const moduleH = params.moduleSize;
-        // Пробел имеет ширину 3 модуля (первый) или 2 модуля (второй и далее в последовательности)
-        let letterCols;
-        if (char === ' ') {
-            // Нужно проверить предыдущий символ в строке
-            const text = params.text || '';
-            const lines = text.split('\n');
-            if (lineIndex !== null && charIndex !== null && lineIndex < lines.length) {
-                const line = lines[lineIndex];
-                // Если предыдущий символ тоже пробел, то этот пробел = 2 модуля
-                letterCols = (charIndex > 0 && line[charIndex - 1] === ' ') ? 2 : 3;
-            } else {
-                letterCols = 3; // По умолчанию 3 модуля
-            }
-        } else {
-            letterCols = this.renderer.cols;
-        }
         let svg = '';
 
         // Группа для буквы
         svg += `    <g>\n`;
 
-        // Отрисовать каждый модуль в сетке 5×5 (или 3×5/2×5 для пробела)
-        for (let i = 0; i < letterCols; i++) {
+        // Отрисовать каждый модуль
+        for (let i = 0; i < this.renderer.cols; i++) {
             for (let j = 0; j < this.renderer.rows; j++) {
                 const index = (i + j * this.renderer.cols) * 2;
                 const moduleType = glyphCode.charAt(index);

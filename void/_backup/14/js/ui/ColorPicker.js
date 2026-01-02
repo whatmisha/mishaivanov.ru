@@ -166,6 +166,16 @@ export class ColorPicker {
                 this.updateFromHSB();
             });
         }
+
+        // Закрытие пикера при клике вне его
+        document.addEventListener('click', (e) => {
+            if (this.isOpen() && 
+                !this.elements.picker.contains(e.target) && 
+                !this.elements.preview.contains(e.target) &&
+                !this.elements.hexInput.contains(e.target)) {
+                this.close();
+            }
+        });
     }
 
     /**

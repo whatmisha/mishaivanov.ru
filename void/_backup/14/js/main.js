@@ -26,8 +26,7 @@ class VoidTypeface {
                 letterColor: '#ffffff',
                 bgColor: '#000000',
                 gridColor: '#333333',
-                text: 'Void\nTypeface\ncoded',
-                textAlign: 'center',
+                text: 'Void\nTypeface\n2k26',
                 showGrid: true,
                 includeGridToExport: false,
                 randomStemMin: 0.5,
@@ -59,30 +58,14 @@ class VoidTypeface {
         this.initRangeSliders();
         this.initColorPickers();
         this.initTextInput();
-        this.initTextAlign();
         this.initModeToggle();
         this.initGridToggle();
-        
-        // Отслеживание изменений для показа кнопки Save
-        this.hasUnsavedChanges = false;
-        this.currentPresetName = 'Default';
-        this.isLoadingPreset = false;
-        this.isInitializing = true; // Флаг инициализации
-        
-        this.setupChangeTracking();
         this.initPresets();
         this.initExport();
         this.initResize();
         
         // Первая отрисовка (с правильным вычислением параметров)
         this.updateRenderer();
-        
-        // Завершить инициализацию и обновить кнопки
-        this.isInitializing = false;
-        this.hasUnsavedChanges = false; // Убедиться, что после инициализации нет изменений
-        if (this.currentPresetName === 'Default') {
-            this.updateSaveDeleteButtons();
-        }
     }
 
     /**
@@ -166,10 +149,7 @@ class VoidTypeface {
             decimals: 0,
             baseStep: 1,
             shiftStep: 4,
-            onUpdate: (value) => {
-                this.updateRenderer();
-                this.markAsChanged();
-            }
+            onUpdate: (value) => this.updateRenderer()
         });
 
         // Stem Weight (относительно размера модуля)
@@ -181,10 +161,7 @@ class VoidTypeface {
             decimals: 1,
             baseStep: 0.1,
             shiftStep: 0.5,
-            onUpdate: (value) => {
-                this.updateRenderer();
-                this.markAsChanged();
-            }
+            onUpdate: (value) => this.updateRenderer()
         });
 
         // Letter Spacing (относительно размера модуля)
@@ -196,10 +173,7 @@ class VoidTypeface {
             decimals: 0,
             baseStep: 1,
             shiftStep: 1,
-            onUpdate: (value) => {
-                this.updateRenderer();
-                this.markAsChanged();
-            }
+            onUpdate: (value) => this.updateRenderer()
         });
 
         // Line Height (относительно размера модуля)
@@ -211,10 +185,7 @@ class VoidTypeface {
             decimals: 0,
             baseStep: 1,
             shiftStep: 2,
-            onUpdate: (value) => {
-                this.updateRenderer();
-                this.markAsChanged();
-            }
+            onUpdate: (value) => this.updateRenderer()
         });
 
         // Strokes Number (для Stripes mode)
@@ -226,10 +197,7 @@ class VoidTypeface {
             decimals: 0,
             baseStep: 1,
             shiftStep: 1,
-            onUpdate: (value) => {
-                this.updateRenderer();
-                this.markAsChanged();
-            }
+            onUpdate: (value) => this.updateRenderer()
         });
 
         // Contrast (для Stripes mode)
@@ -241,10 +209,7 @@ class VoidTypeface {
             decimals: 1,
             baseStep: 0.1,
             shiftStep: 0.5,
-            onUpdate: (value) => {
-                this.updateRenderer();
-                this.markAsChanged();
-            }
+            onUpdate: (value) => this.updateRenderer()
         });
 
         // Corner Radius
@@ -256,10 +221,7 @@ class VoidTypeface {
             decimals: 1,
             baseStep: 0.1,
             shiftStep: 1,
-            onUpdate: (value) => {
-                this.updateRenderer();
-                this.markAsChanged();
-            }
+            onUpdate: (value) => this.updateRenderer()
         });
     }
 
@@ -474,41 +436,12 @@ class VoidTypeface {
         const textarea = document.getElementById('textInput');
         
         const debouncedUpdate = MathUtils.debounce(() => {
-            // Убрать пробелы перед переносами строк
-            let text = textarea.value;
-            text = text.replace(/ +\n/g, '\n').replace(/\n +/g, '\n');
-            
-            this.settings.set('text', text);
-            this.renderer.setText(text);
+            this.settings.set('text', textarea.value);
+            this.renderer.setText(textarea.value);
             this.renderer.render();
-            this.markAsChanged();
         }, 300);
-        
-        textarea.addEventListener('input', debouncedUpdate);
-    }
 
-    /**
-     * Инициализация контрола выравнивания текста
-     */
-    initTextAlign() {
-        const leftRadio = document.getElementById('textAlignLeft');
-        const centerRadio = document.getElementById('textAlignCenter');
-        const rightRadio = document.getElementById('textAlignRight');
-        
-        const updateAlign = () => {
-            let align = 'center';
-            if (leftRadio.checked) align = 'left';
-            else if (centerRadio.checked) align = 'center';
-            else if (rightRadio.checked) align = 'right';
-            
-            this.settings.set('textAlign', align);
-            this.updateRenderer();
-            this.markAsChanged();
-        };
-        
-        leftRadio.addEventListener('change', updateAlign);
-        centerRadio.addEventListener('change', updateAlign);
-        rightRadio.addEventListener('change', updateAlign);
+        textarea.addEventListener('input', debouncedUpdate);
     }
 
     /**
@@ -569,18 +502,9 @@ class VoidTypeface {
             this.updateRenderer();
         };
 
-        fillRadio.addEventListener('change', () => {
-            updateMode();
-            this.markAsChanged();
-        });
-        stripesRadio.addEventListener('change', () => {
-            updateMode();
-            this.markAsChanged();
-        });
-        randomRadio.addEventListener('change', () => {
-            updateMode();
-            this.markAsChanged();
-        });
+        fillRadio.addEventListener('change', updateMode);
+        stripesRadio.addEventListener('change', updateMode);
+        randomRadio.addEventListener('change', updateMode);
 
         // Кнопка Renew для random mode
         const renewBtn = document.getElementById('renewRandomBtn');
@@ -592,7 +516,6 @@ class VoidTypeface {
                         this.renderer.clearModuleTypeCache();
                     }
                     this.updateRenderer();
-                    this.markAsChanged();
                 }
             });
         }
@@ -608,7 +531,6 @@ class VoidTypeface {
                     this.renderer.clearModuleTypeCache();
                 }
                 this.updateRenderer();
-                this.markAsChanged();
             });
         }
     }
@@ -623,12 +545,10 @@ class VoidTypeface {
         gridCheckbox.addEventListener('change', () => {
             this.settings.set('showGrid', gridCheckbox.checked);
             this.updateRenderer();
-            this.markAsChanged();
         });
 
         includeGridToExportCheckbox.addEventListener('change', () => {
             this.settings.set('includeGridToExport', includeGridToExportCheckbox.checked);
-            this.markAsChanged();
         });
     }
 
@@ -636,188 +556,91 @@ class VoidTypeface {
      * Инициализация preset'ов
      */
     initPresets() {
-        const presetDropdown = document.getElementById('presetDropdown');
-        const presetDropdownToggle = document.getElementById('presetDropdownToggle');
-        const presetDropdownMenu = document.getElementById('presetDropdownMenu');
-        const presetDropdownText = presetDropdownToggle.querySelector('.preset-dropdown-text');
+        const presetSelect = document.getElementById('presetSelect');
+        const presetNameInput = document.getElementById('presetNameInput');
         const savePresetBtn = document.getElementById('savePresetBtn');
         const deletePresetBtn = document.getElementById('deletePresetBtn');
 
-        // Создать дефолтный пресет если его нет
-        if (!this.presetManager.loadPreset('Default')) {
-            this.presetManager.savePreset('Default', this.settings.values);
-        }
-
         // Обновить список preset'ов
         this.updatePresetList();
-        
-        // Загрузить дефолтный пресет
-        // loadPreset установит currentPresetName и hasUnsavedChanges = false
-        this.loadPreset('Default', false);
-        presetDropdownText.textContent = 'Default';
 
-        // Открытие/закрытие дропдауна
-        presetDropdownToggle.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const isExpanded = presetDropdownToggle.getAttribute('aria-expanded') === 'true';
-            presetDropdownToggle.setAttribute('aria-expanded', !isExpanded);
-            presetDropdownMenu.classList.toggle('active');
-        });
-
-        // Закрытие дропдауна при клике вне его
-        document.addEventListener('click', (e) => {
-            if (!presetDropdown.contains(e.target)) {
-                presetDropdownToggle.setAttribute('aria-expanded', 'false');
-                presetDropdownMenu.classList.remove('active');
-            }
-        });
-
-        // Загрузка preset'а при клике на элемент
-        presetDropdownMenu.addEventListener('click', (e) => {
-            const item = e.target.closest('.preset-dropdown-item');
-            if (item) {
-                const presetName = item.dataset.value;
-                
-                // Обработка удаления всех пресетов
-                if (presetName === '__delete_all__') {
-                    if (confirm('Delete all saved presets?')) {
-                        const names = this.presetManager.getPresetNames();
-                        names.forEach(name => {
-                            if (name !== 'Default') {
-                                this.presetManager.deletePreset(name);
-                            }
-                        });
-                        // Переключиться на Default
-                        this.loadPreset('Default');
-                        presetDropdownText.textContent = 'Default';
-                        this.currentPresetName = 'Default';
-                        this.hasUnsavedChanges = false;
-                        this.updatePresetList();
-                        this.updateSaveDeleteButtons();
-                        const defaultItem = Array.from(presetDropdownMenu.children).find(item => item.dataset.value === 'Default');
-                        if (defaultItem) {
-                            presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
-                            defaultItem.classList.add('selected');
-                        }
-                        presetDropdownToggle.setAttribute('aria-expanded', 'false');
-                        presetDropdownMenu.classList.remove('active');
-                    }
-                    return;
-                }
-                
-                if (presetName && presetName !== this.currentPresetName) {
-                    // Проверка на несохраненные изменения
-                    if (this.hasUnsavedChanges) {
-                        const shouldSave = confirm('You have unsaved changes. Save current preset before switching?');
-                        if (shouldSave) {
-                            this.saveCurrentPreset();
-                        }
-                    }
-                    this.loadPreset(presetName);
-                    // Отображать сокращенное имя в дропдауне
-                    const displayName = presetName === 'Default' ? 'Default' : this.getDisplayName(presetName);
-                    presetDropdownText.textContent = displayName;
-                    presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
-                    item.classList.add('selected');
-                    this.currentPresetName = presetName;
-                    this.hasUnsavedChanges = false;
-                    this.updateSaveDeleteButtons();
-                    presetDropdownToggle.setAttribute('aria-expanded', 'false');
-                    presetDropdownMenu.classList.remove('active');
-                }
+        // Загрузка preset'а
+        presetSelect.addEventListener('change', () => {
+            const presetName = presetSelect.value;
+            if (presetName) {
+                this.loadPreset(presetName);
             }
         });
 
         // Сохранение preset'а
-        savePresetBtn.addEventListener('click', () => {
-            this.saveCurrentPreset();
+        const savePreset = () => {
+            const name = presetNameInput.value.trim();
+            if (!name) {
+                alert('Введите имя preset\'а');
+                return;
+            }
+
+            const result = this.presetManager.savePreset(name, this.settings.values);
+            if (result.success) {
+                presetNameInput.value = '';
+                this.updatePresetList();
+                alert(`Preset "${name}" сохранен`);
+            } else {
+                alert(result.error || 'Ошибка сохранения');
+            }
+        };
+
+        savePresetBtn.addEventListener('click', savePreset);
+        presetNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                savePreset();
+            }
         });
 
         // Удаление preset'а
         deletePresetBtn.addEventListener('click', () => {
-            if (this.currentPresetName === 'Default') {
-                alert('Cannot delete "Default" preset');
+            const presetName = presetSelect.value;
+            if (!presetName) {
+                alert('Выберите preset для удаления');
                 return;
             }
-            
-            // Показать полное название в модальном окне
-            if (confirm(`Delete preset "${this.currentPresetName}"?`)) {
-                if (this.presetManager.deletePreset(this.currentPresetName)) {
-                    // Переключиться на Default
-                    this.loadPreset('Default');
-                    presetDropdownText.textContent = 'Default';
-                    this.currentPresetName = 'Default';
-                    this.hasUnsavedChanges = false;
+
+            if (confirm(`Удалить preset "${presetName}"?`)) {
+                if (this.presetManager.deletePreset(presetName)) {
                     this.updatePresetList();
-                    this.updateSaveDeleteButtons();
-                    const defaultItem = Array.from(presetDropdownMenu.children).find(item => item.dataset.value === 'Default');
-                    if (defaultItem) {
-                        presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
-                        defaultItem.classList.add('selected');
-                    }
+                    alert(`Preset "${presetName}" удален`);
                 } else {
-                    alert('Error deleting preset');
+                    alert('Ошибка удаления');
                 }
             }
         });
-        
-        // Инициализировать видимость кнопок после загрузки Default
-        // Убедиться, что для Default без изменений кнопки скрыты
-        if (this.currentPresetName === 'Default') {
-            this.hasUnsavedChanges = false;
-        }
-        this.updateSaveDeleteButtons();
     }
 
     /**
-     * Обновить список preset'ов в дропдауне
+     * Обновить список preset'ов в select
      */
     updatePresetList() {
-        const presetDropdownMenu = document.getElementById('presetDropdownMenu');
+        const presetSelect = document.getElementById('presetSelect');
         const names = this.presetManager.getPresetNames();
-        const hasCustomPresets = names.length > 1; // Больше чем только Default
         
-        presetDropdownMenu.innerHTML = '';
+        presetSelect.innerHTML = '<option value="">Select preset</option>';
         names.forEach(name => {
-            const item = document.createElement('li');
-            item.className = 'preset-dropdown-item';
-            item.dataset.value = name;
-            // Отображать сокращенное имя, но хранить полное в dataset
-            const displayName = name === 'Default' ? 'Default' : this.getDisplayName(name);
-            item.textContent = displayName;
-            item.setAttribute('role', 'option');
-            if (name === this.currentPresetName) {
-                item.classList.add('selected');
-            }
-            presetDropdownMenu.appendChild(item);
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name;
+            presetSelect.appendChild(option);
         });
-        
-        // Добавить "× delete all" если есть кастомные пресеты
-        if (hasCustomPresets) {
-            const deleteAllItem = document.createElement('li');
-            deleteAllItem.className = 'preset-dropdown-item preset-dropdown-item-danger';
-            deleteAllItem.dataset.value = '__delete_all__';
-            deleteAllItem.textContent = '× delete all';
-            deleteAllItem.setAttribute('role', 'option');
-            presetDropdownMenu.appendChild(deleteAllItem);
-        }
     }
 
     /**
      * Загрузить preset
      */
-    loadPreset(name, updateUI = true) {
+    loadPreset(name) {
         const preset = this.presetManager.loadPreset(name);
         if (!preset) {
             alert('Preset не найден');
             return;
         }
-
-        // Установить флаг загрузки, чтобы не триггерить отслеживание изменений
-        this.isLoadingPreset = true;
-        
-        // Установить имя пресета ДО применения параметров, чтобы отслеживание знало текущий пресет
-        this.currentPresetName = name;
 
         // Применить все параметры из preset'а
         Object.keys(preset).forEach(key => {
@@ -825,22 +648,12 @@ class VoidTypeface {
                 this.settings.set(key, preset[key]);
             }
         });
+
+        // Обновить UI
+        this.updateUIFromSettings();
         
-        // Сбросить флаг изменений ДО снятия флага isLoadingPreset
-        this.hasUnsavedChanges = false;
-        
-        this.isLoadingPreset = false;
-        
-        if (updateUI) {
-            // Обновить UI
-            this.updateUIFromSettings();
-            
-            // Обновить renderer
-            this.updateRenderer();
-        }
-        
-        // Обновить кнопки после всех изменений
-        this.updateSaveDeleteButtons();
+        // Обновить renderer
+        this.updateRenderer();
     }
 
     /**
@@ -926,15 +739,8 @@ class VoidTypeface {
         }
 
         // Обновить текст
-        const text = this.settings.get('text');
-        document.getElementById('textInput').value = text;
-        this.renderer.setText(text);
-
-        // Обновить выравнивание текста
-        const textAlign = this.settings.get('textAlign') || 'center';
-        document.getElementById('textAlignLeft').checked = textAlign === 'left';
-        document.getElementById('textAlignCenter').checked = textAlign === 'center';
-        document.getElementById('textAlignRight').checked = textAlign === 'right';
+        document.getElementById('textInput').value = this.settings.get('text');
+        this.renderer.setText(this.settings.get('text'));
 
         // Обновить сетку
         document.getElementById('showGridCheckbox').checked = this.settings.get('showGrid');
@@ -997,7 +803,6 @@ class VoidTypeface {
             color: this.settings.get('letterColor'),
             bgColor: this.settings.get('bgColor'),
             gridColor: this.settings.get('gridColor'),
-            textAlign: this.settings.get('textAlign') || 'center',
             showGrid: this.settings.get('showGrid'),
             includeGridToExport: this.settings.get('includeGridToExport'),
             cornerRadius: moduleSize * (this.settings.get('cornerRadiusMultiplier') || 0),
@@ -1028,171 +833,6 @@ class VoidTypeface {
      */
     async copySVG() {
         await this.exporter.copySVG();
-    }
-
-    /**
-     * Сохранить текущий пресет с автогенерацией имени
-     */
-    saveCurrentPreset() {
-        const name = this.generatePresetName();
-        const result = this.presetManager.savePreset(name, this.settings.values);
-        if (result.success) {
-            this.updatePresetList();
-            const presetDropdownText = document.querySelector('.preset-dropdown-text');
-            const presetDropdownMenu = document.getElementById('presetDropdownMenu');
-            // Отображать сокращенное имя в дропдауне
-            const displayName = this.getDisplayName(name);
-            presetDropdownText.textContent = displayName;
-            this.currentPresetName = name;
-            this.hasUnsavedChanges = false;
-            this.updateSaveDeleteButtons();
-            const newItem = Array.from(presetDropdownMenu.children).find(item => item.dataset.value === name);
-            if (newItem) {
-                presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
-                newItem.classList.add('selected');
-            }
-        } else {
-            alert(result.error || 'Error saving preset');
-        }
-    }
-
-    /**
-     * Генерация имени пресета: полный текст + режим
-     * Если имя уже существует, добавляет порядковый номер
-     */
-    generatePresetName() {
-        const text = this.settings.get('text') || '';
-        const mode = this.settings.get('mode') || 'fill';
-        
-        // Полный текст (без пробелов и переносов строк)
-        const fullText = text.replace(/\s+/g, ' ').trim();
-        
-        // Название режима с заглавной буквы
-        const modeName = mode.charAt(0).toUpperCase() + mode.slice(1);
-        
-        let baseName = `${fullText} ${modeName}`;
-        const existingNames = this.presetManager.getPresetNames();
-        
-        // Если имя уже существует, добавляем порядковый номер
-        if (existingNames.includes(baseName)) {
-            let counter = 1;
-            let newName = `${baseName} ${counter}`;
-            while (existingNames.includes(newName)) {
-                counter++;
-                newName = `${baseName} ${counter}`;
-            }
-            return newName;
-        }
-        
-        return baseName;
-    }
-
-    /**
-     * Получить отображаемое имя пресета (максимум 24 символа суммарно, включая режим)
-     */
-    getDisplayName(fullName) {
-        const parts = fullName.split(' ');
-        if (parts.length < 2) {
-            // Если нет режима, просто обрезаем до 24 символов
-            return fullName.length > 24 ? fullName.substring(0, 21) + '...' : fullName;
-        }
-        
-        // Последняя часть - это режим
-        const mode = parts[parts.length - 1];
-        // Все остальное - это текст
-        const textPart = parts.slice(0, -1).join(' ');
-        
-        // Формат: "текст... режим" или "текст режим"
-        // Максимальная длина: 24 символа
-        
-        // Пробуем без многоточия
-        const withoutEllipsis = `${textPart} ${mode}`;
-        if (withoutEllipsis.length <= 24) {
-            return withoutEllipsis;
-        }
-        
-        // Нужно многоточие: "текст... режим"
-        // Длина: текст + "..." + " " + режим <= 24
-        // Максимальная длина текста: 24 - 3 - 1 - длина_режима
-        const maxTextLength = 24 - 3 - 1 - mode.length; // -3 для "...", -1 для пробела
-        
-        if (maxTextLength <= 0) {
-            // Если режим слишком длинный, просто возвращаем режим
-            return mode.length > 24 ? mode.substring(0, 21) + '...' : mode;
-        }
-        
-        const truncatedText = textPart.substring(0, maxTextLength) + '...';
-        const result = `${truncatedText} ${mode}`;
-        
-        // Финальная проверка: строго ограничиваем до 24 символов
-        if (result.length > 24) {
-            // Если все равно больше, жестко обрезаем до 24
-            const excess = result.length - 24;
-            const newTruncatedText = textPart.substring(0, Math.max(0, maxTextLength - excess));
-            return `${newTruncatedText}... ${mode}`;
-        }
-        
-        return result;
-    }
-
-    /**
-     * Настроить отслеживание изменений
-     */
-    setupChangeTracking() {
-        // Отслеживать изменения всех настроек
-        const originalSet = this.settings.set.bind(this.settings);
-        const self = this;
-        this.settings.set = function(key, value) {
-            const oldValue = self.settings.values[key];
-            const result = originalSet(key, value);
-            // Если это не загрузка пресета, не инициализация и значение действительно изменилось, отметить изменения
-            if (!self.isLoadingPreset && !self.isInitializing && self.currentPresetName && oldValue !== value) {
-                self.markAsChanged();
-            }
-            return result;
-        };
-        
-        // Отслеживать изменения текста через renderer
-        const originalSetText = this.renderer.setText.bind(this.renderer);
-        this.renderer.setText = (text) => {
-            originalSetText(text);
-            if (!this.isLoadingPreset && !this.isInitializing && this.currentPresetName) {
-                this.markAsChanged();
-            }
-        };
-    }
-
-    /**
-     * Отметить что были изменения
-     */
-    markAsChanged() {
-        // Не отслеживать изменения во время загрузки пресета или инициализации
-        if (!this.isLoadingPreset && !this.isInitializing) {
-            this.hasUnsavedChanges = true;
-            this.updateSaveDeleteButtons();
-        }
-    }
-
-    /**
-     * Обновить видимость кнопок Save и Delete
-     */
-    updateSaveDeleteButtons() {
-        const savePresetBtn = document.getElementById('savePresetBtn');
-        const deletePresetBtn = document.getElementById('deletePresetBtn');
-        const presetNames = this.presetManager.getPresetNames();
-        const hasCustomPresets = presetNames.length > 1; // Больше чем только Default
-        const isDefaultPreset = this.currentPresetName === 'Default';
-        const isDefaultWithoutChanges = isDefaultPreset && !this.hasUnsavedChanges;
-        
-        // Показывать Save если есть несохраненные изменения
-        if (savePresetBtn) {
-            savePresetBtn.style.display = this.hasUnsavedChanges ? 'inline-flex' : 'none';
-        }
-        
-        // Показывать Delete если есть кастомные пресеты И это не Default без изменений
-        if (deletePresetBtn) {
-            deletePresetBtn.style.display = (hasCustomPresets && !isDefaultWithoutChanges) ? 'inline-flex' : 'none';
-        }
     }
 }
 

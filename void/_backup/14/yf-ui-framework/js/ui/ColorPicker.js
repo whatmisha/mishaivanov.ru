@@ -1,36 +1,19 @@
 /**
  * ColorPicker - HSB Color Picker с управлением градиентами
- * 
- * Автономная версия - не требует внешних зависимостей кроме ColorUtils
  */
 import { ColorUtils } from '../utils/ColorUtils.js';
 
 export class ColorPicker {
-    /**
-     * @param {Object} options - Опции инициализации
-     * @param {string} options.containerId - ID контейнера для пикера
-     * @param {string} options.initialColor - Начальный цвет (HEX)
-     * @param {Function} options.onChange - Callback при изменении цвета
-     */
-    constructor(options = {}) {
-        this.options = {
-            containerId: 'colorPickerContainer',
-            initialColor: '#808080',
-            onChange: null,
-            ...options
-        };
-        
+    constructor(settings, callbacks = {}) {
+        this.settings = settings;
+        this.callbacks = callbacks; // { onChange: fn }
         this.isUpdating = false;
         
         // HSB значения
-        this.hsb = { h: 0, s: 0, b: 50 };
-        
-        // Уникальные ID для элементов
-        this.ids = {};
+        this.hsb = { h: 0, s: 0, b: 0 };
         
         // DOM элементы
         this.elements = {
-            container: null,
             picker: null,
             preview: null,
             hexInput: null,
@@ -47,86 +30,31 @@ export class ColorPicker {
      * Инициализация пикера
      */
     init() {
-        this.elements.container = document.getElementById(this.options.containerId);
+        this.elements.picker = document.getElementById('hsbPicker');
+        this.elements.preview = document.getElementById('colorPreview');
+        this.elements.hexInput = document.getElementById('hexColorInput');
+        this.elements.hueSlider = document.getElementById('hueSlider');
+        this.elements.saturationSlider = document.getElementById('saturationSlider');
+        this.elements.brightnessSlider = document.getElementById('brightnessSlider');
+        this.elements.hueValue = document.getElementById('hueValue');
+        this.elements.saturationValue = document.getElementById('saturationValue');
+        this.elements.brightnessValue = document.getElementById('brightnessValue');
+
+        // Проверка наличия элементов
+        const missingElements = Object.entries(this.elements)
+            .filter(([key, value]) => !value)
+            .map(([key]) => key);
         
-        if (!this.elements.container) {
-            console.error(`ColorPicker: Container #${this.options.containerId} not found`);
-            return;
+        if (missingElements.length > 0) {
+            console.warn(`ColorPicker: Missing elements: ${missingElements.join(', ')}`);
         }
-
-        // Генерируем уникальные ID для слайдеров и значений
-        const uniqueId = this.options.containerId.replace(/[^a-zA-Z0-9]/g, '');
-        this.ids = {
-            hueSlider: `hueSlider_${uniqueId}`,
-            saturationSlider: `saturationSlider_${uniqueId}`,
-            brightnessSlider: `brightnessSlider_${uniqueId}`,
-            hueValue: `hueValue_${uniqueId}`,
-            saturationValue: `saturationValue_${uniqueId}`,
-            brightnessValue: `brightnessValue_${uniqueId}`
-        };
-
-        // Создаем HTML структуру
-        this.createHTML();
-        
-        // Получаем ссылки на элементы
-        this.elements.picker = this.elements.container.querySelector('.hsb-picker');
-        this.elements.preview = this.elements.container.querySelector('.color-preview');
-        this.elements.hexInput = this.elements.container.querySelector('.hex-color-input');
-        this.elements.hueSlider = document.getElementById(this.ids.hueSlider);
-        this.elements.saturationSlider = document.getElementById(this.ids.saturationSlider);
-        this.elements.brightnessSlider = document.getElementById(this.ids.brightnessSlider);
-        this.elements.hueValue = document.getElementById(this.ids.hueValue);
-        this.elements.saturationValue = document.getElementById(this.ids.saturationValue);
-        this.elements.brightnessValue = document.getElementById(this.ids.brightnessValue);
 
         // Обработчики событий
         this.initEventListeners();
         
-        // Инициализация с начальным цветом
-        this.setColorFromHex(this.options.initialColor);
-    }
-
-    /**
-     * Создание HTML структуры пикера
-     */
-    createHTML() {
-        this.elements.container.innerHTML = `
-            <div class="color-picker-wrapper">
-                <div class="color-input-group">
-                    <button type="button" class="color-preview" aria-label="Open color picker"></button>
-                    <input type="text" class="hex-color-input" value="#808080" placeholder="#808080" maxlength="7" aria-label="Hex color code input">
-                </div>
-                
-                <!-- Custom HSB Color Picker -->
-                <div class="hsb-picker" style="display: none;">
-                    <div class="hsb-controls">
-                        <div class="hsb-control-group">
-                            <label for="${this.ids.hueSlider}">
-                                <span>Hue</span>
-                                <input type="text" class="value-display hsb-value" id="${this.ids.hueValue}" value="0°" readonly>
-                            </label>
-                            <input type="range" id="${this.ids.hueSlider}" min="0" max="360" step="1" value="0">
-                        </div>
-                        
-                        <div class="hsb-control-group">
-                            <label for="${this.ids.saturationSlider}">
-                                <span>Saturation</span>
-                                <input type="text" class="value-display hsb-value" id="${this.ids.saturationValue}" value="0%" readonly>
-                            </label>
-                            <input type="range" id="${this.ids.saturationSlider}" min="0" max="100" step="1" value="0">
-                        </div>
-                        
-                        <div class="hsb-control-group">
-                            <label for="${this.ids.brightnessSlider}">
-                                <span>Brightness</span>
-                                <input type="text" class="value-display hsb-value" id="${this.ids.brightnessValue}" value="50%" readonly>
-                            </label>
-                            <input type="range" id="${this.ids.brightnessSlider}" min="0" max="100" step="1" value="50">
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
+        // Инициализация с текущим цветом
+        const currentColor = this.settings.get('boxColor') || '#dadde6';
+        this.setColorFromHex(currentColor);
     }
 
     /**
@@ -166,6 +94,15 @@ export class ColorPicker {
                 this.updateFromHSB();
             });
         }
+
+        // Закрытие пикера при клике вне его
+        document.addEventListener('click', (e) => {
+            if (this.isOpen() && 
+                !this.elements.picker.contains(e.target) && 
+                !this.elements.preview.contains(e.target)) {
+                this.close();
+            }
+        });
     }
 
     /**
@@ -202,9 +139,12 @@ export class ColorPicker {
         // Обновление UI
         this.updateUI();
         
+        // Обновление настроек
+        this.settings.set('boxColor', hex);
+        
         // Вызов коллбэка
-        if (this.options.onChange) {
-            this.options.onChange(hex);
+        if (this.callbacks.onChange) {
+            this.callbacks.onChange(hex);
         }
 
         this.isUpdating = false;
@@ -224,9 +164,12 @@ export class ColorPicker {
         // Обновление UI
         this.updateUI();
         
+        // Обновление настроек
+        this.settings.set('boxColor', hex);
+        
         // Вызов коллбэка
-        if (this.options.onChange) {
-            this.options.onChange(hex);
+        if (this.callbacks.onChange) {
+            this.callbacks.onChange(hex);
         }
 
         this.isUpdating = false;
@@ -352,9 +295,10 @@ export class ColorPicker {
     }
 
     /**
-     * Установка цвета
+     * Установка пресет цвета (например, Lunnen Blue)
      */
-    setColor(hex) {
+    setPresetColor(hex) {
         this.setColorFromHex(hex);
     }
 }
+

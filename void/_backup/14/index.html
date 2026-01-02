@@ -11,25 +11,6 @@
         <!-- Top Navigation -->
         <div class="top-links">
             <a href="https://mishaivanov.com/void" class="top-link">← About Void</a>
-            
-            <!-- Preset Dropdown -->
-            <div class="preset-dropdown" id="presetDropdown">
-                <button class="preset-dropdown-toggle" id="presetDropdownToggle" type="button" aria-haspopup="listbox" aria-expanded="false">
-                    <span class="preset-dropdown-text">Default</span>
-                    <svg class="preset-dropdown-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
-                <ul class="preset-dropdown-menu" id="presetDropdownMenu" role="listbox">
-                    <!-- Пресеты будут добавлены динамически -->
-                </ul>
-            </div>
-
-            <!-- Save Preset Button -->
-            <button class="top-link" id="savePresetBtn" type="button" style="display: none;">Save</button>
-
-            <!-- Delete Preset Button -->
-            <button class="top-link btn-danger" id="deletePresetBtn" type="button" style="display: none;">Delete</button>
         </div>
 
         <div class="main-content">
@@ -204,26 +185,14 @@
                     </span>
                 </div>
                 <div class="panel-content">
-                    <!-- Letter Color -->
-                    <div class="control-group">
-                        <label>Letter Color</label>
-                        <div id="letterColorPickerContainer"></div>
-                    </div>
-
-                    <!-- Background Color -->
-                    <div class="control-group">
-                        <label>Background</label>
-                        <div id="bgColorPickerContainer"></div>
-                    </div>
-
                     <!-- Grid Color -->
-                    <div class="control-group" style="margin-top: var(--spacing-2xl);">
+                    <div class="control-group">
                         <label>Grid Color</label>
                         <div id="gridColorPickerContainer"></div>
                     </div>
 
                     <!-- Show Grid Toggle -->
-                    <div class="control-group">
+                    <div class="control-group" style="margin-top: var(--spacing-2xl);">
                         <label class="checkbox-label" for="showGridCheckbox">
                             <input type="checkbox" id="showGridCheckbox" checked>
                             <span>Show Grid</span>
@@ -236,6 +205,18 @@
                             <input type="checkbox" id="includeGridToExportCheckbox">
                             <span>Include to export</span>
                         </label>
+                    </div>
+
+                    <!-- Letter Color -->
+                    <div class="control-group" style="margin-top: var(--spacing-2xl);">
+                        <label>Letter Color</label>
+                        <div id="letterColorPickerContainer"></div>
+                    </div>
+
+                    <!-- Background Color -->
+                    <div class="control-group">
+                        <label>Background</label>
+                        <div id="bgColorPickerContainer"></div>
                     </div>
 
                 </div>
@@ -256,24 +237,32 @@
                         <div class="control-group">
                             <textarea id="textInput" rows="3" placeholder="Type your text here...">Void
 Typeface
-coded</textarea>
+2k26</textarea>
                         </div>
                     </section>
 
                     <section class="control-section">
-                        <!-- Text Alignment Toggle -->
-                        <fieldset>
-                            <div class="segmented-control segmented-control-compact">
-                                <input type="radio" name="textAlign" value="left" id="textAlignLeft">
-                                <label for="textAlignLeft">Left</label>
-                                
-                                <input type="radio" name="textAlign" value="center" id="textAlignCenter" checked>
-                                <label for="textAlignCenter">Center</label>
-                                
-                                <input type="radio" name="textAlign" value="right" id="textAlignRight">
-                                <label for="textAlignRight">Right</label>
+                        <!-- Preset Select -->
+                        <div class="control-group">
+                            <label for="presetSelect">Load Preset</label>
+                            <select id="presetSelect" class="select-input">
+                                <option value="">Select preset</option>
+                            </select>
+                        </div>
+
+                        <!-- Save Preset -->
+                        <div class="control-group">
+                            <label for="presetNameInput">Preset Name</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" id="presetNameInput" class="text-input" placeholder="Enter name..." style="flex: 1;">
+                                <button type="button" class="btn-secondary" id="savePresetBtn" style="white-space: nowrap;">Save</button>
                             </div>
-                        </fieldset>
+                        </div>
+
+                        <!-- Delete Preset -->
+                        <div class="control-group">
+                            <button type="button" class="btn-secondary btn-danger" id="deletePresetBtn" style="width: 100%;">Delete Selected</button>
+                        </div>
                     </section>
                 </div>
             </aside>

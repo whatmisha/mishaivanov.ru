@@ -151,25 +151,6 @@ body {
     color: var(--color-text);
 }
 
-/* Кнопки Save и Delete preset */
-#savePresetBtn,
-#deletePresetBtn {
-    background: var(--color-bg-panel);
-    color: var(--color-text);
-    border: none;
-    border-radius: var(--radius-button);
-}
-
-#savePresetBtn:hover {
-    background-color: #2a2a2a;
-}
-
-#deletePresetBtn:hover {
-    background: #ff4444;
-    color: #ffffff;
-    border-color: #ff4444;
-}
-
 /* Main Content Area */
 .main-content {
     display: flex;
@@ -1723,18 +1704,6 @@ legend {
     background: rgba(255, 255, 255, 0.12);
     color: var(--color-text);
     font-weight: 600;
-}
-
-.preset-dropdown-item-danger {
-    color: var(--color-text-muted);
-    border-top: 1px solid var(--color-border);
-    margin-top: var(--spacing-sm);
-    padding-top: var(--spacing-md);
-}
-
-.preset-dropdown-item-danger:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: var(--color-text);
 }
 
 /* ============================================

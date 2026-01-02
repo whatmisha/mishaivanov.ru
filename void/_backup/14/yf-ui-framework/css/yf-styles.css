@@ -1,7 +1,7 @@
 /**
- * UI Framework - Стили
+ * YF Tools UI Framework - Стили
  * 
- * Универсальная библиотека стилей для создания веб-инструментов.
+ * Универсальная библиотека стилей для создания инструментов YF Tools.
  * Включает все UI компоненты: панели, слайдеры, кнопки, дропдауны, модалки и т.д.
  * 
  * Структура файла:
@@ -128,8 +128,8 @@ body {
     align-items: center;
 }
 
-/* Top Link - кнопка возврата */
-.top-link {
+/* YF Tools Link - кнопка возврата */
+.yf-tools-link {
     padding: var(--spacing-md) var(--spacing-2xl);
     background: var(--color-text);
     color: var(--color-bg);
@@ -146,28 +146,9 @@ body {
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.7);
 }
 
-.top-link:hover {
+.yf-tools-link:hover {
     background: var(--color-bg);
     color: var(--color-text);
-}
-
-/* Кнопки Save и Delete preset */
-#savePresetBtn,
-#deletePresetBtn {
-    background: var(--color-bg-panel);
-    color: var(--color-text);
-    border: none;
-    border-radius: var(--radius-button);
-}
-
-#savePresetBtn:hover {
-    background-color: #2a2a2a;
-}
-
-#deletePresetBtn:hover {
-    background: #ff4444;
-    color: #ffffff;
-    border-color: #ff4444;
 }
 
 /* Main Content Area */
@@ -230,14 +211,6 @@ body {
 .controls-panel-text {
     left: var(--spacing-3xl);
     right: auto;
-    top: auto;
-    bottom: var(--spacing-3xl);
-}
-
-/* Панель Presets (справа внизу) */
-.controls-panel-presets {
-    right: var(--spacing-3xl);
-    left: auto;
     top: auto;
     bottom: var(--spacing-3xl);
 }
@@ -635,83 +608,6 @@ body {
     box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-text);
 }
 
-/* Disabled State для слайдеров */
-.control-group input[type="range"]:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-.control-group input[type="range"]:disabled::-webkit-slider-thumb {
-    background: var(--color-text-muted);
-    cursor: not-allowed;
-    transform: none;
-}
-
-.control-group input[type="range"]:disabled::-moz-range-thumb {
-    background: var(--color-text-muted);
-    cursor: not-allowed;
-    transform: none;
-}
-
-.control-group input[type="range"]:disabled::-webkit-slider-runnable-track {
-    background: var(--color-text-subtle);
-}
-
-.control-group input[type="range"]:disabled::-moz-range-track {
-    background: var(--color-text-subtle);
-}
-
-/* Range Slider - слайдер с двумя ручками */
-.range-slider-container {
-    width: 100%;
-    margin-top: calc(var(--spacing-md) - 2px);
-    position: relative;
-    height: 10px;
-}
-
-.range-slider-track {
-    position: relative;
-    width: 100%;
-    height: 1px;
-    background: var(--color-border);
-    border-radius: var(--radius);
-    margin-top: 4.5px;
-}
-
-.range-slider-active {
-    position: absolute;
-    height: 1px;
-    background: var(--color-text);
-    border-radius: var(--radius);
-    top: 0;
-    pointer-events: none;
-}
-
-.range-slider-thumb {
-    position: absolute;
-    width: var(--slider-thumb-size);
-    height: var(--slider-thumb-size);
-    background: var(--color-text);
-    border-radius: 50%;
-    cursor: grab;
-    top: calc((1px - var(--slider-thumb-size)) / 2);
-    transform: translateX(-50%);
-    transition: transform var(--transition-fast);
-    outline: none;
-}
-
-.range-slider-thumb:hover {
-    transform: translateX(-50%) scale(1.25);
-}
-
-.range-slider-thumb:focus {
-    box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-text);
-}
-
-.range-slider-thumb:active {
-    cursor: grabbing;
-}
-
 /* ============================================
    7. TEXT INPUTS & VALUE DISPLAYS
    ============================================ */
@@ -731,6 +627,7 @@ body {
 
 .value-display {
     display: inline-block;
+    min-width: 40px;
     text-align: right;
     font-weight: 400;
     color: var(--color-text-muted);
@@ -739,24 +636,13 @@ body {
     border: none;
     outline: none;
     padding: 0;
+    padding-right: 4px;
     cursor: text;
     font-family: inherit;
 }
 
 .value-display:focus {
     color: var(--color-text);
-}
-
-.value-display:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    color: var(--color-text-muted);
-}
-
-/* Визуальное выделение неактивной control-group */
-.control-group:has(input[type="range"]:disabled) label span:first-child {
-    opacity: 0.5;
-    color: var(--color-text-muted);
 }
 
 /* Unit Buttons - переключатели единиц измерения (mod/mm, mod/pt) */
@@ -853,10 +739,6 @@ body {
     margin-top: var(--spacing-md);
 }
 
-.color-picker-wrapper {
-    width: 100%;
-}
-
 .control-group .color-input-group {
     gap: var(--spacing-md);
 }
@@ -885,8 +767,7 @@ body {
 }
 
 /* HEX Input */
-.control-group input[type="text"]#hexColorInput,
-.hex-color-input {
+.control-group input[type="text"]#hexColorInput {
     flex: 1;
     height: 30px;
     background: var(--color-bg-input);
@@ -896,12 +777,6 @@ body {
     font-size: 0.9rem;
     padding: 0 var(--spacing-md);
     border-radius: var(--radius-input);
-    transition: border-color var(--transition-normal);
-}
-
-.hex-color-input:focus {
-    outline: none;
-    border-color: var(--color-text-subtle);
 }
 
 /* HSB Picker - выпадающий HSB пикер */
@@ -946,10 +821,6 @@ body {
     font-size: 0.85rem;
 }
 
-.hsb-control-group label > span {
-    flex: 1;
-}
-
 .hsb-value {
     display: inline-block;
     min-width: 40px;
@@ -982,25 +853,24 @@ body {
     margin-top: calc(var(--spacing-md) - 2px);
     cursor: pointer;
     position: relative;
-    background: transparent;
 }
 
 .hsb-control-group input[type="range"]::-webkit-slider-thumb {
     appearance: none;
     -webkit-appearance: none;
-    width: 12px;
-    height: 12px;
+    width: var(--slider-thumb-size);
+    height: var(--slider-thumb-size);
     border-radius: 50%;
     background: var(--color-text);
     cursor: pointer;
     border: none;
     transition: all var(--transition-fast);
-    margin-top: calc((1px - 12px) / 2);
+    margin-top: calc((1px - var(--slider-thumb-size)) / 2);
 }
 
 .hsb-control-group input[type="range"]::-moz-range-thumb {
-    width: 12px;
-    height: 12px;
+    width: var(--slider-thumb-size);
+    height: var(--slider-thumb-size);
     border-radius: 50%;
     background: var(--color-text);
     cursor: pointer;
@@ -1021,7 +891,6 @@ body {
 .hsb-control-group input[type="range"]::-webkit-slider-runnable-track {
     width: 100%;
     height: 1px;
-    background: transparent;
     border: none;
     border-radius: var(--radius);
 }
@@ -1029,7 +898,6 @@ body {
 .hsb-control-group input[type="range"]::-moz-range-track {
     width: 100%;
     height: 1px;
-    background: transparent;
     border: none;
     border-radius: var(--radius);
 }
@@ -1046,7 +914,50 @@ body {
     box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-text);
 }
 
-/* Color Gradients для HSB слайдеров - устанавливаются динамически через JS в ColorPicker.updateGradients() */
+/* Color Gradients для HSB слайдеров - устанавливаются динамически через JS */
+#hueSlider {
+    background: linear-gradient(to right, 
+        #ff0000 0%, 
+        #ffff00 17%, 
+        #00ff00 33%, 
+        #00ffff 50%, 
+        #0000ff 67%, 
+        #ff00ff 83%, 
+        #ff0000 100%
+    ) !important;
+}
+
+#hueSlider::-webkit-slider-runnable-track {
+    background: linear-gradient(to right, 
+        #ff0000 0%, 
+        #ffff00 17%, 
+        #00ff00 33%, 
+        #00ffff 50%, 
+        #0000ff 67%, 
+        #ff00ff 83%, 
+        #ff0000 100%
+    );
+}
+
+#hueSlider::-moz-range-track {
+    background: linear-gradient(to right, 
+        #ff0000 0%, 
+        #ffff00 17%, 
+        #00ff00 33%, 
+        #00ffff 50%, 
+        #0000ff 67%, 
+        #ff00ff 83%, 
+        #ff0000 100%
+    );
+}
+
+#saturationSlider {
+    background: linear-gradient(to right, #808080, #ff0000);
+}
+
+#brightnessSlider {
+    background: linear-gradient(to right, #000000, #ffffff);
+}
 
 /* Color Preset Button */
 .color-preset {
@@ -1725,18 +1636,6 @@ legend {
     font-weight: 600;
 }
 
-.preset-dropdown-item-danger {
-    color: var(--color-text-muted);
-    border-top: 1px solid var(--color-border);
-    margin-top: var(--spacing-sm);
-    padding-top: var(--spacing-md);
-}
-
-.preset-dropdown-item-danger:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: var(--color-text);
-}
-
 /* ============================================
    14. TEXTAREA
    ============================================ */
@@ -1776,70 +1675,6 @@ textarea::placeholder {
 .char-counter {
     font-size: 0.75rem;
     font-weight: normal;
-}
-
-/* Text Input - обычное текстовое поле */
-.text-input {
-    width: 100%;
-    background: var(--color-bg-input);
-    border: 1px solid var(--color-border);
-    color: var(--color-text);
-    font-family: inherit;
-    font-size: 0.85rem;
-    padding: var(--spacing-md);
-    border-radius: var(--radius-input);
-    transition: border-color var(--transition-fast);
-}
-
-.text-input:focus {
-    outline: none;
-    border-color: var(--color-text-dim);
-}
-
-.text-input::placeholder {
-    color: var(--color-text-muted);
-}
-
-/* Select Input - выпадающий список */
-.select-input {
-    width: 100%;
-    background: var(--color-bg-input);
-    border: 1px solid var(--color-border);
-    color: var(--color-text);
-    font-family: inherit;
-    font-size: 0.85rem;
-    padding: var(--spacing-md);
-    border-radius: var(--radius-input);
-    cursor: pointer;
-    transition: border-color var(--transition-fast);
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L5 5L9 1' stroke='%23ffffff' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right var(--spacing-md) center;
-    padding-right: calc(var(--spacing-md) * 2 + 10px);
-}
-
-.select-input:focus {
-    outline: none;
-    border-color: var(--color-text-dim);
-}
-
-.select-input:hover {
-    border-color: var(--color-text-dim);
-}
-
-/* Button Danger - кнопка удаления */
-.btn-danger {
-    background: var(--color-bg);
-    color: var(--color-text-secondary);
-    border: none;
-}
-
-.btn-danger:hover:not(:disabled) {
-    background: rgba(255, 0, 0, 0.2);
-    color: #ff8888;
-}
     color: var(--color-text-dim);
     white-space: nowrap;
     letter-spacing: 0;
@@ -1970,7 +1805,21 @@ textarea::placeholder {
     display: flex;
     gap: var(--spacing-lg);
     align-items: center;
+    justify-content: center;
     z-index: 10000;
+}
+
+.export-group-right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    flex-wrap: nowrap;
+    flex-shrink: 0;
+}
+
+.export-group-right .toggle-label {
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 /* Toggle Label для "Outline fonts" и подобных */
@@ -2328,26 +2177,6 @@ textarea::placeholder {
 
 #linkedControlsContainer .control-group:last-child {
     margin-bottom: 0;
-}
-
-/* ============================================
-   21. CANVAS STYLES (Void Typeface)
-   ============================================ */
-
-#mainCanvas {
-    display: block;
-    width: 100%;
-    height: 100%;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: -webkit-crisp-edges;
-    image-rendering: pixelated;
-    image-rendering: crisp-edges;
-}
-
-.canvas-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
 }
 
 /* ============================================

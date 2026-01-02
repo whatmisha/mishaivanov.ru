@@ -25,7 +25,6 @@ export class VoidRenderer {
             bgColor: '#000000',    // цвет фона
             gridColor: '#333333',  // цвет сетки
             showGrid: true,        // показать сетку
-            textAlign: 'center',   // выравнивание текста: 'left', 'center', 'right'
             cornerRadius: 0        // радиус скругления углов
         };
         
@@ -157,104 +156,28 @@ export class VoidRenderer {
         const letterW = this.cols * this.params.moduleSize;
         const letterH = this.rows * this.params.moduleSize;
         
-        // Вычислить общие размеры блока текста с учетом разной ширины пробела
-        let totalWidth = 0;
-        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-            const line = lines[lineIndex];
-            let lineWidth = 0;
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                // Двойной пробел (и более) имеет ширину 5 модулей (3+2) без letter spacing между пробелами
-                let charWidth;
-                let addSpacing = true;
-                if (char === ' ') {
-                    // Если предыдущий символ тоже пробел, то этот пробел = 2 модуля и БЕЗ letter spacing перед ним
-                    if (i > 0 && line[i - 1] === ' ') {
-                        charWidth = 2 * this.params.moduleSize;
-                        addSpacing = false; // Не добавляем spacing между пробелами
-                    } else {
-                        charWidth = 3 * this.params.moduleSize;
-                    }
-                } else {
-                    charWidth = letterW;
-                }
-                lineWidth += charWidth + (addSpacing ? this.params.letterSpacing : 0);
-            }
-            // Убрать последний отступ (если последний символ не пробел после пробела)
-            if (line.length > 0 && !(line[line.length - 1] === ' ' && line.length > 1 && line[line.length - 2] === ' ')) {
-                lineWidth -= this.params.letterSpacing;
-            }
-            totalWidth = Math.max(totalWidth, lineWidth);
-        }
+        // Вычислить общие размеры блока текста
+        const maxLineLength = Math.max(...lines.map(line => line.length));
+        const totalWidth = maxLineLength * (letterW + this.params.letterSpacing) - this.params.letterSpacing;
         const totalHeight = lines.length * (letterH + this.params.lineHeight) - this.params.lineHeight;
         
-        // Начальная позиция по вертикали (центрирование)
+        // Начальная позиция (центрирование)
+        const startX = (canvasW - totalWidth) / 2;
         const startY = (canvasH - totalHeight) / 2;
-        
-        // Выравнивание текста
-        const textAlign = this.params.textAlign || 'center';
         
         // Отрисовать каждую строку
         for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
             const line = lines[lineIndex];
-            // Вычислить ширину строки с учетом разной ширины пробела
-            let lineWidth = 0;
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                // Двойной пробел (и более) имеет ширину 5 модулей (3+2) без letter spacing между пробелами
-                let charWidth;
-                let addSpacing = true;
-                if (char === ' ') {
-                    // Если предыдущий символ тоже пробел, то этот пробел = 2 модуля и БЕЗ letter spacing перед ним
-                    if (i > 0 && line[i - 1] === ' ') {
-                        charWidth = 2 * this.params.moduleSize;
-                        addSpacing = false; // Не добавляем spacing между пробелами
-                    } else {
-                        charWidth = 3 * this.params.moduleSize;
-                    }
-                } else {
-                    charWidth = letterW;
-                }
-                lineWidth += charWidth + (addSpacing ? this.params.letterSpacing : 0);
-            }
-            // Убрать последний отступ (если последний символ не пробел после пробела)
-            if (line.length > 0 && !(line[line.length - 1] === ' ' && line.length > 1 && line[line.length - 2] === ' ')) {
-                lineWidth -= this.params.letterSpacing;
-            }
-            
-            // Вычислить позицию строки в зависимости от выравнивания
-            let lineX;
-            if (textAlign === 'left') {
-                lineX = (canvasW - totalWidth) / 2;
-            } else if (textAlign === 'right') {
-                lineX = (canvasW + totalWidth) / 2 - lineWidth;
-            } else { // center
-                lineX = (canvasW - lineWidth) / 2;
-            }
-            
+            const lineWidth = line.length * (letterW + this.params.letterSpacing) - this.params.letterSpacing;
+            const lineX = (canvasW - lineWidth) / 2; // центрировать каждую строку
             const lineY = startY + lineIndex * (letterH + this.params.lineHeight);
             
             // Отрисовать каждую букву в строке
-            let currentX = lineX;
             for (let charIndex = 0; charIndex < line.length; charIndex++) {
                 const char = line[charIndex];
-                // Двойной пробел (и более) имеет ширину 5 модулей (3+2) без letter spacing между пробелами
-                let charWidth;
-                let addSpacing = true;
-                if (char === ' ') {
-                    // Если предыдущий символ тоже пробел, то этот пробел = 2 модуля и БЕЗ letter spacing перед ним
-                    if (charIndex > 0 && line[charIndex - 1] === ' ') {
-                        charWidth = 2 * this.params.moduleSize;
-                        addSpacing = false; // Не добавляем spacing между пробелами
-                    } else {
-                        charWidth = 3 * this.params.moduleSize;
-                    }
-                } else {
-                    charWidth = letterW;
-                }
+                const x = lineX + charIndex * (letterW + this.params.letterSpacing);
                 
-                this.drawLetter(char, currentX, lineY, lineIndex, charIndex);
-                currentX += charWidth + (addSpacing ? this.params.letterSpacing : 0);
+                this.drawLetter(char, x, lineY, lineIndex, charIndex);
             }
         }
     }
@@ -313,13 +236,11 @@ export class VoidRenderer {
         const glyphCode = getGlyph(char);
         const moduleW = this.params.moduleSize;
         const moduleH = this.params.moduleSize;
-        // Пробел имеет ширину 3 модуля вместо 5
-        const letterCols = char === ' ' ? 3 : this.cols;
-        const letterW = letterCols * moduleW;
+        const letterW = this.cols * moduleW;
         const letterH = this.rows * moduleH;
         
-        // Отрисовать каждый модуль в сетке 5×5 (или 3×5 для пробела)
-        for (let i = 0; i < letterCols; i++) {
+        // Отрисовать каждый модуль в сетке 5×5
+        for (let i = 0; i < this.cols; i++) {
             for (let j = 0; j < this.rows; j++) {
                 const index = (i + j * this.cols) * 2;
                 const moduleType = glyphCode.charAt(index);

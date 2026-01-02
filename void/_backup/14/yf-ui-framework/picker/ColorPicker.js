@@ -3,7 +3,7 @@
  * 
  * Автономная версия - не требует внешних зависимостей кроме ColorUtils
  */
-import { ColorUtils } from '../utils/ColorUtils.js';
+import { ColorUtils } from './ColorUtils.js';
 
 export class ColorPicker {
     /**
@@ -24,9 +24,6 @@ export class ColorPicker {
         
         // HSB значения
         this.hsb = { h: 0, s: 0, b: 50 };
-        
-        // Уникальные ID для элементов
-        this.ids = {};
         
         // DOM элементы
         this.elements = {
@@ -54,17 +51,6 @@ export class ColorPicker {
             return;
         }
 
-        // Генерируем уникальные ID для слайдеров и значений
-        const uniqueId = this.options.containerId.replace(/[^a-zA-Z0-9]/g, '');
-        this.ids = {
-            hueSlider: `hueSlider_${uniqueId}`,
-            saturationSlider: `saturationSlider_${uniqueId}`,
-            brightnessSlider: `brightnessSlider_${uniqueId}`,
-            hueValue: `hueValue_${uniqueId}`,
-            saturationValue: `saturationValue_${uniqueId}`,
-            brightnessValue: `brightnessValue_${uniqueId}`
-        };
-
         // Создаем HTML структуру
         this.createHTML();
         
@@ -72,12 +58,12 @@ export class ColorPicker {
         this.elements.picker = this.elements.container.querySelector('.hsb-picker');
         this.elements.preview = this.elements.container.querySelector('.color-preview');
         this.elements.hexInput = this.elements.container.querySelector('.hex-color-input');
-        this.elements.hueSlider = document.getElementById(this.ids.hueSlider);
-        this.elements.saturationSlider = document.getElementById(this.ids.saturationSlider);
-        this.elements.brightnessSlider = document.getElementById(this.ids.brightnessSlider);
-        this.elements.hueValue = document.getElementById(this.ids.hueValue);
-        this.elements.saturationValue = document.getElementById(this.ids.saturationValue);
-        this.elements.brightnessValue = document.getElementById(this.ids.brightnessValue);
+        this.elements.hueSlider = this.elements.container.querySelector('#hueSlider');
+        this.elements.saturationSlider = this.elements.container.querySelector('#saturationSlider');
+        this.elements.brightnessSlider = this.elements.container.querySelector('#brightnessSlider');
+        this.elements.hueValue = this.elements.container.querySelector('#hueValue');
+        this.elements.saturationValue = this.elements.container.querySelector('#saturationValue');
+        this.elements.brightnessValue = this.elements.container.querySelector('#brightnessValue');
 
         // Обработчики событий
         this.initEventListeners();
@@ -101,27 +87,27 @@ export class ColorPicker {
                 <div class="hsb-picker" style="display: none;">
                     <div class="hsb-controls">
                         <div class="hsb-control-group">
-                            <label for="${this.ids.hueSlider}">
+                            <label for="hueSlider">
                                 <span>Hue</span>
-                                <input type="text" class="value-display hsb-value" id="${this.ids.hueValue}" value="0°" readonly>
+                                <input type="text" class="value-display hsb-value" id="hueValue" value="0°" readonly>
                             </label>
-                            <input type="range" id="${this.ids.hueSlider}" min="0" max="360" step="1" value="0">
+                            <input type="range" id="hueSlider" min="0" max="360" step="1" value="0">
                         </div>
                         
                         <div class="hsb-control-group">
-                            <label for="${this.ids.saturationSlider}">
+                            <label for="saturationSlider">
                                 <span>Saturation</span>
-                                <input type="text" class="value-display hsb-value" id="${this.ids.saturationValue}" value="0%" readonly>
+                                <input type="text" class="value-display hsb-value" id="saturationValue" value="0%" readonly>
                             </label>
-                            <input type="range" id="${this.ids.saturationSlider}" min="0" max="100" step="1" value="0">
+                            <input type="range" id="saturationSlider" min="0" max="100" step="1" value="0">
                         </div>
                         
                         <div class="hsb-control-group">
-                            <label for="${this.ids.brightnessSlider}">
+                            <label for="brightnessSlider">
                                 <span>Brightness</span>
-                                <input type="text" class="value-display hsb-value" id="${this.ids.brightnessValue}" value="50%" readonly>
+                                <input type="text" class="value-display hsb-value" id="brightnessValue" value="50%" readonly>
                             </label>
-                            <input type="range" id="${this.ids.brightnessSlider}" min="0" max="100" step="1" value="50">
+                            <input type="range" id="brightnessSlider" min="0" max="100" step="1" value="50">
                         </div>
                     </div>
                 </div>
@@ -166,6 +152,16 @@ export class ColorPicker {
                 this.updateFromHSB();
             });
         }
+
+        // Закрытие пикера при клике вне его
+        document.addEventListener('click', (e) => {
+            if (this.isOpen() && 
+                !this.elements.picker.contains(e.target) && 
+                !this.elements.preview.contains(e.target) &&
+                !this.elements.hexInput.contains(e.target)) {
+                this.close();
+            }
+        });
     }
 
     /**
@@ -358,3 +354,4 @@ export class ColorPicker {
         this.setColorFromHex(hex);
     }
 }
+
