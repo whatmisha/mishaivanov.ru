@@ -151,6 +151,30 @@ body {
     color: var(--color-text);
 }
 
+/* Mobile Message */
+.mobile-message {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg);
+    z-index: 10000;
+}
+
+.mobile-message-text {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-size: clamp(24px, 8vw, 64px);
+    font-weight: 600;
+    color: var(--color-text);
+    text-align: center;
+    line-height: 1.2;
+    letter-spacing: 0.05em;
+}
+
 /* Кнопки Save и Delete preset */
 #savePresetBtn,
 #deletePresetBtn {

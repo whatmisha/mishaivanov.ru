@@ -50,39 +50,118 @@ class VoidTypeface {
         this.letterColorPicker = null;
         this.bgColorPicker = null;
 
+        // Проверка на мобильное устройство
+        this.isMobile = this.checkIsMobile();
+        
         // Инициализация компонентов
         this.initCanvas();
         this.initExporter();
         this.initPresetManager();
-        this.initPanels();
-        this.initSliders();
-        this.initRangeSliders();
-        this.initColorPickers();
-        this.initTextInput();
-        this.initTextAlign();
-        this.initModeToggle();
-        this.initGridToggle();
         
-        // Отслеживание изменений для показа кнопки Save
-        this.hasUnsavedChanges = false;
-        this.currentPresetName = 'Default';
-        this.isLoadingPreset = false;
-        this.isInitializing = true; // Флаг инициализации
+        if (this.isMobile) {
+            // На мобильных устройствах скрываем панели и показываем сообщение
+            this.initMobileView();
+        } else {
+            // На десктопе инициализируем все как обычно
+            this.initPanels();
+            this.initSliders();
+            this.initRangeSliders();
+            this.initColorPickers();
+            this.initTextInput();
+            this.initTextAlign();
+            this.initModeToggle();
+            this.initGridToggle();
+            
+            // Отслеживание изменений для показа кнопки Save
+            this.hasUnsavedChanges = false;
+            this.currentPresetName = 'Default';
+            this.isLoadingPreset = false;
+            this.isInitializing = true; // Флаг инициализации
+            
+            this.setupChangeTracking();
+            this.initPresets();
+            this.initExport();
+            this.initResize();
+            
+            // Первая отрисовка (с правильным вычислением параметров)
+            this.updateRenderer();
+            
+            // Завершить инициализацию и обновить кнопки
+            this.isInitializing = false;
+            this.hasUnsavedChanges = false; // Убедиться, что после инициализации нет изменений
+            if (this.currentPresetName === 'Default') {
+                this.updateSaveDeleteButtons();
+            }
+        }
+    }
+
+    /**
+     * Проверка на мобильное устройство
+     * Возвращает true если ширина экрана < 768px И это touch-устройство
+     * Или если это мобильный телефон (не планшет) по User Agent
+     */
+    checkIsMobile() {
+        const width = window.innerWidth;
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const userAgent = navigator.userAgent.toLowerCase();
         
-        this.setupChangeTracking();
-        this.initPresets();
-        this.initExport();
-        this.initResize();
+        // Проверка на планшеты (iPad, Android планшеты)
+        const isTablet = /ipad|android(?!.*mobile)|tablet/i.test(userAgent);
         
-        // Первая отрисовка (с правильным вычислением параметров)
+        // Мобильное устройство = маленький экран И touch-устройство И НЕ планшет
+        // Или явно мобильный телефон по User Agent
+        const isMobilePhone = /mobile|iphone|ipod|android.*mobile|blackberry|windows phone/i.test(userAgent);
+        
+        return (width < 768 && isTouchDevice && !isTablet) || (isMobilePhone && width < 1024);
+    }
+
+    /**
+     * Инициализация мобильного вида
+     */
+    initMobileView() {
+        // Скрыть все панели управления
+        const panels = document.querySelectorAll('.controls-panel');
+        panels.forEach(panel => {
+            panel.style.display = 'none';
+        });
+        
+        // Скрыть дропдаун пресетов и кнопки Save/Delete
+        const presetDropdown = document.getElementById('presetDropdown');
+        const saveBtn = document.getElementById('savePresetBtn');
+        const deleteBtn = document.getElementById('deletePresetBtn');
+        if (presetDropdown) presetDropdown.style.display = 'none';
+        if (saveBtn) saveBtn.style.display = 'none';
+        if (deleteBtn) deleteBtn.style.display = 'none';
+        
+        // Скрыть кнопки экспорта
+        const exportBtn = document.getElementById('exportBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        if (exportBtn) exportBtn.style.display = 'none';
+        if (copyBtn) copyBtn.style.display = 'none';
+        
+        // Показать сообщение "ONLY DESKTOP" в режиме Random
+        const mobileMessage = document.getElementById('mobileMessage');
+        if (mobileMessage) {
+            mobileMessage.style.display = 'flex';
+        }
+        
+        // Установить режим Random и текст
+        this.settings.set('mode', 'random');
+        this.settings.set('text', 'ONLY\nDESK\nTOP');
+        
+        // Инициализировать renderer с этими настройками
         this.updateRenderer();
         
-        // Завершить инициализацию и обновить кнопки
-        this.isInitializing = false;
-        this.hasUnsavedChanges = false; // Убедиться, что после инициализации нет изменений
-        if (this.currentPresetName === 'Default') {
-            this.updateSaveDeleteButtons();
-        }
+        // Обработка изменения размера окна (на случай поворота экрана)
+        window.addEventListener('resize', () => {
+            const wasMobile = this.isMobile;
+            this.isMobile = this.checkIsMobile();
+            
+            // Если перешли с мобильного на десктоп, перезагрузить страницу
+            if (wasMobile && !this.isMobile) {
+                window.location.reload();
+            }
+        });
     }
 
     /**
