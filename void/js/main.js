@@ -210,9 +210,9 @@ class VoidTypeface {
             valueId: 'cornerRadiusValue',
             setting: 'cornerRadiusMultiplier',
             min: 0,
-            max: 12,
+            max: 1,
             decimals: 1,
-            baseStep: 0.5,
+            baseStep: 0.1,
             shiftStep: 1,
             onUpdate: (value) => this.updateRenderer()
         });
