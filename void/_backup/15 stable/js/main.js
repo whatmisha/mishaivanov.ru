@@ -50,39 +50,172 @@ class VoidTypeface {
         this.letterColorPicker = null;
         this.bgColorPicker = null;
 
+        // Проверка на мобильное устройство
+        this.isMobile = this.checkIsMobile();
+        
         // Инициализация компонентов
         this.initCanvas();
         this.initExporter();
         this.initPresetManager();
-        this.initPanels();
-        this.initSliders();
-        this.initRangeSliders();
-        this.initColorPickers();
-        this.initTextInput();
-        this.initTextAlign();
-        this.initModeToggle();
-        this.initGridToggle();
         
-        // Отслеживание изменений для показа кнопки Save
-        this.hasUnsavedChanges = false;
-        this.currentPresetName = 'Default';
-        this.isLoadingPreset = false;
-        this.isInitializing = true; // Флаг инициализации
-        
-        this.setupChangeTracking();
-        this.initPresets();
-        this.initExport();
-        this.initResize();
-        
-        // Первая отрисовка (с правильным вычислением параметров)
-        this.updateRenderer();
-        
-        // Завершить инициализацию и обновить кнопки
-        this.isInitializing = false;
-        this.hasUnsavedChanges = false; // Убедиться, что после инициализации нет изменений
-        if (this.currentPresetName === 'Default') {
-            this.updateSaveDeleteButtons();
+        if (this.isMobile) {
+            // На мобильных устройствах скрываем панели и показываем сообщение
+            this.initMobileView();
+        } else {
+            // На десктопе инициализируем все как обычно
+            this.initPanels();
+            this.initSliders();
+            this.initRangeSliders();
+            this.initColorPickers();
+            this.initTextInput();
+            this.initTextAlign();
+            this.initModeToggle();
+            this.initGridToggle();
+            
+            // Отслеживание изменений для показа кнопки Save
+            this.hasUnsavedChanges = false;
+            this.currentPresetName = 'Default';
+            this.isLoadingPreset = false;
+            this.isInitializing = true; // Флаг инициализации
+            
+            this.setupChangeTracking();
+            this.initPresets();
+            this.initExport();
+            this.initResize();
+            
+            // Первая отрисовка (с правильным вычислением параметров)
+            this.updateRenderer();
+            
+            // Завершить инициализацию и обновить кнопки
+            this.isInitializing = false;
+            this.hasUnsavedChanges = false; // Убедиться, что после инициализации нет изменений
+            if (this.currentPresetName === 'Default') {
+                this.updateSaveDeleteButtons();
+            }
         }
+    }
+
+    /**
+     * Проверка на мобильное устройство
+     * Возвращает true если ширина экрана < 768px И это touch-устройство
+     * Или если это мобильный телефон (не планшет) по User Agent
+     */
+    checkIsMobile() {
+        const width = window.innerWidth;
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        const userAgent = navigator.userAgent.toLowerCase();
+        
+        // Проверка на планшеты (iPad, Android планшеты)
+        const isTablet = /ipad|android(?!.*mobile)|tablet/i.test(userAgent);
+        
+        // Мобильное устройство = маленький экран И touch-устройство И НЕ планшет
+        // Или явно мобильный телефон по User Agent
+        const isMobilePhone = /mobile|iphone|ipod|android.*mobile|blackberry|windows phone/i.test(userAgent);
+        
+        return (width < 768 && isTouchDevice && !isTablet) || (isMobilePhone && width < 1024);
+    }
+
+    /**
+     * Инициализация мобильного вида
+     */
+    initMobileView() {
+        // Скрыть все панели управления
+        const panels = document.querySelectorAll('.controls-panel');
+        panels.forEach(panel => {
+            panel.style.display = 'none';
+        });
+        
+        // Скрыть дропдаун пресетов и кнопки Save/Delete
+        const presetDropdown = document.getElementById('presetDropdown');
+        const saveBtn = document.getElementById('savePresetBtn');
+        const deleteBtn = document.getElementById('deletePresetBtn');
+        if (presetDropdown) presetDropdown.style.display = 'none';
+        if (saveBtn) saveBtn.style.display = 'none';
+        if (deleteBtn) deleteBtn.style.display = 'none';
+        
+        // Скрыть кнопки экспорта
+        const exportBtn = document.getElementById('exportBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        if (exportBtn) exportBtn.style.display = 'none';
+        if (copyBtn) copyBtn.style.display = 'none';
+        
+        // Установить режим Random и текст
+        this.settings.set('mode', 'random');
+        this.settings.set('text', 'ONLY\nDESK\nTOP');
+        
+        // Вычислить оптимальный размер модуля, чтобы текст влезал в окно
+        // (updateRenderer будет вызван внутри calculateMobileModuleSize)
+        this.calculateMobileModuleSize();
+        
+        // Обработка изменения размера окна (на случай поворота экрана)
+        window.addEventListener('resize', () => {
+            const wasMobile = this.isMobile;
+            this.isMobile = this.checkIsMobile();
+            
+            // Если перешли с мобильного на десктоп, перезагрузить страницу
+            if (wasMobile && !this.isMobile) {
+                window.location.reload();
+            } else if (this.isMobile) {
+                // Пересчитать размер модуля при изменении размера окна
+                // (updateRenderer будет вызван внутри calculateMobileModuleSize)
+                this.calculateMobileModuleSize();
+            }
+        });
+    }
+
+    /**
+     * Вычислить оптимальный размер модуля для мобильного устройства
+     * чтобы текст "ONLY\nDESK\nTOP" влезал в окно без обрезки
+     */
+    calculateMobileModuleSize() {
+        // Дождаться следующего кадра, чтобы canvas успел получить размеры
+        requestAnimationFrame(() => {
+            const canvasContainer = document.getElementById('canvasContainer');
+            const canvas = document.getElementById('mainCanvas');
+            
+            // Получить размеры контейнера или окна
+            const containerRect = canvasContainer ? canvasContainer.getBoundingClientRect() : null;
+            const availableWidth = containerRect ? containerRect.width : window.innerWidth;
+            const availableHeight = containerRect ? containerRect.height : window.innerHeight;
+            
+            // Текст состоит из 3 строк: "ONLY", "DESK", "TOP"
+            // Самая длинная строка - "ONLY" и "DESK" (4 символа)
+            const maxLineLength = 4;
+            const numLines = 3;
+            
+            // Размеры одного символа: 5 модулей в ширину
+            const cols = 5;
+            const rows = 5;
+            
+            // Используем текущие значения multipliers из settings
+            const letterSpacingMultiplier = this.settings.get('letterSpacingMultiplier') || 1;
+            const lineHeightMultiplier = this.settings.get('lineHeightMultiplier') || 2;
+            
+            // Учитываем padding (10% с каждой стороны для безопасности)
+            const padding = 0.1;
+            const maxWidth = availableWidth * (1 - 2 * padding);
+            const maxHeight = availableHeight * (1 - 2 * padding);
+            
+            // Расчет по ширине:
+            // Ширина строки = maxLineLength * cols * moduleSize + (maxLineLength - 1) * letterSpacingMultiplier * moduleSize
+            // = moduleSize * (maxLineLength * cols + (maxLineLength - 1) * letterSpacingMultiplier)
+            const moduleSizeByWidth = maxWidth / (maxLineLength * cols + (maxLineLength - 1) * letterSpacingMultiplier);
+            
+            // Расчет по высоте:
+            // Высота текста = numLines * rows * moduleSize + (numLines - 1) * lineHeightMultiplier * moduleSize
+            // = moduleSize * (numLines * rows + (numLines - 1) * lineHeightMultiplier)
+            const moduleSizeByHeight = maxHeight / (numLines * rows + (numLines - 1) * lineHeightMultiplier);
+            
+            // Выбрать минимальный размер, чтобы влезло и по ширине, и по высоте
+            const optimalModuleSize = Math.floor(Math.min(moduleSizeByWidth, moduleSizeByHeight));
+            
+            // Установить размер модуля (но не меньше 8px и не больше 64px)
+            const finalModuleSize = Math.max(8, Math.min(64, optimalModuleSize));
+            this.settings.set('moduleSize', finalModuleSize);
+            
+            // Обновить renderer после установки размера модуля
+            this.updateRenderer();
+        });
     }
 
     /**
