@@ -313,7 +313,7 @@ export class VoidRenderer {
         const offsetX = startX % moduleSize;
         const offsetY = startY % moduleSize;
         
-        this.ctx.strokeStyle = '#333333';
+        this.ctx.strokeStyle = this.params.gridColor || '#333333';
         this.ctx.lineWidth = 0.5;
         this.ctx.beginPath();
         
