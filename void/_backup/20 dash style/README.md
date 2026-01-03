@@ -1,13 +1,13 @@
-# YF Tools UI Framework
+# UI Framework
 
-Переиспользуемый UI/UX фреймворк для создания инструментов YF Tools в едином стиле.
+Переиспользуемый UI/UX фреймворк для создания веб-приложений в едином стиле.
 
 ## 📦 Что включено
 
-Этот фреймворк содержит все необходимые компоненты для быстрого создания веб-приложений в стиле YF Tools:
+Этот фреймворк содержит все необходимые компоненты для быстрого создания веб-приложений:
 
 ### Стили (CSS)
-- **yf-styles.css** — Полный набор UI компонентов
+- **styles.css** — Полный набор UI компонентов
   - Панели с перетаскиванием и сворачиванием
   - Слайдеры с кастомным дизайном
   - Кнопки (primary, secondary, toggle chips)
@@ -38,7 +38,6 @@
 
 ### Шрифты
 - TT Commons Classic (Regular, Medium)
-- Lunnen Display Variable
 
 ### Примеры
 - **example.html** — Демонстрация всех компонентов
@@ -48,7 +47,7 @@
 ### 1. Скопируйте папку в новый проект
 
 ```bash
-cp -r yf-ui-framework /path/to/your/new-project/
+cp -r ui-framework /path/to/your/new-project/
 ```
 
 ### 2. Подключите стили и шрифты
@@ -60,7 +59,7 @@ cp -r yf-ui-framework /path/to/your/new-project/
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Tool Name</title>
-    <link rel="stylesheet" href="yf-ui-framework/css/yf-styles.css">
+    <link rel="stylesheet" href="ui-framework/css/styles.css">
 </head>
 <body>
     <!-- Ваш контент -->
@@ -72,15 +71,15 @@ cp -r yf-ui-framework /path/to/your/new-project/
 
 ```javascript
 // Утилиты
-import { ColorUtils } from './yf-ui-framework/js/utils/ColorUtils.js';
-import { MathUtils } from './yf-ui-framework/js/utils/MathUtils.js';
-import { DOMUtils } from './yf-ui-framework/js/utils/DOMUtils.js';
+import { ColorUtils } from './ui-framework/js/utils/ColorUtils.js';
+import { MathUtils } from './ui-framework/js/utils/MathUtils.js';
+import { DOMUtils } from './ui-framework/js/utils/DOMUtils.js';
 
 // UI контроллеры
-import { SliderController } from './yf-ui-framework/js/ui/SliderController.js';
-import { ColorPicker } from './yf-ui-framework/js/ui/ColorPicker.js';
-import { PanelManager } from './yf-ui-framework/js/ui/PanelManager.js';
-import { ZoomPanManager } from './yf-ui-framework/js/ui/ZoomPanManager.js';
+import { SliderController } from './ui-framework/js/ui/SliderController.js';
+import { ColorPicker } from './ui-framework/js/ui/ColorPicker.js';
+import { PanelManager } from './ui-framework/js/ui/PanelManager.js';
+import { ZoomPanManager } from './ui-framework/js/ui/ZoomPanManager.js';
 ```
 
 ## 📚 Руководство по использованию
@@ -424,8 +423,8 @@ ColorPicker автоматически обновляет градиенты:
 
 ```javascript
 // main.js
-import { SliderController } from './yf-ui-framework/js/ui/SliderController.js';
-import { PanelManager } from './yf-ui-framework/js/ui/PanelManager.js';
+import { SliderController } from './ui-framework/js/ui/SliderController.js';
+import { PanelManager } from './ui-framework/js/ui/PanelManager.js';
 
 class MyTool {
     constructor() {
@@ -493,8 +492,8 @@ new MyTool();
 При работе с AI используйте следующий prompt:
 
 ```
-Я создаю новый инструмент для YF Tools. У меня есть готовый UI фреймворк 
-в папке yf-ui-framework/. Используй существующие компоненты и паттерны 
+Я создаю новый инструмент. У меня есть готовый UI фреймворк 
+в папке ui-framework/. Используй существующие компоненты и паттерны 
 из этого фреймворка. Следуй дизайн-системе: темная тема, шрифты TT Commons 
 Classic, радиусы 12px для панелей, 20px для кнопок, привязка к модульной 
 сетке. Все слайдеры должны использовать SliderController с поддержкой 
@@ -503,11 +502,10 @@ Classic, радиусы 12px для панелей, 20px для кнопок, п
 
 ## 📄 Лицензия
 
-Этот фреймворк создан для внутреннего использования в проектах YF Tools.
+Этот фреймворк создан для внутреннего использования.
 
 ---
 
 **Версия:** 1.0.0  
-**Последнее обновление:** Декабрь 2025  
-**Базовый проект:** Pizza Boxer (Lunnen Grid Generator)
+**Последнее обновление:** Декабрь 2025
 
