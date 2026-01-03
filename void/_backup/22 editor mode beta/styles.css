@@ -2375,6 +2375,43 @@ textarea::placeholder {
 }
 
 /* ============================================
+   MODE SWITCHER
+   ============================================ */
+
+.mode-switcher {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.mode-btn {
+    padding: 6px 16px;
+    background: transparent;
+    border: none;
+    color: var(--color-text);
+    font-size: 14px;
+    font-weight: 400;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-right: 1px solid var(--color-border);
+}
+
+.mode-btn:last-child {
+    border-right: none;
+}
+
+.mode-btn:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.mode-btn.active {
+    background: var(--color-text);
+    color: var(--color-bg);
+}
+
+/* ============================================
    EDITOR PANEL
    ============================================ */
 
@@ -2383,78 +2420,40 @@ textarea::placeholder {
     bottom: 20px;
     left: 20px;
     max-width: 320px;
-    max-height: calc(100vh - 40px);
-    box-shadow: none;
-    display: flex;
-    flex-direction: column;
-}
-
-.controls-panel-editor .panel-content {
-    padding-top: 20px;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    min-height: 0;
-}
-
-.controls-panel-editor .control-section {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-height: 0;
-}
-
-.controls-panel-editor .control-group {
-    margin-bottom: 20px;
-}
-
-.editor-glyph-string-group {
-    margin-bottom: 0 !important;
-}
-
-.editor-save-button-group {
-    margin-top: 10px !important;
-    margin-bottom: 10px !important;
-}
-
-.editor-saved-glyphs-group {
-    margin-bottom: 0 !important;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-}
-
-.editor-saved-glyphs-group textarea {
-    flex: 1;
-    min-height: 0;
-}
-
-.editor-copy-button-group {
-    margin-top: 10px !important;
-    margin-bottom: 0 !important;
 }
 
 .editor-module-display {
     font-family: var(--font-mono);
-    font-size: 42px;
+    font-size: 24px;
     font-weight: 600;
-    padding: 36px 12px;
+    padding: 12px;
     text-align: center;
-    background: #808080;
-    color: #FFFFFF;
+    background: var(--color-canvas-bg);
     border: 1px solid var(--color-border);
-    border-radius: 100px;
-    font-feature-settings: "case" 1;
+    border-radius: 4px;
+}
+
+.editor-help {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    padding: 8px 12px;
+    background: var(--color-canvas-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+}
+
+.editor-help div {
+    margin: 4px 0;
 }
 
 .editor-btn {
     width: 100%;
     padding: 10px 16px;
-    margin-top: 0;
+    margin-top: 8px;
     background: var(--color-bg);
-    border: none;
-    border-radius: 24px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
     color: var(--color-text);
     font-size: 14px;
     font-weight: 400;
@@ -2467,8 +2466,8 @@ textarea::placeholder {
     color: var(--color-bg);
 }
 
-#editorGlyphString,
-#editorSavedGlyphs {
+#editorGlyphOutput,
+#editorGlyphInput {
     width: 100%;
     padding: 8px 12px;
     font-family: var(--font-mono);
@@ -2479,16 +2478,24 @@ textarea::placeholder {
     background: var(--color-canvas-bg);
     resize: vertical;
     word-break: break-all;
+}
+
+#editorGlyphOutput {
     color: var(--color-text);
 }
 
-#editorGlyphString {
-    resize: none;
+#editorGlyphInput::placeholder {
+    color: var(--color-text-secondary);
+    opacity: 0.5;
 }
 
 /* ============================================
    MOBILE EDITOR
    ============================================ */
+
+.is-mobile .mode-switcher {
+    display: none;
+}
 
 .is-mobile .controls-panel-editor {
     display: none !important;

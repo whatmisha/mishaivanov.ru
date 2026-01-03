@@ -25,7 +25,13 @@
     <div class="container">
         <!-- Top Navigation -->
         <div class="top-links">
-            <a href="https://mishaivanov.com/void" class="top-link" id="aboutVoidLink">← About Void</a>
+            <a href="https://mishaivanov.com/void" class="top-link">← About Void</a>
+            
+            <!-- Mode Switcher -->
+            <div class="mode-switcher">
+                <button class="mode-btn active" id="normalModeBtn" type="button">Normal</button>
+                <button class="mode-btn" id="editorModeBtn" type="button">Editor</button>
+            </div>
             
             <!-- Preset Dropdown -->
             <div class="preset-dropdown" id="presetDropdown">
@@ -307,31 +313,45 @@
 
             <!-- Editor Panel (вместо Text Panel в режиме Editor) -->
             <aside class="controls-panel controls-panel-editor" id="editorPanel" style="display: none;">
+                <div class="panel-header">
+                    <span>Glyph Editor</span>
+                </div>
                 <div class="panel-content">
                     <section class="control-section">
                         <!-- Current Module Info -->
                         <div class="control-group">
+                            <label>Current Module</label>
                             <div class="editor-module-display" id="editorCurrentModule">S0 (0°)</div>
                         </div>
                         
-                        <!-- Glyph String (auto-updating) -->
-                        <div class="control-group editor-glyph-string-group">
-                            <textarea id="editorGlyphString" rows="2">E0E0E0E0E0 E0E0E0E0E0 E0E0E0E0E0 E0E0E0E0E0 E0E0E0E0E0</textarea>
+                        <!-- Controls Info -->
+                        <div class="control-group">
+                            <div class="editor-help">
+                                <div>↑↓ — Select module</div>
+                                <div>←→ — Rotate module</div>
+                                <div>Click — Place/Remove</div>
+                                <div>Ctrl+C — Clear grid</div>
+                                <div>Ctrl+E — Export</div>
+                            </div>
                         </div>
                         
-                        <!-- Move Button -->
-                        <div class="control-group editor-save-button-group">
-                            <button class="editor-btn" id="editorSaveBtn" type="button">Move ↓</button>
+                        <!-- Import Section -->
+                        <div class="control-group">
+                            <label for="editorGlyphInput">Import Glyph String</label>
+                            <textarea id="editorGlyphInput" rows="3" placeholder='Paste glyph string here (e.g., "E0R1S1R2...")'></textarea>
+                            <button class="editor-btn" id="editorImportBtn" type="button">Import</button>
                         </div>
                         
-                        <!-- Saved Glyphs Collection -->
-                        <div class="control-group editor-saved-glyphs-group">
-                            <textarea id="editorSavedGlyphs"></textarea>
+                        <!-- Glyph String Output -->
+                        <div class="control-group">
+                            <label for="editorGlyphOutput">Glyph String</label>
+                            <textarea id="editorGlyphOutput" rows="4" placeholder="Export with Ctrl+E" readonly></textarea>
                         </div>
                         
-                        <!-- Copy Button -->
-                        <div class="control-group editor-copy-button-group">
-                            <button class="editor-btn" id="editorCopyBtn" type="button">Copy</button>
+                        <!-- Export/Clear Buttons -->
+                        <div class="control-group">
+                            <button class="editor-btn" id="editorExportBtn" type="button">Export (Ctrl+E)</button>
+                            <button class="editor-btn" id="editorClearBtn" type="button">Clear (Ctrl+C)</button>
                         </div>
                     </section>
                 </div>

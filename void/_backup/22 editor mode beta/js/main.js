@@ -83,8 +83,8 @@ class VoidTypeface {
             this.initRenderMethodToggle();
             this.initRoundedCapsToggle();
             this.initGridToggle();
+            this.initModeSwitcher(); // Normal/Editor
             this.initGlyphEditor(); // Редактор глифов
-            this.initEditorHotkey(); // Хоткей Cmd+G для редактора
             
             // Установить правильную видимость Corner Radius, Rounded и Dash при инициализации
             this.updateCornerRadiusVisibility();
@@ -1338,10 +1338,6 @@ class VoidTypeface {
         // Шорткат ⌘E (Cmd на Mac, Ctrl на Windows/Linux)
         document.addEventListener('keydown', (e) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 'e') {
-                // Не экспортировать в режиме редактора
-                const currentMode = this.settings.get('currentMode') || 'normal';
-                if (currentMode === 'editor') return;
-                
                 e.preventDefault();
                 this.exportSVG();
             }
@@ -1598,17 +1594,20 @@ class VoidTypeface {
     }
     
     /**
-     * Инициализация хоткея для редактора (Cmd+G)
+     * Инициализация переключателя режимов (Normal/Editor)
      */
-    initEditorHotkey() {
-        document.addEventListener('keydown', (e) => {
-            // Cmd+G (Mac) или Ctrl+G (Windows/Linux) - переключить режим редактора
-            if ((e.metaKey || e.ctrlKey) && e.key === 'g') {
-                e.preventDefault();
-                const currentMode = this.settings.get('currentMode') || 'normal';
-                const newMode = currentMode === 'normal' ? 'editor' : 'normal';
-                this.switchMode(newMode);
-            }
+    initModeSwitcher() {
+        const normalModeBtn = document.getElementById('normalModeBtn');
+        const editorModeBtn = document.getElementById('editorModeBtn');
+        
+        if (!normalModeBtn || !editorModeBtn) return;
+        
+        normalModeBtn.addEventListener('click', () => {
+            this.switchMode('normal');
+        });
+        
+        editorModeBtn.addEventListener('click', () => {
+            this.switchMode('editor');
         });
     }
     
@@ -1618,34 +1617,30 @@ class VoidTypeface {
     switchMode(mode) {
         this.settings.set('currentMode', mode);
         
+        const normalModeBtn = document.getElementById('normalModeBtn');
+        const editorModeBtn = document.getElementById('editorModeBtn');
         const controlsPanel = document.getElementById('controlsPanel');
         const variabilityPanel = document.getElementById('variabilityPanel');
         const textPanel = document.getElementById('textPanel');
-        const viewColorsPanel = document.getElementById('viewColorsPanel');
         const editorPanel = document.getElementById('editorPanel');
         const presetDropdown = document.getElementById('presetDropdown');
         const savePresetBtn = document.getElementById('savePresetBtn');
         const deletePresetBtn = document.getElementById('deletePresetBtn');
-        const copyBtn = document.getElementById('copyBtn');
-        const exportBtn = document.getElementById('exportBtn');
-        const aboutVoidLink = document.getElementById('aboutVoidLink');
         
         if (mode === 'editor') {
             // Активировать режим редактора
+            normalModeBtn.classList.remove('active');
+            editorModeBtn.classList.add('active');
             
             // Скрыть обычные панели
             if (controlsPanel) controlsPanel.style.display = 'none';
             if (variabilityPanel) variabilityPanel.style.display = 'none';
             if (textPanel) textPanel.style.display = 'none';
-            if (viewColorsPanel) viewColorsPanel.style.display = 'none';
             
             // Скрыть пресеты и кнопки
             if (presetDropdown) presetDropdown.style.display = 'none';
             if (savePresetBtn) savePresetBtn.style.display = 'none';
             if (deletePresetBtn) deletePresetBtn.style.display = 'none';
-            if (copyBtn) copyBtn.style.display = 'none';
-            if (exportBtn) exportBtn.style.display = 'none';
-            if (aboutVoidLink) aboutVoidLink.style.display = 'none';
             
             // Показать панель редактора
             if (editorPanel) editorPanel.style.display = 'block';
@@ -1656,18 +1651,16 @@ class VoidTypeface {
             }
         } else {
             // Активировать обычный режим
+            normalModeBtn.classList.add('active');
+            editorModeBtn.classList.remove('active');
             
             // Показать обычные панели
             if (controlsPanel) controlsPanel.style.display = 'block';
             if (variabilityPanel) variabilityPanel.style.display = 'block';
             if (textPanel) textPanel.style.display = 'block';
-            if (viewColorsPanel) viewColorsPanel.style.display = 'block';
             
             // Показать пресеты и кнопки
             if (presetDropdown) presetDropdown.style.display = 'flex';
-            if (copyBtn) copyBtn.style.display = 'inline-flex';
-            if (exportBtn) exportBtn.style.display = 'inline-flex';
-            if (aboutVoidLink) aboutVoidLink.style.display = 'inline-flex';
             this.updateSaveDeleteButtons();
             
             // Скрыть панель редактора
@@ -1677,21 +1670,7 @@ class VoidTypeface {
             if (this.glyphEditor) {
                 this.glyphEditor.deactivate();
             }
-            
-            // Принудительно обновить размеры canvas после обновления DOM
-            requestAnimationFrame(() => {
-                // Принудительный reflow для гарантии, что размеры контейнера обновились
-                const canvas = document.getElementById('mainCanvas');
-                if (canvas) {
-                    canvas.offsetHeight; // Force reflow
-                }
-                
-                // Обновить размеры canvas и отрендерить
-                if (this.renderer && this.renderer.setupCanvas) {
-                    this.renderer.setupCanvas();
-                }
-                this.updateRenderer();
-            });
+            this.updateRenderer();
         }
     }
     
@@ -1704,22 +1683,30 @@ class VoidTypeface {
         
         this.glyphEditor = new GlyphEditor(canvas, this.renderer.moduleDrawer);
         
-        // Обработчик кнопки Save
-        const saveBtn = document.getElementById('editorSaveBtn');
-        if (saveBtn) {
-            saveBtn.addEventListener('click', () => {
-                if (this.glyphEditor) {
-                    this.glyphEditor.saveGlyph();
+        // Инициализация кнопок
+        const exportBtn = document.getElementById('editorExportBtn');
+        const clearBtn = document.getElementById('editorClearBtn');
+        const importBtn = document.getElementById('editorImportBtn');
+        
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => {
+                this.glyphEditor.exportGlyph();
+            });
+        }
+        
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                if (confirm('Clear the entire grid?')) {
+                    this.glyphEditor.clear();
                 }
             });
         }
         
-        // Обработчик кнопки Copy
-        const copyBtn = document.getElementById('editorCopyBtn');
-        if (copyBtn) {
-            copyBtn.addEventListener('click', () => {
-                if (this.glyphEditor) {
-                    this.glyphEditor.copySavedGlyphs();
+        if (importBtn) {
+            importBtn.addEventListener('click', () => {
+                const input = document.getElementById('editorGlyphInput');
+                if (input && input.value) {
+                    this.glyphEditor.importGlyph(input.value.trim());
                 }
             });
         }

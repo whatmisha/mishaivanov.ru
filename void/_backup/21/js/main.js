@@ -10,7 +10,6 @@ import { RangeSliderController } from './ui/RangeSliderController.js';
 import { PanelManager } from './ui/PanelManager.js';
 import { ColorPicker } from './ui/ColorPicker.js';
 import { MathUtils } from './utils/MathUtils.js';
-import GlyphEditor from './core/GlyphEditor.js';
 
 class VoidTypeface {
     constructor() {
@@ -43,8 +42,7 @@ class VoidTypeface {
                 renderMethod: 'stroke', // 'fill' или 'stroke'
                 roundedCaps: false, // скругления на концах линий в режиме Stroke (Rounded)
                 dashLength: 0.10, // длина штриха для Dash mode (множитель от stem)
-                gapLength: 0.10, // длина промежутка для Dash mode (множитель от stem)
-                currentMode: 'normal' // 'normal' или 'editor'
+                gapLength: 0.10 // длина промежутка для Dash mode (множитель от stem)
             },
             get(key) { return this.values[key]; },
             set(key, value) { 
@@ -56,9 +54,6 @@ class VoidTypeface {
         // Color pickers
         this.letterColorPicker = null;
         this.bgColorPicker = null;
-        
-        // Glyph Editor
-        this.glyphEditor = null;
 
         // Проверка на мобильное устройство
         this.isMobile = this.checkIsMobile();
@@ -83,8 +78,6 @@ class VoidTypeface {
             this.initRenderMethodToggle();
             this.initRoundedCapsToggle();
             this.initGridToggle();
-            this.initGlyphEditor(); // Редактор глифов
-            this.initEditorHotkey(); // Хоткей Cmd+G для редактора
             
             // Установить правильную видимость Corner Radius, Rounded и Dash при инициализации
             this.updateCornerRadiusVisibility();
@@ -1338,10 +1331,6 @@ class VoidTypeface {
         // Шорткат ⌘E (Cmd на Mac, Ctrl на Windows/Linux)
         document.addEventListener('keydown', (e) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 'e') {
-                // Не экспортировать в режиме редактора
-                const currentMode = this.settings.get('currentMode') || 'normal';
-                if (currentMode === 'editor') return;
-                
                 e.preventDefault();
                 this.exportSVG();
             }
@@ -1594,134 +1583,6 @@ class VoidTypeface {
         // Показывать Delete если есть кастомные пресеты И это не Default без изменений
         if (deletePresetBtn) {
             deletePresetBtn.style.display = (hasCustomPresets && !isDefaultWithoutChanges) ? 'inline-flex' : 'none';
-        }
-    }
-    
-    /**
-     * Инициализация хоткея для редактора (Cmd+G)
-     */
-    initEditorHotkey() {
-        document.addEventListener('keydown', (e) => {
-            // Cmd+G (Mac) или Ctrl+G (Windows/Linux) - переключить режим редактора
-            if ((e.metaKey || e.ctrlKey) && e.key === 'g') {
-                e.preventDefault();
-                const currentMode = this.settings.get('currentMode') || 'normal';
-                const newMode = currentMode === 'normal' ? 'editor' : 'normal';
-                this.switchMode(newMode);
-            }
-        });
-    }
-    
-    /**
-     * Переключение режима (Normal/Editor)
-     */
-    switchMode(mode) {
-        this.settings.set('currentMode', mode);
-        
-        const controlsPanel = document.getElementById('controlsPanel');
-        const variabilityPanel = document.getElementById('variabilityPanel');
-        const textPanel = document.getElementById('textPanel');
-        const viewColorsPanel = document.getElementById('viewColorsPanel');
-        const editorPanel = document.getElementById('editorPanel');
-        const presetDropdown = document.getElementById('presetDropdown');
-        const savePresetBtn = document.getElementById('savePresetBtn');
-        const deletePresetBtn = document.getElementById('deletePresetBtn');
-        const copyBtn = document.getElementById('copyBtn');
-        const exportBtn = document.getElementById('exportBtn');
-        const aboutVoidLink = document.getElementById('aboutVoidLink');
-        
-        if (mode === 'editor') {
-            // Активировать режим редактора
-            
-            // Скрыть обычные панели
-            if (controlsPanel) controlsPanel.style.display = 'none';
-            if (variabilityPanel) variabilityPanel.style.display = 'none';
-            if (textPanel) textPanel.style.display = 'none';
-            if (viewColorsPanel) viewColorsPanel.style.display = 'none';
-            
-            // Скрыть пресеты и кнопки
-            if (presetDropdown) presetDropdown.style.display = 'none';
-            if (savePresetBtn) savePresetBtn.style.display = 'none';
-            if (deletePresetBtn) deletePresetBtn.style.display = 'none';
-            if (copyBtn) copyBtn.style.display = 'none';
-            if (exportBtn) exportBtn.style.display = 'none';
-            if (aboutVoidLink) aboutVoidLink.style.display = 'none';
-            
-            // Показать панель редактора
-            if (editorPanel) editorPanel.style.display = 'block';
-            
-            // Деактивировать рендерер и активировать редактор
-            if (this.glyphEditor) {
-                this.glyphEditor.activate();
-            }
-        } else {
-            // Активировать обычный режим
-            
-            // Показать обычные панели
-            if (controlsPanel) controlsPanel.style.display = 'block';
-            if (variabilityPanel) variabilityPanel.style.display = 'block';
-            if (textPanel) textPanel.style.display = 'block';
-            if (viewColorsPanel) viewColorsPanel.style.display = 'block';
-            
-            // Показать пресеты и кнопки
-            if (presetDropdown) presetDropdown.style.display = 'flex';
-            if (copyBtn) copyBtn.style.display = 'inline-flex';
-            if (exportBtn) exportBtn.style.display = 'inline-flex';
-            if (aboutVoidLink) aboutVoidLink.style.display = 'inline-flex';
-            this.updateSaveDeleteButtons();
-            
-            // Скрыть панель редактора
-            if (editorPanel) editorPanel.style.display = 'none';
-            
-            // Деактивировать редактор и активировать рендерер
-            if (this.glyphEditor) {
-                this.glyphEditor.deactivate();
-            }
-            
-            // Принудительно обновить размеры canvas после обновления DOM
-            requestAnimationFrame(() => {
-                // Принудительный reflow для гарантии, что размеры контейнера обновились
-                const canvas = document.getElementById('mainCanvas');
-                if (canvas) {
-                    canvas.offsetHeight; // Force reflow
-                }
-                
-                // Обновить размеры canvas и отрендерить
-                if (this.renderer && this.renderer.setupCanvas) {
-                    this.renderer.setupCanvas();
-                }
-                this.updateRenderer();
-            });
-        }
-    }
-    
-    /**
-     * Инициализация редактора глифов
-     */
-    initGlyphEditor() {
-        const canvas = document.getElementById('mainCanvas');
-        if (!canvas || !this.renderer || !this.renderer.moduleDrawer) return;
-        
-        this.glyphEditor = new GlyphEditor(canvas, this.renderer.moduleDrawer);
-        
-        // Обработчик кнопки Save
-        const saveBtn = document.getElementById('editorSaveBtn');
-        if (saveBtn) {
-            saveBtn.addEventListener('click', () => {
-                if (this.glyphEditor) {
-                    this.glyphEditor.saveGlyph();
-                }
-            });
-        }
-        
-        // Обработчик кнопки Copy
-        const copyBtn = document.getElementById('editorCopyBtn');
-        if (copyBtn) {
-            copyBtn.addEventListener('click', () => {
-                if (this.glyphEditor) {
-                    this.glyphEditor.copySavedGlyphs();
-                }
-            });
         }
     }
 }
