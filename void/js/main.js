@@ -27,7 +27,7 @@ class VoidTypeface {
                 letterColor: '#ffffff',
                 bgColor: '#000000',
                 gridColor: '#333333',
-                text: 'Void\nTypeface\ncoded',
+                text: 'Void\nTypeface\nCode',
                 textAlign: 'center',
                 showGrid: true,
                 includeGridToExport: false,
@@ -996,9 +996,18 @@ class VoidTypeface {
         const savePresetBtn = document.getElementById('savePresetBtn');
         const deletePresetBtn = document.getElementById('deletePresetBtn');
 
-        // Создать дефолтный пресет если его нет
-        if (!this.presetManager.loadPreset('Default')) {
+        // Создать или обновить дефолтный пресет
+        const defaultPreset = this.presetManager.loadPreset('Default');
+        if (!defaultPreset) {
+            // Создать новый дефолтный пресет
             this.presetManager.savePreset('Default', this.settings.values);
+        } else {
+            // Обновить существующий пресет Default, если текст устарел
+            if (defaultPreset.text === 'Void\nTypeface\ncoded') {
+                defaultPreset.text = 'Void\nTypeface\nCode';
+                this.presetManager.presets['Default'] = defaultPreset;
+                this.presetManager.savePresets();
+            }
         }
 
         // Обновить список preset'ов

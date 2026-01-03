@@ -169,8 +169,8 @@ export class VoidRenderer {
         const text = this.params.text;
         if (!text) return;
         
-        // Разбить текст на строки
-        const lines = text.split('\n');
+        // Разбить текст на строки и удалить пробелы в начале и конце каждой строки
+        const lines = text.split('\n').map(line => line.replace(/^\s+|\s+$/g, ''));
         
         // Вычислить размеры
         const letterW = this.cols * this.params.moduleSize;
@@ -290,7 +290,8 @@ export class VoidRenderer {
         const text = this.params.text;
         if (!text) return;
         
-        const lines = text.split('\n');
+        // Разбить текст на строки и удалить пробелы в начале и конце каждой строки
+        const lines = text.split('\n').map(line => line.replace(/^\s+|\s+$/g, ''));
         
         // Вычислить размеры блока текста (копируем логику из render)
         const maxLineLength = Math.max(...lines.map(line => line.length));
