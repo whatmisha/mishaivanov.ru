@@ -133,7 +133,6 @@ export class VoidRenderer {
         this.moduleDrawer.setCornerRadius(this.params.cornerRadius || 0);
         this.moduleDrawer.setRenderMethod(this.params.renderMethod || 'stroke');
         this.moduleDrawer.setRoundedCaps(this.params.roundedCaps || false);
-        this.moduleDrawer.setDashParams(this.params.dashLength || 0.10, this.params.gapLength || 0.10);
     }
 
     /**

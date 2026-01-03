@@ -39,9 +39,7 @@ class VoidTypeface {
                 randomModeType: 'byType', // 'byType' или 'full'
                 cornerRadiusMultiplier: 0,
                 renderMethod: 'stroke', // 'fill' или 'stroke'
-                roundedCaps: false, // скругления на концах линий в режиме Stroke
-                dashLength: 0.10, // длина штриха для Dash mode (множитель от stem)
-                gapLength: 0.10 // длина промежутка для Dash mode (множитель от stem)
+                roundedCaps: false // скругления на концах линий в режиме Stroke
             },
             get(key) { return this.values[key]; },
             set(key, value) { 
@@ -416,36 +414,6 @@ class VoidTypeface {
                 this.markAsChanged();
             }
         });
-
-        // Dash Length (для Dash mode)
-        this.sliderController.initSlider('dashLengthSlider', {
-            valueId: 'dashLengthValue',
-            setting: 'dashLength',
-            min: 0.01,
-            max: 8.0,
-            decimals: 2,
-            baseStep: 0.01,
-            shiftStep: 0.1,
-            onUpdate: (value) => {
-                this.updateRenderer();
-                this.markAsChanged();
-            }
-        });
-
-        // Gap Length (для Dash mode)
-        this.sliderController.initSlider('gapLengthSlider', {
-            valueId: 'gapLengthValue',
-            setting: 'gapLength',
-            min: 0.01,
-            max: 8.0,
-            decimals: 2,
-            baseStep: 0.01,
-            shiftStep: 0.1,
-            onUpdate: (value) => {
-                this.updateRenderer();
-                this.markAsChanged();
-            }
-        });
     }
 
     /**
@@ -738,7 +706,7 @@ class VoidTypeface {
     }
 
     /**
-     * Обновить видимость Rounded Caps (только для Stroke mode, стили Solid, Stripes и Dash)
+     * Обновить видимость Rounded Caps (только для Stroke mode, стили Solid и Stripes)
      */
     updateRoundedCapsVisibility() {
         const roundedCapsGroup = document.getElementById('roundedCapsControlGroup');
@@ -746,7 +714,7 @@ class VoidTypeface {
         
         const renderMethod = this.settings.get('renderMethod') || 'stroke';
         const mode = this.settings.get('mode') || 'fill';
-        const shouldShow = renderMethod === 'stroke' && (mode === 'fill' || mode === 'stripes' || mode === 'dash');
+        const shouldShow = renderMethod === 'stroke' && (mode === 'fill' || mode === 'stripes');
         roundedCapsGroup.style.display = shouldShow ? 'block' : 'none';
     }
 
@@ -771,18 +739,14 @@ class VoidTypeface {
     initModeToggle() {
         const fillRadio = document.getElementById('modeFill');
         const stripesRadio = document.getElementById('modeStripes');
-        const dashRadio = document.getElementById('modeDash');
         const randomRadio = document.getElementById('modeRandom');
         const strokesControlGroup = document.getElementById('strokesControlGroup');
         const strokeGapRatioControlGroup = document.getElementById('strokeGapRatioControlGroup');
-        const dashLengthControlGroup = document.getElementById('dashLengthControlGroup');
-        const gapLengthControlGroup = document.getElementById('gapLengthControlGroup');
 
         const updateMode = () => {
             let mode = 'fill';
             if (fillRadio.checked) mode = 'fill';
             else if (stripesRadio.checked) mode = 'stripes';
-            else if (dashRadio.checked) mode = 'dash';
             else if (randomRadio.checked) mode = 'random';
             
             this.settings.set('mode', mode);
@@ -795,8 +759,6 @@ class VoidTypeface {
             // Показать/скрыть контролы в зависимости от режима
             strokesControlGroup.style.display = mode === 'stripes' ? 'block' : 'none';
             strokeGapRatioControlGroup.style.display = mode === 'stripes' ? 'block' : 'none';
-            dashLengthControlGroup.style.display = mode === 'dash' ? 'block' : 'none';
-            gapLengthControlGroup.style.display = mode === 'dash' ? 'block' : 'none';
             
             const randomGroups = [
                 document.getElementById('randomControlGroup'),
@@ -840,10 +802,6 @@ class VoidTypeface {
             this.markAsChanged();
         });
         stripesRadio.addEventListener('change', () => {
-            updateMode();
-            this.markAsChanged();
-        });
-        dashRadio.addEventListener('change', () => {
             updateMode();
             this.markAsChanged();
         });
@@ -1125,8 +1083,6 @@ class VoidTypeface {
         this.sliderController.setValue('strokesSlider', this.settings.get('strokesNum'), false);
         this.sliderController.setValue('strokeGapRatioSlider', this.settings.get('strokeGapRatio'), false);
         this.sliderController.setValue('cornerRadiusSlider', this.settings.get('cornerRadiusMultiplier'), false);
-        this.sliderController.setValue('dashLengthSlider', this.settings.get('dashLength'), false);
-        this.sliderController.setValue('gapLengthSlider', this.settings.get('gapLength'), false);
         
         // Обновить range-слайдеры
         if (this.rangeSliderController) {
@@ -1151,12 +1107,9 @@ class VoidTypeface {
         const mode = this.settings.get('mode');
         document.getElementById('modeFill').checked = mode === 'fill';
         document.getElementById('modeStripes').checked = mode === 'stripes';
-        document.getElementById('modeDash').checked = mode === 'dash';
         document.getElementById('modeRandom').checked = mode === 'random';
         document.getElementById('strokesControlGroup').style.display = mode === 'stripes' ? 'block' : 'none';
         document.getElementById('strokeGapRatioControlGroup').style.display = mode === 'stripes' ? 'block' : 'none';
-        document.getElementById('dashLengthControlGroup').style.display = mode === 'dash' ? 'block' : 'none';
-        document.getElementById('gapLengthControlGroup').style.display = mode === 'dash' ? 'block' : 'none';
         
         // Обновить метод отрисовки (Fill/Stroke)
         const renderMethod = this.settings.get('renderMethod') || 'stroke';
@@ -1301,9 +1254,7 @@ class VoidTypeface {
             randomContrastMin: this.settings.get('randomContrastMin'),
             randomContrastMax: this.settings.get('randomContrastMax'),
             randomModeType: this.settings.get('randomModeType'),
-            roundedCaps: this.settings.get('roundedCaps') || false,
-            dashLength: this.settings.get('dashLength') || 0.10,
-            gapLength: this.settings.get('gapLength') || 0.10
+            roundedCaps: this.settings.get('roundedCaps') || false
         };
         
         // Добавляем cornerRadius только если он должен применяться

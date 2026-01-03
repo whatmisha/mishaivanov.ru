@@ -394,9 +394,7 @@ export class VoidExporter {
                     strokeGapRatio,
                     params.cornerRadius || 0,
                     params.renderMethod || 'stroke',
-                    params.roundedCaps || false,
-                    params.dashLength || 0.10,
-                    params.gapLength || 0.10
+                    params.roundedCaps || false
                 );
                 
                 if (moduleSVG) {
@@ -412,7 +410,7 @@ export class VoidExporter {
     /**
      * Отрисовать модуль в SVG
      */
-    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, strokeGapRatio, cornerRadius = 0, renderMethod = 'stroke', roundedCaps = false, dashLength = 0.10, gapLength = 0.10) {
+    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, strokeGapRatio, cornerRadius = 0, renderMethod = 'stroke', roundedCaps = false) {
         if (type === 'E') return ''; // Empty
 
         const angle = rotation * 90;
@@ -444,7 +442,7 @@ export class VoidExporter {
                         paths = this.renderBendSVGStroke(0, 0, w, h, stem, roundedCaps);
                         break;
                 }
-            } else if (mode === 'stripes') {
+            } else {
                 // Stripes mode для stroke
                 switch (type) {
                     case 'S':
@@ -464,28 +462,6 @@ export class VoidExporter {
                         break;
                     case 'B':
                         paths = this.renderBendSVGStrokeStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio, roundedCaps);
-                        break;
-                }
-            } else if (mode === 'dash') {
-                // Dash mode для stroke
-                switch (type) {
-                    case 'S':
-                        paths = this.renderStraightSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps);
-                        break;
-                    case 'C':
-                        paths = this.renderCentralSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps);
-                        break;
-                    case 'J':
-                        paths = this.renderJointSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps);
-                        break;
-                    case 'L':
-                        paths = this.renderLinkSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps);
-                        break;
-                    case 'R':
-                        paths = this.renderRoundSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps);
-                        break;
-                    case 'B':
-                        paths = this.renderBendSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps);
                         break;
                 }
             }
@@ -1091,114 +1067,6 @@ export class VoidExporter {
         }
         
         return svg;
-    }
-
-    // ============================================
-    // DASH MODE SVG RENDERING
-    // ============================================
-
-    /**
-     * S — Straight: вертикальная линия слева (dash)
-     */
-    renderStraightSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false) {
-        const lineX = -w / 2 + stem / 4;
-        const lineWidth = stem / 2;
-        const lineCap = roundedCaps ? 'round' : 'butt';
-        const dashPx = stem * dashLength;
-        const gapPx = stem * gapLength;
-        return `        <line x1="${lineX}" y1="${-h/2}" x2="${lineX}" y2="${h/2}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${dashPx} ${gapPx}"/>\n`;
-    }
-
-    /**
-     * C — Central: вертикальная линия по центру (dash)
-     */
-    renderCentralSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false) {
-        const lineX = 0;
-        const lineWidth = stem / 2;
-        const lineCap = roundedCaps ? 'round' : 'butt';
-        const dashPx = stem * dashLength;
-        const gapPx = stem * gapLength;
-        return `        <line x1="${lineX}" y1="${-h/2}" x2="${lineX}" y2="${h/2}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${dashPx} ${gapPx}"/>\n`;
-    }
-
-    /**
-     * J — Joint: Т-образное соединение (dash)
-     */
-    renderJointSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false) {
-        const vertLineX = -w / 2 + stem / 4;
-        const horizLineY = 0;
-        const lineWidth = stem / 2;
-        const lineCap = roundedCaps ? 'round' : 'butt';
-        const lineJoin = roundedCaps ? 'round' : 'miter';
-        const dashPx = stem * dashLength;
-        const gapPx = stem * gapLength;
-        let svg = '';
-        svg += `        <line x1="${vertLineX}" y1="${-h/2}" x2="${vertLineX}" y2="${h/2}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${dashPx} ${gapPx}"/>\n`;
-        svg += `        <line x1="${-w/2}" y1="${horizLineY}" x2="${w/2}" y2="${horizLineY}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-linejoin="${lineJoin}" stroke-dasharray="${dashPx} ${gapPx}"/>\n`;
-        return svg;
-    }
-
-    /**
-     * L — Link/Corner: L-образное соединение (dash)
-     */
-    renderLinkSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false) {
-        const vertLineX = -w / 2 + stem / 4;
-        const horizLineY = h / 2 - stem / 4;
-        const lineWidth = stem / 2;
-        const lineCap = roundedCaps ? 'round' : 'butt';
-        const lineJoin = roundedCaps ? 'round' : 'miter';
-        const dashPx = stem * dashLength;
-        const gapPx = stem * gapLength;
-        // Рисуем L-образное соединение одним путем
-        const path = `M ${vertLineX} ${-h/2} L ${vertLineX} ${horizLineY} L ${w/2} ${horizLineY}`;
-        return `        <path d="${path}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-linejoin="${lineJoin}" stroke-dasharray="${dashPx} ${gapPx}" fill="none"/>\n`;
-    }
-
-    /**
-     * R — Round: плавная дуга (dash)
-     */
-    renderRoundSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false) {
-        const arcRadius = w - stem / 4;
-        const centerX = w / 2;
-        const centerY = -h / 2;
-        const startAngle = Math.PI / 2;
-        const endAngle = Math.PI;
-        
-        // SVG arc: M startX startY A rx ry x-axis-rotation large-arc-flag sweep-flag endX endY
-        const startX = centerX + arcRadius * Math.cos(startAngle);
-        const startY = centerY + arcRadius * Math.sin(startAngle);
-        const endX = centerX + arcRadius * Math.cos(endAngle);
-        const endY = centerY + arcRadius * Math.sin(endAngle);
-        
-        const lineWidth = stem / 2;
-        const lineCap = roundedCaps ? 'round' : 'butt';
-        const dashPx = stem * dashLength;
-        const gapPx = stem * gapLength;
-        const path = `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 1 ${endX} ${endY}`;
-        return `        <path d="${path}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${dashPx} ${gapPx}" fill="none"/>\n`;
-    }
-
-    /**
-     * B — Bend: крутая дуга (dash)
-     */
-    renderBendSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false) {
-        const arcRadius = stem / 4;
-        const centerX = w / 2;
-        const centerY = -h / 2;
-        const startAngle = Math.PI / 2;
-        const endAngle = Math.PI;
-        
-        const startX = centerX + arcRadius * Math.cos(startAngle);
-        const startY = centerY + arcRadius * Math.sin(startAngle);
-        const endX = centerX + arcRadius * Math.cos(endAngle);
-        const endY = centerY + arcRadius * Math.sin(endAngle);
-        
-        const lineWidth = stem / 2;
-        const lineCap = roundedCaps ? 'round' : 'butt';
-        const dashPx = stem * dashLength;
-        const gapPx = stem * gapLength;
-        const path = `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 1 ${endX} ${endY}`;
-        return `        <path d="${path}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${dashPx} ${gapPx}" fill="none"/>\n`;
     }
 
     /**

@@ -14,8 +14,6 @@ export class ModuleDrawer {
         this.cornerRadius = 0; // радиус скругления углов (в пикселях)
         this.renderMethod = 'stroke'; // 'fill' или 'stroke'
         this.roundedCaps = false; // скругления на концах линий в режиме Stroke
-        this.dashLength = 0.10; // длина штриха для dash mode (множитель от stem)
-        this.gapLength = 0.10; // длина промежутка для dash mode (множитель от stem)
     }
 
     /**
@@ -52,14 +50,6 @@ export class ModuleDrawer {
      */
     setRoundedCaps(enabled) {
         this.roundedCaps = enabled || false;
-    }
-
-    /**
-     * Установить параметры для dash mode
-     */
-    setDashParams(dashLength, gapLength) {
-        this.dashLength = dashLength;
-        this.gapLength = gapLength;
     }
 
     /**
@@ -172,13 +162,12 @@ export class ModuleDrawer {
                 
                 ctx.lineWidth = lineWidth;
                 ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
-                ctx.setLineDash([]); // Сброс dash для solid
                 
                 ctx.beginPath();
                 ctx.moveTo(lineX, -h / 2);
                 ctx.lineTo(lineX, h / 2);
                 ctx.stroke();
-            } else if (this.mode === 'stripes') {
+            } else {
                 // Stripes mode: несколько параллельных линий
                 const totalWidth = stem / 2;
                 const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
@@ -186,7 +175,6 @@ export class ModuleDrawer {
                 
                 ctx.lineWidth = strokeWidth;
                 ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
-                ctx.setLineDash([]); // Сброс dash для stripes
                 
                 for (let i = 0; i < this.strokesNum; i++) {
                     const lineX = startX + i * (strokeWidth + gap);
@@ -195,25 +183,6 @@ export class ModuleDrawer {
                     ctx.lineTo(lineX, h / 2);
                     ctx.stroke();
                 }
-            } else if (this.mode === 'dash') {
-                // Dash mode: одна пунктирная линия
-                const lineX = -w / 2 + stem / 4;
-                const lineWidth = stem / 2;
-                
-                ctx.lineWidth = lineWidth;
-                ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
-                
-                // Вычисляем dash и gap в пикселях на основе stem
-                const dashPx = stem * this.dashLength;
-                const gapPx = stem * this.gapLength;
-                ctx.setLineDash([dashPx, gapPx]);
-                
-                ctx.beginPath();
-                ctx.moveTo(lineX, -h / 2);
-                ctx.lineTo(lineX, h / 2);
-                ctx.stroke();
-                
-                ctx.setLineDash([]); // Сброс после рисования
             }
         } else {
             // Fill method (оригинальный способ)
@@ -252,13 +221,12 @@ export class ModuleDrawer {
                 
                 ctx.lineWidth = lineWidth;
                 ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
-                ctx.setLineDash([]); // Сброс dash для solid
                 
                 ctx.beginPath();
                 ctx.moveTo(lineX, -h / 2);
                 ctx.lineTo(lineX, h / 2);
                 ctx.stroke();
-            } else if (this.mode === 'stripes') {
+            } else {
                 // Stripes mode: несколько параллельных линий, центрированных
                 const totalWidth = stem / 2;
                 const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
@@ -267,7 +235,6 @@ export class ModuleDrawer {
                 
                 ctx.lineWidth = strokeWidth;
                 ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
-                ctx.setLineDash([]); // Сброс dash для stripes
                 
                 for (let i = 0; i < this.strokesNum; i++) {
                     const lineX = startX + i * (strokeWidth + gap);
@@ -276,25 +243,6 @@ export class ModuleDrawer {
                     ctx.lineTo(lineX, h / 2);
                     ctx.stroke();
                 }
-            } else if (this.mode === 'dash') {
-                // Dash mode: одна пунктирная линия по центру
-                const lineX = 0;
-                const lineWidth = stem / 2;
-                
-                ctx.lineWidth = lineWidth;
-                ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
-                
-                // Вычисляем dash и gap в пикселях на основе stem
-                const dashPx = stem * this.dashLength;
-                const gapPx = stem * this.gapLength;
-                ctx.setLineDash([dashPx, gapPx]);
-                
-                ctx.beginPath();
-                ctx.moveTo(lineX, -h / 2);
-                ctx.lineTo(lineX, h / 2);
-                ctx.stroke();
-                
-                ctx.setLineDash([]); // Сброс после рисования
             }
         } else {
             // Fill method (оригинальный способ)
@@ -339,7 +287,6 @@ export class ModuleDrawer {
                 // Горизонтальная линия по центру
                 const horizLineY = 0; // Центр модуля
                 
-                ctx.setLineDash([]); // Сброс dash для solid
                 ctx.beginPath();
                 // Вертикальная линия
                 ctx.moveTo(vertLineX, -h / 2);
@@ -348,14 +295,13 @@ export class ModuleDrawer {
                 ctx.moveTo(-w / 2, horizLineY);
                 ctx.lineTo(w / 2, horizLineY);
                 ctx.stroke();
-            } else if (this.mode === 'stripes') {
+            } else {
                 // Stripes mode: несколько параллельных линий для каждой части
                 const totalWidth = stem / 2;
                 const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
                 
                 ctx.lineWidth = strokeWidth;
                 ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
-                ctx.setLineDash([]); // Сброс dash для stripes
                 
                 // Рисуем T-образные линии без пересечений
                 const vertStartX = -w / 2 + strokeWidth / 2;
@@ -384,25 +330,6 @@ export class ModuleDrawer {
                     ctx.lineTo(w / 2, lineY);
                     ctx.stroke();
                 }
-            } else if (this.mode === 'dash') {
-                // Dash mode: T-образное соединение с пунктиром
-                const vertLineX = -w / 2 + stem / 4;
-                const horizLineY = 0;
-                
-                const dashPx = stem * this.dashLength;
-                const gapPx = stem * this.gapLength;
-                ctx.setLineDash([dashPx, gapPx]);
-                
-                ctx.beginPath();
-                // Вертикальная линия
-                ctx.moveTo(vertLineX, -h / 2);
-                ctx.lineTo(vertLineX, h / 2);
-                // Горизонтальная линия
-                ctx.moveTo(-w / 2, horizLineY);
-                ctx.lineTo(w / 2, horizLineY);
-                ctx.stroke();
-                
-                ctx.setLineDash([]); // Сброс после рисования
             }
         } else {
             // Fill method (оригинальный способ)
@@ -459,14 +386,13 @@ export class ModuleDrawer {
                 // Горизонтальная линия снизу
                 const horizLineY = h / 2 - stem / 4;
                 
-                ctx.setLineDash([]); // Сброс dash для solid
                 // Рисуем L-образное соединение одним путем для правильного соединения
                 ctx.beginPath();
                 ctx.moveTo(vertLineX, -h / 2);
                 ctx.lineTo(vertLineX, horizLineY);
                 ctx.lineTo(w / 2, horizLineY);
                 ctx.stroke();
-            } else if (this.mode === 'stripes') {
+            } else {
                 // Stripes mode: несколько L-образных линий без пересечений
                 const totalWidth = stem / 2;
                 const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
@@ -474,7 +400,6 @@ export class ModuleDrawer {
                 ctx.lineWidth = strokeWidth;
                 ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
                 ctx.lineJoin = this.roundedCaps ? 'round' : 'miter';
-                ctx.setLineDash([]); // Сброс dash для stripes
                 
                 // Рисуем L-образные линии
                 // Первая линия (внутренняя) самая короткая, последняя (внешняя) самая длинная
@@ -496,22 +421,6 @@ export class ModuleDrawer {
                     ctx.lineTo(w / 2, lineY);
                     ctx.stroke();
                 }
-            } else if (this.mode === 'dash') {
-                // Dash mode: L-образное соединение с пунктиром
-                const vertLineX = -w / 2 + stem / 4;
-                const horizLineY = h / 2 - stem / 4;
-                
-                const dashPx = stem * this.dashLength;
-                const gapPx = stem * this.gapLength;
-                ctx.setLineDash([dashPx, gapPx]);
-                
-                ctx.beginPath();
-                ctx.moveTo(vertLineX, -h / 2);
-                ctx.lineTo(vertLineX, horizLineY);
-                ctx.lineTo(w / 2, horizLineY);
-                ctx.stroke();
-                
-                ctx.setLineDash([]); // Сброс после рисования
             }
         } else {
             // Fill method: повторяет логику Stroke mode
@@ -578,20 +487,18 @@ export class ModuleDrawer {
                     arcRadius = minRadius;
                 }
                 
-                ctx.setLineDash([]); // Сброс dash для solid
                 const centerX = w / 2;
                 const centerY = -h / 2;
                 
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, arcRadius, Math.PI / 2, Math.PI);
                 ctx.stroke();
-            } else if (this.mode === 'stripes') {
+            } else {
                 // Stripes mode: несколько концентрических дуг
                 const totalWidth = stem / 2;
                 const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
                 
                 ctx.lineWidth = strokeWidth;
-                ctx.setLineDash([]); // Сброс dash для stripes
                 
                 // Внешний радиус первой дуги: w - strokeWidth/2
                 // Каждая следующая дуга смещается внутрь на (strokeWidth + gap)
@@ -610,26 +517,6 @@ export class ModuleDrawer {
                         ctx.stroke();
                     }
                 }
-            } else if (this.mode === 'dash') {
-                // Dash mode: одна дуга с пунктиром
-                let arcRadius = w - stem / 4;
-                const minRadius = Math.max(lineWidth / 2, 0.1);
-                if (arcRadius < minRadius) {
-                    arcRadius = minRadius;
-                }
-                
-                const centerX = w / 2;
-                const centerY = -h / 2;
-                
-                const dashPx = stem * this.dashLength;
-                const gapPx = stem * this.gapLength;
-                ctx.setLineDash([dashPx, gapPx]);
-                
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, arcRadius, Math.PI / 2, Math.PI);
-                ctx.stroke();
-                
-                ctx.setLineDash([]); // Сброс после рисования
             }
         } else {
             // Fill method (оригинальный способ)
@@ -715,20 +602,18 @@ export class ModuleDrawer {
                     arcRadius = minRadius;
                 }
                 
-                ctx.setLineDash([]); // Сброс dash для solid
                 const centerX = w / 2;
                 const centerY = -h / 2;
                 
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, arcRadius, Math.PI / 2, Math.PI);
                 ctx.stroke();
-            } else if (this.mode === 'stripes') {
+            } else {
                 // Stripes mode: несколько концентрических дуг
                 const totalWidth = stem / 2;
                 const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
                 
                 ctx.lineWidth = strokeWidth;
-                ctx.setLineDash([]); // Сброс dash для stripes
                 
                 // Внешний радиус первой дуги: stem/2 - strokeWidth/2
                 // Каждая следующая дуга смещается внутрь на (strokeWidth + gap)
@@ -747,26 +632,6 @@ export class ModuleDrawer {
                         ctx.stroke();
                     }
                 }
-            } else if (this.mode === 'dash') {
-                // Dash mode: одна маленькая дуга с пунктиром
-                let arcRadius = stem / 4;
-                const minRadius = Math.max(lineWidth / 2, 0.1);
-                if (arcRadius < minRadius) {
-                    arcRadius = minRadius;
-                }
-                
-                const centerX = w / 2;
-                const centerY = -h / 2;
-                
-                const dashPx = stem * this.dashLength;
-                const gapPx = stem * this.gapLength;
-                ctx.setLineDash([dashPx, gapPx]);
-                
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, arcRadius, Math.PI / 2, Math.PI);
-                ctx.stroke();
-                
-                ctx.setLineDash([]); // Сброс после рисования
             }
         } else {
             // Fill method (оригинальный способ)
