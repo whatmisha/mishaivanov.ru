@@ -528,12 +528,8 @@ export class VoidExporter {
 
     renderJointSVG(x, y, w, h, stem, cornerRadius = 0) {
         let svg = '';
-        // Вертикальная линия слева (полная высота)
         const path1 = this.createRoundedRectPath(-w/2, -h/2, stem/2, h, cornerRadius);
-        // Горизонтальная линия: от вертикальной до правого края, центрирована
-        const horizStartX = -w/2 + stem/2;
-        const horizWidth = w - stem/2;
-        const path2 = this.createRoundedRectPath(horizStartX, -stem/4, horizWidth, stem/2, cornerRadius);
+        const path2 = this.createRoundedRectPath(-w/2, -stem/4, w, stem/2, cornerRadius);
         svg += `        <path d="${path1}"/>\n`;
         svg += `        <path d="${path2}"/>\n`;
         return svg;
@@ -541,10 +537,8 @@ export class VoidExporter {
 
     renderLinkSVG(x, y, w, h, stem, cornerRadius = 0) {
         let svg = '';
-        // Вертикальный прямоугольник: высота = 1 mod, выравнен по левому верхнему углу
-        const path1 = this.createRoundedRectPath(-w/2, -h/2, stem/2, w, cornerRadius);
-        // Горизонтальный прямоугольник: ширина = 1 mod, выравнен по правому нижнему углу
-        const path2 = this.createRoundedRectPath(w/2 - w, h/2 - stem/2, w, stem/2, cornerRadius);
+        const path1 = this.createRoundedRectPath(-w/2, -h/2, stem/2, h, cornerRadius);
+        const path2 = this.createRoundedRectPath(-w/2, h/2 - stem/2, w, stem/2, cornerRadius);
         svg += `        <path d="${path1}"/>\n`;
         svg += `        <path d="${path2}"/>\n`;
         return svg;
@@ -648,23 +642,21 @@ export class VoidExporter {
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         let svg = '';
         
-        // Вертикальные полоски (полная высота)
-        let shiftX = 0;
+        // Вертикальные полоски
+        let shift = 0;
         for (let i = 0; i < strokesNum; i++) {
-            const path = this.createRoundedRectPath(shiftX - w/2, -h/2, strokeWidth, h, cornerRadius);
+            const path = this.createRoundedRectPath(shift - w/2, -h/2, strokeWidth, h, cornerRadius);
             svg += `        <path d="${path}"/>\n`;
-            shiftX += strokeWidth + gap;
+            shift += strokeWidth + gap;
         }
         
-        // Горизонтальные полоски: от вертикальных до правого края
-        const horizStartX = -w/2 + totalWidth;
-        const horizWidth = w - totalWidth;
-        const totalLineWidth = (strokesNum * strokeWidth) + ((strokesNum - 1) * gap);
-        let shiftY = -totalLineWidth / 2;
+        // Горизонтальные полоски
+        const lineWidth = (strokesNum * strokeWidth) + ((strokesNum - 1) * gap);
+        shift = -lineWidth / 2;
         for (let i = 0; i < strokesNum; i++) {
-            const path = this.createRoundedRectPath(horizStartX, shiftY, horizWidth, strokeWidth, cornerRadius);
+            const path = this.createRoundedRectPath(-w/2, shift, w, strokeWidth, cornerRadius);
             svg += `        <path d="${path}"/>\n`;
-            shiftY += strokeWidth + gap;
+            shift += strokeWidth + gap;
         }
         
         return svg;
@@ -675,25 +667,20 @@ export class VoidExporter {
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         let svg = '';
         
+        // Вертикальные полоски
+        let shift = 0;
         for (let i = 0; i < strokesNum; i++) {
-            const offset = i * (strokeWidth + gap);
-            
-            // Вертикальная часть: высота уменьшается с каждым шагом
-            const vertX = -w / 2 + offset;
-            const vertY = -h / 2;
-            const vertHeight = w - offset; // Уменьшается!
-            
-            // Горизонтальная часть: ширина уменьшается с каждым шагом
-            const horizX = -w / 2 + offset; // Начинается с той же X, что и вертикальная
-            const horizY = h / 2 - strokeWidth - offset; // Y уменьшается (сдвигается вверх)
-            const horizWidth = w - offset; // Уменьшается!
-            
-            // Рисуем вертикальный прямоугольник
-            const path1 = this.createRoundedRectPath(vertX, vertY, strokeWidth, vertHeight, cornerRadius);
-            svg += `        <path d="${path1}"/>\n`;
-            // Рисуем горизонтальный прямоугольник
-            const path2 = this.createRoundedRectPath(horizX, horizY, horizWidth, strokeWidth, cornerRadius);
-            svg += `        <path d="${path2}"/>\n`;
+            const path = this.createRoundedRectPath(shift - w/2, -h/2, strokeWidth, h, cornerRadius);
+            svg += `        <path d="${path}"/>\n`;
+            shift += strokeWidth + gap;
+        }
+        
+        // Горизонтальные полоски (снизу)
+        shift = h / 2 - stem / 2;
+        for (let i = 0; i < strokesNum; i++) {
+            const path = this.createRoundedRectPath(-w/2, shift, w, strokeWidth, cornerRadius);
+            svg += `        <path d="${path}"/>\n`;
+            shift += strokeWidth + gap;
         }
         
         return svg;

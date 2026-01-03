@@ -331,29 +331,25 @@ export class ModuleDrawer {
         } else {
             // Fill method (оригинальный способ)
             if (this.mode === 'fill') {
-                // Вертикальная линия слева (полная высота)
+                // Вертикальная линия слева со скруглением
                 this.fillRoundedRect(ctx, -w / 2, -h / 2, stem / 2, h, this.cornerRadius);
-                // Горизонтальная линия: от вертикальной до правого края, центрирована
-                const horizStartX = -w / 2 + stem / 2;
-                const horizWidth = w - stem / 2;
-                this.fillRoundedRect(ctx, horizStartX, -stem / 4, horizWidth, stem / 2, this.cornerRadius);
+                // Горизонтальная линия по центру со скруглением
+                this.fillRoundedRect(ctx, -w / 2, -stem / 4, w, stem / 2, this.cornerRadius);
             } else {
-                // Stripes для вертикали (полная высота)
+                // Stripes для вертикали
                 const totalWidth = stem / 2;
                 const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
-                let shiftX = 0;
+                let shift = 0;
                 for (let i = 0; i < this.strokesNum; i++) {
-                    this.fillRoundedRect(ctx, shiftX - w / 2, -h / 2, strokeWidth, h, this.cornerRadius);
-                    shiftX += strokeWidth + gap;
+                    this.fillRoundedRect(ctx, shift - w / 2, -h / 2, strokeWidth, h, this.cornerRadius);
+                    shift += strokeWidth + gap;
                 }
-                // Stripes для горизонтали: от последней вертикальной до правого края
-                const horizStartX = -w / 2 + totalWidth;
-                const horizWidth = w - totalWidth;
-                const totalLineWidth = (this.strokesNum * strokeWidth) + ((this.strokesNum - 1) * gap);
-                let shiftY = -totalLineWidth / 2;
+                // Stripes для горизонтали (по центру)
+                const lineWidth = (this.strokesNum * strokeWidth) + ((this.strokesNum - 1) * gap);
+                shift = -lineWidth / 2;
                 for (let i = 0; i < this.strokesNum; i++) {
-                    this.fillRoundedRect(ctx, horizStartX, shiftY, horizWidth, strokeWidth, this.cornerRadius);
-                    shiftY += strokeWidth + gap;
+                    this.fillRoundedRect(ctx, -w / 2, shift, w, strokeWidth, this.cornerRadius);
+                    shift += strokeWidth + gap;
                 }
             }
         }
@@ -422,34 +418,26 @@ export class ModuleDrawer {
                 }
             }
         } else {
-            // Fill method: повторяет логику Stroke mode
+            // Fill method (оригинальный способ)
             if (this.mode === 'fill') {
-                // Вертикальный прямоугольник: высота = 1 mod, выравнен по левому верхнему углу
-                this.fillRoundedRect(ctx, -w / 2, -h / 2, stem / 2, w, this.cornerRadius);
-                // Горизонтальный прямоугольник: ширина = 1 mod, выравнен по правому нижнему углу
-                this.fillRoundedRect(ctx, w / 2 - w, h / 2 - stem / 2, w, stem / 2, this.cornerRadius);
+                // Вертикальная линия слева со скруглением
+                this.fillRoundedRect(ctx, -w / 2, -h / 2, stem / 2, h, this.cornerRadius);
+                // Горизонтальная линия снизу со скруглением
+                this.fillRoundedRect(ctx, -w / 2, h / 2 - stem / 2, w, stem / 2, this.cornerRadius);
             } else {
-                // Stripes: L-образные формы "ступеньками"
+                // Stripes для вертикали
                 const totalWidth = stem / 2;
                 const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
-                
+                let shift = 0;
                 for (let i = 0; i < this.strokesNum; i++) {
-                    const offset = i * (strokeWidth + gap);
-                    
-                    // Вертикальная часть: высота уменьшается с каждым шагом
-                    const vertX = -w / 2 + offset;
-                    const vertY = -h / 2;
-                    const vertHeight = w - offset; // Уменьшается!
-                    
-                    // Горизонтальная часть: ширина уменьшается с каждым шагом
-                    const horizX = -w / 2 + offset; // Начинается с той же X, что и вертикальная
-                    const horizY = h / 2 - strokeWidth - offset; // Y уменьшается (сдвигается вверх)
-                    const horizWidth = w - offset; // Уменьшается!
-                    
-                    // Рисуем вертикальный прямоугольник
-                    this.fillRoundedRect(ctx, vertX, vertY, strokeWidth, vertHeight, this.cornerRadius);
-                    // Рисуем горизонтальный прямоугольник
-                    this.fillRoundedRect(ctx, horizX, horizY, horizWidth, strokeWidth, this.cornerRadius);
+                    this.fillRoundedRect(ctx, shift - w / 2, -h / 2, strokeWidth, h, this.cornerRadius);
+                    shift += strokeWidth + gap;
+                }
+                // Stripes для горизонтали (снизу)
+                shift = h / 2 - stem / 2;
+                for (let i = 0; i < this.strokesNum; i++) {
+                    this.fillRoundedRect(ctx, -w / 2, shift, w, strokeWidth, this.cornerRadius);
+                    shift += strokeWidth + gap;
                 }
             }
         }
