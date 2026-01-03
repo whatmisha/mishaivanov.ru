@@ -15,7 +15,7 @@ export class ModuleDrawer {
         this.renderMethod = 'stroke'; // 'fill' или 'stroke'
         this.roundedCaps = false; // скругления на концах линий в режиме Stroke (Rounded)
         this.dashLength = 0.10; // длина штриха для dash mode (множитель от stem)
-        this.gapLength = 0.30; // длина промежутка для dash mode (множитель от stem)
+        this.gapLength = 0.10; // длина промежутка для dash mode (множитель от stem)
     }
 
     /**
@@ -60,46 +60,6 @@ export class ModuleDrawer {
     setDashParams(dashLength, gapLength) {
         this.dashLength = dashLength;
         this.gapLength = gapLength;
-    }
-
-    /**
-     * Вычислить адаптивный Gap для режима Dash
-     * Линия начинается и заканчивается штрихом длиной dashLength
-     * @param {number} lineLength - длина линии в пикселях
-     * @param {number} dashLength - длина штриха в пикселях
-     * @param {number} gapLength - начальная длина промежутка (используется для оценки)
-     * @returns {Object} {dashLength, gapLength, numDashes} - адаптивные параметры
-     */
-    calculateAdaptiveDash(lineLength, dashLength, gapLength) {
-        // Минимум один штрих
-        if (lineLength <= dashLength) {
-            return { dashLength: lineLength, gapLength: 0, numDashes: 1 };
-        }
-
-        // Оценочное количество штрихов на основе оригинального gap
-        // Формула: n*dashLength + (n-1)*gapLength = lineLength
-        // n = (lineLength + gapLength) / (dashLength + gapLength)
-        let numDashes = Math.round((lineLength + gapLength) / (dashLength + gapLength));
-        
-        // Минимум 2 штриха (начало и конец)
-        if (numDashes < 2) {
-            numDashes = 2;
-        }
-
-        // Вычисляем адаптивный gap
-        // lineLength = n*dashLength + (n-1)*gap
-        // gap = (lineLength - n*dashLength) / (n-1)
-        const adaptiveGap = (lineLength - numDashes * dashLength) / (numDashes - 1);
-
-        // Если gap получился отрицательным, уменьшаем количество штрихов
-        if (adaptiveGap < 0 && numDashes > 1) {
-            numDashes = Math.floor(lineLength / dashLength);
-            if (numDashes < 1) numDashes = 1;
-            const newGap = numDashes > 1 ? (lineLength - numDashes * dashLength) / (numDashes - 1) : 0;
-            return { dashLength, gapLength: Math.max(0, newGap), numDashes };
-        }
-
-        return { dashLength, gapLength: Math.max(0, adaptiveGap), numDashes };
     }
 
     /**
@@ -236,20 +196,17 @@ export class ModuleDrawer {
                     ctx.stroke();
                 }
             } else if (this.mode === 'dash') {
-                // Dash mode: одна пунктирная линия с адаптивным gap
+                // Dash mode: одна пунктирная линия
                 const lineX = -w / 2 + stem / 4;
                 const lineWidth = stem / 2;
                 
                 ctx.lineWidth = lineWidth;
                 ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
                 
-                // Вычисляем адаптивный dash и gap
-                const lineLength = h; // Длина вертикальной линии
+                // Вычисляем dash и gap в пикселях на основе stem
                 const dashPx = stem * this.dashLength;
                 const gapPx = stem * this.gapLength;
-                const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
-                
-                ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
+                ctx.setLineDash([dashPx, gapPx]);
                 
                 ctx.beginPath();
                 ctx.moveTo(lineX, -h / 2);
@@ -320,20 +277,17 @@ export class ModuleDrawer {
                     ctx.stroke();
                 }
             } else if (this.mode === 'dash') {
-                // Dash mode: одна пунктирная линия по центру с адаптивным gap
+                // Dash mode: одна пунктирная линия по центру
                 const lineX = 0;
                 const lineWidth = stem / 2;
                 
                 ctx.lineWidth = lineWidth;
                 ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
                 
-                // Вычисляем адаптивный dash и gap
-                const lineLength = h; // Длина вертикальной линии
+                // Вычисляем dash и gap в пикселях на основе stem
                 const dashPx = stem * this.dashLength;
                 const gapPx = stem * this.gapLength;
-                const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
-                
-                ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
+                ctx.setLineDash([dashPx, gapPx]);
                 
                 ctx.beginPath();
                 ctx.moveTo(lineX, -h / 2);
@@ -431,29 +385,19 @@ export class ModuleDrawer {
                     ctx.stroke();
                 }
             } else if (this.mode === 'dash') {
-                // Dash mode: T-образное соединение с адаптивным пунктиром
+                // Dash mode: T-образное соединение с пунктиром
                 const vertLineX = -w / 2 + stem / 4;
                 const horizLineY = 0;
                 
                 const dashPx = stem * this.dashLength;
                 const gapPx = stem * this.gapLength;
+                ctx.setLineDash([dashPx, gapPx]);
                 
-                // Вертикальная линия
-                const vertLength = h;
-                const vertAdaptive = this.calculateAdaptiveDash(vertLength, dashPx, gapPx);
-                
-                ctx.setLineDash([vertAdaptive.dashLength, vertAdaptive.gapLength]);
                 ctx.beginPath();
+                // Вертикальная линия
                 ctx.moveTo(vertLineX, -h / 2);
                 ctx.lineTo(vertLineX, h / 2);
-                ctx.stroke();
-                
                 // Горизонтальная линия
-                const horizLength = w;
-                const horizAdaptive = this.calculateAdaptiveDash(horizLength, dashPx, gapPx);
-                
-                ctx.setLineDash([horizAdaptive.dashLength, horizAdaptive.gapLength]);
-                ctx.beginPath();
                 ctx.moveTo(-w / 2, horizLineY);
                 ctx.lineTo(w / 2, horizLineY);
                 ctx.stroke();
@@ -553,22 +497,13 @@ export class ModuleDrawer {
                     ctx.stroke();
                 }
             } else if (this.mode === 'dash') {
-                // Dash mode: L-образное соединение с адаптивным пунктиром
+                // Dash mode: L-образное соединение с пунктиром
                 const vertLineX = -w / 2 + stem / 4;
                 const horizLineY = h / 2 - stem / 4;
                 
                 const dashPx = stem * this.dashLength;
                 const gapPx = stem * this.gapLength;
-                
-                // Для L-образного соединения вычисляем общую длину пути
-                const vertLength = h / 2 + horizLineY; // От верха до начала горизонтальной части
-                const horizLength = w - (-w / 2 - vertLineX); // От вертикальной линии до правого края
-                const totalLength = vertLength + horizLength;
-                
-                // Вычисляем адаптивный dash для всего пути
-                const adaptive = this.calculateAdaptiveDash(totalLength, dashPx, gapPx);
-                
-                ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
+                ctx.setLineDash([dashPx, gapPx]);
                 
                 ctx.beginPath();
                 ctx.moveTo(vertLineX, -h / 2);
@@ -676,7 +611,7 @@ export class ModuleDrawer {
                     }
                 }
             } else if (this.mode === 'dash') {
-                // Dash mode: одна дуга с адаптивным пунктиром
+                // Dash mode: одна дуга с пунктиром
                 let arcRadius = w - stem / 4;
                 const minRadius = Math.max(lineWidth / 2, 0.1);
                 if (arcRadius < minRadius) {
@@ -688,13 +623,7 @@ export class ModuleDrawer {
                 
                 const dashPx = stem * this.dashLength;
                 const gapPx = stem * this.gapLength;
-                
-                // Вычисляем длину дуги: L = radius * angle
-                // Угол от PI/2 до PI = PI/2 радиан
-                const arcLength = arcRadius * (Math.PI / 2);
-                const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
-                
-                ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
+                ctx.setLineDash([dashPx, gapPx]);
                 
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, arcRadius, Math.PI / 2, Math.PI);
@@ -819,7 +748,7 @@ export class ModuleDrawer {
                     }
                 }
             } else if (this.mode === 'dash') {
-                // Dash mode: одна маленькая дуга с адаптивным пунктиром
+                // Dash mode: одна маленькая дуга с пунктиром
                 let arcRadius = stem / 4;
                 const minRadius = Math.max(lineWidth / 2, 0.1);
                 if (arcRadius < minRadius) {
@@ -831,13 +760,7 @@ export class ModuleDrawer {
                 
                 const dashPx = stem * this.dashLength;
                 const gapPx = stem * this.gapLength;
-                
-                // Вычисляем длину дуги: L = radius * angle
-                // Угол от PI/2 до PI = PI/2 радиан
-                const arcLength = arcRadius * (Math.PI / 2);
-                const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
-                
-                ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
+                ctx.setLineDash([dashPx, gapPx]);
                 
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, arcRadius, Math.PI / 2, Math.PI);

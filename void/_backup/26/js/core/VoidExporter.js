@@ -54,41 +54,6 @@ export class VoidExporter {
     }
 
     /**
-     * Вычислить адаптивный Gap для режима Dash (аналогично ModuleDrawer)
-     * @param {number} lineLength - длина линии в пикселях
-     * @param {number} dashLength - длина штриха в пикселях
-     * @param {number} gapLength - начальная длина промежутка
-     * @returns {Object} {dashLength, gapLength, numDashes}
-     */
-    calculateAdaptiveDash(lineLength, dashLength, gapLength) {
-        // Минимум один штрих
-        if (lineLength <= dashLength) {
-            return { dashLength: lineLength, gapLength: 0, numDashes: 1 };
-        }
-
-        // Оценочное количество штрихов на основе оригинального gap
-        let numDashes = Math.round((lineLength + gapLength) / (dashLength + gapLength));
-        
-        // Минимум 2 штриха (начало и конец)
-        if (numDashes < 2) {
-            numDashes = 2;
-        }
-
-        // Вычисляем адаптивный gap
-        const adaptiveGap = (lineLength - numDashes * dashLength) / (numDashes - 1);
-
-        // Если gap получился отрицательным, уменьшаем количество штрихов
-        if (adaptiveGap < 0 && numDashes > 1) {
-            numDashes = Math.floor(lineLength / dashLength);
-            if (numDashes < 1) numDashes = 1;
-            const newGap = numDashes > 1 ? (lineLength - numDashes * dashLength) / (numDashes - 1) : 0;
-            return { dashLength, gapLength: Math.max(0, newGap), numDashes };
-        }
-
-        return { dashLength, gapLength: Math.max(0, adaptiveGap), numDashes };
-    }
-
-    /**
      * Получить SVG контент (без скачивания)
      */
     getSVGContent() {
@@ -111,10 +76,6 @@ export class VoidExporter {
             if (this.settings.get('roundedCaps') !== undefined) {
                 params.roundedCaps = this.settings.get('roundedCaps');
             }
-            // Получаем randomRounded из settings для режима Random
-            if (this.settings.get('randomRounded') !== undefined) {
-                params.randomRounded = this.settings.get('randomRounded');
-            }
         } else if (params.includeGridToExport === undefined) {
             params.includeGridToExport = false;
         }
@@ -129,10 +90,6 @@ export class VoidExporter {
         // Убедиться, что roundedCaps установлен
         if (params.roundedCaps === undefined) {
             params.roundedCaps = false;
-        }
-        // Убедиться, что randomRounded установлен
-        if (params.randomRounded === undefined) {
-            params.randomRounded = false;
         }
         const text = params.text;
         
@@ -424,11 +381,6 @@ export class VoidExporter {
                     strokeGapRatio = randomValues.strokeGapRatio;
                 }
                 
-                // В режиме Random использовать randomRounded, иначе roundedCaps
-                const shouldUseRounded = params.mode === 'random' 
-                    ? (params.randomRounded || false)
-                    : (params.roundedCaps || false);
-                
                 const moduleSVG = this.renderModuleToSVG(
                     moduleType, 
                     rotation, 
@@ -442,9 +394,9 @@ export class VoidExporter {
                     strokeGapRatio,
                     params.cornerRadius || 0,
                     params.renderMethod || 'stroke',
-                    shouldUseRounded,
+                    params.roundedCaps || false,
                     params.dashLength || 0.10,
-                    params.gapLength || 0.30
+                    params.gapLength || 0.10
                 );
                 
                 if (moduleSVG) {
@@ -460,7 +412,7 @@ export class VoidExporter {
     /**
      * Отрисовать модуль в SVG
      */
-    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, strokeGapRatio, cornerRadius = 0, renderMethod = 'stroke', roundedCaps = false, dashLength = 0.10, gapLength = 0.30) {
+    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, strokeGapRatio, cornerRadius = 0, renderMethod = 'stroke', roundedCaps = false, dashLength = 0.10, gapLength = 0.10) {
         if (type === 'E') return ''; // Empty
 
         const angle = rotation * 90;
@@ -1152,14 +1104,9 @@ export class VoidExporter {
         const lineX = -w / 2 + stem / 4;
         const lineWidth = stem / 2;
         const lineCap = roundedCaps ? 'round' : 'butt';
-        
-        // Вычисляем адаптивный dash и gap
-        const lineLength = h;
         const dashPx = stem * dashLength;
         const gapPx = stem * gapLength;
-        const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
-        
-        return `        <line x1="${lineX}" y1="${-h/2}" x2="${lineX}" y2="${h/2}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}"/>\n`;
+        return `        <line x1="${lineX}" y1="${-h/2}" x2="${lineX}" y2="${h/2}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${dashPx} ${gapPx}"/>\n`;
     }
 
     /**
@@ -1169,14 +1116,9 @@ export class VoidExporter {
         const lineX = 0;
         const lineWidth = stem / 2;
         const lineCap = roundedCaps ? 'round' : 'butt';
-        
-        // Вычисляем адаптивный dash и gap
-        const lineLength = h;
         const dashPx = stem * dashLength;
         const gapPx = stem * gapLength;
-        const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
-        
-        return `        <line x1="${lineX}" y1="${-h/2}" x2="${lineX}" y2="${h/2}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}"/>\n`;
+        return `        <line x1="${lineX}" y1="${-h/2}" x2="${lineX}" y2="${h/2}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${dashPx} ${gapPx}"/>\n`;
     }
 
     /**
@@ -1188,21 +1130,11 @@ export class VoidExporter {
         const lineWidth = stem / 2;
         const lineCap = roundedCaps ? 'round' : 'butt';
         const lineJoin = roundedCaps ? 'round' : 'miter';
-        
         const dashPx = stem * dashLength;
         const gapPx = stem * gapLength;
-        
-        // Вертикальная линия
-        const vertLength = h;
-        const vertAdaptive = this.calculateAdaptiveDash(vertLength, dashPx, gapPx);
-        
-        // Горизонтальная линия
-        const horizLength = w;
-        const horizAdaptive = this.calculateAdaptiveDash(horizLength, dashPx, gapPx);
-        
         let svg = '';
-        svg += `        <line x1="${vertLineX}" y1="${-h/2}" x2="${vertLineX}" y2="${h/2}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${vertAdaptive.dashLength} ${vertAdaptive.gapLength}"/>\n`;
-        svg += `        <line x1="${-w/2}" y1="${horizLineY}" x2="${w/2}" y2="${horizLineY}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-linejoin="${lineJoin}" stroke-dasharray="${horizAdaptive.dashLength} ${horizAdaptive.gapLength}"/>\n`;
+        svg += `        <line x1="${vertLineX}" y1="${-h/2}" x2="${vertLineX}" y2="${h/2}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${dashPx} ${gapPx}"/>\n`;
+        svg += `        <line x1="${-w/2}" y1="${horizLineY}" x2="${w/2}" y2="${horizLineY}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-linejoin="${lineJoin}" stroke-dasharray="${dashPx} ${gapPx}"/>\n`;
         return svg;
     }
 
@@ -1215,21 +1147,11 @@ export class VoidExporter {
         const lineWidth = stem / 2;
         const lineCap = roundedCaps ? 'round' : 'butt';
         const lineJoin = roundedCaps ? 'round' : 'miter';
-        
         const dashPx = stem * dashLength;
         const gapPx = stem * gapLength;
-        
-        // Для L-образного соединения вычисляем общую длину пути
-        const vertLength = h / 2 + horizLineY;
-        const horizLength = w - (-w / 2 - vertLineX);
-        const totalLength = vertLength + horizLength;
-        
-        // Вычисляем адаптивный dash для всего пути
-        const adaptive = this.calculateAdaptiveDash(totalLength, dashPx, gapPx);
-        
         // Рисуем L-образное соединение одним путем
         const path = `M ${vertLineX} ${-h/2} L ${vertLineX} ${horizLineY} L ${w/2} ${horizLineY}`;
-        return `        <path d="${path}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-linejoin="${lineJoin}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" fill="none"/>\n`;
+        return `        <path d="${path}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-linejoin="${lineJoin}" stroke-dasharray="${dashPx} ${gapPx}" fill="none"/>\n`;
     }
 
     /**
@@ -1250,16 +1172,10 @@ export class VoidExporter {
         
         const lineWidth = stem / 2;
         const lineCap = roundedCaps ? 'round' : 'butt';
-        
         const dashPx = stem * dashLength;
         const gapPx = stem * gapLength;
-        
-        // Вычисляем длину дуги: L = radius * angle
-        const arcLength = arcRadius * (Math.PI / 2);
-        const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
-        
         const path = `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 1 ${endX} ${endY}`;
-        return `        <path d="${path}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" fill="none"/>\n`;
+        return `        <path d="${path}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${dashPx} ${gapPx}" fill="none"/>\n`;
     }
 
     /**
@@ -1279,16 +1195,10 @@ export class VoidExporter {
         
         const lineWidth = stem / 2;
         const lineCap = roundedCaps ? 'round' : 'butt';
-        
         const dashPx = stem * dashLength;
         const gapPx = stem * gapLength;
-        
-        // Вычисляем длину дуги: L = radius * angle
-        const arcLength = arcRadius * (Math.PI / 2);
-        const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
-        
         const path = `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 1 ${endX} ${endY}`;
-        return `        <path d="${path}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" fill="none"/>\n`;
+        return `        <path d="${path}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${dashPx} ${gapPx}" fill="none"/>\n`;
     }
 
     /**

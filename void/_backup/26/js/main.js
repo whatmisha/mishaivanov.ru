@@ -43,7 +43,7 @@ class VoidTypeface {
                 renderMethod: 'stroke', // 'fill' или 'stroke'
                 roundedCaps: false, // скругления на концах линий в режиме Stroke (Rounded)
                 dashLength: 0.10, // длина штриха для Dash mode (множитель от stem)
-                gapLength: 0.30, // длина промежутка для Dash mode (множитель от stem)
+                gapLength: 0.10, // длина промежутка для Dash mode (множитель от stem)
                 currentMode: 'normal' // 'normal' или 'editor'
             },
             get(key) { return this.values[key]; },
@@ -1409,7 +1409,7 @@ class VoidTypeface {
             randomRounded: this.settings.get('randomRounded') || false,
             roundedCaps: this.settings.get('roundedCaps') || false,
             dashLength: this.settings.get('dashLength') || 0.10,
-            gapLength: this.settings.get('gapLength') || 0.30
+            gapLength: this.settings.get('gapLength') || 0.10
         };
         
         // Добавляем cornerRadius только если он должен применяться

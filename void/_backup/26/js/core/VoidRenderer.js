@@ -132,14 +132,8 @@ export class VoidRenderer {
         this.moduleDrawer.setStripesParams(this.params.strokesNum, this.params.strokeGapRatio);
         this.moduleDrawer.setCornerRadius(this.params.cornerRadius || 0);
         this.moduleDrawer.setRenderMethod(this.params.renderMethod || 'stroke');
-        
-        // В режиме Random использовать randomRounded, иначе roundedCaps
-        const shouldUseRounded = this.params.mode === 'random' 
-            ? (this.params.randomRounded || false)
-            : (this.params.roundedCaps || false);
-        this.moduleDrawer.setRoundedCaps(shouldUseRounded);
-        
-        this.moduleDrawer.setDashParams(this.params.dashLength || 0.10, this.params.gapLength || 0.30);
+        this.moduleDrawer.setRoundedCaps(this.params.roundedCaps || false);
+        this.moduleDrawer.setDashParams(this.params.dashLength || 0.10, this.params.gapLength || 0.10);
     }
 
     /**
