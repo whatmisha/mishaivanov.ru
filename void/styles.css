@@ -2202,6 +2202,21 @@ textarea::placeholder {
     }
 }
 
+/* Скрыть панели на мобильных устройствах сразу (до загрузки JS) */
+.is-mobile .controls-panel,
+.is-mobile #presetDropdown,
+.is-mobile #savePresetBtn,
+.is-mobile #deletePresetBtn,
+.is-mobile #exportBtn,
+.is-mobile #copyBtn {
+    display: none !important;
+}
+
+/* Показать кнопку Renew только на мобильных устройствах */
+.is-mobile #renewBtn {
+    display: block !important;
+}
+
 @media (max-width: 768px) {
     .controls-panel {
         width: 260px;

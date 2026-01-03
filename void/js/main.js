@@ -141,6 +141,18 @@ class VoidTypeface {
         if (exportBtn) exportBtn.style.display = 'none';
         if (copyBtn) copyBtn.style.display = 'none';
         
+        // Показать кнопку Renew
+        const renewBtn = document.getElementById('renewBtn');
+        if (renewBtn) {
+            renewBtn.style.display = 'block';
+            renewBtn.addEventListener('click', () => {
+                // Очистить кэш случайных значений
+                this.renderer.clearModuleTypeCache();
+                // Перерисовать графику с новыми случайными значениями
+                this.calculateMobileModuleSize();
+            });
+        }
+        
         // Установить режим Random и текст
         this.settings.set('mode', 'random');
         this.settings.set('text', 'ONLY\nDESK\nTOP');

@@ -61,12 +61,16 @@ export class VoidExporter {
         // this.clearModuleTypeCache();
         
         const params = this.renderer.params;
-        // Получаем актуальное значение includeGridToExport из settings, если доступно
+        // Получаем актуальные значения из settings, если доступно
         if (this.settings) {
             params.includeGridToExport = this.settings.get('includeGridToExport') || false;
             // Также получаем renderMethod из settings, если он не установлен в params
             if (!params.renderMethod && this.settings.get('renderMethod')) {
                 params.renderMethod = this.settings.get('renderMethod');
+            }
+            // Получаем textAlign из settings
+            if (this.settings.get('textAlign')) {
+                params.textAlign = this.settings.get('textAlign');
             }
         } else if (params.includeGridToExport === undefined) {
             params.includeGridToExport = false;
@@ -74,6 +78,10 @@ export class VoidExporter {
         // Убедиться, что renderMethod установлен
         if (!params.renderMethod) {
             params.renderMethod = 'stroke';
+        }
+        // Убедиться, что textAlign установлен
+        if (!params.textAlign) {
+            params.textAlign = 'center';
         }
         const text = params.text;
         
@@ -176,7 +184,18 @@ export class VoidExporter {
             if (line.length > 0 && !(line[line.length - 1] === ' ' && line.length > 1 && line[line.length - 2] === ' ')) {
                 lineWidth -= params.letterSpacing;
             }
-            const lineX = (contentWidth - lineWidth) / 2;
+            
+            // Вычислить позицию строки в зависимости от выравнивания
+            const textAlign = params.textAlign || 'center';
+            let lineX;
+            if (textAlign === 'left') {
+                lineX = 0; // Выравнивание по левому краю контента
+            } else if (textAlign === 'right') {
+                lineX = contentWidth - lineWidth; // Выравнивание по правому краю контента
+            } else { // center
+                lineX = (contentWidth - lineWidth) / 2; // Центрирование
+            }
+            
             const lineY = lineIndex * (letterH + params.lineHeight);
             
             // Отрисовать каждую букву
