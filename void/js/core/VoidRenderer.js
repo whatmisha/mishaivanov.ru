@@ -2,7 +2,7 @@
  * VoidRenderer - рендеринг текста шрифтом Void на canvas
  */
 
-import { getGlyph } from './VoidAlphabet.js';
+import { getGlyph, VOID_ALPHABET_ALTERNATIVES, VOID_ALPHABET } from './VoidAlphabet.js';
 import { ModuleDrawer } from './ModuleDrawer.js';
 
 export class VoidRenderer {
@@ -39,6 +39,14 @@ export class VoidRenderer {
         // Кэш для значений каждого модуля (для режима random full)
         this.moduleValueCache = {};
         
+        // Кэш выбранных альтернативных глифов для каждой буквы
+        // Ключ: `${lineIndex}_${charIndex}`, значение: индекс альтернативы (0 = базовый, 1+ = альтернативы)
+        // Если ключа нет в кэше, значит буква использует случайную альтернативу (в режиме Random)
+        this.alternativeGlyphCache = {};
+        
+        // Текущая буква под курсором (для эффекта прозрачности)
+        this.hoveredLetter = null; // {lineIndex, charIndex} или null
+        
         // Сохранить размеры канваса в CSS пикселях
         this.canvasWidth = 0;
         this.canvasHeight = 0;
@@ -55,15 +63,24 @@ export class VoidRenderer {
     }
 
     /**
+     * Очистить кэш альтернативных глифов (при Renew в режиме Random)
+     */
+    clearAlternativeGlyphCache() {
+        this.alternativeGlyphCache = {};
+    }
+
+    /**
      * Получить случайные значения для модуля (с учетом режима рандома)
      */
     getRandomModuleValues(moduleType) {
-        const stemMin = this.params.randomStemMin || 0.5;
-        const stemMax = this.params.randomStemMax || 2.0;
-        const strokesMin = this.params.randomStrokesMin || 1;
-        const strokesMax = this.params.randomStrokesMax || 5;
-        const contrastMin = this.params.randomContrastMin || 0.1;
-        const contrastMax = this.params.randomContrastMax || 8.0;
+        // Используем значения из params, если они определены, иначе значения по умолчанию
+        // Значения по умолчанию должны совпадать с дефолтными значениями в main.js
+        const stemMin = this.params.randomStemMin !== undefined ? this.params.randomStemMin : 0.5;
+        const stemMax = this.params.randomStemMax !== undefined ? this.params.randomStemMax : 1.0;
+        const strokesMin = this.params.randomStrokesMin !== undefined ? this.params.randomStrokesMin : 1;
+        const strokesMax = this.params.randomStrokesMax !== undefined ? this.params.randomStrokesMax : 2;
+        const contrastMin = this.params.randomContrastMin !== undefined ? this.params.randomContrastMin : 0.5;
+        const contrastMax = this.params.randomContrastMax !== undefined ? this.params.randomContrastMax : 1.0;
         const randomModeType = this.params.randomModeType || 'byType';
 
         if (randomModeType === 'byType') {
@@ -125,7 +142,27 @@ export class VoidRenderer {
      * Обновить параметры
      */
     updateParams(newParams) {
+        // Проверить, изменились ли параметры random, и очистить кэш если да
+        const oldStemMin = this.params.randomStemMin;
+        const oldStemMax = this.params.randomStemMax;
+        const oldStrokesMin = this.params.randomStrokesMin;
+        const oldStrokesMax = this.params.randomStrokesMax;
+        const oldContrastMin = this.params.randomContrastMin;
+        const oldContrastMax = this.params.randomContrastMax;
+        
         Object.assign(this.params, newParams);
+        
+        // Если параметры random изменились, очистить кэш
+        if (this.params.mode === 'random' && (
+            oldStemMin !== this.params.randomStemMin ||
+            oldStemMax !== this.params.randomStemMax ||
+            oldStrokesMin !== this.params.randomStrokesMin ||
+            oldStrokesMax !== this.params.randomStrokesMax ||
+            oldContrastMin !== this.params.randomContrastMin ||
+            oldContrastMax !== this.params.randomContrastMax
+        )) {
+            this.clearModuleTypeCache();
+        }
         
         // Обновить параметры модуля
         this.moduleDrawer.setMode(this.params.mode);
@@ -336,13 +373,50 @@ export class VoidRenderer {
      * Отрисовать одну букву
      */
     drawLetter(char, x, y, lineIndex = null, charIndex = null) {
-        const glyphCode = getGlyph(char);
+        // Определяем, использовать ли альтернативу
+        let alternativeIndex = null;
+        const cacheKey = lineIndex !== null && charIndex !== null ? `${lineIndex}_${charIndex}` : null;
+        
+        if (cacheKey && this.alternativeGlyphCache.hasOwnProperty(cacheKey)) {
+            // Буква зафиксирована в кэше - используем её альтернативу
+            alternativeIndex = this.alternativeGlyphCache[cacheKey];
+        } else if (this.params.mode === 'random' && this.params.useAlternativesInRandom && cacheKey) {
+            // В режиме Random с включенными альтернативами - генерируем случайную альтернативу один раз
+            // и сохраняем её в кэш для стабильности между рендерами
+            const charUpper = char.toUpperCase();
+            const alternatives = VOID_ALPHABET_ALTERNATIVES[charUpper];
+            if (alternatives && alternatives.length > 0) {
+                // Генерируем случайный индекс (0 = базовый, 1+ = альтернативы)
+                const baseGlyph = VOID_ALPHABET[charUpper] || VOID_ALPHABET[" "];
+                const allGlyphs = [baseGlyph, ...alternatives];
+                const randomIndex = Math.floor(Math.random() * allGlyphs.length);
+                // Сохраняем в кэш
+                this.alternativeGlyphCache[cacheKey] = randomIndex;
+                alternativeIndex = randomIndex;
+            }
+        }
+        
+        const glyphCode = getGlyph(char, {
+            alternativeIndex: alternativeIndex
+        });
+        
         const moduleW = this.params.moduleSize;
         const moduleH = this.params.moduleSize;
         // Пробел имеет ширину 3 модуля вместо 5
         const letterCols = char === ' ' ? 3 : this.cols;
         const letterW = letterCols * moduleW;
         const letterH = this.rows * moduleH;
+        
+        // Проверяем, наведена ли мышь на эту букву (для эффекта прозрачности)
+        const isHovered = this.hoveredLetter && 
+            this.hoveredLetter.lineIndex === lineIndex && 
+            this.hoveredLetter.charIndex === charIndex;
+        
+        // Сохраняем текущий globalAlpha
+        const originalAlpha = this.ctx.globalAlpha;
+        if (isHovered) {
+            this.ctx.globalAlpha = 0.8;
+        }
         
         // Отрисовать каждый модуль в сетке 5×5 (или 3×5 для пробела)
         for (let i = 0; i < letterCols; i++) {
@@ -395,6 +469,9 @@ export class VoidRenderer {
                 }
             }
         }
+        
+        // Восстанавливаем globalAlpha
+        this.ctx.globalAlpha = originalAlpha;
     }
 
     /**
@@ -403,6 +480,182 @@ export class VoidRenderer {
     resize() {
         this.setupCanvas();
         this.render();
+    }
+
+    /**
+     * Определить позицию буквы по координатам клика
+     * @param {number} clickX - координата X клика
+     * @param {number} clickY - координата Y клика
+     * @returns {Object|null} - объект с lineIndex, charIndex, char или null если клик не попал в букву
+     */
+    getLetterPositionAt(clickX, clickY) {
+        const text = this.params.text;
+        if (!text) return null;
+        
+        // Убеждаемся, что размеры canvas установлены
+        if (this.canvasWidth === 0 || this.canvasHeight === 0) {
+            const rect = this.canvas.getBoundingClientRect();
+            this.canvasWidth = rect.width;
+            this.canvasHeight = rect.height;
+        }
+        
+        const lines = text.split('\n').map(line => line.replace(/^\s+|\s+$/g, ''));
+        const moduleW = this.params.moduleSize;
+        const moduleH = this.params.moduleSize;
+        const letterW = this.cols * moduleW;
+        const letterH = this.rows * moduleH;
+        
+        // Вычислить общие размеры блока текста
+        let totalWidth = 0;
+        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+            const line = lines[lineIndex];
+            let lineWidth = 0;
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                let charWidth;
+                let addSpacing = true;
+                if (char === ' ') {
+                    if (i > 0 && line[i - 1] === ' ') {
+                        charWidth = 2 * moduleW;
+                        addSpacing = false;
+                    } else {
+                        charWidth = 3 * moduleW;
+                    }
+                } else {
+                    charWidth = letterW;
+                }
+                lineWidth += charWidth + (addSpacing ? this.params.letterSpacing : 0);
+            }
+            if (line.length > 0 && !(line[line.length - 1] === ' ' && line.length > 1 && line[line.length - 2] === ' ')) {
+                lineWidth -= this.params.letterSpacing;
+            }
+            totalWidth = Math.max(totalWidth, lineWidth);
+        }
+        const totalHeight = lines.length * (letterH + this.params.lineHeight) - this.params.lineHeight;
+        
+        const startY = (this.canvasHeight - totalHeight) / 2;
+        const textAlign = this.params.textAlign || 'center';
+        
+        // Проверяем каждую строку
+        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+            const line = lines[lineIndex];
+            let lineWidth = 0;
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                let charWidth;
+                let addSpacing = true;
+                if (char === ' ') {
+                    if (i > 0 && line[i - 1] === ' ') {
+                        charWidth = 2 * moduleW;
+                        addSpacing = false;
+                    } else {
+                        charWidth = 3 * moduleW;
+                    }
+                } else {
+                    charWidth = letterW;
+                }
+                lineWidth += charWidth + (addSpacing ? this.params.letterSpacing : 0);
+            }
+            if (line.length > 0 && !(line[line.length - 1] === ' ' && line.length > 1 && line[line.length - 2] === ' ')) {
+                lineWidth -= this.params.letterSpacing;
+            }
+            
+            let lineX;
+            if (textAlign === 'left') {
+                lineX = (this.canvasWidth - totalWidth) / 2;
+            } else if (textAlign === 'right') {
+                lineX = (this.canvasWidth + totalWidth) / 2 - lineWidth;
+            } else {
+                lineX = (this.canvasWidth - lineWidth) / 2;
+            }
+            
+            const lineY = startY + lineIndex * (letterH + this.params.lineHeight);
+            
+            // Проверяем каждую букву в строке
+            let currentX = lineX;
+            for (let charIndex = 0; charIndex < line.length; charIndex++) {
+                const char = line[charIndex];
+                let charWidth;
+                let addSpacing = true;
+                if (char === ' ') {
+                    if (charIndex > 0 && line[charIndex - 1] === ' ') {
+                        charWidth = 2 * moduleW;
+                        addSpacing = false;
+                    } else {
+                        charWidth = 3 * moduleW;
+                    }
+                } else {
+                    charWidth = letterW;
+                }
+                
+                // Проверяем попадание клика в эту букву
+                if (clickX >= currentX && clickX < currentX + charWidth &&
+                    clickY >= lineY && clickY < lineY + letterH) {
+                    return { lineIndex, charIndex, char };
+                }
+                
+                currentX += charWidth + (addSpacing ? this.params.letterSpacing : 0);
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * Переключить альтернативу для буквы
+     * @param {number} lineIndex - индекс строки
+     * @param {number} charIndex - индекс символа в строке
+     * @returns {boolean} - true если альтернатива была переключена, false если у символа нет альтернатив
+     */
+    toggleLetterAlternative(lineIndex, charIndex) {
+        const text = this.params.text;
+        if (!text) return false;
+        
+        const lines = text.split('\n').map(line => line.replace(/^\s+|\s+$/g, ''));
+        if (lineIndex < 0 || lineIndex >= lines.length) return false;
+        
+        const line = lines[lineIndex];
+        if (charIndex < 0 || charIndex >= line.length) return false;
+        
+        const char = line[charIndex].toUpperCase();
+        
+        // Проверяем, есть ли альтернативы для этого символа
+        const alternatives = VOID_ALPHABET_ALTERNATIVES[char];
+        if (!alternatives || !alternatives.length) return false;
+        
+        const cacheKey = `${lineIndex}_${charIndex}`;
+        
+        // Если буква не зафиксирована, сначала генерируем случайную альтернативу и сохраняем её
+        if (!this.alternativeGlyphCache.hasOwnProperty(cacheKey)) {
+            // Генерируем случайную альтернативу (включая базовый)
+            const baseGlyph = VOID_ALPHABET[char] || VOID_ALPHABET[" "];
+            const allGlyphs = [baseGlyph, ...alternatives];
+            const randomIndex = Math.floor(Math.random() * allGlyphs.length);
+            // Сохраняем случайную альтернативу (0 = базовый, 1+ = альтернативы)
+            this.alternativeGlyphCache[cacheKey] = randomIndex;
+        }
+        
+        // Переключаем на следующую альтернативу (0 -> 1 -> 2 -> ... -> max -> 0)
+        const currentIndex = this.alternativeGlyphCache[cacheKey];
+        const maxIndex = alternatives.length; // 0 = базовый, 1..max = альтернативы
+        const nextIndex = (currentIndex + 1) % (maxIndex + 1);
+        
+        if (nextIndex === 0) {
+            // Удаляем из кэша, чтобы использовать базовый глиф (или random в режиме Random)
+            delete this.alternativeGlyphCache[cacheKey];
+        } else {
+            this.alternativeGlyphCache[cacheKey] = nextIndex;
+        }
+        
+        return true;
+    }
+
+    /**
+     * Установить букву под курсором (для эффекта прозрачности)
+     * @param {Object|null} position - {lineIndex, charIndex} или null
+     */
+    setHoveredLetter(position) {
+        this.hoveredLetter = position;
     }
 }
 

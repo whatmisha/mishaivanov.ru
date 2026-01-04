@@ -5,6 +5,7 @@
 import { VoidRenderer } from './core/VoidRenderer.js';
 import { VoidExporter } from './core/VoidExporter.js';
 import { PresetManager } from './core/PresetManager.js';
+import { VOID_ALPHABET_ALTERNATIVES } from './core/VoidAlphabet.js';
 import { SliderController } from './ui/SliderController.js';
 import { RangeSliderController } from './ui/RangeSliderController.js';
 import { PanelManager } from './ui/PanelManager.js';
@@ -32,11 +33,11 @@ class VoidTypeface {
                 showGrid: true,
                 includeGridToExport: false,
                 randomStemMin: 0.5,
-                randomStemMax: 2.0,
+                randomStemMax: 1.0,
                 randomStrokesMin: 1,
-                randomStrokesMax: 5,
-                randomContrastMin: 0.1,
-                randomContrastMax: 8.0,
+                randomStrokesMax: 2,
+                randomContrastMin: 0.5,
+                randomContrastMax: 1.0,
                 randomModeType: 'byType', // 'byType' или 'full'
                 randomRounded: false, // скругления на концах линий в режиме Random (Rounded)
                 cornerRadiusMultiplier: 0,
@@ -44,6 +45,7 @@ class VoidTypeface {
                 roundedCaps: false, // скругления на концах линий в режиме Stroke (Rounded)
                 dashLength: 0.10, // длина штриха для Dash mode (множитель от stem)
                 gapLength: 0.30, // длина промежутка для Dash mode (множитель от stem)
+                useAlternativesInRandom: true, // использовать альтернативные глифы в режиме Random
                 currentMode: 'normal' // 'normal' или 'editor'
             },
             get(key) { return this.values[key]; },
@@ -85,12 +87,14 @@ class VoidTypeface {
             this.initGridToggle();
             this.initGlyphEditor(); // Редактор глифов
             this.initEditorHotkey(); // Хоткей Cmd+G для редактора
+            this.initAlternativeGlyphs(); // Альтернативные глифы
             
             // Установить правильную видимость Corner Radius, Rounded и Dash при инициализации
             this.updateCornerRadiusVisibility();
             this.updateRoundedCapsVisibility();
             this.updateRandomRoundedVisibility();
             this.updateDashVisibility();
+            this.updateAlternativeGlyphsVisibility();
             
             // Отслеживание изменений для показа кнопки Save
             this.hasUnsavedChanges = false;
@@ -102,6 +106,12 @@ class VoidTypeface {
             this.initPresets();
             this.initExport();
             this.initResize();
+            
+            // Очистить кэш случайных значений перед первой отрисовкой
+            // чтобы использовать правильные значения из settings
+            if (this.renderer && this.renderer.clearModuleTypeCache) {
+                this.renderer.clearModuleTypeCache();
+            }
             
             // Первая отрисовка (с правильным вычислением параметров)
             this.updateRenderer();
@@ -241,8 +251,8 @@ class VoidTypeface {
             // Выбрать минимальный размер, чтобы влезло и по ширине, и по высоте
             const optimalModuleSize = Math.floor(Math.min(moduleSizeByWidth, moduleSizeByHeight));
             
-            // Установить размер модуля (но не меньше 8px и не больше 64px)
-            const finalModuleSize = Math.max(8, Math.min(64, optimalModuleSize));
+            // Установить размер модуля (но не меньше 8px и не больше 128px)
+            const finalModuleSize = Math.max(8, Math.min(128, optimalModuleSize));
             this.settings.set('moduleSize', finalModuleSize);
             
             // Обновить renderer после установки размера модуля
@@ -327,7 +337,7 @@ class VoidTypeface {
             valueId: 'moduleSizeValue',
             setting: 'moduleSize',
             min: 4,
-            max: 64,
+            max: 128,
             decimals: 0,
             baseStep: 1,
             shiftStep: 4,
@@ -387,7 +397,7 @@ class VoidTypeface {
             valueId: 'strokesValue',
             setting: 'strokesNum',
             min: 1,
-            max: 16,
+            max: 128,
             decimals: 0,
             baseStep: 1,
             shiftStep: 1,
@@ -483,14 +493,14 @@ class VoidTypeface {
             }
         });
 
-        // Strokes Range
+        // Strokes Range (Lines в режиме Random)
         this.rangeSliderController.initRangeSlider('randomStrokesRangeSlider', {
             minSetting: 'randomStrokesMin',
             maxSetting: 'randomStrokesMax',
             minValueId: 'randomStrokesMinValue',
             maxValueId: 'randomStrokesMaxValue',
             min: 1,
-            max: 5,
+            max: 128,
             decimals: 0,
             baseStep: 1,
             shiftStep: 1,
@@ -579,7 +589,7 @@ class VoidTypeface {
                 const value = parseFloat(strokesMaxInput.value);
                 if (!isNaN(value)) {
                     const min = this.settings.get('randomStrokesMin');
-                    const clampedValue = Math.max(min, Math.min(5, Math.round(value)));
+                    const clampedValue = Math.max(min, Math.min(128, Math.round(value)));
                     this.rangeSliderController.setValues('randomStrokesRangeSlider', min, clampedValue, true);
                     if (this.renderer.clearModuleTypeCache) {
                         this.renderer.clearModuleTypeCache();
@@ -760,6 +770,131 @@ class VoidTypeface {
     }
 
     /**
+     * Инициализация управления альтернативными глифами
+     */
+    initAlternativeGlyphs() {
+        const alternativeGlyphsCheckbox = document.getElementById('alternativeGlyphsCheckbox');
+        if (!alternativeGlyphsCheckbox) return;
+        
+        // Установить начальное значение
+        alternativeGlyphsCheckbox.checked = this.settings.get('useAlternativesInRandom') ?? true;
+        
+        // Обработчик изменения
+        alternativeGlyphsCheckbox.addEventListener('change', () => {
+            this.settings.set('useAlternativesInRandom', alternativeGlyphsCheckbox.checked);
+            // Очистить кэш альтернативных глифов при выключении Alt Glyphs
+            if (!alternativeGlyphsCheckbox.checked && this.renderer.clearAlternativeGlyphCache) {
+                this.renderer.clearAlternativeGlyphCache();
+            }
+            this.updateRenderer();
+            this.markAsChanged();
+        });
+        
+        // Обработчик клика на канвасе для переключения альтернатив
+        const canvas = document.getElementById('mainCanvas');
+        if (canvas && !canvas.hasAttribute('data-alternatives-initialized')) {
+            canvas.setAttribute('data-alternatives-initialized', 'true');
+            
+            // Обработчик движения мыши для изменения курсора и эффекта прозрачности
+            let lastHoveredPosition = null;
+            let rafPending = false;
+            
+            const updateHover = () => {
+                rafPending = false;
+                const currentHovered = this.renderer.hoveredLetter;
+                const positionChanged = !lastHoveredPosition || !currentHovered ||
+                    lastHoveredPosition.lineIndex !== currentHovered.lineIndex ||
+                    lastHoveredPosition.charIndex !== currentHovered.charIndex;
+                
+                if (positionChanged) {
+                    this.updateRenderer();
+                }
+                lastHoveredPosition = currentHovered ? {...currentHovered} : null;
+            };
+            
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                // Используем CSS размеры, а не физические размеры canvas
+                const mouseX = e.clientX - rect.left;
+                const mouseY = e.clientY - rect.top;
+                
+                const position = this.renderer.getLetterPositionAt(mouseX, mouseY);
+                
+                // Обновляем курсор
+                if (position) {
+                    // Проверяем, есть ли альтернативы для этого символа
+                    const char = position.char.toUpperCase();
+                    const hasAlternatives = VOID_ALPHABET_ALTERNATIVES && VOID_ALPHABET_ALTERNATIVES[char] && VOID_ALPHABET_ALTERNATIVES[char].length > 0;
+                    canvas.style.cursor = hasAlternatives ? 'pointer' : 'default';
+                    
+                    // Устанавливаем hoveredLetter для эффекта прозрачности
+                    const positionChanged = !this.renderer.hoveredLetter || 
+                        this.renderer.hoveredLetter.lineIndex !== position.lineIndex ||
+                        this.renderer.hoveredLetter.charIndex !== position.charIndex;
+                    
+                    if (positionChanged) {
+                        this.renderer.setHoveredLetter(position);
+                        // Перерисовываем только если позиция изменилась и есть альтернативы
+                        if (hasAlternatives && !rafPending) {
+                            rafPending = true;
+                            requestAnimationFrame(updateHover);
+                        }
+                    }
+                } else {
+                    canvas.style.cursor = 'default';
+                    // Убираем hoveredLetter только если он был установлен
+                    if (this.renderer.hoveredLetter) {
+                        this.renderer.setHoveredLetter(null);
+                        if (!rafPending) {
+                            rafPending = true;
+                            requestAnimationFrame(updateHover);
+                        }
+                    }
+                }
+            });
+            
+            // Обработчик ухода мыши с канваса
+            canvas.addEventListener('mouseleave', () => {
+                this.renderer.setHoveredLetter(null);
+                lastHoveredPosition = null;
+                canvas.style.cursor = 'default';
+                if (!rafPending) {
+                    rafPending = true;
+                    requestAnimationFrame(updateHover);
+                }
+            });
+            
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                // Используем CSS размеры, а не физические размеры canvas
+                const clickX = e.clientX - rect.left;
+                const clickY = e.clientY - rect.top;
+                
+                const position = this.renderer.getLetterPositionAt(clickX, clickY);
+                if (position) {
+                    const toggled = this.renderer.toggleLetterAlternative(position.lineIndex, position.charIndex);
+                    if (toggled) {
+                        this.updateRenderer();
+                        this.markAsChanged();
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Обновить видимость элементов управления альтернативными глифами
+     */
+    updateAlternativeGlyphsVisibility() {
+        const alternativeGlyphsGroup = document.getElementById('alternativeGlyphsControlGroup');
+        if (!alternativeGlyphsGroup) return;
+        
+        const mode = this.settings.get('mode') || 'fill';
+        const shouldShow = mode === 'random';
+        alternativeGlyphsGroup.style.display = shouldShow ? 'block' : 'none';
+    }
+
+    /**
      * Инициализация тогла Rounded
      */
     initRoundedCapsToggle() {
@@ -849,6 +984,10 @@ class VoidTypeface {
             if (this.renderer.clearModuleTypeCache) {
                 this.renderer.clearModuleTypeCache();
             }
+            // Очистить кэш альтернативных глифов при переключении режима
+            if (this.renderer.clearAlternativeGlyphCache) {
+                this.renderer.clearAlternativeGlyphCache();
+            }
             
             // Показать/скрыть контролы в зависимости от режима
             strokesControlGroup.style.display = mode === 'stripes' ? 'block' : 'none';
@@ -877,7 +1016,7 @@ class VoidTypeface {
             
             const randomRoundedCheckbox = document.getElementById('randomRoundedCheckbox');
             if (randomRoundedCheckbox && mode === 'random') {
-                randomRoundedCheckbox.checked = this.settings.get('randomRounded') || false;
+                randomRoundedCheckbox.checked = this.settings.get('randomRounded') ?? false;
             }
             
             // Отключить/включить Stem Weight в панели Metrics при режиме Random
@@ -900,6 +1039,9 @@ class VoidTypeface {
             
             // Обновить видимость Dash
             this.updateDashVisibility();
+            
+            // Обновить видимость альтернативных глифов
+            this.updateAlternativeGlyphsVisibility();
             
             this.updateRenderer();
         };
@@ -929,6 +1071,10 @@ class VoidTypeface {
                     // Очистить кэш значений по типу модуля
                     if (this.renderer.clearModuleTypeCache) {
                         this.renderer.clearModuleTypeCache();
+                    }
+                    // Очистить кэш альтернативных глифов (чтобы сгенерировать новые случайные альтернативы)
+                    if (this.renderer.clearAlternativeGlyphCache) {
+                        this.renderer.clearAlternativeGlyphCache();
                     }
                     this.updateRenderer();
                     this.markAsChanged();
@@ -1005,6 +1151,31 @@ class VoidTypeface {
             // Обновить существующий пресет Default, если текст устарел
             if (defaultPreset.text === 'Void\nTypeface\ncoded') {
                 defaultPreset.text = 'Void\nTypeface\nCode';
+                this.presetManager.presets['Default'] = defaultPreset;
+                this.presetManager.savePresets();
+            }
+            
+            // Обновить значения random параметров в пресете, если они не соответствуют новым дефолтным
+            const needsUpdate = 
+                defaultPreset.randomStemMin !== 0.5 ||
+                defaultPreset.randomStemMax !== 1.0 ||
+                defaultPreset.randomStrokesMin !== 1 ||
+                defaultPreset.randomStrokesMax !== 2 ||
+                defaultPreset.randomContrastMin !== 0.5 ||
+                defaultPreset.randomContrastMax !== 1.0 ||
+                defaultPreset.randomRounded !== false ||
+                defaultPreset.useAlternativesInRandom !== true;
+            
+            if (needsUpdate) {
+                // Обновить значения в пресете
+                defaultPreset.randomStemMin = 0.5;
+                defaultPreset.randomStemMax = 1.0;
+                defaultPreset.randomStrokesMin = 1;
+                defaultPreset.randomStrokesMax = 2;
+                defaultPreset.randomContrastMin = 0.5;
+                defaultPreset.randomContrastMax = 1.0;
+                defaultPreset.randomRounded = false;
+                defaultPreset.useAlternativesInRandom = true;
                 this.presetManager.presets['Default'] = defaultPreset;
                 this.presetManager.savePresets();
             }
@@ -1194,6 +1365,12 @@ class VoidTypeface {
         this.isLoadingPreset = false;
         
         if (updateUI) {
+            // Очистить кэш случайных значений перед обновлением renderer
+            // чтобы использовать правильные значения из загруженного пресета
+            if (this.renderer && this.renderer.clearModuleTypeCache) {
+                this.renderer.clearModuleTypeCache();
+            }
+            
             // Обновить UI
             this.updateUIFromSettings();
             
@@ -1287,7 +1464,7 @@ class VoidTypeface {
         
         const randomRoundedCheckbox = document.getElementById('randomRoundedCheckbox');
         if (randomRoundedCheckbox) {
-            randomRoundedCheckbox.checked = this.settings.get('randomRounded') || false;
+            randomRoundedCheckbox.checked = this.settings.get('randomRounded') ?? false;
         }
 
         // Отключить/включить Stem Weight в панели Metrics при режиме Random
@@ -1409,7 +1586,8 @@ class VoidTypeface {
             randomRounded: this.settings.get('randomRounded') || false,
             roundedCaps: this.settings.get('roundedCaps') || false,
             dashLength: this.settings.get('dashLength') || 0.10,
-            gapLength: this.settings.get('gapLength') || 0.30
+            gapLength: this.settings.get('gapLength') || 0.30,
+            useAlternativesInRandom: this.settings.get('useAlternativesInRandom') || false
         };
         
         // Добавляем cornerRadius только если он должен применяться

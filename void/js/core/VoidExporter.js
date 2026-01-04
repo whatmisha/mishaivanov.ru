@@ -2,7 +2,7 @@
  * VoidExporter - экспорт шрифта Void в SVG
  */
 
-import { getGlyph } from './VoidAlphabet.js';
+import { getGlyph, VOID_ALPHABET_ALTERNATIVES, VOID_ALPHABET } from './VoidAlphabet.js';
 
 export class VoidExporter {
     constructor(renderer, settings = null) {
@@ -373,7 +373,35 @@ export class VoidExporter {
      * Отрисовать одну букву в SVG
      */
     renderLetterToSVG(char, x, y, params, lineIndex = null, charIndex = null) {
-        const glyphCode = getGlyph(char);
+        // Определяем, использовать ли альтернативу (используем кэш из renderer)
+        let alternativeIndex = null;
+        const cacheKey = lineIndex !== null && charIndex !== null ? `${lineIndex}_${charIndex}` : null;
+        
+        if (cacheKey && this.renderer.alternativeGlyphCache && this.renderer.alternativeGlyphCache.hasOwnProperty(cacheKey)) {
+            // Используем сохраненную альтернативу
+            alternativeIndex = this.renderer.alternativeGlyphCache[cacheKey];
+        } else if (params.mode === 'random' && params.useAlternativesInRandom && cacheKey) {
+            // В режиме Random с включенными альтернативами - генерируем случайную альтернативу один раз
+            // и сохраняем её в кэш для стабильности при экспорте
+            const charUpper = char.toUpperCase();
+            const alternatives = VOID_ALPHABET_ALTERNATIVES[charUpper];
+            if (alternatives && alternatives.length > 0) {
+                // Генерируем случайный индекс (0 = базовый, 1+ = альтернативы)
+                const baseGlyph = VOID_ALPHABET[charUpper] || VOID_ALPHABET[" "];
+                const allGlyphs = [baseGlyph, ...alternatives];
+                const randomIndex = Math.floor(Math.random() * allGlyphs.length);
+                // Сохраняем в кэш renderer
+                if (!this.renderer.alternativeGlyphCache) {
+                    this.renderer.alternativeGlyphCache = {};
+                }
+                this.renderer.alternativeGlyphCache[cacheKey] = randomIndex;
+                alternativeIndex = randomIndex;
+            }
+        }
+        
+        const glyphCode = getGlyph(char, {
+            alternativeIndex: alternativeIndex
+        });
         const moduleW = params.moduleSize;
         const moduleH = params.moduleSize;
         // Пробел имеет ширину 3 модуля (первый) или 2 модуля (второй и далее в последовательности)

@@ -118,13 +118,67 @@ export const VOID_ALPHABET = {
 };
 
 /**
+ * Альтернативные глифы для символов
+ * Ключ - символ, значение - массив альтернативных глифов
+ */
+export const VOID_ALPHABET_ALTERNATIVES = {
+    "O": [
+        "R1S1S1S1R2R0B2E0B1R3E0S0E0S2E0R1B3E0B0R2R0S3S3S3R3",
+        "R1S1S1S1R2S0E0E0E0S2S0E0E0E0S2S0E0E0E0S2R0S3S3S3R3",
+        "R1R2E0R1R2R0B0S1B3R3E0S0E0S2E0R1B1S3B2R2R0R3E0R0R3",
+        "L1S1S1S1L2S0E0E0E0S2S0E0E0E0S2S0E0E0E0S2L0S3S3S3L3",
+        "E0L1S1L2E0L1B3E0B0L2S0E0E0E0S2L0B2E0B1L3E0L0S3L3E0"
+    ],
+    "О": [
+        "R1S1S1S1R2R0B2E0B1R3E0S0E0S2E0R1B3E0B0R2R0S3S3S3R3",
+        "R1S1S1S1R2S0E0E0E0S2S0E0E0E0S2S0E0E0E0S2R0S3S3S3R3",
+        "R1R2E0R1R2R0B0S1B3R3E0S0E0S2E0R1B1S3B2R2R0R3E0R0R3",
+        "L1S1S1S1L2S0E0E0E0S2S0E0E0E0S2S0E0E0E0S2L0S3S3S3L3",
+        "E0L1S1L2E0L1B3E0B0L2S0E0E0E0S2L0B2E0B1L3E0L0S3L3E0"
+    ]
+};
+
+/**
  * Получить код глифа для символа
  * @param {string} char - символ
+ * @param {Object} options - опции выбора глифа
+ * @param {number|null|'random'} options.alternativeIndex - индекс альтернативы:
+ *   - null или undefined: базовый глиф
+ *   - число: конкретный индекс (0 = базовый, 1+ = альтернативы)
+ *   - 'random': случайный выбор из всех вариантов (базовый + альтернативы)
  * @returns {string} - код глифа или код пробела если символ не найден
  */
-export function getGlyph(char) {
+export function getGlyph(char, options = {}) {
     const upperChar = char.toUpperCase();
-    return VOID_ALPHABET[upperChar] || VOID_ALPHABET[" "];
+    const baseGlyph = VOID_ALPHABET[upperChar] || VOID_ALPHABET[" "];
+    
+    // Если альтернатив нет или индекс не указан, возвращаем базовый глиф
+    const alternatives = VOID_ALPHABET_ALTERNATIVES[upperChar];
+    if (!alternatives || !alternatives.length || !options.alternativeIndex) {
+        return baseGlyph;
+    }
+    
+    // Режим random: выбираем случайную альтернативу
+    if (options.alternativeIndex === 'random') {
+        // Включаем базовый глиф в выбор (индекс 0 = базовый, 1+ = альтернативы)
+        const allGlyphs = [baseGlyph, ...alternatives];
+        const randomIndex = Math.floor(Math.random() * allGlyphs.length);
+        return allGlyphs[randomIndex];
+    }
+    
+    // Конкретный индекс
+    if (typeof options.alternativeIndex === 'number') {
+        // Индекс 0 = базовый глиф, 1+ = альтернативы
+        if (options.alternativeIndex === 0) {
+            return baseGlyph;
+        }
+        const altIndex = options.alternativeIndex - 1;
+        if (altIndex >= 0 && altIndex < alternatives.length) {
+            return alternatives[altIndex];
+        }
+    }
+    
+    return baseGlyph;
 }
 
 /**
