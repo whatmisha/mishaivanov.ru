@@ -261,7 +261,7 @@ export default class GlyphEditor {
         const offsetY = (canvasHeight - gridPixelSize) / 2;
         
         // Рисуем фон
-        this.ctx.fillStyle = '#FFFFFF';
+        this.ctx.fillStyle = '#808080';
         this.ctx.fillRect(0, 0, canvasWidth, canvasHeight);
         
         // Рисуем сетку

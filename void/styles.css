@@ -2486,6 +2486,22 @@ textarea::placeholder {
     resize: none;
 }
 
+/* Editor Hint - подсказка в правом нижнем углу */
+.editor-hint {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    padding: 8px 12px;
+    background: rgba(0, 0, 0, 0.7);
+    color: var(--color-text);
+    font-size: 12px;
+    font-family: var(--font-mono);
+    border-radius: 6px;
+    pointer-events: none;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
 /* ============================================
    MOBILE EDITOR
    ============================================ */

@@ -183,7 +183,7 @@ class VoidTypeface {
         
         // Установить режим Random и текст
         this.settings.set('mode', 'random');
-        this.settings.set('text', 'ONLY\nDESK\nTOP');
+        this.settings.set('text', 'DESK\nTOP\nONLY');
         
         // Вычислить оптимальный размер модуля, чтобы текст влезал в окно
         // (updateRenderer будет вызван внутри calculateMobileModuleSize)
@@ -207,7 +207,7 @@ class VoidTypeface {
 
     /**
      * Вычислить оптимальный размер модуля для мобильного устройства
-     * чтобы текст "ONLY\nDESK\nTOP" влезал в окно без обрезки
+     * чтобы текст "DESK\nTOP\nONLY" влезал в окно без обрезки
      */
     calculateMobileModuleSize() {
         // Дождаться следующего кадра, чтобы canvas успел получить размеры
@@ -220,8 +220,8 @@ class VoidTypeface {
             const availableWidth = containerRect ? containerRect.width : window.innerWidth;
             const availableHeight = containerRect ? containerRect.height : window.innerHeight;
             
-            // Текст состоит из 3 строк: "ONLY", "DESK", "TOP"
-            // Самая длинная строка - "ONLY" и "DESK" (4 символа)
+            // Текст состоит из 3 строк: "DESK", "TOP", "ONLY"
+            // Самая длинная строка - "DESK" и "ONLY" (4 символа)
             const maxLineLength = 4;
             const numLines = 3;
             
@@ -813,6 +813,10 @@ class VoidTypeface {
             };
             
             canvas.addEventListener('mousemove', (e) => {
+                // Не обрабатывать события в режиме редактора
+                const currentMode = this.settings.get('currentMode') || 'normal';
+                if (currentMode === 'editor') return;
+                
                 const rect = canvas.getBoundingClientRect();
                 // Используем CSS размеры, а не физические размеры canvas
                 const mouseX = e.clientX - rect.left;
@@ -855,6 +859,10 @@ class VoidTypeface {
             
             // Обработчик ухода мыши с канваса
             canvas.addEventListener('mouseleave', () => {
+                // Не обрабатывать события в режиме редактора
+                const currentMode = this.settings.get('currentMode') || 'normal';
+                if (currentMode === 'editor') return;
+                
                 this.renderer.setHoveredLetter(null);
                 lastHoveredPosition = null;
                 canvas.style.cursor = 'default';
@@ -865,6 +873,10 @@ class VoidTypeface {
             });
             
             canvas.addEventListener('click', (e) => {
+                // Не обрабатывать события в режиме редактора
+                const currentMode = this.settings.get('currentMode') || 'normal';
+                if (currentMode === 'editor') return;
+                
                 const rect = canvas.getBoundingClientRect();
                 // Используем CSS размеры, а не физические размеры canvas
                 const clickX = e.clientX - rect.left;
@@ -1549,6 +1561,10 @@ class VoidTypeface {
      * Обновить renderer с текущими настройками
      */
     updateRenderer() {
+        // Не обновлять renderer в режиме редактора
+        const currentMode = this.settings.get('currentMode') || 'normal';
+        if (currentMode === 'editor') return;
+        
         const moduleSize = this.settings.get('moduleSize');
         // Умножаем на 2, так как в ModuleDrawer используется stem / 2
         const stem = moduleSize * this.settings.get('stemMultiplier') * 2;
@@ -1755,7 +1771,10 @@ class VoidTypeface {
      * Отметить что были изменения
      */
     markAsChanged() {
-        // Не отслеживать изменения во время загрузки пресета или инициализации
+        // Не отслеживать изменения в режиме редактора, во время загрузки пресета или инициализации
+        const currentMode = this.settings.get('currentMode') || 'normal';
+        if (currentMode === 'editor') return;
+        
         if (!this.isLoadingPreset && !this.isInitializing) {
             this.hasUnsavedChanges = true;
             this.updateSaveDeleteButtons();
@@ -1766,6 +1785,16 @@ class VoidTypeface {
      * Обновить видимость кнопок Save и Delete
      */
     updateSaveDeleteButtons() {
+        // Не показывать кнопки в режиме редактора
+        const currentMode = this.settings.get('currentMode') || 'normal';
+        if (currentMode === 'editor') {
+            const savePresetBtn = document.getElementById('savePresetBtn');
+            const deletePresetBtn = document.getElementById('deletePresetBtn');
+            if (savePresetBtn) savePresetBtn.style.display = 'none';
+            if (deletePresetBtn) deletePresetBtn.style.display = 'none';
+            return;
+        }
+        
         const savePresetBtn = document.getElementById('savePresetBtn');
         const deletePresetBtn = document.getElementById('deletePresetBtn');
         const presetNames = this.presetManager.getPresetNames();
@@ -1816,6 +1845,7 @@ class VoidTypeface {
         const copyBtn = document.getElementById('copyBtn');
         const exportBtn = document.getElementById('exportBtn');
         const aboutVoidLink = document.getElementById('aboutVoidLink');
+        const editorHint = document.getElementById('editorHint');
         
         if (mode === 'editor') {
             // Активировать режим редактора
@@ -1837,12 +1867,19 @@ class VoidTypeface {
             // Показать панель редактора
             if (editorPanel) editorPanel.style.display = 'block';
             
+            // Показать подсказку редактора
+            if (editorHint) editorHint.style.display = 'block';
+            
             // Деактивировать рендерер и активировать редактор
             if (this.glyphEditor) {
                 this.glyphEditor.activate();
             }
         } else {
             // Активировать обычный режим
+            
+            // Скрыть подсказку редактора
+            const editorHint = document.getElementById('editorHint');
+            if (editorHint) editorHint.style.display = 'none';
             
             // Показать обычные панели
             if (controlsPanel) controlsPanel.style.display = 'block';
