@@ -85,8 +85,8 @@ class VoidTypeface {
             this.initRenderMethodToggle();
             this.initRoundedCapsToggle();
             this.initGridToggle();
-            // this.initGlyphEditor(); // Редактор глифов (ОТКЛЮЧЕНО - используйте editor.html)
-            // this.initEditorHotkey(); // Хоткей Cmd+G для редактора (ОТКЛЮЧЕНО)
+            this.initGlyphEditor(); // Редактор глифов
+            this.initEditorHotkey(); // Хоткей Cmd+G для редактора
             this.initAlternativeGlyphs(); // Альтернативные глифы
             
             // Установить правильную видимость Corner Radius, Rounded и Dash при инициализации

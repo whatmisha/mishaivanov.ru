@@ -50,16 +50,6 @@
         <div class="main-content">
             <!-- Main Canvas -->
             <div class="canvas-container" id="canvasContainer">
-                <!-- Alternatives Panel (shown only in editor mode) -->
-                <aside class="editor-alternatives-panel" id="editorAlternativesPanel" style="display: none;">
-                    <div class="editor-alternatives-header">
-                        <span>Alternatives</span>
-                    </div>
-                    <div class="editor-alternatives-content" id="editorAlternativesContent">
-                        <!-- Альтернативы будут добавлены динамически -->
-                    </div>
-                </aside>
-                
                 <canvas id="mainCanvas"></canvas>
                 <!-- Editor hint (shown only in editor mode) -->
                 <div class="editor-hint" id="editorHint" style="display: none;">↑↓ to switch, ←→ to rotate</div>
@@ -329,14 +319,6 @@
             <aside class="controls-panel controls-panel-editor" id="editorPanel" style="display: none;">
                 <div class="panel-content">
                     <section class="control-section">
-                        <!-- Character Selector -->
-                        <div class="control-group">
-                            <label for="editorCharSelector">
-                                <span>Character</span>
-                            </label>
-                            <input type="text" id="editorCharSelector" class="editor-char-input" placeholder="A-Z, 0-9, А-Я" maxlength="1" style="width: 100%; padding: 8px 12px; font-size: 24px; text-align: center; font-family: var(--font-mono); border: 1px solid var(--color-border); border-radius: 4px; background: var(--color-canvas-bg); color: var(--color-text);">
-                        </div>
-                        
                         <!-- Current Module Info -->
                         <div class="control-group">
                             <div class="editor-module-display" id="editorCurrentModule">S0 (0°)</div>
@@ -345,11 +327,6 @@
                         <!-- Glyph String (auto-updating) -->
                         <div class="control-group editor-glyph-string-group">
                             <textarea id="editorGlyphString" rows="2">E0E0E0E0E0 E0E0E0E0E0 E0E0E0E0E0 E0E0E0E0E0 E0E0E0E0E0</textarea>
-                        </div>
-                        
-                        <!-- Save Changes Button -->
-                        <div class="control-group editor-save-button-group">
-                            <button class="editor-btn" id="editorSaveChangesBtn" type="button" style="display: none;">Save Changes</button>
                         </div>
                         
                         <!-- Move Button -->
