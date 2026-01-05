@@ -159,8 +159,7 @@ export default class GlyphEditor {
         const rect = this.canvas.getBoundingClientRect();
         
         // В standalone редакторе не используем devicePixelRatio для координат
-        const isStandalone = window.location.pathname.includes('editor.html') || 
-                            window.location.pathname.endsWith('/editor');
+        const isStandalone = window.location.pathname.includes('/editor');
         
         let x, y;
         if (isStandalone) {
@@ -204,8 +203,7 @@ export default class GlyphEditor {
         const rect = this.canvas.getBoundingClientRect();
         
         // В standalone редакторе не используем devicePixelRatio для координат
-        const isStandalone = window.location.pathname.includes('editor.html') || 
-                            window.location.pathname.endsWith('/editor');
+        const isStandalone = window.location.pathname.includes('/editor');
         
         let x, y;
         if (isStandalone) {
@@ -237,8 +235,7 @@ export default class GlyphEditor {
      */
     getCellFromCoords(x, y) {
         // Проверяем, находимся ли мы в standalone редакторе
-        const isStandalone = window.location.pathname.includes('editor.html') || 
-                            window.location.pathname.endsWith('/editor');
+        const isStandalone = window.location.pathname.includes('/editor');
         
         const canvasWidth = this.canvas.width;
         const canvasHeight = this.canvas.height;
@@ -340,8 +337,7 @@ export default class GlyphEditor {
         if (!this.isActive) return;
         
         // Проверяем, находимся ли мы в standalone редакторе
-        const isStandalone = window.location.pathname.includes('editor.html') || 
-                            window.location.pathname.endsWith('/editor');
+        const isStandalone = window.location.pathname.includes('/editor');
         
         const canvasWidth = this.canvas.width;
         const canvasHeight = this.canvas.height;
@@ -668,8 +664,7 @@ export default class GlyphEditor {
         if (!container) return;
         
         // Проверяем, находимся ли мы в standalone редакторе
-        const isStandalone = window.location.pathname.includes('editor.html') || 
-                            window.location.pathname.endsWith('/editor');
+        const isStandalone = window.location.pathname.includes('/editor');
         
         if (isStandalone) {
             // В standalone редакторе используем фиксированный размер
