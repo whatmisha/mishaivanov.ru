@@ -40,6 +40,8 @@ class GlyphEditorApp {
         console.log('[GlyphEditorApp] Character list populated');
         
         // Обработчики кнопок
+        document.getElementById('importBtn').addEventListener('click', () => this.showImportDialog());
+        document.getElementById('importFileInput').addEventListener('change', (e) => this.handleFileImport(e));
         document.getElementById('exportBtn').addEventListener('click', () => this.showExportModal());
         document.getElementById('newGlyphBtn').addEventListener('click', () => this.createNewGlyph());
         document.getElementById('newAlternativeBtn').addEventListener('click', () => this.createNewAlternative());
@@ -431,11 +433,118 @@ class GlyphEditorApp {
     }
     
     /**
+     * Показать диалог импорта файла
+     */
+    showImportDialog() {
+        document.getElementById('importFileInput').click();
+    }
+    
+    /**
+     * Обработать импорт файла
+     */
+    async handleFileImport(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        try {
+            const text = await file.text();
+            const imported = this.parseVoidAlphabetFile(text);
+            
+            if (!imported.base && !imported.alternatives) {
+                alert('Could not parse VoidAlphabet.js file. Make sure it contains VOID_ALPHABET and/or VOID_ALPHABET_ALTERNATIVES objects.');
+                return;
+            }
+            
+            // Подтверждение
+            const baseCount = Object.keys(imported.base || {}).length;
+            const altCount = Object.keys(imported.alternatives || {}).length;
+            const confirmed = confirm(`Import ${baseCount} base glyphs and ${altCount} characters with alternatives?\n\nThis will REPLACE all current edits in localStorage.`);
+            
+            if (!confirmed) return;
+            
+            // Конвертировать в формат localStorage
+            const editedGlyphs = {};
+            
+            // Импортировать базовые глифы
+            for (const char in imported.base) {
+                if (!editedGlyphs[char]) editedGlyphs[char] = {};
+                editedGlyphs[char]['base'] = imported.base[char];
+            }
+            
+            // Импортировать альтернативы
+            for (const char in imported.alternatives) {
+                if (!editedGlyphs[char]) editedGlyphs[char] = {};
+                imported.alternatives[char].forEach((glyph, index) => {
+                    editedGlyphs[char][String(index + 1)] = glyph;
+                });
+            }
+            
+            // Сохранить в localStorage
+            this.saveEditedGlyphs(editedGlyphs);
+            
+            // Обновить UI
+            this.populateCharList();
+            if (this.selectedChar) {
+                this.updateAlternativesPanel();
+            }
+            
+            alert(`Successfully imported ${baseCount} base glyphs and alternatives for ${altCount} characters!`);
+            
+        } catch (e) {
+            console.error('Import error:', e);
+            alert('Failed to import file: ' + e.message);
+        }
+        
+        // Сбросить input
+        event.target.value = '';
+    }
+    
+    /**
+     * Парсинг файла VoidAlphabet.js
+     */
+    parseVoidAlphabetFile(text) {
+        const result = {
+            base: {},
+            alternatives: {}
+        };
+        
+        // Извлечь VOID_ALPHABET
+        const alphabetMatch = text.match(/export\s+const\s+VOID_ALPHABET\s*=\s*\{([^}]+(?:\}[^}]+)*)\};/s);
+        if (alphabetMatch) {
+            const content = alphabetMatch[1];
+            const entries = content.matchAll(/"([^"]+)":\s*"([^"]+)"/g);
+            for (const [, char, glyph] of entries) {
+                result.base[char] = glyph;
+            }
+        }
+        
+        // Извлечь VOID_ALPHABET_ALTERNATIVES
+        const altMatch = text.match(/export\s+const\s+VOID_ALPHABET_ALTERNATIVES\s*=\s*\{([^}]+(?:\}[^}]+)*)\};/s);
+        if (altMatch) {
+            const content = altMatch[1];
+            // Найти каждый символ с его массивом альтернатив
+            const charMatches = content.matchAll(/"([^"]+)":\s*\[([\s\S]*?)\]/g);
+            for (const [, char, altsContent] of charMatches) {
+                const glyphs = [];
+                const glyphMatches = altsContent.matchAll(/"([^"]+)"/g);
+                for (const [, glyph] of glyphMatches) {
+                    glyphs.push(glyph);
+                }
+                if (glyphs.length > 0) {
+                    result.alternatives[char] = glyphs;
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    /**
      * Показать модальное окно экспорта
      */
     showExportModal() {
         const editedGlyphs = this.getEditedGlyphs();
-        const code = this.generateExportCode(editedGlyphs);
+        const code = this.generateFullVoidAlphabetFile(editedGlyphs);
         
         document.getElementById('codeOutput').textContent = code;
         document.getElementById('exportModal').classList.add('active');
@@ -467,7 +576,139 @@ class GlyphEditorApp {
     }
     
     /**
-     * Сгенерировать код для экспорта
+     * Генерировать ПОЛНЫЙ файл VoidAlphabet.js
+     */
+    generateFullVoidAlphabetFile(editedGlyphs) {
+        let code = '/**\n';
+        code += ' * VoidAlphabet - данные модульного шрифта Void\n';
+        code += ' * Generated by Void Glyph Editor\n';
+        code += ' */\n\n';
+        
+        // Собрать все базовые глифы (оригинальные + отредактированные + новые)
+        const allBaseGlyphs = {};
+        
+        // Сначала все оригинальные
+        for (const char in VOID_ALPHABET) {
+            allBaseGlyphs[char] = VOID_ALPHABET[char];
+        }
+        
+        // Перезаписать/добавить отредактированные и новые
+        for (const char in editedGlyphs) {
+            if (editedGlyphs[char]['base']) {
+                allBaseGlyphs[char] = editedGlyphs[char]['base'];
+            }
+        }
+        
+        // VOID_ALPHABET
+        code += 'export const VOID_ALPHABET = {\n';
+        
+        const sortedChars = Object.keys(allBaseGlyphs).sort((a, b) => {
+            const getPriority = (char) => {
+                if (/[0-9]/.test(char)) return 0;
+                if (/[A-Z]/.test(char)) return 1;
+                if (/[А-ЯЁ]/.test(char)) return 2;
+                return 3;
+            };
+            const priorityDiff = getPriority(a) - getPriority(b);
+            if (priorityDiff !== 0) return priorityDiff;
+            return a.localeCompare(b);
+        });
+        
+        sortedChars.forEach((char, i) => {
+            const comma = i < sortedChars.length - 1 ? ',' : '';
+            code += `    "${char}": "${allBaseGlyphs[char]}"${comma}\n`;
+        });
+        
+        code += '};\n\n';
+        
+        // VOID_ALPHABET_ALTERNATIVES
+        const allAlternatives = {};
+        
+        // Сначала все оригинальные
+        for (const char in VOID_ALPHABET_ALTERNATIVES) {
+            allAlternatives[char] = [...VOID_ALPHABET_ALTERNATIVES[char]];
+        }
+        
+        // Добавить/перезаписать отредактированные
+        for (const char in editedGlyphs) {
+            const charAlts = [];
+            const keys = Object.keys(editedGlyphs[char]).filter(k => k !== 'base').map(k => parseInt(k)).sort((a, b) => a - b);
+            
+            keys.forEach(index => {
+                // Заполнить пропуски оригинальными
+                while (charAlts.length < index - 1) {
+                    const origIndex = charAlts.length;
+                    charAlts.push(allAlternatives[char]?.[origIndex] || 'E0'.repeat(25));
+                }
+                charAlts.push(editedGlyphs[char][String(index)]);
+            });
+            
+            if (charAlts.length > 0) {
+                allAlternatives[char] = charAlts;
+            }
+        }
+        
+        code += 'export const VOID_ALPHABET_ALTERNATIVES = {\n';
+        
+        const sortedAltChars = Object.keys(allAlternatives).sort((a, b) => {
+            const getPriority = (char) => {
+                if (/[0-9]/.test(char)) return 0;
+                if (/[A-Z]/.test(char)) return 1;
+                if (/[А-ЯЁ]/.test(char)) return 2;
+                return 3;
+            };
+            const priorityDiff = getPriority(a) - getPriority(b);
+            if (priorityDiff !== 0) return priorityDiff;
+            return a.localeCompare(b);
+        });
+        
+        sortedAltChars.forEach((char, i) => {
+            const comma = i < sortedAltChars.length - 1 ? ',' : '';
+            code += `    "${char}": [\n`;
+            allAlternatives[char].forEach((glyph, j) => {
+                const glyphComma = j < allAlternatives[char].length - 1 ? ',' : '';
+                code += `        "${glyph}"${glyphComma}\n`;
+            });
+            code += `    ]${comma}\n`;
+        });
+        
+        code += '};\n\n';
+        
+        // Функция getGlyph (упрощенная версия)
+        code += '// Helper function\n';
+        code += 'export function getGlyph(char, options = {}) {\n';
+        code += '    const upperChar = char.toUpperCase();\n';
+        code += '    const alternativeIndex = options.alternativeIndex;\n';
+        code += '    const baseGlyph = VOID_ALPHABET[upperChar] || VOID_ALPHABET[" "];\n';
+        code += '    const alternatives = VOID_ALPHABET_ALTERNATIVES[upperChar];\n';
+        code += '    \n';
+        code += '    if (alternativeIndex === null || alternativeIndex === undefined) {\n';
+        code += '        return baseGlyph;\n';
+        code += '    }\n';
+        code += '    \n';
+        code += '    if (alternativeIndex === "random") {\n';
+        code += '        const allGlyphs = [baseGlyph, ...(alternatives || [])];\n';
+        code += '        const randomIndex = Math.floor(Math.random() * allGlyphs.length);\n';
+        code += '        return allGlyphs[randomIndex];\n';
+        code += '    }\n';
+        code += '    \n';
+        code += '    if (typeof alternativeIndex === "number") {\n';
+        code += '        if (alternativeIndex === 0) return baseGlyph;\n';
+        code += '        if (!alternatives || !alternatives.length) return baseGlyph;\n';
+        code += '        const altIndex = alternativeIndex - 1;\n';
+        code += '        if (altIndex >= 0 && altIndex < alternatives.length) {\n';
+        code += '            return alternatives[altIndex];\n';
+        code += '        }\n';
+        code += '    }\n';
+        code += '    \n';
+        code += '    return baseGlyph;\n';
+        code += '}\n';
+        
+        return code;
+    }
+    
+    /**
+     * Сгенерировать код для экспорта (СТАРАЯ ВЕРСИЯ - только изменения)
      */
     generateExportCode(editedGlyphs) {
         let code = '/**\n';

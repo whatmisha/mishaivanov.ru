@@ -360,7 +360,9 @@
                 <!-- Заполняется JS -->
             </div>
             <div class="btn-group">
-                <button class="btn btn-primary" id="exportBtn">Export Code</button>
+                <input type="file" id="importFileInput" accept=".js" style="display: none;">
+                <button class="btn" id="importBtn">Import File</button>
+                <button class="btn btn-primary" id="exportBtn">Export Full</button>
             </div>
         </div>
         
@@ -407,8 +409,8 @@
     <div class="modal" id="exportModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Export Code</h2>
-                <p>Copy and paste this code into VoidAlphabet.js</p>
+                <h2>Export Full VoidAlphabet.js</h2>
+                <p>Complete file ready to replace VoidAlphabet.js</p>
             </div>
             <div class="code-output" id="codeOutput">
                 <!-- Заполняется JS -->
