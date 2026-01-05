@@ -34,15 +34,14 @@
         }
         
         .editor-nav-header {
-            padding: 0 var(--spacing-3xl);
+            padding: var(--spacing-3xl);
             border-bottom: 1px solid var(--color-border);
         }
         
         .editor-nav-header h2 {
             font-size: 0.9rem;
-            font-weight: 500;
-            padding: 15px 0;
-            margin: 0;
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
         }
         
         .editor-nav-header p {
@@ -57,132 +56,63 @@
             min-height: 0;
         }
         
-        .char-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: var(--spacing-sm);
-        }
-        
-        .char-grid .char-group-title {
-            grid-column: 1 / -1;
-        }
-        
-        .char-cell {
-            aspect-ratio: 1;
-            border: none;
+        .char-item {
+            padding: var(--spacing-md) var(--spacing-lg);
+            margin-bottom: var(--spacing-sm);
             border-radius: var(--radius-input);
             cursor: pointer;
-            transition: all var(--transition-fast);
+            transition: background var(--transition-fast);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.02);
         }
         
-        /* Состояние 1: Неактивное (глифа нет) */
-        .char-cell.inactive {
-            opacity: 0.3;
-        }
-        
-        .char-cell.inactive .char-fallback {
-            opacity: 0.5;
-        }
-        
-        /* Состояние 2: Ховер */
-        .char-cell:hover {
-            background: rgba(255, 255, 255, 0.08);
-        }
-        
-        /* Состояние 3: Кликнули, но не нарисовали */
-        .char-cell.empty {
+        .char-item:hover {
             background: rgba(255, 255, 255, 0.05);
-            opacity: 1;
         }
         
-        .char-cell.empty .char-fallback {
-            opacity: 0.8;
-        }
-        
-        /* Состояние 4: Глиф нарисован */
-        .char-cell.has-glyph {
-            opacity: 1;
-        }
-        
-        /* Состояние 5: Выбрана */
-        .char-cell.selected {
-            background: rgba(255, 255, 255, 0.15);
-        }
-        
-        .char-fallback {
-            font-size: 1.2rem;
-            color: var(--color-text);
-            pointer-events: none;
-        }
-        
-        .char-preview {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .char-preview canvas {
-            width: 65%;
-            height: 65%;
-        }
-        
-        .char-alt-badge {
-            position: absolute;
-            bottom: 2px;
-            right: 2px;
-            font-size: 0.6rem;
-            color: var(--color-text-dim);
-            background: rgba(0, 0, 0, 0.7);
-            padding: 1px 3px;
-            border-radius: 3px;
-            pointer-events: none;
-        }
-        
-        .char-cell-delete {
+        .char-delete {
             display: none;
             position: absolute;
-            top: 2px;
-            right: 2px;
-            width: 16px;
-            height: 16px;
-            line-height: 16px;
+            right: var(--spacing-md);
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
             text-align: center;
-            font-size: 14px;
+            font-size: 16px;
             color: var(--color-text-dim);
             cursor: pointer;
             border-radius: 3px;
-            background: rgba(0, 0, 0, 0.7);
             transition: all var(--transition-fast);
-            z-index: 10;
         }
         
-        .char-cell:hover .char-cell-delete {
+        .char-item:hover .char-delete {
             display: block;
         }
         
-        .char-cell-delete:hover {
+        .char-delete:hover {
             color: var(--color-text);
-            background: rgba(255, 0, 0, 0.5);
+            background: rgba(255, 0, 0, 0.2);
         }
         
-        .char-group-title {
+        .char-item.selected {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .char-item.edited {
+            border-left: 3px solid var(--color-text);
+        }
+        
+        .char-label {
+            font-size: 0.85rem;
+        }
+        
+        .char-count {
             font-size: 0.7rem;
             color: var(--color-text-dim);
-            text-transform: uppercase;
-            margin-top: var(--spacing-lg);
-            margin-bottom: var(--spacing-sm);
-            padding-left: var(--spacing-xs);
-        }
-        
-        .char-group-title:first-child {
-            margin-top: 0;
         }
         
         /* Центральная область - канвас */
@@ -203,6 +133,10 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+        }
+        
+        .canvas-wrapper canvas {
+            margin-bottom: 20px;
         }
         
         #editorCanvas {
@@ -237,15 +171,14 @@
         }
         
         .editor-alternatives-header {
-            padding: 0 var(--spacing-3xl);
+            padding: var(--spacing-3xl);
             border-bottom: 1px solid var(--color-border);
         }
         
         .editor-alternatives-header h2 {
             font-size: 0.9rem;
-            font-weight: 500;
-            padding: 15px 0;
-            margin: 0;
+            font-weight: 600;
+            margin-bottom: var(--spacing-sm);
         }
         
         .alternatives-content {
@@ -254,57 +187,31 @@
             padding: var(--spacing-lg);
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: var(--spacing-md);
+            gap: var(--spacing-lg);
             align-content: start;
             min-height: 0;
             max-height: 100%;
         }
         
         .alternative-item {
-            aspect-ratio: 1;
-            border: none;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--color-border);
             border-radius: var(--radius-input);
+            padding: var(--spacing-lg);
             cursor: pointer;
             transition: all var(--transition-fast);
             position: relative;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255, 255, 255, 0.02);
-        }
-        
-        /* Состояние: пустая ячейка */
-        .alternative-item.empty {
-            opacity: 0.3;
-        }
-        
-        .alternative-item.empty .char-fallback {
-            opacity: 0.5;
-        }
-        
-        /* Состояние: ячейка с глифом */
-        .alternative-item.has-glyph {
-            opacity: 1;
         }
         
         .alternative-item:hover {
             background: rgba(255, 255, 255, 0.08);
         }
         
-        .alternative-item.empty:hover {
-            background: rgba(255, 255, 255, 0.05);
-        }
-        
-        .alternative-item.selected {
-            background: rgba(255, 255, 255, 0.15);
-        }
-        
         .alternative-delete {
             display: none;
             position: absolute;
-            top: 4px;
-            right: 4px;
+            top: var(--spacing-sm);
+            right: var(--spacing-sm);
             width: 20px;
             height: 20px;
             line-height: 20px;
@@ -313,7 +220,7 @@
             color: var(--color-text-dim);
             cursor: pointer;
             border-radius: 3px;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.5);
             transition: all var(--transition-fast);
             z-index: 10;
         }
@@ -327,29 +234,29 @@
             background: rgba(255, 0, 0, 0.5);
         }
         
-        .alternative-preview {
-            width: 65%;
-            height: 65%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .alternative-item.selected {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--color-text);
+        }
+        
+        .alternative-item.edited {
+            border-left: 3px solid var(--color-text);
         }
         
         .alternative-preview canvas {
             width: 100%;
-            height: 100%;
-            display: block;
+            height: auto;
+            aspect-ratio: 1;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-input);
         }
         
         .alternative-label {
             font-size: 0.7rem;
             color: var(--color-text-dim);
-            margin-top: var(--spacing-sm);
+            margin-top: var(--spacing-md);
             text-align: center;
-            position: absolute;
-            bottom: var(--spacing-sm);
-            left: 0;
-            right: 0;
         }
         
         /* Новый глиф */
@@ -434,7 +341,7 @@
             position: static;
             transform: none;
             background: var(--color-bg-panel);
-            padding: var(--spacing-lg) var(--spacing-lg) 15px var(--spacing-lg);
+            padding: var(--spacing-lg);
             border-radius: var(--radius);
             display: flex;
             gap: var(--spacing-2xl);
@@ -451,7 +358,7 @@
         }
         
         .toolbar-label {
-            font-size: 0.63rem;
+            font-size: 0.7rem;
             color: var(--color-text-dim);
             text-transform: uppercase;
         }
@@ -459,18 +366,6 @@
         .toolbar-value {
             font-size: 0.9rem;
             font-weight: 600;
-        }
-        
-        /* Стили для placeholder */
-        #newGlyphInput::placeholder {
-            color: rgba(255, 255, 255, 0.25);
-        }
-        
-        /* Disabled состояние для btn-secondary - без заливки, только обводка */
-        #newAlternativeBtn:disabled {
-            background: transparent;
-            border: 1px solid var(--color-border);
-            opacity: 0.5;
         }
         
     </style>
@@ -489,16 +384,14 @@
                 <h2>Glyphs</h2>
             </div>
             
-            <div class="char-list" id="charList">
-                <div class="char-grid" id="charGrid">
-                    <!-- Заполняется JS -->
-                </div>
+            <!-- Поле для создания нового глифа -->
+            <div class="new-glyph-section">
+                <input type="text" id="newGlyphInput" maxlength="1" placeholder="$ or € or ₽">
+                <button class="btn-secondary" id="newGlyphBtn">Add New</button>
             </div>
-            <div style="padding: 20px var(--spacing-lg); border-top: 1px solid var(--color-border); flex: 0 0 auto;">
-                <div style="display: flex; gap: var(--spacing-sm); align-items: stretch;">
-                    <input type="text" id="newGlyphInput" placeholder="New Glyph" maxlength="1" style="flex: 1; min-width: 0; padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-sm) var(--spacing-md); background: var(--color-bg-input); border: 1px solid var(--color-border); border-radius: var(--radius-input); color: var(--color-text); font-size: 0.9rem;">
-                    <button class="btn-secondary" id="newGlyphBtn" style="flex-shrink: 0; white-space: nowrap;">Add</button>
-                </div>
+            
+            <div class="char-list" id="charList">
+                <!-- Заполняется JS -->
             </div>
         </aside>
         
@@ -509,15 +402,15 @@
                 
                 <div class="toolbar">
                     <div class="toolbar-section">
-                        <div class="toolbar-label">Glyph</div>
+                        <div class="toolbar-label">Character</div>
                         <div class="toolbar-value" id="currentChar">-</div>
                     </div>
                     <div class="toolbar-section">
-                        <div class="toolbar-label">Form</div>
+                        <div class="toolbar-label">Mode</div>
                         <div class="toolbar-value" id="currentMode">Base</div>
                     </div>
                     <div class="toolbar-section">
-                        <div class="toolbar-label">Mod</div>
+                        <div class="toolbar-label">Module</div>
                         <div class="toolbar-value" id="currentModule">S0</div>
                     </div>
                 </div>
@@ -537,7 +430,7 @@
                 <!-- Заполняется JS -->
             </div>
             <div style="padding: 20px var(--spacing-lg); border-top: 1px solid var(--color-border); flex: 0 0 auto;">
-                <button class="btn-secondary" id="newAlternativeBtn" style="width: 100%;">Add Alternate</button>
+                <button class="btn-secondary" id="newAlternativeBtn" style="display: none; width: 100%;">New Alternative</button>
             </div>
         </aside>
     </div>

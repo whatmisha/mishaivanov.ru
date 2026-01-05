@@ -11,9 +11,8 @@
 import GlyphEditor from './core/GlyphEditor.js';
 import { ModuleDrawer } from './core/ModuleDrawer.js';
 
-// Отдельные ключи для редактора (не пересекаются с основным приложением)
-const STORAGE_KEY = 'voidEditor_editedGlyphs';
-const IMPORTED_CHARS_KEY = 'voidEditor_importedChars';
+const STORAGE_KEY = 'voidGlyphEditor_editedGlyphs';
+const IMPORTED_CHARS_KEY = 'voidGlyphEditor_importedChars';
 
 class GlyphEditorApp {
     constructor() {
@@ -50,8 +49,9 @@ class GlyphEditorApp {
         document.getElementById('importFileInput').addEventListener('change', (e) => this.handleFileImport(e));
         document.getElementById('exportBtn').addEventListener('click', () => this.showExportModal());
         document.getElementById('clearAllBtn').addEventListener('click', () => this.clearAll());
-        document.getElementById('newAlternativeBtn').addEventListener('click', () => this.createNewAlternative());
         document.getElementById('newGlyphBtn').addEventListener('click', () => this.createNewGlyph());
+        document.getElementById('newAlternativeBtn').addEventListener('click', () => this.createNewAlternative());
+        document.getElementById('deleteBtn').addEventListener('click', () => this.deleteCurrentGlyph());
         
         // Слушать события автосохранения для обновления UI
         document.addEventListener('glyphAutoSaved', (e) => {
@@ -64,184 +64,80 @@ class GlyphEditorApp {
     }
     
     /**
-     * Заполнить список символов в виде сетки
+     * Заполнить список символов
      */
     populateCharList() {
-        const charGrid = document.getElementById('charGrid');
-        if (!charGrid) {
-            console.error('[GlyphEditorApp] charGrid element not found!');
+        const charList = document.getElementById('charList');
+        if (!charList) {
+            console.error('[GlyphEditorApp] charList element not found!');
             return;
         }
         
-        charGrid.innerHTML = '';
+        charList.innerHTML = '';
         
-        // Определяем группы символов
-        const latinChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-        const cyrillicChars = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split('');
-        const digitChars = '0123456789'.split('');
+        const importedChars = this.getImportedCharList();
         
-        const groups = [
-            { title: 'Latin', chars: latinChars },
-            { title: 'Cyrillic', chars: cyrillicChars },
-            { title: 'Digits', chars: digitChars }
-        ];
+        // Если нет импортированных данных - показать сообщение
+        if (!importedChars || importedChars.length === 0) {
+            const emptyMessage = document.createElement('div');
+            emptyMessage.className = 'empty-message';
+            emptyMessage.style.cssText = 'padding: 20px; text-align: center; color: #666; font-size: 14px;';
+            emptyMessage.innerHTML = 'No data<br><br>Import VoidAlphabet.js<br>to start editing';
+            charList.appendChild(emptyMessage);
+            console.log('[GlyphEditorApp] No imported data, showing empty state');
+            return;
+        }
+        
+        console.log('[GlyphEditorApp] Populating', importedChars.length, 'imported characters');
         
         const editedGlyphs = this.getEditedGlyphs();
-        const importedChars = this.getImportedCharList() || [];
         
-        // Находим символы, которые не входят в стандартные группы
-        const allStandardChars = [...latinChars, ...cyrillicChars, ...digitChars];
-        const symbolChars = importedChars.filter(char => !allStandardChars.includes(char));
-        
-        let totalChars = 0;
-        
-        // Отображаем стандартные группы
-        groups.forEach(group => {
-            // Добавляем заголовок группы
-            const title = document.createElement('div');
-            title.className = 'char-group-title';
-            title.textContent = group.title;
-            charGrid.appendChild(title);
+        importedChars.forEach(char => {
+            const item = document.createElement('div');
+            item.className = 'char-item';
             
-            // Добавляем символы группы
-            group.chars.forEach(char => {
-                const cell = this.createCharCell(char, editedGlyphs, importedChars);
-                charGrid.appendChild(cell);
-            });
+            // Проверить, есть ли данные для этого символа
+            const hasData = editedGlyphs[char] && Object.keys(editedGlyphs[char]).length > 0;
+            if (hasData) {
+                item.classList.add('edited');
+            }
             
-            totalChars += group.chars.length;
-        });
-        
-        // Если есть дополнительные символы, показываем группу Symbols
-        if (symbolChars.length > 0) {
-            const title = document.createElement('div');
-            title.className = 'char-group-title';
-            title.textContent = 'Symbols';
-            charGrid.appendChild(title);
+            // Подсчитать количество альтернатив из localStorage
+            let altCount = 0;
+            if (editedGlyphs[char]) {
+                const keys = Object.keys(editedGlyphs[char]).filter(k => k !== 'base');
+                altCount = keys.length;
+            }
             
-            symbolChars.forEach(char => {
-                const cell = this.createCharCell(char, editedGlyphs, importedChars);
-                charGrid.appendChild(cell);
-            });
+            const label = document.createElement('div');
+            label.className = 'char-label';
+            label.textContent = char;
             
-            totalChars += symbolChars.length;
-        }
-        
-        console.log('[GlyphEditorApp] Populated grid with', totalChars, 'characters');
-    }
-    
-    /**
-     * Проверить, является ли глиф пустым (только E0)
-     */
-    isEmptyGlyph(glyphString) {
-        if (!glyphString) return true;
-        // Проверяем, состоит ли глиф только из модулей E0
-        const emptyGlyph = 'E0'.repeat(25);
-        return glyphString === emptyGlyph;
-    }
-    
-    /**
-     * Создать ячейку символа
-     */
-    createCharCell(char, editedGlyphs, importedChars) {
-        const cell = document.createElement('div');
-        cell.className = 'char-cell';
-        cell.dataset.char = char;
-        
-        const isImported = importedChars.includes(char);
-        const glyphString = editedGlyphs[char] && editedGlyphs[char]['base'];
-        const hasGlyph = glyphString && !this.isEmptyGlyph(glyphString);
-        const isSelected = this.selectedChar === char;
-        
-        // Определяем состояние
-        if (!isImported) {
-            cell.classList.add('inactive'); // Состояние 1: не в файле
-        } else if (!hasGlyph) {
-            cell.classList.add('empty'); // Состояние 3: добавлен, но не нарисован или очищен
-        } else {
-            cell.classList.add('has-glyph'); // Состояние 4: нарисован
-        }
-        
-        if (isSelected) {
-            cell.classList.add('selected'); // Состояние 5: выбран
-        }
-        
-        // Подсчитать количество альтернатив
-        let altCount = 0;
-        if (editedGlyphs[char]) {
-            const keys = Object.keys(editedGlyphs[char]).filter(k => k !== 'base');
-            altCount = keys.length;
-        }
-        
-        // Если есть глиф - показываем превью
-        if (hasGlyph) {
-            const preview = document.createElement('div');
-            preview.className = 'char-preview';
+            const count = document.createElement('div');
+            count.className = 'char-count';
+            count.textContent = altCount > 0 ? `+${altCount} alt` : '';
             
-            const canvas = document.createElement('canvas');
-            canvas.width = 120;
-            canvas.height = 120;
-            
-            // Рендерим глиф используя метод editor'а
-            this.editor.renderGlyphPreview(canvas, glyphString);
-            
-            preview.appendChild(canvas);
-            cell.appendChild(preview);
-        } else {
-            // Показываем букву стандартным шрифтом
-            const fallback = document.createElement('div');
-            fallback.className = 'char-fallback';
-            fallback.textContent = char;
-            cell.appendChild(fallback);
-        }
-        
-        // Бейдж с количеством альтернатив
-        if (altCount > 0) {
-            const badge = document.createElement('div');
-            badge.className = 'char-alt-badge';
-            badge.textContent = `+${altCount}`;
-            cell.appendChild(badge);
-        }
-        
-        // Крестик для удаления (только для импортированных)
-        if (isImported) {
+            // Крестик для удаления
             const deleteBtn = document.createElement('div');
-            deleteBtn.className = 'char-cell-delete';
+            deleteBtn.className = 'char-delete';
             deleteBtn.innerHTML = '×';
             deleteBtn.title = 'Delete glyph';
             deleteBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.deleteGlyph(char);
             });
-            cell.appendChild(deleteBtn);
-        }
-        
-        // Обработчик клика
-        cell.addEventListener('click', () => {
-            if (!isImported) {
-                // Добавляем символ в импортированные
-                this.addCharToImported(char);
-            }
-            this.selectChar(char);
-        });
-        
-        return cell;
-    }
-    
-    /**
-     * Добавить символ в список импортированных
-     */
-    addCharToImported(char) {
-        const importedChars = this.getImportedCharList() || [];
-        if (!importedChars.includes(char)) {
-            importedChars.push(char);
-            this.saveImportedCharList(importedChars);
             
-            // НЕ создаем пустой глиф - он будет создан автоматически при первом рисовании
-            // Просто добавляем символ в список импортированных
-        }
+            item.appendChild(label);
+            item.appendChild(count);
+            item.appendChild(deleteBtn);
+            
+            item.addEventListener('click', () => {
+                this.selectChar(char);
+            });
+            
+            charList.appendChild(item);
+        });
     }
-    
     
     /**
      * Выбрать символ
@@ -262,18 +158,10 @@ class GlyphEditorApp {
             }
         });
         
-        // Загрузить базовый глиф в редактор (ТОЛЬКО из editedGlyphs, БЕЗ оригинального)
+        // Загрузить базовый глиф в редактор
         this.editor.selectedChar = char;
         this.editor.selectedAlternativeIndex = null;
-        
-        // Загружаем только если глиф есть в editedGlyphs
-        const editedGlyph = this.editor.getEditedGlyph(char, null);
-        if (editedGlyph && !this.isEmptyGlyph(editedGlyph)) {
-            this.editor.loadGlyphWithEdits(char, null);
-        } else {
-            // Очищаем канвас для нового пустого глифа
-            this.editor.clear();
-        }
+        this.editor.loadGlyphWithEdits(char, null);
         
         console.log('[GlyphEditorApp] Glyph loaded for', char);
         
@@ -295,155 +183,86 @@ class GlyphEditorApp {
         const content = document.getElementById('alternativesContent');
         content.innerHTML = '';
         
-        // Собираем все существующие альтернативы из editedGlyphs
-        const existingAlternatives = new Set();
-        if (this.selectedChar) {
-            const editedGlyphs = this.getEditedGlyphs();
-            if (editedGlyphs[this.selectedChar]) {
-                Object.keys(editedGlyphs[this.selectedChar]).forEach(key => {
-                    if (key !== 'base') {
-                        existingAlternatives.add(parseInt(key));
-                    }
-                });
-            }
+        if (!this.selectedChar) return;
+        
+        // Добавить базовый глиф
+        this.addAlternativePreview(content, null, 'Base');
+        
+        // Собрать все индексы альтернатив ТОЛЬКО из импортированных данных (localStorage)
+        const alternativeIndexes = new Set();
+        
+        const editedGlyphs = this.getEditedGlyphs();
+        if (editedGlyphs[this.selectedChar]) {
+            Object.keys(editedGlyphs[this.selectedChar]).forEach(key => {
+                if (key !== 'base') {
+                    alternativeIndexes.add(parseInt(key));
+                }
+            });
         }
         
-        // Определяем, какие ячейки показывать
-        // Минимум 4 ячейки: Base, Alt 1, Alt 2, Alt 3
-        // Плюс все существующие альтернативы с индексом > 3
-        const alternativesToShow = [
-            { index: null, label: 'Base' },
-            { index: 1, label: 'Alt 1' },
-            { index: 2, label: 'Alt 2' },
-            { index: 3, label: 'Alt 3' }
-        ];
-        
-        // Добавляем дополнительные ячейки для существующих альтернатив с индексом > 3
-        const sortedExisting = Array.from(existingAlternatives).sort((a, b) => a - b);
-        sortedExisting.forEach(index => {
-            if (index > 3) {
-                alternativesToShow.push({ index, label: `Alt ${index}` });
-            }
-        });
-        
-        alternativesToShow.forEach(({ index, label }) => {
-            // Проверяем, существует ли альтернатива и не является ли она пустой
-            // НЕ загружаем оригинальные глифы - только те, что в editedGlyphs
-            let hasGlyph = false;
-            if (this.selectedChar) {
-                const editedGlyph = this.editor.getEditedGlyph(this.selectedChar, index);
-                
-                // Проверяем, что глиф существует и не пустой (ТОЛЬКО editedGlyph, БЕЗ originalGlyph)
-                if (editedGlyph && !this.isEmptyGlyph(editedGlyph)) {
-                    hasGlyph = true;
-                }
-            }
-            
-            this.addAlternativePreview(content, index, label, hasGlyph);
+        // Отсортировать индексы и добавить превью
+        const sortedIndexes = Array.from(alternativeIndexes).sort((a, b) => a - b);
+        sortedIndexes.forEach(index => {
+            this.addAlternativePreview(content, index, `Alt ${index}`);
         });
     }
     
     /**
      * Добавить превью альтернативы
      */
-    addAlternativePreview(container, alternativeIndex, label, hasGlyph) {
+    addAlternativePreview(container, alternativeIndex, label) {
+        const editedGlyph = this.editor.getEditedGlyph(this.selectedChar, alternativeIndex);
+        const originalGlyph = this.editor.getOriginalGlyph(this.selectedChar, alternativeIndex);
+        const glyphString = editedGlyph || originalGlyph;
+        
         const item = document.createElement('div');
         item.className = 'alternative-item';
         item.dataset.index = alternativeIndex === null ? 'base' : String(alternativeIndex);
         
-        // Проверяем, существует ли альтернатива в editedGlyphs (даже если пустая)
-        let existsInStorage = false;
-        if (this.selectedChar) {
-            const editedGlyphs = this.getEditedGlyphs();
-            const key = alternativeIndex === null ? 'base' : String(alternativeIndex);
-            existsInStorage = editedGlyphs[this.selectedChar] && editedGlyphs[this.selectedChar].hasOwnProperty(key);
+        if (editedGlyph) {
+            item.classList.add('edited');
         }
         
-        // Определяем состояние ячейки (как в левой панели)
-        const isEmpty = !hasGlyph || !this.selectedChar;
-        
-        if (isEmpty) {
-            item.classList.add('empty'); // Пустая ячейка
-            // Если глиф не выбран, делаем ячейку неактивной
-            if (!this.selectedChar) {
-                item.style.cursor = 'default';
-                item.style.opacity = '0.3';
-            }
-        } else {
-            item.classList.add('has-glyph'); // Ячейка с глифом
-        }
-        
-        if (alternativeIndex === this.selectedAlternativeIndex && this.selectedChar) {
+        if (alternativeIndex === this.selectedAlternativeIndex) {
             item.classList.add('selected');
-        }
-        
-        // Если есть отредактированный глиф, добавляем класс edited
-        if (hasGlyph && this.selectedChar) {
-            const editedGlyph = this.editor.getEditedGlyph(this.selectedChar, alternativeIndex);
-            if (editedGlyph) {
-                item.classList.add('edited');
-            }
         }
         
         item.addEventListener('click', (e) => {
             // Не выбирать альтернативу при клике на крестик
             if (!e.target.classList.contains('alternative-delete')) {
-                if (this.selectedChar) {
-                    this.selectAlternative(alternativeIndex);
-                }
+                this.selectAlternative(alternativeIndex);
             }
         });
         
-        if (hasGlyph && this.selectedChar) {
-            const editedGlyph = this.editor.getEditedGlyph(this.selectedChar, alternativeIndex);
-            
-            const preview = document.createElement('div');
-            preview.className = 'alternative-preview';
-            
-            const canvas = document.createElement('canvas');
-            canvas.width = 120;
-            canvas.height = 120;
-            this.editor.renderGlyphPreview(canvas, editedGlyph);
-            
-            preview.appendChild(canvas);
-            item.appendChild(preview);
-            
-            // Крестик для удаления альтернативы (для ячеек с глифом)
-            const deleteBtn = document.createElement('div');
-            deleteBtn.className = 'alternative-delete';
-            deleteBtn.innerHTML = '×';
-            deleteBtn.title = 'Delete alternative';
-            deleteBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.deleteAlternative(this.selectedChar, alternativeIndex);
-            });
-            item.appendChild(deleteBtn);
-            
-            // Подпись внизу для ячеек с глифом
-            const labelDiv = document.createElement('div');
-            labelDiv.className = 'alternative-label';
-            labelDiv.textContent = label;
-            item.appendChild(labelDiv);
-        } else {
-            // Для пустых ячеек показываем только текст метки стандартным шрифтом по центру
-            const fallback = document.createElement('div');
-            fallback.className = 'char-fallback';
-            fallback.textContent = label;
-            item.appendChild(fallback);
-            
-            // Крестик для удаления пустой альтернативы (только если она существует в storage)
-            if (existsInStorage && this.selectedChar) {
-                const deleteBtn = document.createElement('div');
-                deleteBtn.className = 'alternative-delete';
-                deleteBtn.innerHTML = '×';
-                deleteBtn.title = 'Delete empty alternative';
-                deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    this.deleteAlternative(this.selectedChar, alternativeIndex);
-                });
-                item.appendChild(deleteBtn);
-            }
-        }
+        const preview = document.createElement('div');
+        preview.className = 'alternative-preview';
+        
+        const canvas = document.createElement('canvas');
+        // Квадратное превью для правильных пропорций
+        // Размер будет контролироваться CSS через aspect-ratio
+        canvas.width = 120;
+        canvas.height = 120;
+        this.editor.renderGlyphPreview(canvas, glyphString);
+        
+        preview.appendChild(canvas);
+        
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'alternative-label';
+        labelDiv.textContent = label;
+        
+        // Крестик для удаления альтернативы
+        const deleteBtn = document.createElement('div');
+        deleteBtn.className = 'alternative-delete';
+        deleteBtn.innerHTML = '×';
+        deleteBtn.title = 'Delete alternative';
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.deleteAlternative(this.selectedChar, alternativeIndex);
+        });
+        
+        item.appendChild(preview);
+        item.appendChild(labelDiv);
+        item.appendChild(deleteBtn);
         
         container.appendChild(item);
     }
@@ -454,17 +273,9 @@ class GlyphEditorApp {
     selectAlternative(alternativeIndex) {
         this.selectedAlternativeIndex = alternativeIndex;
         
-        // Загрузить в редактор (ТОЛЬКО из editedGlyphs, БЕЗ оригинального)
+        // Загрузить в редактор
         this.editor.selectedAlternativeIndex = alternativeIndex;
-        
-        // Проверяем, есть ли глиф в editedGlyphs
-        const editedGlyph = this.editor.getEditedGlyph(this.selectedChar, alternativeIndex);
-        if (editedGlyph && !this.isEmptyGlyph(editedGlyph)) {
-            this.editor.loadGlyphWithEdits(this.selectedChar, alternativeIndex);
-        } else {
-            // Очищаем канвас для нового пустого глифа
-            this.editor.clear();
-        }
+        this.editor.loadGlyphWithEdits(this.selectedChar, alternativeIndex);
         
         // Обновить UI
         const items = document.querySelectorAll('.alternative-item');
@@ -491,21 +302,24 @@ class GlyphEditorApp {
      */
     updateButtons() {
         const newAlternativeBtn = document.getElementById('newAlternativeBtn');
-        const clearAllBtn = document.getElementById('clearAllBtn');
+        const deleteBtn = document.getElementById('deleteBtn');
         
-        // Кнопка "New Form" всегда видна, но disabled когда глиф не выбран
         if (this.selectedChar) {
-            newAlternativeBtn.disabled = false;
+            // Показать кнопку "New Alternative" если выбран символ
+            newAlternativeBtn.style.display = 'inline-block';
+            
+            // Проверить, есть ли сохранённая отредактированная версия
+            const editedGlyph = this.editor.getEditedGlyph(this.selectedChar, this.selectedAlternativeIndex);
+            
+            // Показать кнопку "Delete" только если есть отредактированная версия
+            if (editedGlyph) {
+                deleteBtn.style.display = 'inline-block';
+            } else {
+                deleteBtn.style.display = 'none';
+            }
         } else {
-            newAlternativeBtn.disabled = true;
-        }
-        
-        // Показать Clear All только если есть данные
-        const importedChars = this.getImportedCharList();
-        if (importedChars && importedChars.length > 0) {
-            clearAllBtn.classList.add('visible');
-        } else {
-            clearAllBtn.classList.remove('visible');
+            newAlternativeBtn.style.display = 'none';
+            deleteBtn.style.display = 'none';
         }
     }
     
@@ -535,22 +349,28 @@ class GlyphEditorApp {
         }
         
         const editedGlyphs = this.getEditedGlyphs();
-        if (editedGlyphs[char] && editedGlyphs[char]['base'] && !this.isEmptyGlyph(editedGlyphs[char]['base'])) {
+        if (editedGlyphs[char] && editedGlyphs[char]['base']) {
             alert(`Character "${char}" already exists`);
             return;
         }
         
-        // НЕ создаем пустой глиф - он будет создан автоматически при первом рисовании
-        // Просто добавляем символ в список импортированных
+        // Создать пустой глиф (25 модулей E0)
+        const emptyGlyph = 'E0'.repeat(25);
+        
+        // Сохранить в localStorage
+        if (!editedGlyphs[char]) {
+            editedGlyphs[char] = {};
+        }
+        editedGlyphs[char]['base'] = emptyGlyph;
+        
+        this.saveEditedGlyphs(editedGlyphs);
         
         // Добавить в список импортированных (обновить или создать)
         if (!importedChars) {
             importedChars = [];
         }
-        if (!importedChars.includes(char)) {
-            importedChars.push(char);
-            this.saveImportedCharList(importedChars);
-        }
+        importedChars.push(char);
+        this.saveImportedCharList(importedChars);
         
         // Очистить поле
         input.value = '';
@@ -570,6 +390,13 @@ class GlyphEditorApp {
     createNewAlternative() {
         if (!this.selectedChar) return;
         
+        // Получить базовый глиф как шаблон
+        const baseGlyph = this.editor.getOriginalGlyph(this.selectedChar, null);
+        if (!baseGlyph) {
+            alert('Base glyph not found!');
+            return;
+        }
+        
         const editedGlyphs = this.getEditedGlyphs();
         
         // Найти следующий свободный индекс для альтернативы (только из импортированных данных)
@@ -588,15 +415,12 @@ class GlyphEditorApp {
         
         const newIndex = maxIndex + 1;
         
-        // Создать ПУСТОЙ глиф (25 модулей E0) вместо копирования оригинального
-        const emptyGlyph = 'E0'.repeat(25);
-        
-        // Сохранить новую альтернативу
+        // Сохранить новую альтернативу (дублируем базовый глиф)
         if (!editedGlyphs[this.selectedChar]) {
             editedGlyphs[this.selectedChar] = {};
         }
         
-        editedGlyphs[this.selectedChar][String(newIndex)] = emptyGlyph;
+        editedGlyphs[this.selectedChar][String(newIndex)] = baseGlyph;
         this.saveEditedGlyphs(editedGlyphs);
         
         // Обновить UI
@@ -634,10 +458,6 @@ class GlyphEditorApp {
         // Очистить тулбар
         document.getElementById('currentChar').textContent = '-';
         document.getElementById('currentMode').textContent = 'Base';
-        
-        // Скрыть кнопку Clear All
-        const clearAllBtn = document.getElementById('clearAllBtn');
-        clearAllBtn.classList.remove('visible');
         
         console.log('[GlyphEditorApp] All data cleared');
     }
@@ -714,23 +534,10 @@ class GlyphEditorApp {
             
             this.saveEditedGlyphs(editedGlyphs);
             
-            // Если удаляемый альтернатив был выбран
+            // Если удаляемый альтернатив был выбран - переключиться на базовый
             if (this.selectedChar === char && this.selectedAlternativeIndex === alternativeIndex) {
-                // Переключиться на базовый (если он есть) или очистить канвас
                 this.selectedAlternativeIndex = null;
-                
-                // Проверяем, существует ли базовый глиф в editedGlyphs
-                const baseGlyph = editedGlyphs[char] && editedGlyphs[char]['base'];
-                if (baseGlyph && !this.isEmptyGlyph(baseGlyph)) {
-                    this.editor.loadGlyphWithEdits(char, null);
-                } else {
-                    // Базовый глиф не существует или пустой - очистить канвас
-                    this.editor.selectedChar = char;
-                    this.editor.selectedAlternativeIndex = null;
-                    this.editor.clear();
-                    this.editor.render();
-                }
-                
+                this.editor.loadGlyphWithEdits(char, null);
                 document.getElementById('currentMode').textContent = 'Base';
             }
             
@@ -828,10 +635,6 @@ class GlyphEditorApp {
             this.updateAlternativesPanel();
             this.updateButtons();
             
-            // Показать кнопку Clear All после импорта
-            const clearAllBtn = document.getElementById('clearAllBtn');
-            clearAllBtn.classList.add('visible');
-            
         } catch (e) {
             console.error('Import error:', e);
             alert('Failed to import file: ' + e.message);
@@ -912,13 +715,11 @@ class GlyphEditorApp {
      */
     generateFullVoidAlphabetFile(editedGlyphs) {
         // Собрать базовые глифы ТОЛЬКО из импортированных данных
-        // Исключаем пустые глифы (только E0)
         const allBaseGlyphs = {};
         
         for (const char in editedGlyphs) {
-            const glyphString = editedGlyphs[char]['base'];
-            if (glyphString && !this.isEmptyGlyph(glyphString)) {
-                allBaseGlyphs[char] = glyphString;
+            if (editedGlyphs[char]['base']) {
+                allBaseGlyphs[char] = editedGlyphs[char]['base'];
             }
         }
         
@@ -1156,28 +957,13 @@ class GlyphEditorApp {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('[GlyphEditorApp] DOM loaded');
     
-    // Миграция старых данных
-    // 1. Очистить старые данные с неправильным ключом "undefined"
+    // Очистить старые данные с неправильным ключом
     if (localStorage.getItem('undefined')) {
-        console.log('[GlyphEditorApp] Found data under "undefined" key, removing...');
-        localStorage.removeItem('undefined');
-        console.log('[GlyphEditorApp] Removed old "undefined" data');
-    }
-    
-    // 2. Мигрировать данные со старого ключа редактора (если есть)
-    const oldEditorKey = 'voidGlyphEditor_editedGlyphs';
-    const oldImportedKey = 'voidGlyphEditor_importedChars';
-    if (localStorage.getItem(oldEditorKey) && !localStorage.getItem(STORAGE_KEY)) {
-        console.log('[GlyphEditorApp] Migrating from old editor key...');
-        const oldData = localStorage.getItem(oldEditorKey);
-        const oldImported = localStorage.getItem(oldImportedKey);
+        console.log('[GlyphEditorApp] Found data under "undefined" key, migrating...');
+        const oldData = localStorage.getItem('undefined');
         localStorage.setItem(STORAGE_KEY, oldData);
-        if (oldImported) {
-            localStorage.setItem(IMPORTED_CHARS_KEY, oldImported);
-        }
-        localStorage.removeItem(oldEditorKey);
-        localStorage.removeItem(oldImportedKey);
-        console.log('[GlyphEditorApp] Migration from old editor key complete');
+        localStorage.removeItem('undefined');
+        console.log('[GlyphEditorApp] Migration complete');
     }
     
     // Проверить, что есть в localStorage

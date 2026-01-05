@@ -757,11 +757,12 @@ export default class GlyphEditor {
      * Добавить превью альтернативы в панель
      */
     addAlternativePreview(container, alternativeIndex, label) {
-        // Проверить, есть ли сохранённая версия (ТОЛЬКО из localStorage редактора)
+        // Проверить, есть ли сохранённая версия
         const editedGlyph = this.getEditedGlyph(this.selectedChar, alternativeIndex);
         
-        // НЕ загружаем из VoidAlphabet.js - редактор изолирован!
-        const glyphStringToShow = editedGlyph || 'E0'.repeat(25);
+        // Получить оригинальный глиф
+        const originalGlyph = this.getOriginalGlyph(this.selectedChar, alternativeIndex);
+        const glyphStringToShow = editedGlyph || originalGlyph;
         
         const item = document.createElement('div');
         item.className = 'editor-alternative-item';
@@ -857,8 +858,9 @@ export default class GlyphEditor {
         const width = canvas.width;
         const height = canvas.height;
         
-        // Очистить canvas (прозрачный фон, чтобы был виден фон ячейки)
-        ctx.clearRect(0, 0, width, height);
+        // Очистить canvas (темный фон панели)
+        ctx.fillStyle = '#1a1a1a'; // var(--color-bg-panel)
+        ctx.fillRect(0, 0, width, height);
         
         // Размер модуля для превью (меньше, чем на основном канвасе)
         const moduleSize = Math.min(width, height) / (this.gridSize + 1);
@@ -948,15 +950,9 @@ export default class GlyphEditor {
     }
     
     /**
-     * DEPRECATED: Этот метод больше не используется в изолированном редакторе.
-     * Редактор работает ТОЛЬКО с импортированными данными из localStorage.
-     * 
      * Получить оригинальный глиф (из VOID_ALPHABET или альтернатив)
-     * Метод сохранён для обратной совместимости, но не должен вызываться в редакторе.
      */
     getOriginalGlyph(char, alternativeIndex) {
-        console.warn('[getOriginalGlyph] DEPRECATED: This method should not be used in the standalone editor!');
-        
         // Сначала проверяем, есть ли в VoidAlphabet
         const glyph = getGlyph(char, { alternativeIndex: alternativeIndex || null });
         
@@ -1006,10 +1002,11 @@ export default class GlyphEditor {
             }
         }
         
+        const originalGlyphString = this.getOriginalGlyph(this.selectedChar, this.selectedAlternativeIndex);
         const editedGlyphString = this.getEditedGlyph(this.selectedChar, this.selectedAlternativeIndex);
         
-        // Используем ТОЛЬКО сохранённую версию или пустой глиф (НЕ из VoidAlphabet.js)
-        const referenceGlyphString = editedGlyphString || 'E0'.repeat(25);
+        // Используем сохранённую версию, если есть, иначе оригинальную
+        const referenceGlyphString = editedGlyphString || originalGlyphString;
         
         const hasChanges = currentGlyphString !== referenceGlyphString;
         this.updateSaveChangesButton(hasChanges);
@@ -1031,16 +1028,6 @@ export default class GlyphEditor {
         if (saveBtn) {
             saveBtn.disabled = !show;
         }
-    }
-    
-    /**
-     * Проверить, является ли глиф пустым (только E0)
-     */
-    isEmptyGlyph(glyphString) {
-        if (!glyphString) return true;
-        // Проверяем, состоит ли глиф только из модулей E0
-        const emptyGlyph = 'E0'.repeat(25);
-        return glyphString === emptyGlyph;
     }
     
     /**
@@ -1066,21 +1053,12 @@ export default class GlyphEditor {
         console.log(`[saveChanges] Saving glyph for char: ${this.selectedChar}, selectedAlternativeIndex: ${this.selectedAlternativeIndex}, key: ${key}`);
         console.log(`[saveChanges] Glyph string length: ${glyphString.length}`);
         
-        // Если глиф пустой, удаляем его из localStorage
-        if (this.isEmptyGlyph(glyphString)) {
-            delete editedGlyphs[this.selectedChar][key];
-            // Если у символа больше нет глифов, удаляем весь объект
-            if (Object.keys(editedGlyphs[this.selectedChar]).length === 0) {
-                delete editedGlyphs[this.selectedChar];
-            }
-        } else {
-            editedGlyphs[this.selectedChar][key] = glyphString;
-        }
+        editedGlyphs[this.selectedChar][key] = glyphString;
         
         // Сохранить в localStorage
         this.saveEditedGlyphs(editedGlyphs);
         
-        console.log(`[saveChanges] ✓ Saved. Current storage for ${this.selectedChar}:`, editedGlyphs[this.selectedChar] ? Object.keys(editedGlyphs[this.selectedChar]) : 'deleted');
+        console.log(`[saveChanges] ✓ Saved. Current storage for ${this.selectedChar}:`, Object.keys(editedGlyphs[this.selectedChar]));
         
         // Обновить превью в панели альтернатив, если это альтернатива
         if (this.selectedAlternativeIndex !== null) {
@@ -1113,16 +1091,7 @@ export default class GlyphEditor {
             // Сохранить глиф с ключом 'base' для базового или индексом для альтернативы
             const key = this.selectedAlternativeIndex === null ? 'base' : String(this.selectedAlternativeIndex);
             
-            // Если глиф пустой, удаляем его из localStorage
-            if (this.isEmptyGlyph(glyphString)) {
-                delete editedGlyphs[this.selectedChar][key];
-                // Если у символа больше нет глифов, удаляем весь объект
-                if (Object.keys(editedGlyphs[this.selectedChar]).length === 0) {
-                    delete editedGlyphs[this.selectedChar];
-                }
-            } else {
-                editedGlyphs[this.selectedChar][key] = glyphString;
-            }
+            editedGlyphs[this.selectedChar][key] = glyphString;
             
             // Сохранить в localStorage
             this.saveEditedGlyphs(editedGlyphs);
@@ -1148,21 +1117,20 @@ export default class GlyphEditor {
         
         console.log(`[loadGlyphWithEdits] Loading glyph for char: ${char}, alternativeIndex: ${alternativeIndex} (type: ${typeof alternativeIndex})`);
         
-        // Проверяем ТОЛЬКО сохранённые изменения из localStorage редактора
+        // Сначала проверяем сохранённые изменения
         const editedGlyph = this.getEditedGlyph(char, alternativeIndex);
-        if (editedGlyph && !this.isEmptyGlyph(editedGlyph)) {
+        if (editedGlyph) {
             console.log(`[loadGlyphWithEdits] ✓ Found edited glyph, loading it`);
             this.importGlyph(editedGlyph, true);
-        } else {
-            console.log(`[loadGlyphWithEdits] No edited glyph found, clearing canvas`);
-            // НЕ загружаем из VoidAlphabet.js - редактор изолирован!
-            // Очищаем канвас для нового пустого глифа
-            this.clear();
+            return;
         }
         
-        this.render();
-        this.updateModuleInfo();
-        this.updateGlyphString();
+        console.log(`[loadGlyphWithEdits] No edited glyph found, loading original`);
+        // Если нет сохранённых изменений, загружаем оригинал
+        const originalGlyph = this.getOriginalGlyph(char, alternativeIndex);
+        if (originalGlyph) {
+            this.importGlyph(originalGlyph, true);
+        }
     }
 }
 
