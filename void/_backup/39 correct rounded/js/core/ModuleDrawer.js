@@ -16,7 +16,6 @@ export class ModuleDrawer {
         this.roundedCaps = false; // скругления на концах линий в режиме Stroke (Rounded)
         this.dashLength = 0.10; // длина штриха для dash mode (множитель от stem)
         this.gapLength = 0.30; // длина промежутка для dash mode (множитель от stem)
-        this.endpointSides = null; // объект {top, right, bottom, left} - стороны с endpoints
     }
 
     /**
@@ -196,44 +195,12 @@ export class ModuleDrawer {
     }
 
     /**
-     * Вспомогательный метод: получить локальные стороны endpoints с учетом поворота
-     * @param {number} rotation - поворот модуля (0-3)
-     * @returns {Object} {top, right, bottom, left} - локальные стороны с endpoints
-     */
-    getLocalEndpointSides(rotation) {
-        if (!this.endpointSides) return null;
-        
-        // Преобразуем глобальные стороны в локальные с учетом поворота
-        const sides = ['top', 'right', 'bottom', 'left'];
-        const local = { top: false, right: false, bottom: false, left: false };
-        
-        Object.keys(this.endpointSides).forEach(globalSide => {
-            if (this.endpointSides[globalSide]) {
-                const globalIndex = sides.indexOf(globalSide);
-                const localIndex = (globalIndex - rotation + 4) % 4;
-                const localSide = sides[localIndex];
-                local[localSide] = true;
-            }
-        });
-        
-        return local;
-    }
-
-    /**
      * S — Straight: вертикальная линия слева
      */
     drawStraight(ctx, x, y, w, h, angle, stem) {
         ctx.save();
         ctx.translate(x + w / 2, y + h / 2);
         ctx.rotate(angle);
-        
-        // Получаем локальные endpoints с учетом поворота
-        const rotation = Math.round(angle / (Math.PI / 2)) % 4;
-        const localEndpoints = this.getLocalEndpointSides(rotation);
-        
-        // Укорачивание на 0.5 * stem weight (если включен roundedCaps и есть endpoints)
-        const shortenTop = this.roundedCaps && localEndpoints && localEndpoints.top ? stem * 0.25 : 0;
-        const shortenBottom = this.roundedCaps && localEndpoints && localEndpoints.bottom ? stem * 0.25 : 0;
         
         if (this.renderMethod === 'stroke') {
             // Stroke method: рисуем линии с обводкой
@@ -248,8 +215,8 @@ export class ModuleDrawer {
                 ctx.setLineDash([]); // Сброс dash для solid
                 
                 ctx.beginPath();
-                ctx.moveTo(lineX, -h / 2 + shortenTop);
-                ctx.lineTo(lineX, h / 2 - shortenBottom);
+                ctx.moveTo(lineX, -h / 2);
+                ctx.lineTo(lineX, h / 2);
                 ctx.stroke();
             } else if (this.mode === 'stripes') {
                 // Stripes mode: несколько параллельных линий
@@ -264,8 +231,8 @@ export class ModuleDrawer {
                 for (let i = 0; i < this.strokesNum; i++) {
                     const lineX = startX + i * (strokeWidth + gap);
                     ctx.beginPath();
-                    ctx.moveTo(lineX, -h / 2 + shortenTop);
-                    ctx.lineTo(lineX, h / 2 - shortenBottom);
+                    ctx.moveTo(lineX, -h / 2);
+                    ctx.lineTo(lineX, h / 2);
                     ctx.stroke();
                 }
             } else if (this.mode === 'dash') {
@@ -276,8 +243,8 @@ export class ModuleDrawer {
                 ctx.lineWidth = lineWidth;
                 ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
                 
-                // Вычисляем адаптивный dash и gap с учетом укорачивания
-                const lineLength = h - shortenTop - shortenBottom; // Длина вертикальной линии с укорачиванием
+                // Вычисляем адаптивный dash и gap
+                const lineLength = h; // Длина вертикальной линии
                 const dashPx = stem * this.dashLength;
                 const gapPx = stem * this.gapLength;
                 const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
@@ -285,8 +252,8 @@ export class ModuleDrawer {
                 ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
                 
                 ctx.beginPath();
-                ctx.moveTo(lineX, -h / 2 + shortenTop);
-                ctx.lineTo(lineX, h / 2 - shortenBottom);
+                ctx.moveTo(lineX, -h / 2);
+                ctx.lineTo(lineX, h / 2);
                 ctx.stroke();
                 
                 ctx.setLineDash([]); // Сброс после рисования
@@ -319,14 +286,6 @@ export class ModuleDrawer {
         ctx.translate(x + w / 2, y + h / 2);
         ctx.rotate(angle);
         
-        // Получаем локальные endpoints с учетом поворота
-        const rotation = Math.round(angle / (Math.PI / 2)) % 4;
-        const localEndpoints = this.getLocalEndpointSides(rotation);
-        
-        // Укорачивание на 0.5 * stem weight (если включен roundedCaps и есть endpoints)
-        const shortenTop = this.roundedCaps && localEndpoints && localEndpoints.top ? stem * 0.25 : 0;
-        const shortenBottom = this.roundedCaps && localEndpoints && localEndpoints.bottom ? stem * 0.25 : 0;
-        
         if (this.renderMethod === 'stroke') {
             // Stroke method: рисуем линии с обводкой
             if (this.mode === 'fill') {
@@ -339,8 +298,8 @@ export class ModuleDrawer {
                 ctx.setLineDash([]); // Сброс dash для solid
                 
                 ctx.beginPath();
-                ctx.moveTo(lineX, -h / 2 + shortenTop);
-                ctx.lineTo(lineX, h / 2 - shortenBottom);
+                ctx.moveTo(lineX, -h / 2);
+                ctx.lineTo(lineX, h / 2);
                 ctx.stroke();
             } else if (this.mode === 'stripes') {
                 // Stripes mode: несколько параллельных линий, центрированных
@@ -356,8 +315,8 @@ export class ModuleDrawer {
                 for (let i = 0; i < this.strokesNum; i++) {
                     const lineX = startX + i * (strokeWidth + gap);
                     ctx.beginPath();
-                    ctx.moveTo(lineX, -h / 2 + shortenTop);
-                    ctx.lineTo(lineX, h / 2 - shortenBottom);
+                    ctx.moveTo(lineX, -h / 2);
+                    ctx.lineTo(lineX, h / 2);
                     ctx.stroke();
                 }
             } else if (this.mode === 'dash') {
@@ -368,8 +327,8 @@ export class ModuleDrawer {
                 ctx.lineWidth = lineWidth;
                 ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
                 
-                // Вычисляем адаптивный dash и gap с учетом укорачивания
-                const lineLength = h - shortenTop - shortenBottom; // Длина вертикальной линии
+                // Вычисляем адаптивный dash и gap
+                const lineLength = h; // Длина вертикальной линии
                 const dashPx = stem * this.dashLength;
                 const gapPx = stem * this.gapLength;
                 const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
@@ -377,8 +336,8 @@ export class ModuleDrawer {
                 ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
                 
                 ctx.beginPath();
-                ctx.moveTo(lineX, -h / 2 + shortenTop);
-                ctx.lineTo(lineX, h / 2 - shortenBottom);
+                ctx.moveTo(lineX, -h / 2);
+                ctx.lineTo(lineX, h / 2);
                 ctx.stroke();
                 
                 ctx.setLineDash([]); // Сброс после рисования
@@ -666,10 +625,6 @@ export class ModuleDrawer {
         ctx.translate(x + w / 2, y + h / 2);
         ctx.rotate(angle);
         
-        // Получаем локальные endpoints с учетом поворота
-        const rotation = Math.round(angle / (Math.PI / 2)) % 4;
-        const localEndpoints = this.getLocalEndpointSides(rotation);
-        
         if (this.renderMethod === 'stroke') {
             // Stroke method: рисуем дуги с обводкой
             const lineWidth = stem / 2;
@@ -688,22 +643,12 @@ export class ModuleDrawer {
                     arcRadius = minRadius;
                 }
                 
-                // Укорачивание дуги: вычисляем изменение угла
-                // Дуга R идет от PI/2 (right) до PI (top)
-                // deltaAngle = arcLength / radius = (0.25 * stem) / radius
-                const shortenAmount = stem * 0.25;
-                const deltaAngleRight = this.roundedCaps && localEndpoints && localEndpoints.right ? shortenAmount / arcRadius : 0;
-                const deltaAngleTop = this.roundedCaps && localEndpoints && localEndpoints.top ? shortenAmount / arcRadius : 0;
-                
-                const startAngle = Math.PI / 2 + deltaAngleRight;
-                const endAngle = Math.PI - deltaAngleTop;
-                
                 ctx.setLineDash([]); // Сброс dash для solid
                 const centerX = w / 2;
                 const centerY = -h / 2;
                 
                 ctx.beginPath();
-                ctx.arc(centerX, centerY, arcRadius, startAngle, endAngle);
+                ctx.arc(centerX, centerY, arcRadius, Math.PI / 2, Math.PI);
                 ctx.stroke();
             } else if (this.mode === 'stripes') {
                 // Stripes mode: несколько концентрических дуг
@@ -718,9 +663,6 @@ export class ModuleDrawer {
                 const outerRadius = w - strokeWidth / 2;
                 const minRadius = Math.max(strokeWidth / 2, 0.1);
                 
-                // Укорачивание дуги
-                const shortenAmount = stem * 0.25;
-                
                 for (let j = 0; j < this.strokesNum; j++) {
                     let arcRadius = outerRadius - j * (strokeWidth + gap);
                     // Защита от отрицательного или слишком маленького радиуса
@@ -728,14 +670,8 @@ export class ModuleDrawer {
                         arcRadius = minRadius;
                     }
                     if (arcRadius > 0) {
-                        const deltaAngleRight = this.roundedCaps && localEndpoints && localEndpoints.right ? shortenAmount / arcRadius : 0;
-                        const deltaAngleTop = this.roundedCaps && localEndpoints && localEndpoints.top ? shortenAmount / arcRadius : 0;
-                        
-                        const startAngle = Math.PI / 2 + deltaAngleRight;
-                        const endAngle = Math.PI - deltaAngleTop;
-                        
                         ctx.beginPath();
-                        ctx.arc(w / 2, -h / 2, arcRadius, startAngle, endAngle);
+                        ctx.arc(w / 2, -h / 2, arcRadius, Math.PI / 2, Math.PI);
                         ctx.stroke();
                     }
                 }
@@ -750,26 +686,18 @@ export class ModuleDrawer {
                 const centerX = w / 2;
                 const centerY = -h / 2;
                 
-                // Укорачивание дуги
-                const shortenAmount = stem * 0.25;
-                const deltaAngleRight = this.roundedCaps && localEndpoints && localEndpoints.right ? shortenAmount / arcRadius : 0;
-                const deltaAngleTop = this.roundedCaps && localEndpoints && localEndpoints.top ? shortenAmount / arcRadius : 0;
-                
-                const startAngle = Math.PI / 2 + deltaAngleRight;
-                const endAngle = Math.PI - deltaAngleTop;
-                
                 const dashPx = stem * this.dashLength;
                 const gapPx = stem * this.gapLength;
                 
-                // Вычисляем длину дуги с учетом укорачивания: L = radius * angle
-                const arcAngle = endAngle - startAngle;
-                const arcLength = arcRadius * arcAngle;
+                // Вычисляем длину дуги: L = radius * angle
+                // Угол от PI/2 до PI = PI/2 радиан
+                const arcLength = arcRadius * (Math.PI / 2);
                 const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
                 
                 ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
                 
                 ctx.beginPath();
-                ctx.arc(centerX, centerY, arcRadius, startAngle, endAngle);
+                ctx.arc(centerX, centerY, arcRadius, Math.PI / 2, Math.PI);
                 ctx.stroke();
                 
                 ctx.setLineDash([]); // Сброс после рисования
@@ -840,10 +768,6 @@ export class ModuleDrawer {
         ctx.translate(x + w / 2, y + h / 2);
         ctx.rotate(angle);
         
-        // Получаем локальные endpoints с учетом поворота
-        const rotation = Math.round(angle / (Math.PI / 2)) % 4;
-        const localEndpoints = this.getLocalEndpointSides(rotation);
-        
         if (this.renderMethod === 'stroke') {
             // Stroke method: рисуем дуги с обводкой
             const lineWidth = stem / 2;
@@ -862,22 +786,12 @@ export class ModuleDrawer {
                     arcRadius = minRadius;
                 }
                 
-                // Укорачивание дуги: вычисляем изменение угла
-                // Дуга B идет от PI/2 (right) до PI (top)
-                // deltaAngle = arcLength / radius = (0.25 * stem) / radius
-                const shortenAmount = stem * 0.25;
-                const deltaAngleRight = this.roundedCaps && localEndpoints && localEndpoints.right ? shortenAmount / arcRadius : 0;
-                const deltaAngleTop = this.roundedCaps && localEndpoints && localEndpoints.top ? shortenAmount / arcRadius : 0;
-                
-                const startAngle = Math.PI / 2 + deltaAngleRight;
-                const endAngle = Math.PI - deltaAngleTop;
-                
                 ctx.setLineDash([]); // Сброс dash для solid
                 const centerX = w / 2;
                 const centerY = -h / 2;
                 
                 ctx.beginPath();
-                ctx.arc(centerX, centerY, arcRadius, startAngle, endAngle);
+                ctx.arc(centerX, centerY, arcRadius, Math.PI / 2, Math.PI);
                 ctx.stroke();
             } else if (this.mode === 'stripes') {
                 // Stripes mode: несколько концентрических дуг
@@ -892,9 +806,6 @@ export class ModuleDrawer {
                 const outerRadius = stem / 2 - strokeWidth / 2;
                 const minRadius = Math.max(strokeWidth / 2, 0.1);
                 
-                // Укорачивание дуги
-                const shortenAmount = stem * 0.25;
-                
                 for (let j = 0; j < this.strokesNum; j++) {
                     let arcRadius = outerRadius - j * (strokeWidth + gap);
                     // Защита от отрицательного или слишком маленького радиуса
@@ -902,14 +813,8 @@ export class ModuleDrawer {
                         arcRadius = minRadius;
                     }
                     if (arcRadius > 0) {
-                        const deltaAngleRight = this.roundedCaps && localEndpoints && localEndpoints.right ? shortenAmount / arcRadius : 0;
-                        const deltaAngleTop = this.roundedCaps && localEndpoints && localEndpoints.top ? shortenAmount / arcRadius : 0;
-                        
-                        const startAngle = Math.PI / 2 + deltaAngleRight;
-                        const endAngle = Math.PI - deltaAngleTop;
-                        
                         ctx.beginPath();
-                        ctx.arc(w / 2, -h / 2, arcRadius, startAngle, endAngle);
+                        ctx.arc(w / 2, -h / 2, arcRadius, Math.PI / 2, Math.PI);
                         ctx.stroke();
                     }
                 }
@@ -924,26 +829,18 @@ export class ModuleDrawer {
                 const centerX = w / 2;
                 const centerY = -h / 2;
                 
-                // Укорачивание дуги
-                const shortenAmount = stem * 0.25;
-                const deltaAngleRight = this.roundedCaps && localEndpoints && localEndpoints.right ? shortenAmount / arcRadius : 0;
-                const deltaAngleTop = this.roundedCaps && localEndpoints && localEndpoints.top ? shortenAmount / arcRadius : 0;
-                
-                const startAngle = Math.PI / 2 + deltaAngleRight;
-                const endAngle = Math.PI - deltaAngleTop;
-                
                 const dashPx = stem * this.dashLength;
                 const gapPx = stem * this.gapLength;
                 
-                // Вычисляем длину дуги с учетом укорачивания: L = radius * angle
-                const arcAngle = endAngle - startAngle;
-                const arcLength = arcRadius * arcAngle;
+                // Вычисляем длину дуги: L = radius * angle
+                // Угол от PI/2 до PI = PI/2 радиан
+                const arcLength = arcRadius * (Math.PI / 2);
                 const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
                 
                 ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
                 
                 ctx.beginPath();
-                ctx.arc(centerX, centerY, arcRadius, startAngle, endAngle);
+                ctx.arc(centerX, centerY, arcRadius, Math.PI / 2, Math.PI);
                 ctx.stroke();
                 
                 ctx.setLineDash([]); // Сброс после рисования

@@ -533,18 +533,15 @@ export class VoidExporter {
             : (params.roundedCaps || false);
         
         // Анализируем глиф для определения endpoints (если включен roundedCaps)
-        let endpointMap = null; // Карта: "i_j" -> {top, right, bottom, left}
+        let endpointMap = null; // Карта: "i_j" -> true/false (есть ли endpoints у модуля)
         if (shouldUseRounded) {
             try {
                 const analysis = this.endpointDetector.analyzeGlyph(glyphCode, letterCols, this.renderer.rows);
                 endpointMap = {};
-                // Создаем карту модулей с endpoints, указывая стороны
+                // Создаем карту модулей с endpoints
                 analysis.endpoints.forEach(ep => {
                     const key = `${ep.col}_${ep.row}`;
-                    if (!endpointMap[key]) {
-                        endpointMap[key] = { top: false, right: false, bottom: false, left: false };
-                    }
-                    endpointMap[key][ep.side] = true;
+                    endpointMap[key] = true;
                 });
             } catch (error) {
                 console.error('Error analyzing glyph for endpoints in export:', error);
@@ -580,8 +577,8 @@ export class VoidExporter {
                 
                 // Применяем roundedCaps только если модуль имеет endpoints
                 const moduleKey = `${i}_${j}`;
-                const endpointSides = endpointMap && endpointMap[moduleKey];
-                const moduleRoundedCaps = shouldUseRounded && endpointSides ? true : false;
+                const hasEndpoints = endpointMap && endpointMap[moduleKey];
+                const moduleRoundedCaps = shouldUseRounded ? (hasEndpoints || false) : false;
                 
                 // Solid mode теперь это Stripes с Lines=1
                 const actualMode = params.mode === 'fill' ? 'stripes' : (params.mode === 'random' ? 'stripes' : params.mode);
@@ -602,8 +599,7 @@ export class VoidExporter {
                     params.renderMethod || 'stroke',
                     moduleRoundedCaps,
                     params.dashLength || 0.10,
-                    params.gapLength || 0.30,
-                    endpointSides
+                    params.gapLength || 0.30
                 );
                 
                 if (moduleSVG) {
@@ -619,29 +615,8 @@ export class VoidExporter {
     /**
      * Отрисовать модуль в SVG
      */
-    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, strokeGapRatio, cornerRadius = 0, renderMethod = 'stroke', roundedCaps = false, dashLength = 0.10, gapLength = 0.30, endpointSides = null) {
+    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, strokeGapRatio, cornerRadius = 0, renderMethod = 'stroke', roundedCaps = false, dashLength = 0.10, gapLength = 0.30) {
         if (type === 'E') return ''; // Empty
-        
-        // Вспомогательная функция: получить локальные стороны endpoints с учетом поворота
-        const getLocalEndpointSides = (rotation, endpointSides) => {
-            if (!endpointSides) return null;
-            
-            const sides = ['top', 'right', 'bottom', 'left'];
-            const local = { top: false, right: false, bottom: false, left: false };
-            
-            Object.keys(endpointSides).forEach(globalSide => {
-                if (endpointSides[globalSide]) {
-                    const globalIndex = sides.indexOf(globalSide);
-                    const localIndex = (globalIndex - rotation + 4) % 4;
-                    const localSide = sides[localIndex];
-                    local[localSide] = true;
-                }
-            });
-            
-            return local;
-        };
-        
-        const localEndpoints = getLocalEndpointSides(rotation, endpointSides);
 
         const angle = rotation * 90;
         const centerX = x + w / 2;
@@ -654,10 +629,10 @@ export class VoidExporter {
             if (mode === 'fill') {
                 switch (type) {
                     case 'S':
-                        paths = this.renderStraightSVGStroke(0, 0, w, h, stem, roundedCaps, localEndpoints);
+                        paths = this.renderStraightSVGStroke(0, 0, w, h, stem, roundedCaps);
                         break;
                     case 'C':
-                        paths = this.renderCentralSVGStroke(0, 0, w, h, stem, roundedCaps, localEndpoints);
+                        paths = this.renderCentralSVGStroke(0, 0, w, h, stem, roundedCaps);
                         break;
                     case 'J':
                         paths = this.renderJointSVGStroke(0, 0, w, h, stem, roundedCaps);
@@ -666,20 +641,20 @@ export class VoidExporter {
                         paths = this.renderLinkSVGStroke(0, 0, w, h, stem, roundedCaps);
                         break;
                     case 'R':
-                        paths = this.renderRoundSVGStroke(0, 0, w, h, stem, roundedCaps, localEndpoints);
+                        paths = this.renderRoundSVGStroke(0, 0, w, h, stem, roundedCaps);
                         break;
                     case 'B':
-                        paths = this.renderBendSVGStroke(0, 0, w, h, stem, roundedCaps, localEndpoints);
+                        paths = this.renderBendSVGStroke(0, 0, w, h, stem, roundedCaps);
                         break;
                 }
             } else if (mode === 'stripes') {
                 // Stripes mode для stroke
                 switch (type) {
                     case 'S':
-                        paths = this.renderStraightSVGStrokeStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio, roundedCaps, localEndpoints);
+                        paths = this.renderStraightSVGStrokeStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio, roundedCaps);
                         break;
                     case 'C':
-                        paths = this.renderCentralSVGStrokeStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio, roundedCaps, localEndpoints);
+                        paths = this.renderCentralSVGStrokeStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio, roundedCaps);
                         break;
                     case 'J':
                         paths = this.renderJointSVGStrokeStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio, roundedCaps);
@@ -688,20 +663,20 @@ export class VoidExporter {
                         paths = this.renderLinkSVGStrokeStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio, roundedCaps);
                         break;
                     case 'R':
-                        paths = this.renderRoundSVGStrokeStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio, roundedCaps, localEndpoints);
+                        paths = this.renderRoundSVGStrokeStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio, roundedCaps);
                         break;
                     case 'B':
-                        paths = this.renderBendSVGStrokeStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio, roundedCaps, localEndpoints);
+                        paths = this.renderBendSVGStrokeStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio, roundedCaps);
                         break;
                 }
             } else if (mode === 'dash') {
                 // Dash mode для stroke
                 switch (type) {
                     case 'S':
-                        paths = this.renderStraightSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps, localEndpoints);
+                        paths = this.renderStraightSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps);
                         break;
                     case 'C':
-                        paths = this.renderCentralSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps, localEndpoints);
+                        paths = this.renderCentralSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps);
                         break;
                     case 'J':
                         paths = this.renderJointSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps);
@@ -710,10 +685,10 @@ export class VoidExporter {
                         paths = this.renderLinkSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps);
                         break;
                     case 'R':
-                        paths = this.renderRoundSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps, localEndpoints);
+                        paths = this.renderRoundSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps);
                         break;
                     case 'B':
-                        paths = this.renderBendSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps, localEndpoints);
+                        paths = this.renderBendSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps);
                         break;
                 }
             }
@@ -1070,29 +1045,21 @@ export class VoidExporter {
     /**
      * S — Straight: вертикальная линия слева (stroke)
      */
-    renderStraightSVGStroke(x, y, w, h, stem, roundedCaps = false, localEndpoints = null) {
-        // Укорачивание на 0.5 * stem weight (если включен roundedCaps и есть endpoints)
-        const shortenTop = roundedCaps && localEndpoints && localEndpoints.top ? stem * 0.25 : 0;
-        const shortenBottom = roundedCaps && localEndpoints && localEndpoints.bottom ? stem * 0.25 : 0;
-        
+    renderStraightSVGStroke(x, y, w, h, stem, roundedCaps = false) {
         const lineX = -w / 2 + stem / 4;
         const lineWidth = stem / 2;
         const lineCap = roundedCaps ? 'round' : 'butt';
-        return `        <line x1="${lineX}" y1="${-h/2 + shortenTop}" x2="${lineX}" y2="${h/2 - shortenBottom}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}"/>\n`;
+        return `        <line x1="${lineX}" y1="${-h/2}" x2="${lineX}" y2="${h/2}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}"/>\n`;
     }
 
     /**
      * C — Central: вертикальная линия по центру (stroke)
      */
-    renderCentralSVGStroke(x, y, w, h, stem, roundedCaps = false, localEndpoints = null) {
-        // Укорачивание на 0.5 * stem weight (если включен roundedCaps и есть endpoints)
-        const shortenTop = roundedCaps && localEndpoints && localEndpoints.top ? stem * 0.25 : 0;
-        const shortenBottom = roundedCaps && localEndpoints && localEndpoints.bottom ? stem * 0.25 : 0;
-        
+    renderCentralSVGStroke(x, y, w, h, stem, roundedCaps = false) {
         const lineX = 0;
         const lineWidth = stem / 2;
         const lineCap = roundedCaps ? 'round' : 'butt';
-        return `        <line x1="${lineX}" y1="${-h/2 + shortenTop}" x2="${lineX}" y2="${h/2 - shortenBottom}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}"/>\n`;
+        return `        <line x1="${lineX}" y1="${-h/2}" x2="${lineX}" y2="${h/2}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}"/>\n`;
     }
 
     /**
@@ -1127,18 +1094,12 @@ export class VoidExporter {
     /**
      * R — Round: плавная дуга (stroke)
      */
-    renderRoundSVGStroke(x, y, w, h, stem, roundedCaps = false, localEndpoints = null) {
+    renderRoundSVGStroke(x, y, w, h, stem, roundedCaps = false) {
         const arcRadius = w - stem / 4;
         const centerX = w / 2;
         const centerY = -h / 2;
-        
-        // Укорачивание дуги
-        const shortenAmount = stem * 0.25;
-        const deltaAngleRight = roundedCaps && localEndpoints && localEndpoints.right ? shortenAmount / arcRadius : 0;
-        const deltaAngleTop = roundedCaps && localEndpoints && localEndpoints.top ? shortenAmount / arcRadius : 0;
-        
-        const startAngle = Math.PI / 2 + deltaAngleRight;
-        const endAngle = Math.PI - deltaAngleTop;
+        const startAngle = Math.PI / 2;
+        const endAngle = Math.PI;
         
         // SVG arc: M startX startY A rx ry x-axis-rotation large-arc-flag sweep-flag endX endY
         const startX = centerX + arcRadius * Math.cos(startAngle);
@@ -1155,18 +1116,12 @@ export class VoidExporter {
     /**
      * B — Bend: крутая дуга (stroke)
      */
-    renderBendSVGStroke(x, y, w, h, stem, roundedCaps = false, localEndpoints = null) {
+    renderBendSVGStroke(x, y, w, h, stem, roundedCaps = false) {
         const arcRadius = stem / 4;
         const centerX = w / 2;
         const centerY = -h / 2;
-        
-        // Укорачивание дуги
-        const shortenAmount = stem * 0.25;
-        const deltaAngleRight = roundedCaps && localEndpoints && localEndpoints.right ? shortenAmount / arcRadius : 0;
-        const deltaAngleTop = roundedCaps && localEndpoints && localEndpoints.top ? shortenAmount / arcRadius : 0;
-        
-        const startAngle = Math.PI / 2 + deltaAngleRight;
-        const endAngle = Math.PI - deltaAngleTop;
+        const startAngle = Math.PI / 2;
+        const endAngle = Math.PI;
         
         const startX = centerX + arcRadius * Math.cos(startAngle);
         const startY = centerY + arcRadius * Math.sin(startAngle);
@@ -1184,11 +1139,7 @@ export class VoidExporter {
     /**
      * S — Straight: несколько параллельных линий (stroke stripes)
      */
-    renderStraightSVGStrokeStripes(x, y, w, h, stem, strokesNum, strokeGapRatio, roundedCaps = false, localEndpoints = null) {
-        // Укорачивание на 0.5 * stem weight (если включен roundedCaps и есть endpoints)
-        const shortenTop = roundedCaps && localEndpoints && localEndpoints.top ? stem * 0.25 : 0;
-        const shortenBottom = roundedCaps && localEndpoints && localEndpoints.bottom ? stem * 0.25 : 0;
-        
+    renderStraightSVGStrokeStripes(x, y, w, h, stem, strokesNum, strokeGapRatio, roundedCaps = false) {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         const startX = -w / 2 + strokeWidth / 2;
@@ -1197,7 +1148,7 @@ export class VoidExporter {
         
         for (let i = 0; i < strokesNum; i++) {
             const lineX = startX + i * (strokeWidth + gap);
-            svg += `        <line x1="${lineX}" y1="${-h/2 + shortenTop}" x2="${lineX}" y2="${h/2 - shortenBottom}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}"/>\n`;
+            svg += `        <line x1="${lineX}" y1="${-h/2}" x2="${lineX}" y2="${h/2}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}"/>\n`;
         }
         
         return svg;
@@ -1206,11 +1157,7 @@ export class VoidExporter {
     /**
      * C — Central: несколько параллельных линий по центру (stroke stripes)
      */
-    renderCentralSVGStrokeStripes(x, y, w, h, stem, strokesNum, strokeGapRatio, roundedCaps = false, localEndpoints = null) {
-        // Укорачивание на 0.5 * stem weight (если включен roundedCaps и есть endpoints)
-        const shortenTop = roundedCaps && localEndpoints && localEndpoints.top ? stem * 0.25 : 0;
-        const shortenBottom = roundedCaps && localEndpoints && localEndpoints.bottom ? stem * 0.25 : 0;
-        
+    renderCentralSVGStrokeStripes(x, y, w, h, stem, strokesNum, strokeGapRatio, roundedCaps = false) {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         const totalLineWidth = (strokesNum * strokeWidth) + ((strokesNum - 1) * gap);
@@ -1220,7 +1167,7 @@ export class VoidExporter {
         
         for (let i = 0; i < strokesNum; i++) {
             const lineX = startX + i * (strokeWidth + gap);
-            svg += `        <line x1="${lineX}" y1="${-h/2 + shortenTop}" x2="${lineX}" y2="${h/2 - shortenBottom}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}"/>\n`;
+            svg += `        <line x1="${lineX}" y1="${-h/2}" x2="${lineX}" y2="${h/2}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}"/>\n`;
         }
         
         return svg;
@@ -1292,28 +1239,20 @@ export class VoidExporter {
     /**
      * R — Round: несколько концентрических дуг (stroke stripes)
      */
-    renderRoundSVGStrokeStripes(x, y, w, h, stem, strokesNum, strokeGapRatio, roundedCaps = false, localEndpoints = null) {
+    renderRoundSVGStrokeStripes(x, y, w, h, stem, strokesNum, strokeGapRatio, roundedCaps = false) {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         const outerRadius = w - strokeWidth / 2;
         const centerX = w / 2;
         const centerY = -h / 2;
+        const startAngle = Math.PI / 2;
+        const endAngle = Math.PI;
         const lineCap = roundedCaps ? 'round' : 'butt';
-        
-        // Укорачивание дуги
-        const shortenAmount = stem * 0.25;
-        
         let svg = '';
         
         for (let j = 0; j < strokesNum; j++) {
             const arcRadius = outerRadius - j * (strokeWidth + gap);
             if (arcRadius > 0) {
-                const deltaAngleRight = roundedCaps && localEndpoints && localEndpoints.right ? shortenAmount / arcRadius : 0;
-                const deltaAngleTop = roundedCaps && localEndpoints && localEndpoints.top ? shortenAmount / arcRadius : 0;
-                
-                const startAngle = Math.PI / 2 + deltaAngleRight;
-                const endAngle = Math.PI - deltaAngleTop;
-                
                 const startX = centerX + arcRadius * Math.cos(startAngle);
                 const startY = centerY + arcRadius * Math.sin(startAngle);
                 const endX = centerX + arcRadius * Math.cos(endAngle);
@@ -1330,28 +1269,20 @@ export class VoidExporter {
     /**
      * B — Bend: несколько концентрических дуг (stroke stripes)
      */
-    renderBendSVGStrokeStripes(x, y, w, h, stem, strokesNum, strokeGapRatio, roundedCaps = false, localEndpoints = null) {
+    renderBendSVGStrokeStripes(x, y, w, h, stem, strokesNum, strokeGapRatio, roundedCaps = false) {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         const outerRadius = stem / 2 - strokeWidth / 2;
         const centerX = w / 2;
         const centerY = -h / 2;
+        const startAngle = Math.PI / 2;
+        const endAngle = Math.PI;
         const lineCap = roundedCaps ? 'round' : 'butt';
-        
-        // Укорачивание дуги
-        const shortenAmount = stem * 0.25;
-        
         let svg = '';
         
         for (let j = 0; j < strokesNum; j++) {
             const arcRadius = outerRadius - j * (strokeWidth + gap);
             if (arcRadius > 0) {
-                const deltaAngleRight = roundedCaps && localEndpoints && localEndpoints.right ? shortenAmount / arcRadius : 0;
-                const deltaAngleTop = roundedCaps && localEndpoints && localEndpoints.top ? shortenAmount / arcRadius : 0;
-                
-                const startAngle = Math.PI / 2 + deltaAngleRight;
-                const endAngle = Math.PI - deltaAngleTop;
-                
                 const startX = centerX + arcRadius * Math.cos(startAngle);
                 const startY = centerY + arcRadius * Math.sin(startAngle);
                 const endX = centerX + arcRadius * Math.cos(endAngle);
@@ -1372,43 +1303,35 @@ export class VoidExporter {
     /**
      * S — Straight: вертикальная линия слева (dash)
      */
-    renderStraightSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false, localEndpoints = null) {
-        // Укорачивание на 0.5 * stem weight (если включен roundedCaps и есть endpoints)
-        const shortenTop = roundedCaps && localEndpoints && localEndpoints.top ? stem * 0.25 : 0;
-        const shortenBottom = roundedCaps && localEndpoints && localEndpoints.bottom ? stem * 0.25 : 0;
-        
+    renderStraightSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false) {
         const lineX = -w / 2 + stem / 4;
         const lineWidth = stem / 2;
         const lineCap = roundedCaps ? 'round' : 'butt';
         
-        // Вычисляем адаптивный dash и gap с учетом укорачивания
-        const lineLength = h - shortenTop - shortenBottom;
+        // Вычисляем адаптивный dash и gap
+        const lineLength = h;
         const dashPx = stem * dashLength;
         const gapPx = stem * gapLength;
         const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
         
-        return `        <line x1="${lineX}" y1="${-h/2 + shortenTop}" x2="${lineX}" y2="${h/2 - shortenBottom}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}"/>\n`;
+        return `        <line x1="${lineX}" y1="${-h/2}" x2="${lineX}" y2="${h/2}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}"/>\n`;
     }
 
     /**
      * C — Central: вертикальная линия по центру (dash)
      */
-    renderCentralSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false, localEndpoints = null) {
-        // Укорачивание на 0.5 * stem weight (если включен roundedCaps и есть endpoints)
-        const shortenTop = roundedCaps && localEndpoints && localEndpoints.top ? stem * 0.25 : 0;
-        const shortenBottom = roundedCaps && localEndpoints && localEndpoints.bottom ? stem * 0.25 : 0;
-        
+    renderCentralSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false) {
         const lineX = 0;
         const lineWidth = stem / 2;
         const lineCap = roundedCaps ? 'round' : 'butt';
         
-        // Вычисляем адаптивный dash и gap с учетом укорачивания
-        const lineLength = h - shortenTop - shortenBottom;
+        // Вычисляем адаптивный dash и gap
+        const lineLength = h;
         const dashPx = stem * dashLength;
         const gapPx = stem * gapLength;
         const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
         
-        return `        <line x1="${lineX}" y1="${-h/2 + shortenTop}" x2="${lineX}" y2="${h/2 - shortenBottom}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}"/>\n`;
+        return `        <line x1="${lineX}" y1="${-h/2}" x2="${lineX}" y2="${h/2}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}"/>\n`;
     }
 
     /**
@@ -1467,18 +1390,12 @@ export class VoidExporter {
     /**
      * R — Round: плавная дуга (dash)
      */
-    renderRoundSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false, localEndpoints = null) {
+    renderRoundSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false) {
         const arcRadius = w - stem / 4;
         const centerX = w / 2;
         const centerY = -h / 2;
-        
-        // Укорачивание дуги
-        const shortenAmount = stem * 0.25;
-        const deltaAngleRight = roundedCaps && localEndpoints && localEndpoints.right ? shortenAmount / arcRadius : 0;
-        const deltaAngleTop = roundedCaps && localEndpoints && localEndpoints.top ? shortenAmount / arcRadius : 0;
-        
-        const startAngle = Math.PI / 2 + deltaAngleRight;
-        const endAngle = Math.PI - deltaAngleTop;
+        const startAngle = Math.PI / 2;
+        const endAngle = Math.PI;
         
         // SVG arc: M startX startY A rx ry x-axis-rotation large-arc-flag sweep-flag endX endY
         const startX = centerX + arcRadius * Math.cos(startAngle);
@@ -1492,9 +1409,8 @@ export class VoidExporter {
         const dashPx = stem * dashLength;
         const gapPx = stem * gapLength;
         
-        // Вычисляем длину дуги с учетом укорачивания: L = radius * angle
-        const arcAngle = endAngle - startAngle;
-        const arcLength = arcRadius * arcAngle;
+        // Вычисляем длину дуги: L = radius * angle
+        const arcLength = arcRadius * (Math.PI / 2);
         const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
         
         const path = `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 1 ${endX} ${endY}`;
@@ -1504,18 +1420,12 @@ export class VoidExporter {
     /**
      * B — Bend: крутая дуга (dash)
      */
-    renderBendSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false, localEndpoints = null) {
+    renderBendSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false) {
         const arcRadius = stem / 4;
         const centerX = w / 2;
         const centerY = -h / 2;
-        
-        // Укорачивание дуги
-        const shortenAmount = stem * 0.25;
-        const deltaAngleRight = roundedCaps && localEndpoints && localEndpoints.right ? shortenAmount / arcRadius : 0;
-        const deltaAngleTop = roundedCaps && localEndpoints && localEndpoints.top ? shortenAmount / arcRadius : 0;
-        
-        const startAngle = Math.PI / 2 + deltaAngleRight;
-        const endAngle = Math.PI - deltaAngleTop;
+        const startAngle = Math.PI / 2;
+        const endAngle = Math.PI;
         
         const startX = centerX + arcRadius * Math.cos(startAngle);
         const startY = centerY + arcRadius * Math.sin(startAngle);
@@ -1528,9 +1438,8 @@ export class VoidExporter {
         const dashPx = stem * dashLength;
         const gapPx = stem * gapLength;
         
-        // Вычисляем длину дуги с учетом укорачивания: L = radius * angle
-        const arcAngle = endAngle - startAngle;
-        const arcLength = arcRadius * arcAngle;
+        // Вычисляем длину дуги: L = radius * angle
+        const arcLength = arcRadius * (Math.PI / 2);
         const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
         
         const path = `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 1 ${endX} ${endY}`;

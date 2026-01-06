@@ -436,18 +436,15 @@ export class VoidRenderer {
             : (this.params.roundedCaps || false);
         
         // Анализируем глиф для определения endpoints (если включен roundedCaps)
-        let endpointMap = null; // Карта: "i_j" -> {top, right, bottom, left}
+        let endpointMap = null; // Карта: "i_j" -> true/false (есть ли endpoints у модуля)
         if (shouldUseRounded) {
             try {
                 const analysis = this.endpointDetector.analyzeGlyph(glyphCode, letterCols, this.rows);
                 endpointMap = {};
-                // Создаем карту модулей с endpoints, указывая стороны
+                // Создаем карту модулей с endpoints
                 analysis.endpoints.forEach(ep => {
                     const key = `${ep.col}_${ep.row}`;
-                    if (!endpointMap[key]) {
-                        endpointMap[key] = { top: false, right: false, bottom: false, left: false };
-                    }
-                    endpointMap[key][ep.side] = true;
+                    endpointMap[key] = true;
                 });
             } catch (error) {
                 console.error('Error analyzing glyph for endpoints:', error);
@@ -488,13 +485,10 @@ export class VoidRenderer {
                 
                 // Применяем roundedCaps только если модуль имеет endpoints
                 const moduleKey = `${i}_${j}`;
-                const endpointSides = endpointMap && endpointMap[moduleKey];
-                const hasEndpoints = endpointSides ? true : false;
+                const hasEndpoints = endpointMap && endpointMap[moduleKey];
                 const originalRoundedCaps = this.moduleDrawer.roundedCaps;
-                const originalEndpointSides = this.moduleDrawer.endpointSides;
                 if (shouldUseRounded) {
-                    this.moduleDrawer.roundedCaps = hasEndpoints;
-                    this.moduleDrawer.endpointSides = endpointSides || null;
+                    this.moduleDrawer.roundedCaps = hasEndpoints || false;
                 }
                 
                 this.moduleDrawer.drawModule(
@@ -516,7 +510,6 @@ export class VoidRenderer {
                 }
                 if (shouldUseRounded) {
                     this.moduleDrawer.roundedCaps = originalRoundedCaps;
-                    this.moduleDrawer.endpointSides = originalEndpointSides;
                 }
             }
         }
