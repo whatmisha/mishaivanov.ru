@@ -31,6 +31,7 @@ class VoidTypeface {
                 text: 'Void\nTypeface\nCode',
                 textAlign: 'center',
                 showGrid: true,
+                includeGridToExport: false,
                 randomStemMin: 0.5,
                 randomStemMax: 1.0,
                 randomStrokesMin: 1,
@@ -1128,6 +1129,7 @@ class VoidTypeface {
      */
     initGridToggle() {
         const gridCheckbox = document.getElementById('showGridCheckbox');
+        const includeGridToExportCheckbox = document.getElementById('includeGridToExportCheckbox');
         const endpointsCheckbox = document.getElementById('showEndpointsCheckbox');
         
         gridCheckbox.addEventListener('change', () => {
@@ -1140,6 +1142,11 @@ class VoidTypeface {
             console.log('[Main] Show Endpoints toggled:', endpointsCheckbox.checked);
             this.settings.set('showEndpoints', endpointsCheckbox.checked);
             this.updateRenderer();
+            this.markAsChanged();
+        });
+
+        includeGridToExportCheckbox.addEventListener('change', () => {
+            this.settings.set('includeGridToExport', includeGridToExportCheckbox.checked);
             this.markAsChanged();
         });
     }
@@ -1516,6 +1523,7 @@ class VoidTypeface {
 
         // Обновить сетку
         document.getElementById('showGridCheckbox').checked = this.settings.get('showGrid');
+        document.getElementById('includeGridToExportCheckbox').checked = this.settings.get('includeGridToExport');
     }
 
     /**
@@ -1591,7 +1599,7 @@ class VoidTypeface {
             gridColor: this.settings.get('gridColor'),
             textAlign: this.settings.get('textAlign') || 'center',
             showGrid: this.settings.get('showGrid'),
-            includeGridToExport: this.settings.get('showGrid'), // Автоматически экспортировать сетку, если она видна
+            includeGridToExport: this.settings.get('includeGridToExport'),
             randomStemMin: this.settings.get('randomStemMin'),
             randomStemMax: this.settings.get('randomStemMax'),
             randomStrokesMin: this.settings.get('randomStrokesMin'),

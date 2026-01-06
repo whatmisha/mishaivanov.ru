@@ -99,8 +99,7 @@ export class VoidExporter {
         const params = this.renderer.params;
         // Получаем актуальные значения из settings, если доступно
         if (this.settings) {
-            // Сетка экспортируется автоматически, если она видна
-            params.includeGridToExport = this.settings.get('showGrid') || false;
+            params.includeGridToExport = this.settings.get('includeGridToExport') || false;
             // Также получаем renderMethod из settings, если он не установлен в params
             if (!params.renderMethod && this.settings.get('renderMethod')) {
                 params.renderMethod = this.settings.get('renderMethod');
@@ -118,8 +117,7 @@ export class VoidExporter {
                 params.randomRounded = this.settings.get('randomRounded');
             }
         } else if (params.includeGridToExport === undefined) {
-            // Если settings недоступны, используем showGrid из params
-            params.includeGridToExport = params.showGrid || false;
+            params.includeGridToExport = false;
         }
         // Убедиться, что renderMethod установлен
         if (!params.renderMethod) {
@@ -460,10 +458,6 @@ export class VoidExporter {
                     ? (params.randomRounded || false)
                     : (params.roundedCaps || false);
                 
-                // Solid mode теперь это Stripes с Lines=1
-                const actualMode = params.mode === 'fill' ? 'stripes' : (params.mode === 'random' ? 'stripes' : params.mode);
-                const actualStrokesNum = params.mode === 'fill' ? 1 : strokesNum;
-                
                 const moduleSVG = this.renderModuleToSVG(
                     moduleType, 
                     rotation, 
@@ -472,8 +466,8 @@ export class VoidExporter {
                     moduleW, 
                     moduleH, 
                     stem,
-                    actualMode,
-                    actualStrokesNum,
+                    params.mode === 'random' ? 'stripes' : params.mode,
+                    strokesNum,
                     strokeGapRatio,
                     params.cornerRadius || 0,
                     params.renderMethod || 'stroke',

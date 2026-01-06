@@ -169,12 +169,8 @@ export class VoidRenderer {
         }
         
         // Обновить параметры модуля
-        // Solid mode теперь это Stripes с Lines=1
-        const actualMode = this.params.mode === 'fill' ? 'stripes' : this.params.mode;
-        const actualStrokesNum = this.params.mode === 'fill' ? 1 : this.params.strokesNum;
-        
-        this.moduleDrawer.setMode(actualMode);
-        this.moduleDrawer.setStripesParams(actualStrokesNum, this.params.strokeGapRatio);
+        this.moduleDrawer.setMode(this.params.mode);
+        this.moduleDrawer.setStripesParams(this.params.strokesNum, this.params.strokeGapRatio);
         this.moduleDrawer.setCornerRadius(this.params.cornerRadius || 0);
         this.moduleDrawer.setRenderMethod(this.params.renderMethod || 'stroke');
         
