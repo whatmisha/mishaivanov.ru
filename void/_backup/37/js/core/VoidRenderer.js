@@ -32,8 +32,7 @@ export class VoidRenderer {
             textAlign: 'center',   // выравнивание текста: 'left', 'center', 'right'
             cornerRadius: 0,       // радиус скругления углов
             roundedCaps: false,    // скругления на концах линий в режиме Stroke (Rounded)
-            showEndpoints: false,   // показать концевые точки и стыки (для отладки)
-            showTestCircles: false // показать окружности на концевых точках (Test режим)
+            showEndpoints: false   // показать концевые точки и стыки (для отладки)
         };
         
         this.cols = 5; // колонок в сетке
@@ -427,9 +426,6 @@ export class VoidRenderer {
             this.ctx.globalAlpha = 0.8;
         }
         
-        // Базовое значение stem для окружностей (используется если модуль не найден)
-        const baseStem = this.params.stem;
-        
         // Отрисовать каждый модуль в сетке 5×5 (или 3×5 для пробела)
         for (let i = 0; i < letterCols; i++) {
             for (let j = 0; j < this.rows; j++) {
@@ -441,7 +437,7 @@ export class VoidRenderer {
                 const moduleY = y + j * moduleH;
                 
                 // Для random mode генерируем случайные значения для каждого модуля
-                let stem = baseStem;
+                let stem = this.params.stem;
                 let strokesNum = this.params.strokesNum;
                 let strokeGapRatio = this.params.strokeGapRatio;
                 
@@ -487,108 +483,16 @@ export class VoidRenderer {
         
         // Отрисовать концевые точки и стыки (если включено)
         if (this.params.showEndpoints) {
-            try {
-                const analysis = this.endpointDetector.analyzeGlyph(glyphCode, letterCols, this.rows);
-                this.endpointDetector.renderPoints(
-                    this.ctx, 
-                    analysis.connections, 
-                    analysis.endpoints, 
-                    moduleW,
-                    x,
-                    y
-                );
-                
-                // Отрисовать окружности на концевых точках (Test режим)
-                if (this.params.showTestCircles) {
-                    this.renderTestCircles(glyphCode, letterCols, analysis.endpoints, moduleW, x, y, baseStem);
-                }
-            } catch (error) {
-                console.error('Error rendering endpoints:', error);
-            }
-        } else if (this.params.showTestCircles) {
-            // Если только Test включен, но не Endpoints, все равно анализируем и рисуем окружности
-            try {
-                const analysis = this.endpointDetector.analyzeGlyph(glyphCode, letterCols, this.rows);
-                this.renderTestCircles(glyphCode, letterCols, analysis.endpoints, moduleW, x, y, baseStem);
-            } catch (error) {
-                console.error('Error rendering test circles:', error);
-            }
+            const analysis = this.endpointDetector.analyzeGlyph(glyphCode, letterCols, this.rows);
+            this.endpointDetector.renderPoints(
+                this.ctx, 
+                analysis.connections, 
+                analysis.endpoints, 
+                moduleW,
+                x,
+                y
+            );
         }
-    }
-
-    /**
-     * Отрисовать окружности на концевых точках (Test режим)
-     */
-    renderTestCircles(glyphCode, letterCols, endpoints, moduleW, x, y, stem) {
-        if (!endpoints || endpoints.length === 0) return;
-        
-        // Создаем сетку модулей для получения типа и поворота
-        const grid = [];
-        for (let row = 0; row < this.rows; row++) {
-            grid[row] = [];
-            for (let col = 0; col < letterCols; col++) {
-                const index = (row * letterCols + col) * 2;
-                if (index < glyphCode.length) {
-                    const type = glyphCode.charAt(index);
-                    const rotation = parseInt(glyphCode.charAt(index + 1));
-                    grid[row][col] = { type, rotation };
-                } else {
-                    grid[row][col] = { type: 'E', rotation: 0 };
-                }
-            }
-        }
-        
-        this.ctx.save();
-        this.ctx.strokeStyle = this.params.color || '#ffffff';
-        this.ctx.fillStyle = 'transparent';
-        this.ctx.lineWidth = 1;
-        
-        endpoints.forEach(ep => {
-            try {
-                const module = grid[ep.row] && grid[ep.row][ep.col];
-                if (!module || module.type === 'E') return;
-                
-                // Получаем координаты точки на кривой относительно начала модуля
-                const point = this.endpointDetector.getLineEndPointCoordinates(
-                    module.type,
-                    module.rotation,
-                    ep.side,
-                    moduleW,
-                    stem
-                );
-                
-                // Проверяем, что координаты были вычислены (не остались 0,0)
-                if (!point || (point.x === 0 && point.y === 0 && module.type !== 'C')) {
-                    // Fallback: используем координаты на стороне модуля
-                    const fallbackPoint = this.endpointDetector.getPointCoordinates(ep.col, ep.row, ep.side, moduleW);
-                    const moduleX = x + ep.col * moduleW;
-                    const moduleY = y + ep.row * moduleW;
-                    const relativeX = fallbackPoint.x - (ep.col * moduleW);
-                    const relativeY = fallbackPoint.y - (ep.row * moduleW);
-                    
-                    const radius = stem / 4;
-                    this.ctx.beginPath();
-                    this.ctx.arc(moduleX + relativeX, moduleY + relativeY, radius, 0, Math.PI * 2);
-                    this.ctx.stroke();
-                    return;
-                }
-                
-                // Координаты точки относительно модуля, преобразуем в координаты относительно буквы
-                const moduleX = x + ep.col * moduleW;
-                const moduleY = y + ep.row * moduleW;
-                
-                // Рисуем окружность диаметром = stem / 2 (толщина линии)
-                // В ModuleDrawer lineWidth = stem / 2, поэтому диаметр окружности = stem / 2
-                const radius = stem / 4;
-                this.ctx.beginPath();
-                this.ctx.arc(moduleX + point.x, moduleY + point.y, radius, 0, Math.PI * 2);
-                this.ctx.stroke();
-            } catch (error) {
-                console.error('Error rendering test circle:', error, ep);
-            }
-        });
-        
-        this.ctx.restore();
     }
 
     /**

@@ -123,10 +123,6 @@ export class VoidExporter {
             if (this.settings.get('showEndpoints') !== undefined) {
                 params.showEndpoints = this.settings.get('showEndpoints');
             }
-            // Получаем showTestCircles из settings
-            if (this.settings.get('showTestCircles') !== undefined) {
-                params.showTestCircles = this.settings.get('showTestCircles');
-            }
         } else if (params.includeGridToExport === undefined) {
             // Если settings недоступны, используем showGrid из params
             params.includeGridToExport = params.showGrid || false;
@@ -134,10 +130,6 @@ export class VoidExporter {
         // Убедиться, что showEndpoints установлен
         if (params.showEndpoints === undefined) {
             params.showEndpoints = false;
-        }
-        // Убедиться, что showTestCircles установлен
-        if (params.showTestCircles === undefined) {
-            params.showTestCircles = false;
         }
         // Убедиться, что renderMethod установлен
         if (!params.renderMethod) {
@@ -232,8 +224,6 @@ export class VoidExporter {
         // Массивы для сбора всех точек (если включены endpoints)
         const allConnections = [];
         const allEndpoints = [];
-        // Массив для test circles (если включен test режим)
-        const allTestCircles = [];
 
         // Отрисовать каждую строку
         for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
@@ -296,8 +286,8 @@ export class VoidExporter {
                 }
                 const y = offsetY + lineY;
                 
-                // Собрать точки для этой буквы (если включены endpoints или test circles)
-                if (params.showEndpoints || params.showTestCircles) {
+                // Собрать точки для этой буквы (если включены endpoints)
+                if (params.showEndpoints) {
                     const glyphCode = getGlyph(char, {
                         alternativeIndex: this.getAlternativeIndex(char, params, lineIndex, charIndex)
                     });
@@ -315,45 +305,21 @@ export class VoidExporter {
                         letterCols = this.renderer.cols;
                     }
                     const analysis = this.endpointDetector.analyzeGlyph(glyphCode, letterCols, this.renderer.rows);
-                    
-                    // Добавить смещение к координатам точек (для endpoints)
-                    if (params.showEndpoints) {
-                        analysis.connections.forEach(conn => {
-                            allConnections.push({
-                                ...conn,
-                                offsetX: currentX,
-                                offsetY: y
-                            });
+                    // Добавить смещение к координатам точек
+                    analysis.connections.forEach(conn => {
+                        allConnections.push({
+                            ...conn,
+                            offsetX: currentX,
+                            offsetY: y
                         });
-                        analysis.endpoints.forEach(ep => {
-                            allEndpoints.push({
-                                ...ep,
-                                offsetX: currentX,
-                                offsetY: y
-                            });
+                    });
+                    analysis.endpoints.forEach(ep => {
+                        allEndpoints.push({
+                            ...ep,
+                            offsetX: currentX,
+                            offsetY: y
                         });
-                    }
-                    
-                    // Собрать данные для test circles
-                    if (params.showTestCircles && analysis.endpoints.length > 0) {
-                        // Сохраняем данные для каждой концевой точки с информацией о модуле
-                        analysis.endpoints.forEach(ep => {
-                            // Получаем тип и поворот модуля из glyphCode
-                            const moduleIndex = (ep.row * letterCols + ep.col) * 2;
-                            if (moduleIndex < glyphCode.length) {
-                                const moduleType = glyphCode.charAt(moduleIndex);
-                                const moduleRotation = parseInt(glyphCode.charAt(moduleIndex + 1));
-                                
-                                allTestCircles.push({
-                                    ...ep,
-                                    offsetX: currentX,
-                                    offsetY: y,
-                                    moduleType: moduleType,
-                                    moduleRotation: moduleRotation
-                                });
-                            }
-                        });
-                    }
+                    });
                 }
                 
                 svgContent += this.renderLetterToSVG(char, currentX, y, params, lineIndex, charIndex);
@@ -367,13 +333,6 @@ export class VoidExporter {
         if (params.showEndpoints && (allConnections.length > 0 || allEndpoints.length > 0)) {
             svgContent += `  <g id="points">\n`;
             svgContent += this.renderEndpointsToSVG(allConnections, allEndpoints, moduleSize, params.color || '#ffffff');
-            svgContent += `  </g>\n`;
-        }
-
-        // Слой для test circles (если включен test режим)
-        if (params.showTestCircles && allTestCircles.length > 0) {
-            svgContent += `  <g id="test-circles">\n`;
-            svgContent += this.renderTestCirclesToSVG(allTestCircles, moduleSize, params.stem, params.color || '#ffffff');
             svgContent += `  </g>\n`;
         }
 
@@ -1481,39 +1440,6 @@ export class VoidExporter {
             });
             svg += `    </g>\n`;
         }
-        
-        return svg;
-    }
-
-    /**
-     * Отрисовать test circles в SVG
-     */
-    renderTestCirclesToSVG(testCircles, moduleSize, stem, strokeColor = '#ffffff') {
-        // Диаметр окружности = stem / 2 (толщина линии), радиус = stem / 4
-        const radius = stem / 4;
-        let svg = '';
-        
-        svg += `    <g id="test-circles-group" stroke="${strokeColor}" stroke-width="1" fill="transparent">\n`;
-        testCircles.forEach(circle => {
-            // Получаем координаты точки на кривой относительно начала модуля
-            const point = this.endpointDetector.getLineEndPointCoordinates(
-                circle.moduleType,
-                circle.moduleRotation,
-                circle.side,
-                moduleSize,
-                stem
-            );
-            
-            // Координаты точки относительно модуля, преобразуем в абсолютные координаты
-            const moduleX = circle.offsetX + circle.col * moduleSize;
-            const moduleY = circle.offsetY + circle.row * moduleSize;
-            
-            const cx = moduleX + point.x;
-            const cy = moduleY + point.y;
-            
-            svg += `      <circle cx="${cx}" cy="${cy}" r="${radius}"/>\n`;
-        });
-        svg += `    </g>\n`;
         
         return svg;
     }

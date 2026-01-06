@@ -1129,7 +1129,6 @@ class VoidTypeface {
     initGridToggle() {
         const gridCheckbox = document.getElementById('showGridCheckbox');
         const endpointsCheckbox = document.getElementById('showEndpointsCheckbox');
-        const testCheckbox = document.getElementById('showTestCheckbox');
         
         gridCheckbox.addEventListener('change', () => {
             this.settings.set('showGrid', gridCheckbox.checked);
@@ -1140,12 +1139,6 @@ class VoidTypeface {
         endpointsCheckbox.addEventListener('change', () => {
             console.log('[Main] Show Endpoints toggled:', endpointsCheckbox.checked);
             this.settings.set('showEndpoints', endpointsCheckbox.checked);
-            this.updateRenderer();
-            this.markAsChanged();
-        });
-        
-        testCheckbox.addEventListener('change', () => {
-            this.settings.set('showTestCircles', testCheckbox.checked);
             this.updateRenderer();
             this.markAsChanged();
         });
@@ -1521,10 +1514,8 @@ class VoidTypeface {
         document.getElementById('textAlignCenter').checked = textAlign === 'center';
         document.getElementById('textAlignRight').checked = textAlign === 'right';
 
-        // Обновить сетку и endpoints
+        // Обновить сетку
         document.getElementById('showGridCheckbox').checked = this.settings.get('showGrid');
-        document.getElementById('showEndpointsCheckbox').checked = this.settings.get('showEndpoints') || false;
-        document.getElementById('showTestCheckbox').checked = this.settings.get('showTestCircles') || false;
     }
 
     /**
@@ -1613,8 +1604,7 @@ class VoidTypeface {
             dashLength: this.settings.get('dashLength') || 0.10,
             gapLength: this.settings.get('gapLength') || 0.30,
             useAlternativesInRandom: this.settings.get('useAlternativesInRandom') || false,
-            showEndpoints: this.settings.get('showEndpoints') || false,
-            showTestCircles: this.settings.get('showTestCircles') || false
+            showEndpoints: this.settings.get('showEndpoints') || false
         };
         
         // Добавляем cornerRadius только если он должен применяться
