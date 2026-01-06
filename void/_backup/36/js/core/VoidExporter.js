@@ -221,10 +221,6 @@ export class VoidExporter {
             svgContent += `  <g id="typo" fill="${params.color || '#ffffff'}">\n`;
         }
 
-        // Массивы для сбора всех точек (если включены endpoints)
-        const allConnections = [];
-        const allEndpoints = [];
-
         // Отрисовать каждую строку
         for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
             const line = lines[lineIndex];
@@ -286,56 +282,12 @@ export class VoidExporter {
                 }
                 const y = offsetY + lineY;
                 
-                // Собрать точки для этой буквы (если включены endpoints)
-                if (params.showEndpoints) {
-                    const glyphCode = getGlyph(char, {
-                        alternativeIndex: this.getAlternativeIndex(char, params, lineIndex, charIndex)
-                    });
-                    let letterCols;
-                    if (char === ' ') {
-                        const text = params.text || '';
-                        const lines = text.split('\n');
-                        if (lineIndex < lines.length) {
-                            const line = lines[lineIndex];
-                            letterCols = (charIndex > 0 && line[charIndex - 1] === ' ') ? 2 : 3;
-                        } else {
-                            letterCols = 3;
-                        }
-                    } else {
-                        letterCols = this.renderer.cols;
-                    }
-                    const analysis = this.endpointDetector.analyzeGlyph(glyphCode, letterCols, this.renderer.rows);
-                    // Добавить смещение к координатам точек
-                    analysis.connections.forEach(conn => {
-                        allConnections.push({
-                            ...conn,
-                            offsetX: currentX,
-                            offsetY: y
-                        });
-                    });
-                    analysis.endpoints.forEach(ep => {
-                        allEndpoints.push({
-                            ...ep,
-                            offsetX: currentX,
-                            offsetY: y
-                        });
-                    });
-                }
-                
                 svgContent += this.renderLetterToSVG(char, currentX, y, params, lineIndex, charIndex);
                 currentX += charWidth + (addSpacing ? params.letterSpacing : 0);
             }
         }
 
         svgContent += `  </g>\n`;
-
-        // Слой для точек (если включены endpoints)
-        if (params.showEndpoints && (allConnections.length > 0 || allEndpoints.length > 0)) {
-            svgContent += `  <g id="points">\n`;
-            svgContent += this.renderEndpointsToSVG(allConnections, allEndpoints, moduleSize, params.color || '#ffffff');
-            svgContent += `  </g>\n`;
-        }
-
         svgContent += `</svg>`;
 
         return svgContent;
@@ -544,6 +496,12 @@ export class VoidExporter {
                     svg += moduleSVG;
                 }
             }
+        }
+
+        // Отрисовать концевые точки и стыки (если включено)
+        if (params.showEndpoints) {
+            const analysis = this.endpointDetector.analyzeGlyph(glyphCode, letterCols, this.renderer.rows);
+            svg += this.renderEndpointsToSVG(analysis.connections, analysis.endpoints, moduleW, x, y);
         }
 
         svg += `    </g>\n`;
@@ -1385,61 +1343,28 @@ export class VoidExporter {
     }
 
     /**
-     * Получить индекс альтернативы для символа (вспомогательный метод)
-     */
-    getAlternativeIndex(char, params, lineIndex, charIndex) {
-        const cacheKey = lineIndex !== null && charIndex !== null ? `${lineIndex}_${charIndex}` : null;
-        
-        if (cacheKey && this.renderer.alternativeGlyphCache && this.renderer.alternativeGlyphCache.hasOwnProperty(cacheKey)) {
-            return this.renderer.alternativeGlyphCache[cacheKey];
-        } else if (params.mode === 'random' && params.useAlternativesInRandom && cacheKey) {
-            const charUpper = char.toUpperCase();
-            const alternatives = VOID_ALPHABET_ALTERNATIVES[charUpper];
-            if (alternatives && alternatives.length > 0) {
-                const baseGlyph = VOID_ALPHABET[charUpper] || VOID_ALPHABET[" "];
-                const allGlyphs = [baseGlyph, ...alternatives];
-                const randomIndex = Math.floor(Math.random() * allGlyphs.length);
-                if (!this.renderer.alternativeGlyphCache) {
-                    this.renderer.alternativeGlyphCache = {};
-                }
-                this.renderer.alternativeGlyphCache[cacheKey] = randomIndex;
-                return randomIndex;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Отрисовать концевые точки и стыки в SVG
      */
-    renderEndpointsToSVG(connections, endpoints, moduleSize, strokeColor = '#ffffff') {
+    renderEndpointsToSVG(connections, endpoints, moduleSize, offsetX = 0, offsetY = 0) {
         const pointRadius = 6;
         const strokeWidth = 2;
         let svg = '';
         
-        // Группа для стыков (синие кружки)
-        if (connections.length > 0) {
-            svg += `    <g id="connections" fill="#0088ff" stroke="${strokeColor}" stroke-width="${strokeWidth}">\n`;
-            connections.forEach(conn => {
-                const point = this.endpointDetector.getPointCoordinates(conn.col1, conn.row1, conn.side1, moduleSize);
-                const cx = conn.offsetX + point.x;
-                const cy = conn.offsetY + point.y;
-                svg += `      <circle cx="${cx}" cy="${cy}" r="${pointRadius}"/>\n`;
-            });
-            svg += `    </g>\n`;
-        }
+        // Рисуем стыки (синие кружки)
+        connections.forEach(conn => {
+            const point = this.endpointDetector.getPointCoordinates(conn.col1, conn.row1, conn.side1, moduleSize);
+            const cx = offsetX + point.x;
+            const cy = offsetY + point.y;
+            svg += `        <circle cx="${cx}" cy="${cy}" r="${pointRadius}" fill="#0088ff" stroke="#ffffff" stroke-width="${strokeWidth}"/>\n`;
+        });
         
-        // Группа для концевых точек (красные кружки)
-        if (endpoints.length > 0) {
-            svg += `    <g id="endpoints" fill="#ff0044" stroke="${strokeColor}" stroke-width="${strokeWidth}">\n`;
-            endpoints.forEach(ep => {
-                const point = this.endpointDetector.getPointCoordinates(ep.col, ep.row, ep.side, moduleSize);
-                const cx = ep.offsetX + point.x;
-                const cy = ep.offsetY + point.y;
-                svg += `      <circle cx="${cx}" cy="${cy}" r="${pointRadius}"/>\n`;
-            });
-            svg += `    </g>\n`;
-        }
+        // Рисуем концевые точки (красные кружки)
+        endpoints.forEach(ep => {
+            const point = this.endpointDetector.getPointCoordinates(ep.col, ep.row, ep.side, moduleSize);
+            const cx = offsetX + point.x;
+            const cy = offsetY + point.y;
+            svg += `        <circle cx="${cx}" cy="${cy}" r="${pointRadius}" fill="#ff0044" stroke="#ffffff" stroke-width="${strokeWidth}"/>\n`;
+        });
         
         return svg;
     }
