@@ -4,6 +4,7 @@
 
 import { VOID_ALPHABET_ALTERNATIVES, VOID_ALPHABET } from './VoidAlphabet.js';
 import { getGlyph } from './GlyphLoader.js';
+import { EndpointDetector } from '../utils/EndpointDetector.js';
 
 export class VoidExporter {
     constructor(renderer, settings = null) {
@@ -11,6 +12,7 @@ export class VoidExporter {
         this.settings = settings;
         // Кэш для значений по типу модуля (для режима random byType)
         this.moduleTypeCache = {};
+        this.endpointDetector = new EndpointDetector();
     }
 
     /**
@@ -117,9 +119,17 @@ export class VoidExporter {
             if (this.settings.get('randomRounded') !== undefined) {
                 params.randomRounded = this.settings.get('randomRounded');
             }
+            // Получаем showEndpoints из settings
+            if (this.settings.get('showEndpoints') !== undefined) {
+                params.showEndpoints = this.settings.get('showEndpoints');
+            }
         } else if (params.includeGridToExport === undefined) {
             // Если settings недоступны, используем showGrid из params
             params.includeGridToExport = params.showGrid || false;
+        }
+        // Убедиться, что showEndpoints установлен
+        if (params.showEndpoints === undefined) {
+            params.showEndpoints = false;
         }
         // Убедиться, что renderMethod установлен
         if (!params.renderMethod) {
@@ -486,6 +496,12 @@ export class VoidExporter {
                     svg += moduleSVG;
                 }
             }
+        }
+
+        // Отрисовать концевые точки и стыки (если включено)
+        if (params.showEndpoints) {
+            const analysis = this.endpointDetector.analyzeGlyph(glyphCode, letterCols, this.renderer.rows);
+            svg += this.renderEndpointsToSVG(analysis.connections, analysis.endpoints, moduleW, x, y);
         }
 
         svg += `    </g>\n`;
@@ -1324,6 +1340,33 @@ export class VoidExporter {
         
         const path = `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 1 ${endX} ${endY}`;
         return `        <path d="${path}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" fill="none"/>\n`;
+    }
+
+    /**
+     * Отрисовать концевые точки и стыки в SVG
+     */
+    renderEndpointsToSVG(connections, endpoints, moduleSize, offsetX = 0, offsetY = 0) {
+        const pointRadius = 6;
+        const strokeWidth = 2;
+        let svg = '';
+        
+        // Рисуем стыки (синие кружки)
+        connections.forEach(conn => {
+            const point = this.endpointDetector.getPointCoordinates(conn.col1, conn.row1, conn.side1, moduleSize);
+            const cx = offsetX + point.x;
+            const cy = offsetY + point.y;
+            svg += `        <circle cx="${cx}" cy="${cy}" r="${pointRadius}" fill="#0088ff" stroke="#ffffff" stroke-width="${strokeWidth}"/>\n`;
+        });
+        
+        // Рисуем концевые точки (красные кружки)
+        endpoints.forEach(ep => {
+            const point = this.endpointDetector.getPointCoordinates(ep.col, ep.row, ep.side, moduleSize);
+            const cx = offsetX + point.x;
+            const cy = offsetY + point.y;
+            svg += `        <circle cx="${cx}" cy="${cy}" r="${pointRadius}" fill="#ff0044" stroke="#ffffff" stroke-width="${strokeWidth}"/>\n`;
+        });
+        
+        return svg;
     }
 
     /**
