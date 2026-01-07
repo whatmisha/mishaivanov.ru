@@ -670,19 +670,41 @@ body {
 /* Range Slider - слайдер с двумя ручками */
 .range-slider-container {
     width: 100%;
-    margin-top: calc(var(--spacing-md) - 2px);
-    margin-bottom: 12px;
+    margin-top: var(--spacing-md); /* +2px от обычного слайдера */
+    margin-bottom: 26px; /* Увеличенный нижний отступ для range-слайдеров */
     position: relative;
-    height: 10px;
+    height: 10px; /* Кликабельная область */
+}
+
+/* Блок отображения диапазона значений (min–max) */
+.range-value-display {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.range-value-display .value-display {
+    width: 35px;
+    text-align: right;
+}
+
+.range-value-display .value-display:last-child {
+    text-align: left;
+}
+
+.range-separator {
+    color: var(--color-text-muted);
+    margin: 0 6px;
 }
 
 .range-slider-track {
-    position: relative;
+    position: absolute;
     width: 100%;
     height: 1px;
     background: var(--color-border);
     border-radius: var(--radius);
-    margin-top: 4.5px;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .range-slider-active {
@@ -690,7 +712,8 @@ body {
     height: 1px;
     background: var(--color-text);
     border-radius: var(--radius);
-    top: 0;
+    top: 50%;
+    transform: translateY(-50%);
     pointer-events: none;
 }
 
@@ -701,14 +724,14 @@ body {
     background: var(--color-text);
     border-radius: 50%;
     cursor: grab;
-    top: calc((1px - var(--slider-thumb-size)) / 2);
-    transform: translateX(-50%);
+    top: 50%;
+    transform: translate(-50%, -50%);
     transition: transform var(--transition-fast);
     outline: none;
 }
 
 .range-slider-thumb:hover {
-    transform: translateX(-50%) scale(1.25);
+    transform: translate(-50%, -50%) scale(1.25);
 }
 
 .range-slider-thumb:focus {
@@ -1428,6 +1451,11 @@ legend {
 #variabilityPanel .segmented-control-compact {
     margin-top: 0;
     padding-top: 0;
+}
+
+/* Увеличить расстояние между переключателем табов и первым слайдером на вкладке Random */
+#randomControlGroupStem {
+    margin-top: 15px;
 }
 
 /* Контейнер для группы пикеров цветов */

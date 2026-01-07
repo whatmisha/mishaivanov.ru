@@ -98,9 +98,189 @@ export class RangeSliderController {
         // Обработчики событий для max thumb
         this.setupThumbEvents(containerId, 'max');
 
-        // Обработчики для клавиатуры
+        // Обработчики для клавиатуры на thumb'ах
         this.setupKeyboardEvents(containerId, 'min');
         this.setupKeyboardEvents(containerId, 'max');
+        
+        // Обработчики для текстовых полей ввода
+        this.setupInputEvents(containerId, 'min');
+        this.setupInputEvents(containerId, 'max');
+    }
+
+    /**
+     * Настройка событий для текстовых полей ввода
+     */
+    setupInputEvents(containerId, type) {
+        const rangeData = this.ranges.get(containerId);
+        if (!rangeData) return;
+
+        const inputId = type === 'min' ? rangeData.config.minValueId : rangeData.config.maxValueId;
+        const input = document.getElementById(inputId);
+        if (!input) return;
+
+        // Выделение текста при фокусе
+        input.addEventListener('focus', (e) => {
+            e.target.select();
+        });
+
+        // Применение значения при потере фокуса
+        input.addEventListener('blur', (e) => {
+            this.handleInputBlur(containerId, type, e.target);
+        });
+
+        // Обработка клавиш (стрелки, Enter, Escape)
+        input.addEventListener('keydown', (e) => {
+            this.handleInputKeyDown(containerId, type, e);
+        });
+    }
+
+    /**
+     * Обработка потери фокуса текстового поля
+     */
+    handleInputBlur(containerId, type, input) {
+        const rangeData = this.ranges.get(containerId);
+        if (!rangeData) return;
+
+        let value = parseFloat(input.value);
+        
+        if (isNaN(value)) {
+            // Восстановить предыдущее значение
+            value = type === 'min' ? rangeData.minValue : rangeData.maxValue;
+        }
+
+        // Валидация с учетом другого значения
+        if (type === 'min') {
+            value = this.clamp(value, rangeData.config.min, rangeData.maxValue);
+            rangeData.minValue = this.roundToStep(value, rangeData.config.baseStep);
+        } else {
+            value = this.clamp(value, rangeData.minValue, rangeData.config.max);
+            rangeData.maxValue = this.roundToStep(value, rangeData.config.baseStep);
+        }
+
+        this.updatePositions(containerId);
+        this.updateSettings(containerId);
+    }
+
+    /**
+     * Определяет количество знаков после запятой на основе шага
+     */
+    getDecimalsFromStep(step) {
+        if (step >= 1) return 0;
+        const stepStr = step.toString();
+        if (stepStr.includes('e')) {
+            const match = stepStr.match(/e-(\d+)/);
+            if (match) return parseInt(match[1]);
+        }
+        if (stepStr.includes('.')) {
+            const parts = stepStr.split('.');
+            if (parts.length === 2) return parts[1].length;
+        }
+        return 0;
+    }
+
+    /**
+     * Обработка нажатий клавиш в текстовом поле
+     */
+    handleInputKeyDown(containerId, type, event) {
+        const rangeData = this.ranges.get(containerId);
+        if (!rangeData) return;
+
+        const input = event.target;
+        let currentValue = parseFloat(input.value);
+        if (isNaN(currentValue)) {
+            currentValue = type === 'min' ? rangeData.minValue : rangeData.maxValue;
+        }
+
+        const baseStep = rangeData.config.baseStep || 0.1;
+        const shiftStep = rangeData.config.shiftStep || baseStep * 10;
+        const step = event.shiftKey ? shiftStep : baseStep;
+        const stepDecimals = step > 0 ? this.getDecimalsFromStep(step) : (rangeData.config.decimals || 0);
+
+        let newValue = currentValue;
+        let handled = false;
+
+        switch (event.key) {
+            case 'ArrowUp':
+                if (event.shiftKey && shiftStep > 0) {
+                    // С Shift: прилипание к ближайшему большому шагу вверх
+                    const roundedCurrent = stepDecimals > 0 
+                        ? parseFloat(currentValue.toFixed(stepDecimals))
+                        : Math.round(currentValue);
+                    const k = roundedCurrent / shiftStep;
+                    const nearest = Math.round(k);
+                    const isMultiple = Math.abs(k - nearest) < 1e-6;
+                    if (isMultiple) {
+                        newValue = roundedCurrent + shiftStep;
+                    } else {
+                        newValue = Math.ceil(k) * shiftStep;
+                    }
+                } else if (baseStep > 0) {
+                    const roundedCurrent = stepDecimals > 0 
+                        ? parseFloat(currentValue.toFixed(stepDecimals))
+                        : Math.round(currentValue);
+                    newValue = roundedCurrent + baseStep;
+                }
+                handled = true;
+                break;
+            case 'ArrowDown':
+                if (event.shiftKey && shiftStep > 0) {
+                    // С Shift: прилипание к ближайшему большому шагу вниз
+                    const roundedCurrent = stepDecimals > 0 
+                        ? parseFloat(currentValue.toFixed(stepDecimals))
+                        : Math.round(currentValue);
+                    const k = roundedCurrent / shiftStep;
+                    const nearest = Math.round(k);
+                    const isMultiple = Math.abs(k - nearest) < 1e-6;
+                    if (isMultiple) {
+                        newValue = roundedCurrent - shiftStep;
+                    } else {
+                        newValue = Math.floor(k) * shiftStep;
+                    }
+                } else if (baseStep > 0) {
+                    const roundedCurrent = stepDecimals > 0 
+                        ? parseFloat(currentValue.toFixed(stepDecimals))
+                        : Math.round(currentValue);
+                    newValue = roundedCurrent - baseStep;
+                }
+                handled = true;
+                break;
+            case 'Enter':
+                input.blur();
+                handled = true;
+                break;
+            case 'Escape':
+                // Восстановить предыдущее значение
+                newValue = type === 'min' ? rangeData.minValue : rangeData.maxValue;
+                input.value = newValue.toFixed(rangeData.config.decimals);
+                input.blur();
+                handled = true;
+                break;
+        }
+
+        if (handled && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
+            event.preventDefault();
+            
+            // Округляем результат
+            if (step > 0 && stepDecimals > 0) {
+                newValue = parseFloat(newValue.toFixed(stepDecimals));
+            } else if (typeof rangeData.config.decimals === 'number') {
+                newValue = parseFloat(newValue.toFixed(rangeData.config.decimals));
+            }
+
+            // Валидация с учетом другого значения
+            if (type === 'min') {
+                newValue = this.clamp(newValue, rangeData.config.min, rangeData.maxValue);
+                rangeData.minValue = newValue;
+            } else {
+                newValue = this.clamp(newValue, rangeData.minValue, rangeData.config.max);
+                rangeData.maxValue = newValue;
+            }
+
+            this.updatePositions(containerId);
+            this.updateSettings(containerId);
+        } else if (handled) {
+            event.preventDefault();
+        }
     }
 
     /**
