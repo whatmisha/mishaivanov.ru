@@ -323,7 +323,6 @@ body {
 .panel-content {
     padding-left: var(--spacing-3xl);
     padding-right: var(--spacing-3xl);
-    padding-top: var(--spacing-sm);
     padding-bottom: var(--spacing-3xl);
     overflow-y: auto;
     overflow-x: hidden;
@@ -506,7 +505,6 @@ body {
 
 .control-group {
     margin-bottom: 12px;
-    padding-top: 1px; /* Компенсация для высоты слайдера */
 }
 
 /* Последний элемент в секции без нижнего margin */
@@ -1424,6 +1422,17 @@ legend {
 /* Compact Segmented Control - меньшая высота */
 .segmented-control-compact label {
     padding: 6px var(--spacing-lg);
+}
+
+/* Убрать верхний паддинг у segmented-control-compact на панели Variability */
+#variabilityPanel .segmented-control-compact {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+/* Контейнер для группы пикеров цветов */
+.color-pickers-group {
+    margin-bottom: 4px;
 }
 
 .segmented-control input[type="radio"].hidden,
