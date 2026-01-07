@@ -281,7 +281,9 @@ class GlyphEditorApp {
         this.updateAlternativesPanel();
         
         // Обновить тулбар
-        document.getElementById('currentChar').textContent = char;
+        // Для пробела показываем визуальное представление, чтобы заголовок не съезжал
+        const displayChar = char === ' ' ? 'Space' : char;
+        document.getElementById('currentChar').textContent = displayChar;
         document.getElementById('currentMode').textContent = 'Base';
         
         // Включить кнопки

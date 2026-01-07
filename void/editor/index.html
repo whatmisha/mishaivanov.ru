@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Void Typeface - Glyph Editor</title>
     <link rel="stylesheet" href="../styles.css">
     <style>
@@ -434,7 +434,7 @@
             position: static;
             transform: none;
             background: var(--color-bg-panel);
-            padding: var(--spacing-lg) var(--spacing-lg) 15px var(--spacing-lg);
+            padding: 18px;
             border-radius: var(--radius);
             display: flex;
             gap: var(--spacing-2xl);
@@ -447,7 +447,7 @@
         .toolbar-section {
             display: flex;
             flex-direction: column;
-            gap: var(--spacing-xs);
+            gap: 2px;
         }
         
         .toolbar-label {
@@ -459,6 +459,21 @@
         .toolbar-value {
             font-size: 0.9rem;
             font-weight: 600;
+            min-height: 1.2em; /* Фиксированная высота для стабильности */
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Кликабельные секции в toolbar */
+        .toolbar-section:has(#currentModule),
+        .toolbar-section:has(#currentAngle) {
+            cursor: pointer;
+            transition: opacity var(--transition-fast);
+        }
+        
+        .toolbar-section:has(#currentModule):hover,
+        .toolbar-section:has(#currentAngle):hover {
+            opacity: 0.7;
         }
         
         /* Стили для placeholder */
@@ -518,7 +533,11 @@
                     </div>
                     <div class="toolbar-section">
                         <div class="toolbar-label">Mod</div>
-                        <div class="toolbar-value" id="currentModule">S0</div>
+                        <div class="toolbar-value" id="currentModule">S</div>
+                    </div>
+                    <div class="toolbar-section">
+                        <div class="toolbar-label">Ang</div>
+                        <div class="toolbar-value" id="currentAngle">0°</div>
                     </div>
                 </div>
                 

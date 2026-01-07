@@ -115,6 +115,37 @@ export default class GlyphEditor {
             alternativesPanel.style.display = 'flex';
         }
         
+        // Обработчики кликов для MOD и ANG в toolbar
+        // Находим родительские секции для MOD и ANG
+        const currentModuleEl = document.getElementById('currentModule');
+        const currentAngleEl = document.getElementById('currentAngle');
+        
+        if (currentModuleEl) {
+            const moduleSection = currentModuleEl.closest('.toolbar-section');
+            if (moduleSection) {
+                moduleSection.style.cursor = 'pointer';
+                moduleSection.addEventListener('click', () => {
+                    // Аналог стрелки вверх - переключение модуля
+                    this.currentModuleIndex = (this.currentModuleIndex - 1 + this.moduleTypes.length) % this.moduleTypes.length;
+                    this.updateModuleInfo();
+                    this.render();
+                });
+            }
+        }
+        
+        if (currentAngleEl) {
+            const angleSection = currentAngleEl.closest('.toolbar-section');
+            if (angleSection) {
+                angleSection.style.cursor = 'pointer';
+                angleSection.addEventListener('click', () => {
+                    // Аналог стрелки вправо - поворот модуля
+                    this.currentRotation = (this.currentRotation + 1) % 4;
+                    this.updateModuleInfo();
+                    this.render();
+                });
+            }
+        }
+        
         this.render();
         console.log('[GlyphEditor] Activation complete');
     }
@@ -324,10 +355,16 @@ export default class GlyphEditor {
      */
     updateModuleInfo() {
         const moduleInfo = document.getElementById('editorCurrentModule') || document.getElementById('currentModule');
+        const angleInfo = document.getElementById('currentAngle');
+        
         if (moduleInfo) {
             const type = this.getCurrentModuleType();
+            moduleInfo.textContent = type;
+        }
+        
+        if (angleInfo) {
             const rotation = this.currentRotation * 90;
-            moduleInfo.textContent = `${type}${this.currentRotation} (${rotation}°)`;
+            angleInfo.textContent = `${rotation}°`;
         }
     }
     
