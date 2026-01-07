@@ -782,25 +782,22 @@ export class VoidRenderer {
         
         const cacheKey = `${lineIndex}_${charIndex}`;
         
-        // Если буква не зафиксирована, сначала генерируем случайную альтернативу и сохраняем её
-        if (!this.alternativeGlyphCache.hasOwnProperty(cacheKey)) {
-            // Генерируем случайную альтернативу (включая базовый)
-            const baseGlyph = VOID_ALPHABET[char] || VOID_ALPHABET[" "];
-            const allGlyphs = [baseGlyph, ...alternatives];
-            const randomIndex = Math.floor(Math.random() * allGlyphs.length);
-            // Сохраняем случайную альтернативу (0 = базовый, 1+ = альтернативы)
-            this.alternativeGlyphCache[cacheKey] = randomIndex;
-        }
+        // Определяем текущий индекс альтернативы
+        // Если буква не зафиксирована в кэше, значит используется базовый глиф (индекс 0)
+        const currentIndex = this.alternativeGlyphCache.hasOwnProperty(cacheKey) 
+            ? this.alternativeGlyphCache[cacheKey] 
+            : 0;
         
-        // Переключаем на следующую альтернативу (0 -> 1 -> 2 -> ... -> max -> 0)
-        const currentIndex = this.alternativeGlyphCache[cacheKey];
+        // Переключаем на следующую альтернативу по порядку (0 -> 1 -> 2 -> ... -> max -> 0)
         const maxIndex = alternatives.length; // 0 = базовый, 1..max = альтернативы
         const nextIndex = (currentIndex + 1) % (maxIndex + 1);
         
+        // Сохраняем следующий индекс в кэш
         if (nextIndex === 0) {
-            // Удаляем из кэша, чтобы использовать базовый глиф (или random в режиме Random)
+            // Если возвращаемся к базовому, удаляем из кэша (чтобы использовать базовый глиф напрямую)
             delete this.alternativeGlyphCache[cacheKey];
         } else {
+            // Сохраняем индекс альтернативы (1, 2, 3, ...)
             this.alternativeGlyphCache[cacheKey] = nextIndex;
         }
         
