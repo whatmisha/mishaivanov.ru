@@ -99,6 +99,8 @@ body {
     padding: 0;
     color: var(--color-text);
     overflow: hidden;
+    /* Защита от двойного тапа зума на мобильных */
+    touch-action: pan-x pan-y;
 }
 
 /* ============================================
@@ -1093,6 +1095,9 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    /* Защита от двойного тапа зума на мобильных */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .btn-primary {
@@ -1231,6 +1236,9 @@ body {
     transition: border-color var(--transition-normal), 
                 background var(--transition-normal), 
                 color var(--transition-normal);
+    /* Защита от двойного тапа зума на мобильных */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .toggle-chip input {
@@ -1367,6 +1375,8 @@ legend {
     padding: 4px;
     gap: 4px;
     margin-top: var(--spacing-md);
+    /* Защита от двойного тапа зума на мобильных */
+    touch-action: manipulation;
 }
 
 .segmented-control input[type="radio"] {
@@ -1437,6 +1447,9 @@ legend {
     padding: 10px 0;
     margin-bottom: 0 !important;
     position: relative;
+    /* Защита от двойного тапа зума на мобильных */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .control-group:has(.checkbox-label) {

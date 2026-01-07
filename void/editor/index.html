@@ -469,6 +469,9 @@
         .toolbar-section:has(#currentAngle) {
             cursor: pointer;
             transition: opacity var(--transition-fast);
+            /* Защита от двойного тапа зума на мобильных */
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
         }
         
         .toolbar-section:has(#currentModule):hover,
