@@ -183,6 +183,10 @@ class VoidTypeface {
             renewBtn.addEventListener('click', () => {
                 // Очистить кэш случайных значений
                 this.renderer.clearModuleTypeCache();
+                // Очистить кэш альтернативных глифов (чтобы сгенерировать новые случайные альтернативы)
+                if (this.renderer.clearAlternativeGlyphCache) {
+                    this.renderer.clearAlternativeGlyphCache();
+                }
                 // Перерисовать графику с новыми случайными значениями
                 this.calculateMobileModuleSize();
             });
