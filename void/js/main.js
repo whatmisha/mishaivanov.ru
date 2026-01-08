@@ -12,6 +12,7 @@ import { PanelManager } from './ui/PanelManager.js';
 import { ColorPicker } from './ui/ColorPicker.js';
 import { MathUtils } from './utils/MathUtils.js';
 import GlyphEditor from './core/GlyphEditor.js';
+import MIDIController from './ui/MIDIController.js';
 
 class VoidTypeface {
     constructor() {
@@ -65,6 +66,9 @@ class VoidTypeface {
         
         // Glyph Editor
         this.glyphEditor = null;
+        
+        // MIDI Controller
+        this.midiController = null;
 
         // Проверка на мобильное устройство
         this.isMobile = this.checkIsMobile();
@@ -108,6 +112,7 @@ class VoidTypeface {
             this.initPresets();
             this.initExport();
             this.initResize();
+            this.initMIDI();
             
             // Очистить кэш случайных значений перед первой отрисовкой
             // чтобы использовать правильные значения из settings
@@ -2166,6 +2171,26 @@ class VoidTypeface {
                     this.glyphEditor.copySavedGlyphs();
                 }
             });
+        }
+    }
+    
+    /**
+     * Инициализация MIDI контроллера
+     */
+    async initMIDI() {
+        if (this.isMobile) return; // Не инициализировать на мобильных
+        
+        try {
+            this.midiController = new MIDIController(this);
+            const success = await this.midiController.init();
+            
+            if (success) {
+                console.log('[VoidTypeface] MIDI controller initialized');
+            } else {
+                console.log('[VoidTypeface] MIDI controller not available');
+            }
+        } catch (error) {
+            console.error('[VoidTypeface] Failed to initialize MIDI controller:', error);
         }
     }
 }
