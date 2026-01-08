@@ -90,7 +90,7 @@ export class VoidRenderer {
         const gapLengthMin = this.params.randomGapLengthMin !== undefined ? this.params.randomGapLengthMin : 1.0;
         const gapLengthMax = this.params.randomGapLengthMax !== undefined ? this.params.randomGapLengthMax : 1.5;
         const randomModeType = this.params.randomModeType || 'byType';
-
+        
         if (randomModeType === 'byType') {
             // Режим по типу модуля: генерируем значения один раз для каждого типа
             if (!this.moduleTypeCache[moduleType]) {
@@ -101,7 +101,13 @@ export class VoidRenderer {
                 const dashLength = dashLengthMin + Math.random() * (dashLengthMax - dashLengthMin);
                 const gapLength = gapLengthMin + Math.random() * (gapLengthMax - gapLengthMin);
                 
-                this.moduleTypeCache[moduleType] = { stem, strokesNum, strokeGapRatio, dashLength, gapLength };
+                // Определяем useDash для этого типа модуля
+                // Dash применяется только если randomDash включен и strokesNum > 1
+                const moduleUseDash = this.params.randomDash && strokesNum > 1 
+                    ? Math.random() < 0.5  // 50% вероятность dash
+                    : false;
+                
+                this.moduleTypeCache[moduleType] = { stem, strokesNum, strokeGapRatio, dashLength, gapLength, useDash: moduleUseDash };
             }
             return this.moduleTypeCache[moduleType];
         } else {
@@ -120,7 +126,13 @@ export class VoidRenderer {
             const dashLength = dashLengthMin + Math.random() * (dashLengthMax - dashLengthMin);
             const gapLength = gapLengthMin + Math.random() * (gapLengthMax - gapLengthMin);
             
-            const values = { stem, strokesNum, strokeGapRatio, dashLength, gapLength };
+            // Определяем useDash для этого модуля
+            // Dash применяется только если randomDash включен и strokesNum > 1
+            const moduleUseDash = this.params.randomDash && strokesNum > 1 
+                ? Math.random() < 0.5  // 50% вероятность dash
+                : false;
+            
+            const values = { stem, strokesNum, strokeGapRatio, dashLength, gapLength, useDash: moduleUseDash };
             
             if (cacheKey) {
                 this.moduleValueCache[cacheKey] = values;
@@ -161,6 +173,7 @@ export class VoidRenderer {
         const oldStrokesMax = this.params.randomStrokesMax;
         const oldContrastMin = this.params.randomContrastMin;
         const oldContrastMax = this.params.randomContrastMax;
+        const oldRandomDash = this.params.randomDash;
         
         Object.assign(this.params, newParams);
         
@@ -171,19 +184,22 @@ export class VoidRenderer {
             oldStrokesMin !== this.params.randomStrokesMin ||
             oldStrokesMax !== this.params.randomStrokesMax ||
             oldContrastMin !== this.params.randomContrastMin ||
-            oldContrastMax !== this.params.randomContrastMax
+            oldContrastMax !== this.params.randomContrastMax ||
+            oldRandomDash !== this.params.randomDash
         )) {
             this.clearModuleTypeCache();
         }
         
         // Обновить параметры модуля
         // Solid mode теперь это Stripes с Lines=1
-        // Random mode использует 'sd' для поддержки пунктира, если randomDash включен, иначе 'stripes'
+        // Random mode использует 'stripes' по умолчанию, dash применяется случайно для каждого модуля
         let actualMode;
         if (this.params.mode === 'fill') {
             actualMode = 'stripes';
         } else if (this.params.mode === 'random') {
-            actualMode = (this.params.randomDash !== false) ? 'sd' : 'stripes';
+            // В режиме random используем 'stripes' по умолчанию
+            // Dash будет применяться случайно для каждого модуля отдельно
+            actualMode = 'stripes';
         } else {
             actualMode = this.params.mode;
         }
@@ -515,6 +531,9 @@ export class VoidRenderer {
                 const originalStrokeGapRatio = this.moduleDrawer.strokeGapRatio;
                 const originalDashLength = this.moduleDrawer.dashLength;
                 const originalGapLength = this.moduleDrawer.gapLength;
+                const originalMode = this.moduleDrawer.mode;
+                let moduleUseDash = false;
+                
                 if (this.params.mode === 'random') {
                     this.moduleDrawer.strokeGapRatio = strokeGapRatio;
                     // Применяем dashLength и gapLength из randomValues
@@ -524,6 +543,12 @@ export class VoidRenderer {
                     const randomValues = this.getRandomModuleValues(moduleType, cacheKey);
                     this.moduleDrawer.dashLength = randomValues.dashLength;
                     this.moduleDrawer.gapLength = randomValues.gapLength;
+                    moduleUseDash = randomValues.useDash || false;
+                    
+                    // Если модуль должен использовать dash, временно меняем режим на 'sd'
+                    if (moduleUseDash) {
+                        this.moduleDrawer.mode = 'sd';
+                    }
                 }
                 
                 // Устанавливаем endpoints для модуля
@@ -542,7 +567,9 @@ export class VoidRenderer {
                 if (shouldUseRounded) {
                     // В dash/sd mode: скругление для всех модулей, укорачивание только для концевых
                     // В solid/stripes: скругление и укорачивание только для концевых
-                    this.moduleDrawer.roundedCaps = (this.params.mode === 'dash' || this.params.mode === 'sd') ? true : hasEndpoints;
+                    // Для random mode с dash используем sd логику
+                    const isDashMode = this.params.mode === 'dash' || this.params.mode === 'sd' || moduleUseDash;
+                    this.moduleDrawer.roundedCaps = isDashMode ? true : hasEndpoints;
                 }
                 
                 this.moduleDrawer.drawModule(
@@ -563,6 +590,7 @@ export class VoidRenderer {
                     this.moduleDrawer.strokeGapRatio = originalStrokeGapRatio;
                     this.moduleDrawer.dashLength = originalDashLength;
                     this.moduleDrawer.gapLength = originalGapLength;
+                    this.moduleDrawer.mode = originalMode;
                 }
                 if (shouldUseEndpoints) {
                     this.moduleDrawer.endpointSides = originalEndpointSides;

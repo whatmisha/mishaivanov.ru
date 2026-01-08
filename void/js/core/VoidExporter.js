@@ -48,7 +48,13 @@ export class VoidExporter {
                 const dashLength = dashLengthMin + Math.random() * (dashLengthMax - dashLengthMin);
                 const gapLength = gapLengthMin + Math.random() * (gapLengthMax - gapLengthMin);
                 
-                this.moduleTypeCache[moduleType] = { stem, strokesNum, strokeGapRatio, dashLength, gapLength };
+                // Определяем useDash для этого типа модуля
+                // Dash применяется только если randomDash включен и strokesNum > 1
+                const moduleUseDash = params.randomDash && strokesNum > 1 
+                    ? Math.random() < 0.5  // 50% вероятность dash
+                    : false;
+                
+                this.moduleTypeCache[moduleType] = { stem, strokesNum, strokeGapRatio, dashLength, gapLength, useDash: moduleUseDash };
             }
             return this.moduleTypeCache[moduleType];
         } else {
@@ -60,7 +66,13 @@ export class VoidExporter {
             const dashLength = dashLengthMin + Math.random() * (dashLengthMax - dashLengthMin);
             const gapLength = gapLengthMin + Math.random() * (gapLengthMax - gapLengthMin);
             
-            return { stem, strokesNum, strokeGapRatio, dashLength, gapLength };
+            // Определяем useDash для этого модуля
+            // Dash применяется только если randomDash включен и strokesNum > 1
+            const moduleUseDash = params.randomDash && strokesNum > 1 
+                ? Math.random() < 0.5  // 50% вероятность dash
+                : false;
+            
+            return { stem, strokesNum, strokeGapRatio, dashLength, gapLength, useDash: moduleUseDash };
         }
     }
 
@@ -601,6 +613,7 @@ export class VoidExporter {
                 let dashLength = params.dashLength || 0.10;
                 let gapLength = params.gapLength || 0.30;
                 
+                let moduleUseDash = false;
                 if (params.mode === 'random') {
                     // Используем кэш из renderer вместо генерации новых значений
                     // Используем тот же ключ, что и при рендеринге (позиция в тексте + позиция в модуле)
@@ -613,22 +626,26 @@ export class VoidExporter {
                     strokeGapRatio = randomValues.strokeGapRatio;
                     dashLength = randomValues.dashLength;
                     gapLength = randomValues.gapLength;
+                    moduleUseDash = randomValues.useDash || false;
                 }
                 
                 // roundedCaps применяется ТОЛЬКО к концевым модулям (тем, у которых есть endpointSides)
                 // ИСКЛЮЧЕНИЕ: в режиме SD roundedCaps применяется ко ВСЕМ модулям
-                // Для Random скругление применяется только к концевым модулям (params.mode === 'random', не 'sd')
+                // Для Random скругление применяется только к концевым модулям, если нет dash
                 const moduleKey = `${i}_${j}`;
                 const endpointSides = endpointMap && endpointMap[moduleKey];
-                const moduleRoundedCaps = params.mode === 'sd' ? shouldUseRounded : (shouldUseRounded && endpointSides);
+                // Для random mode с dash используем sd логику (roundedCaps для всех)
+                const isDashMode = params.mode === 'sd' || moduleUseDash;
+                const moduleRoundedCaps = isDashMode ? shouldUseRounded : (shouldUseRounded && endpointSides);
                 
                 // Solid mode теперь это Stripes с Lines=1
-                // Random mode использует 'sd' для поддержки пунктира, если randomDash включен, иначе 'stripes'
+                // Random mode использует 'stripes' по умолчанию, dash применяется случайно для каждого модуля
                 let actualMode;
                 if (params.mode === 'fill') {
                     actualMode = 'stripes';
                 } else if (params.mode === 'random') {
-                    actualMode = (params.randomDash !== false) ? 'sd' : 'stripes';
+                    // Используем 'sd' только если модуль должен использовать dash
+                    actualMode = moduleUseDash ? 'sd' : 'stripes';
                 } else {
                     actualMode = params.mode;
                 }
