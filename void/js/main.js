@@ -927,7 +927,7 @@ class VoidTypeface {
         
         // Обработчик изменения — просто меняем Rounded Caps, не трогая Close Ends
         roundedCapsCheckbox.addEventListener('change', () => {
-            this.settings.set('roundedCaps', roundedCapsCheckbox.checked);
+                this.settings.set('roundedCaps', roundedCapsCheckbox.checked);
             this.updateRenderer();
             this.markAsChanged();
         });

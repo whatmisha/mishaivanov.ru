@@ -300,6 +300,23 @@
             background: rgba(255, 255, 255, 0.15);
         }
         
+        /* Кнопка добавления новой альтернативы */
+        .alternative-item.add-alternative-button {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+        }
+        
+        .alternative-item.add-alternative-button:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .alternative-item.add-alternative-button .char-fallback {
+            font-size: 1.2rem;
+            font-weight: 300;
+            color: var(--color-text);
+        }
+        
         .alternative-delete {
             display: none;
             position: absolute;
@@ -484,12 +501,6 @@
             color: rgba(255, 255, 255, 0.25);
         }
         
-        /* Disabled состояние для btn-secondary - без заливки, только обводка */
-        #newAlternativeBtn:disabled {
-            background: transparent;
-            border: 1px solid var(--color-border);
-            opacity: 0.5;
-        }
         
     </style>
 </head>
@@ -557,9 +568,6 @@
             </div>
             <div class="alternatives-content" id="alternativesContent">
                 <!-- Заполняется JS -->
-            </div>
-            <div style="padding: 20px var(--spacing-lg); border-top: 1px solid var(--color-border); flex: 0 0 auto;">
-                <button class="btn-secondary" id="newAlternativeBtn" style="width: 100%;">Add Alternate</button>
             </div>
         </aside>
     </div>

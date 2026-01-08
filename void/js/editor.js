@@ -54,7 +54,6 @@ class GlyphEditorApp {
         document.getElementById('importFileInput').addEventListener('change', (e) => this.handleFileImport(e));
         document.getElementById('exportBtn').addEventListener('click', () => this.showExportModal());
         document.getElementById('clearAllBtn').addEventListener('click', () => this.clearAll());
-        document.getElementById('newAlternativeBtn').addEventListener('click', () => this.createNewAlternative());
         document.getElementById('newGlyphBtn').addEventListener('click', () => this.createNewGlyph());
         
         // Слушать события автосохранения для обновления UI
@@ -304,52 +303,54 @@ class GlyphEditorApp {
         const content = document.getElementById('alternativesContent');
         content.innerHTML = '';
         
-        // Собираем все существующие альтернативы из editedGlyphs
-        const existingAlternatives = new Set();
-        if (this.selectedChar) {
-            const editedGlyphs = this.getEditedGlyphs();
-            if (editedGlyphs[this.selectedChar]) {
-                Object.keys(editedGlyphs[this.selectedChar]).forEach(key => {
-                    if (key !== 'base') {
-                        existingAlternatives.add(parseInt(key));
-                    }
-                });
-            }
+        if (!this.selectedChar) {
+            // Если глиф не выбран, показываем только пустую ячейку Base
+            this.addAlternativePreview(content, null, 'Base', false);
+            return;
         }
         
+        // Собираем все существующие альтернативы из editedGlyphs
+        const existingAlternatives = [];
+        const editedGlyphs = this.getEditedGlyphs();
+        if (editedGlyphs[this.selectedChar]) {
+            Object.keys(editedGlyphs[this.selectedChar]).forEach(key => {
+                if (key !== 'base') {
+                    existingAlternatives.push(parseInt(key));
+                }
+            });
+        }
+        
+        // Сортируем альтернативы по индексу
+        existingAlternatives.sort((a, b) => a - b);
+        
         // Определяем, какие ячейки показывать
-        // Минимум 4 ячейки: Base, Alt 1, Alt 2, Alt 3
-        // Плюс все существующие альтернативы с индексом > 3
+        // Всегда показываем Base
         const alternativesToShow = [
-            { index: null, label: 'Base' },
-            { index: 1, label: 'Alt 1' },
-            { index: 2, label: 'Alt 2' },
-            { index: 3, label: 'Alt 3' }
+            { index: null, label: 'Base' }
         ];
         
-        // Добавляем дополнительные ячейки для существующих альтернатив с индексом > 3
-        const sortedExisting = Array.from(existingAlternatives).sort((a, b) => a - b);
-        sortedExisting.forEach(index => {
-            if (index > 3) {
-                alternativesToShow.push({ index, label: `Alt ${index}` });
-            }
+        // Добавляем только существующие альтернативы
+        existingAlternatives.forEach(index => {
+            alternativesToShow.push({ index, label: `Alt ${index}` });
         });
         
+        // Показываем все существующие ячейки
         alternativesToShow.forEach(({ index, label }) => {
             // Проверяем, существует ли альтернатива и не является ли она пустой
             // НЕ загружаем оригинальные глифы - только те, что в editedGlyphs
             let hasGlyph = false;
-            if (this.selectedChar) {
-                const editedGlyph = this.editor.getEditedGlyph(this.selectedChar, index);
-                
-                // Проверяем, что глиф существует и не пустой (ТОЛЬКО editedGlyph, БЕЗ originalGlyph)
-                if (editedGlyph && !this.isEmptyGlyph(editedGlyph)) {
-                    hasGlyph = true;
-                }
+            const editedGlyph = this.editor.getEditedGlyph(this.selectedChar, index);
+            
+            // Проверяем, что глиф существует и не пустой (ТОЛЬКО editedGlyph, БЕЗ originalGlyph)
+            if (editedGlyph && !this.isEmptyGlyph(editedGlyph)) {
+                hasGlyph = true;
             }
             
             this.addAlternativePreview(content, index, label, hasGlyph);
         });
+        
+        // Добавляем ячейку "+" в конец
+        this.addAddButton(content);
     }
     
     /**
@@ -458,6 +459,38 @@ class GlyphEditorApp {
     }
     
     /**
+     * Добавить кнопку "+" для создания новой альтернативы
+     */
+    addAddButton(container) {
+        const item = document.createElement('div');
+        item.className = 'alternative-item add-alternative-button';
+        item.dataset.index = 'add';
+        
+        // Если глиф не выбран, делаем кнопку неактивной
+        if (!this.selectedChar) {
+            item.style.cursor = 'default';
+            item.style.opacity = '0.3';
+        } else {
+            item.style.cursor = 'pointer';
+        }
+        
+        // Показываем "+" по центру (используем тот же размер шрифта, что и для "Base")
+        const plus = document.createElement('div');
+        plus.className = 'char-fallback';
+        plus.textContent = '+';
+        item.appendChild(plus);
+        
+        // Обработчик клика
+        item.addEventListener('click', () => {
+            if (this.selectedChar) {
+                this.createNewAlternative();
+            }
+        });
+        
+        container.appendChild(item);
+    }
+    
+    /**
      * Выбрать альтернативу
      */
     selectAlternative(alternativeIndex) {
@@ -499,15 +532,7 @@ class GlyphEditorApp {
      * Обновить состояние кнопок
      */
     updateButtons() {
-        const newAlternativeBtn = document.getElementById('newAlternativeBtn');
         const clearAllBtn = document.getElementById('clearAllBtn');
-        
-        // Кнопка "New Form" всегда видна, но disabled когда глиф не выбран
-        if (this.selectedChar) {
-            newAlternativeBtn.disabled = false;
-        } else {
-            newAlternativeBtn.disabled = true;
-        }
         
         // Показать Clear All только если есть данные
         const importedChars = this.getImportedCharList();
