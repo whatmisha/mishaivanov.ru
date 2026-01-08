@@ -121,7 +121,8 @@ body {
 /* Top Links Container - навигация сверху */
 .top-links {
     position: absolute;
-    top: var(--spacing-3xl);
+    /* Учитываем безопасную область для устройств с вырезом камеры (iPhone) */
+    top: calc(var(--spacing-3xl) + env(safe-area-inset-top, 0px));
     left: 50%;
     transform: translateX(-50%);
     display: flex;
