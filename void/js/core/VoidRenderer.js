@@ -67,7 +67,7 @@ export class VoidRenderer {
     }
 
     /**
-     * Очистить кэш альтернативных глифов (при Renew в режиме Random)
+     * Очистить кэш альтернативных глифов (при Update в режиме Random)
      */
     clearAlternativeGlyphCache() {
         this.alternativeGlyphCache = {};

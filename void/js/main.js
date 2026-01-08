@@ -176,7 +176,7 @@ class VoidTypeface {
         if (exportBtn) exportBtn.style.display = 'none';
         if (copyBtn) copyBtn.style.display = 'none';
         
-        // Показать кнопку Renew
+        // Показать кнопку Update
         const renewBtn = document.getElementById('renewBtn');
         if (renewBtn) {
             renewBtn.style.display = 'inline-flex';
@@ -1176,7 +1176,7 @@ class VoidTypeface {
             this.markAsChanged();
         });
 
-        // Кнопка Renew для random mode
+        // Кнопка Update для random mode
         const renewBtn = document.getElementById('renewRandomBtn');
         if (renewBtn) {
             renewBtn.addEventListener('click', () => {

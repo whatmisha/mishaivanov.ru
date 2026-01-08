@@ -2300,7 +2300,7 @@ textarea::placeholder {
     display: none !important;
 }
 
-/* Показать кнопку Renew только на мобильных устройствах */
+/* Показать кнопку Update только на мобильных устройствах */
 .is-mobile #renewBtn {
     display: inline-flex !important;
     align-items: center;
@@ -2332,8 +2332,9 @@ textarea::placeholder {
     }
     
     .btn-fixed {
-        padding: var(--spacing-xl) var(--spacing-3xl);
-        font-size: 0.9rem;
+        padding: calc(var(--spacing-xl) * 1.5) calc(var(--spacing-3xl) * 1.5);
+        font-size: calc(0.9rem * 1.5);
+        height: calc(var(--button-height) * 1.5);
     }
     
     .modal-content {

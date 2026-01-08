@@ -64,7 +64,7 @@ export default class MIDIController {
             68: { type: 'toggle', setting: 'randomDash' },          // G#3 - Random Dash
             
             // Действия (F1-F5)
-            41: { type: 'action', action: 'renew' },              // F1 - Renew
+            41: { type: 'action', action: 'renew' },              // F1 - Update
             42: { type: 'action', action: 'export' },             // F#1 - Export
             43: { type: 'action', action: 'copy' },                 // G1 - Copy
         };
