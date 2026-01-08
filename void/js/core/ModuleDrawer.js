@@ -315,9 +315,12 @@ export class ModuleDrawer {
             const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
             
             ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-            ctx.lineDashOffset = adaptive.dashLength / 2;
             
             for (let i = 0; i < this.strokesNum; i++) {
+                // Шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
+                // четные линии (i % 2 === 1) начинаются с целого штриха
+                ctx.lineDashOffset = (i % 2 === 0) ? adaptive.dashLength / 2 : 0;
+                
                 const lineX = startX + i * (strokeWidth + gap);
                 ctx.beginPath();
                 ctx.moveTo(lineX, -h / 2 + shortenTopSD);
@@ -484,9 +487,12 @@ export class ModuleDrawer {
             const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
             
             ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-            ctx.lineDashOffset = adaptive.dashLength / 2;
             
             for (let i = 0; i < this.strokesNum; i++) {
+                // Шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
+                // четные линии (i % 2 === 1) начинаются с целого штриха
+                ctx.lineDashOffset = (i % 2 === 0) ? adaptive.dashLength / 2 : 0;
+                
                 const lineX = startX + i * (strokeWidth + gap);
                 ctx.beginPath();
                 ctx.moveTo(lineX, -h / 2 + shortenTopSD);
@@ -651,9 +657,12 @@ export class ModuleDrawer {
             // Вертикальные линии
             const vertAdaptive = this.calculateAdaptiveDash(h, dashPx, gapPx);
             ctx.setLineDash([vertAdaptive.dashLength, vertAdaptive.gapLength]);
-            ctx.lineDashOffset = vertAdaptive.dashLength / 2;
             
             for (let i = 0; i < this.strokesNum; i++) {
+                // Шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
+                // четные линии (i % 2 === 1) начинаются с целого штриха
+                ctx.lineDashOffset = (i % 2 === 0) ? vertAdaptive.dashLength / 2 : 0;
+                
                 const lineX = vertStartX + i * (strokeWidth + gap);
                 ctx.beginPath();
                 ctx.moveTo(lineX, -h / 2);
@@ -665,9 +674,12 @@ export class ModuleDrawer {
             const horizLength = w / 2 - lastVertX;
             const horizAdaptive = this.calculateAdaptiveDash(horizLength, dashPx, gapPx);
             ctx.setLineDash([horizAdaptive.dashLength, horizAdaptive.gapLength]);
-            ctx.lineDashOffset = horizAdaptive.dashLength / 2;
             
             for (let i = 0; i < this.strokesNum; i++) {
+                // Шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
+                // четные линии (i % 2 === 1) начинаются с целого штриха
+                ctx.lineDashOffset = (i % 2 === 0) ? horizAdaptive.dashLength / 2 : 0;
+                
                 const lineY = horizStartY + i * (strokeWidth + gap);
                 ctx.beginPath();
                 ctx.moveTo(lastVertX, lineY);
@@ -795,7 +807,9 @@ export class ModuleDrawer {
                 const adaptive = this.calculateAdaptiveDash(totalLength, dashPx, gapPx);
                 
                 ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-                ctx.lineDashOffset = adaptive.dashLength / 2;
+                // Шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
+                // четные линии (i % 2 === 1) начинаются с целого штриха
+                ctx.lineDashOffset = (i % 2 === 0) ? adaptive.dashLength / 2 : 0;
                 
                 ctx.beginPath();
                 ctx.moveTo(lineX, -h / 2);
@@ -999,7 +1013,9 @@ export class ModuleDrawer {
                     const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
                     
                     ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-                    ctx.lineDashOffset = adaptive.dashLength / 2;
+                    // Шахматный порядок: нечетные линии (j % 2 === 0) начинаются с половины штриха,
+                    // четные линии (j % 2 === 1) начинаются с целого штриха
+                    ctx.lineDashOffset = (j % 2 === 0) ? adaptive.dashLength / 2 : 0;
                     
                     ctx.beginPath();
                     ctx.arc(centerX, centerY, arcRadius, startAngle, endAngle);
@@ -1254,7 +1270,9 @@ export class ModuleDrawer {
                     const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
                     
                     ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-                    ctx.lineDashOffset = adaptive.dashLength / 2;
+                    // Шахматный порядок: нечетные линии (j % 2 === 0) начинаются с половины штриха,
+                    // четные линии (j % 2 === 1) начинаются с целого штриха
+                    ctx.lineDashOffset = (j % 2 === 0) ? adaptive.dashLength / 2 : 0;
                     
                     ctx.beginPath();
                     ctx.arc(centerX, centerY, arcRadius, startAngle, endAngle);
