@@ -2335,6 +2335,27 @@ textarea::placeholder {
         padding: calc(var(--spacing-xl) * 1.5) calc(var(--spacing-3xl) * 1.5);
         font-size: calc(0.9rem * 1.5);
         height: calc(var(--button-height) * 1.5);
+        border-radius: calc(calc(var(--button-height) * 1.5) / 2);
+    }
+    
+    .btn-secondary {
+        padding: calc(var(--spacing-md) * 1.5) calc(var(--spacing-2xl) * 1.5);
+        font-size: calc(0.9rem * 1.5);
+        height: calc(var(--button-height) * 1.5);
+        border-radius: calc(calc(var(--button-height) * 1.5) / 2);
+    }
+    
+    .top-link {
+        padding: calc(var(--spacing-md) * 1.5) calc(var(--spacing-2xl) * 1.5);
+        font-size: calc(0.9rem * 1.5);
+        height: calc(var(--button-height) * 1.5);
+        border-radius: calc(calc(var(--button-height) * 1.5) / 2);
+    }
+    
+    .panel-header {
+        padding: calc(var(--spacing-2xl) * 1.5) calc(var(--spacing-3xl) * 1.5);
+        min-height: calc(var(--button-height) * 1.5);
+        border-radius: calc(calc(var(--button-height) * 1.5) / 2);
     }
     
     .modal-content {
