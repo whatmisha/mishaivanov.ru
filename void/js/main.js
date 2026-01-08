@@ -196,6 +196,34 @@ class VoidTypeface {
         this.settings.set('mode', 'random');
         this.settings.set('text', 'DESK\nTOP\nONLY');
         
+        // Обработчик touch-событий для переключения альтернативных глифов
+        const canvas = document.getElementById('mainCanvas');
+        if (canvas) {
+            canvas.addEventListener('touchend', (e) => {
+                e.preventDefault(); // Предотвратить стандартное поведение (например, скролл)
+                
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.changedTouches[0];
+                const touchX = touch.clientX - rect.left;
+                const touchY = touch.clientY - rect.top;
+                
+                const position = this.renderer.getLetterPositionAt(touchX, touchY);
+                if (position) {
+                    // Проверяем, есть ли альтернативы для этого символа
+                    const char = position.char.toUpperCase();
+                    const hasAlternatives = VOID_ALPHABET_ALTERNATIVES && VOID_ALPHABET_ALTERNATIVES[char] && VOID_ALPHABET_ALTERNATIVES[char].length > 0;
+                    
+                    if (hasAlternatives) {
+                        const toggled = this.renderer.toggleLetterAlternative(position.lineIndex, position.charIndex);
+                        if (toggled) {
+                            this.updateRenderer();
+                            this.markAsChanged();
+                        }
+                    }
+                }
+            });
+        }
+        
         // Вычислить оптимальный размер модуля, чтобы текст влезал в окно
         // (updateRenderer будет вызван внутри calculateMobileModuleSize)
         this.calculateMobileModuleSize();
