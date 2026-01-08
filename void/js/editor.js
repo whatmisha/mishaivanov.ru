@@ -10,6 +10,7 @@
 
 import GlyphEditor from './core/GlyphEditor.js';
 import { ModuleDrawer } from './core/ModuleDrawer.js';
+import DualSenseController from './editor/DualSenseController.js';
 
 // Отдельные ключи для редактора (не пересекаются с основным приложением)
 const STORAGE_KEY = 'voidEditor_editedGlyphs';
@@ -27,6 +28,9 @@ class GlyphEditorApp {
         
         this.selectedChar = null;
         this.selectedAlternativeIndex = null;
+        
+        // Инициализировать контроллер DualSense
+        this.dualsenseController = new DualSenseController(this, this.editor);
         
         this.init();
     }
@@ -59,6 +63,9 @@ class GlyphEditorApp {
             this.updateAlternativesPanel();
             this.updateButtons();
         });
+        
+        // Активировать контроллер DualSense
+        this.dualsenseController.activate();
         
         console.log('[GlyphEditorApp] Initialized with storage key:', STORAGE_KEY);
     }
