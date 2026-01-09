@@ -50,6 +50,7 @@ class VoidTypeface {
                 closeEnds: false, // закрывающие линии на концах в режиме Stripes
                 dashLength: 0.10, // длина штриха для Dash mode (множитель от stem)
                 gapLength: 0.30, // длина промежутка для Dash mode (множитель от stem)
+                dashChess: false, // шахматный порядок для Dash mode (чередование начала штрихов)
                 useAlternativesInRandom: true, // использовать альтернативные глифы в режиме Random
                 currentMode: 'normal' // 'normal' или 'editor'
             },
@@ -92,6 +93,7 @@ class VoidTypeface {
             this.initModeToggle();
             this.initRoundedCapsToggle();
             this.initCloseEndsToggle();
+            this.initDashChessToggle();
             this.initGridToggle();
             // this.initGlyphEditor(); // Редактор глифов (ОТКЛЮЧЕНО - используйте editor.html)
             // this.initEditorHotkey(); // Хоткей Cmd+G для редактора (ОТКЛЮЧЕНО)
@@ -953,6 +955,24 @@ class VoidTypeface {
     }
 
     /**
+     * Инициализация тогла Dash Chess
+     */
+    initDashChessToggle() {
+        const dashChessCheckbox = document.getElementById('dashChessCheckbox');
+        if (!dashChessCheckbox) return;
+        
+        // Установить начальное значение
+        dashChessCheckbox.checked = this.settings.get('dashChess') || false;
+        
+        // Обработчик изменения
+        dashChessCheckbox.addEventListener('change', () => {
+            this.settings.set('dashChess', dashChessCheckbox.checked);
+            this.updateRenderer();
+            this.markAsChanged();
+        });
+    }
+
+    /**
      * Обновить видимость Rounded (для стилей Solid, Stripes и Dash)
      */
     updateRoundedCapsVisibility() {
@@ -961,11 +981,21 @@ class VoidTypeface {
         
         const mode = this.settings.get('mode') || 'fill';
         
-        // Round (roundedCapsControlGroup) показываем для fill, stripes, dash, sd
-        const shouldShow = mode === 'fill' || mode === 'stripes' || mode === 'dash' || mode === 'sd';
+        // Round (roundedCapsControlGroup) показываем для fill, stripes, dash, sd, random
+        const shouldShow = mode === 'fill' || mode === 'stripes' || mode === 'dash' || mode === 'sd' || mode === 'random';
         roundedCapsGroup.style.display = shouldShow ? 'flex' : 'none';
         
-        // Close Ends показываем в режимах Stripes и SD
+        // Round показываем для fill, stripes, dash, sd (НЕ для random)
+        const roundedCapsLabel = document.getElementById('roundedCapsLabel');
+        if (roundedCapsLabel) {
+            if (mode === 'random') {
+                roundedCapsLabel.classList.add('hidden');
+            } else {
+                roundedCapsLabel.classList.remove('hidden');
+            }
+        }
+        
+        // Close Ends показываем в режимах Stripes и SD (НЕ для random)
         // Используем класс hidden т.к. CSS имеет display: flex !important для .checkbox-label
         const closeEndsLabel = document.getElementById('closeEndsLabel');
         if (closeEndsLabel) {
@@ -973,6 +1003,26 @@ class VoidTypeface {
                 closeEndsLabel.classList.remove('hidden');
             } else {
                 closeEndsLabel.classList.add('hidden');
+            }
+        }
+        
+        // Chess для PD (sd) - показываем в roundedCapsControlGroup
+        const dashChessLabel = document.getElementById('dashChessLabel');
+        if (dashChessLabel) {
+            if (mode === 'sd') {
+                dashChessLabel.classList.remove('hidden');
+            } else {
+                dashChessLabel.classList.add('hidden');
+            }
+        }
+        
+        // Chess для Random - показываем в randomControlGroup
+        const dashChessLabelRandom = document.getElementById('dashChessLabelRandom');
+        if (dashChessLabelRandom) {
+            if (mode === 'random') {
+                dashChessLabelRandom.classList.remove('hidden');
+            } else {
+                dashChessLabelRandom.classList.add('hidden');
             }
         }
     }
@@ -1082,7 +1132,7 @@ class VoidTypeface {
             dashLengthControlGroup.style.display = showDash ? 'block' : 'none';
             gapLengthControlGroup.style.display = showDash ? 'block' : 'none';
             
-            // Обновить видимость Round и Close Ends
+            // Обновить видимость Round, Close Ends и Chess
             this.updateRoundedCapsVisibility();
             
             const randomGroups = [
@@ -1691,6 +1741,7 @@ class VoidTypeface {
         document.getElementById('dashLengthControlGroup').style.display = showDash ? 'block' : 'none';
         document.getElementById('gapLengthControlGroup').style.display = showDash ? 'block' : 'none';
         
+        
         // Обновить Rounded
         const roundedCapsCheckbox = document.getElementById('roundedCapsCheckbox');
         if (roundedCapsCheckbox) {
@@ -1781,6 +1832,12 @@ class VoidTypeface {
 
         // Обновить сетку и endpoints
         document.getElementById('showGridCheckbox').checked = this.settings.get('showGrid');
+        
+        // Обновить тогл Dash Chess
+        const dashChessCheckbox = document.getElementById('dashChessCheckbox');
+        if (dashChessCheckbox) {
+            dashChessCheckbox.checked = this.settings.get('dashChess') || false;
+        }
         document.getElementById('showEndpointsCheckbox').checked = this.settings.get('showEndpoints') || false;
         document.getElementById('showTestCheckbox').checked = this.settings.get('showTestCircles') || false;
     }
@@ -1872,6 +1929,7 @@ class VoidTypeface {
             closeEnds: this.settings.get('closeEnds') || false,
             dashLength: this.settings.get('dashLength') || 0.10,
             gapLength: this.settings.get('gapLength') || 0.30,
+            dashChess: this.settings.get('dashChess') || false,
             useAlternativesInRandom: this.settings.get('useAlternativesInRandom') || false,
             showEndpoints: this.settings.get('showEndpoints') || false,
             showTestCircles: this.settings.get('showTestCircles') || false

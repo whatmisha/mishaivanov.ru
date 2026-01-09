@@ -19,6 +19,7 @@ export class ModuleDrawer {
         this.roundedCaps = false; // скругления на концах линий (Rounded)
         this.dashLength = 0.10; // длина штриха для dash mode (множитель от stem)
         this.gapLength = 0.30; // длина промежутка для dash mode (множитель от stem)
+        this.dashChess = false; // шахматный порядок для dash mode (чередование начала штрихов)
         this.endpointSides = null; // объект {top, right, bottom, left} - стороны с endpoints
         this.closeEnds = false; // закрывающие линии на концах в режиме Stripes
     }
@@ -55,9 +56,10 @@ export class ModuleDrawer {
     /**
      * Установить параметры для dash mode
      */
-    setDashParams(dashLength, gapLength) {
+    setDashParams(dashLength, gapLength, dashChess = false) {
         this.dashLength = dashLength;
         this.gapLength = gapLength;
+        this.dashChess = dashChess;
     }
 
     /**
@@ -317,9 +319,10 @@ export class ModuleDrawer {
             ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
             
             for (let i = 0; i < this.strokesNum; i++) {
-                // Шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
+                // Если включен шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
                 // четные линии (i % 2 === 1) начинаются с целого штриха
-                ctx.lineDashOffset = (i % 2 === 0) ? adaptive.dashLength / 2 : 0;
+                // Если выключен: все линии начинаются с половины штриха
+                ctx.lineDashOffset = this.dashChess ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
                 
                 const lineX = startX + i * (strokeWidth + gap);
                 ctx.beginPath();
@@ -489,9 +492,10 @@ export class ModuleDrawer {
             ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
             
             for (let i = 0; i < this.strokesNum; i++) {
-                // Шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
+                // Если включен шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
                 // четные линии (i % 2 === 1) начинаются с целого штриха
-                ctx.lineDashOffset = (i % 2 === 0) ? adaptive.dashLength / 2 : 0;
+                // Если выключен: все линии начинаются с половины штриха
+                ctx.lineDashOffset = this.dashChess ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
                 
                 const lineX = startX + i * (strokeWidth + gap);
                 ctx.beginPath();
@@ -661,7 +665,7 @@ export class ModuleDrawer {
             for (let i = 0; i < this.strokesNum; i++) {
                 // Шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
                 // четные линии (i % 2 === 1) начинаются с целого штриха
-                ctx.lineDashOffset = (i % 2 === 0) ? vertAdaptive.dashLength / 2 : 0;
+                ctx.lineDashOffset = this.dashChess ? ((i % 2 === 0) ? vertAdaptive.dashLength / 2 : 0) : vertAdaptive.dashLength / 2;
                 
                 const lineX = vertStartX + i * (strokeWidth + gap);
                 ctx.beginPath();
@@ -678,7 +682,7 @@ export class ModuleDrawer {
             for (let i = 0; i < this.strokesNum; i++) {
                 // Шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
                 // четные линии (i % 2 === 1) начинаются с целого штриха
-                ctx.lineDashOffset = (i % 2 === 0) ? horizAdaptive.dashLength / 2 : 0;
+                ctx.lineDashOffset = this.dashChess ? ((i % 2 === 0) ? horizAdaptive.dashLength / 2 : 0) : horizAdaptive.dashLength / 2;
                 
                 const lineY = horizStartY + i * (strokeWidth + gap);
                 ctx.beginPath();
@@ -807,9 +811,10 @@ export class ModuleDrawer {
                 const adaptive = this.calculateAdaptiveDash(totalLength, dashPx, gapPx);
                 
                 ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-                // Шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
+                // Если включен шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
                 // четные линии (i % 2 === 1) начинаются с целого штриха
-                ctx.lineDashOffset = (i % 2 === 0) ? adaptive.dashLength / 2 : 0;
+                // Если выключен: все линии начинаются с половины штриха
+                ctx.lineDashOffset = this.dashChess ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
                 
                 ctx.beginPath();
                 ctx.moveTo(lineX, -h / 2);
@@ -1015,7 +1020,7 @@ export class ModuleDrawer {
                     ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
                     // Шахматный порядок: нечетные линии (j % 2 === 0) начинаются с половины штриха,
                     // четные линии (j % 2 === 1) начинаются с целого штриха
-                    ctx.lineDashOffset = (j % 2 === 0) ? adaptive.dashLength / 2 : 0;
+                    ctx.lineDashOffset = this.dashChess ? ((j % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
                     
                     ctx.beginPath();
                     ctx.arc(centerX, centerY, arcRadius, startAngle, endAngle);
@@ -1272,7 +1277,7 @@ export class ModuleDrawer {
                     ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
                     // Шахматный порядок: нечетные линии (j % 2 === 0) начинаются с половины штриха,
                     // четные линии (j % 2 === 1) начинаются с целого штриха
-                    ctx.lineDashOffset = (j % 2 === 0) ? adaptive.dashLength / 2 : 0;
+                    ctx.lineDashOffset = this.dashChess ? ((j % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
                     
                     ctx.beginPath();
                     ctx.arc(centerX, centerY, arcRadius, startAngle, endAngle);

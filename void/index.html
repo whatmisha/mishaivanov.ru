@@ -187,15 +187,19 @@
                             <input type="range" id="gapLengthSlider" min="0.01" max="8" value="0.30" step="0.01">
                         </div>
 
-                        <!-- Round и Close Ends (только для Stripes mode) -->
+                        <!-- Round, Close Ends и Chess -->
                         <div class="control-group toggle-group-row" id="roundedCapsControlGroup" style="display: none;">
-                            <label class="checkbox-label" for="roundedCapsCheckbox">
+                            <label class="checkbox-label" id="roundedCapsLabel" for="roundedCapsCheckbox">
                                 <input type="checkbox" id="roundedCapsCheckbox">
                                 <span>Round</span>
                             </label>
                             <label class="checkbox-label" id="closeEndsLabel" for="closeEndsCheckbox">
                                 <input type="checkbox" id="closeEndsCheckbox">
                                 <span>Close</span>
+                            </label>
+                            <label class="checkbox-label hidden" id="dashChessLabel" for="dashChessCheckbox">
+                                <input type="checkbox" id="dashChessCheckbox">
+                                <span>Chess</span>
                             </label>
                         </div>
 
@@ -259,7 +263,7 @@
                             <div id="randomGapLengthRangeSlider" class="range-slider-container"></div>
                         </div>
 
-                        <!-- Random Mode Controls: Chaos/Alternates, Round/Close/Dash -->
+                        <!-- Random Mode Controls: Chaos/Alt/Chess, Round/Close/Dash -->
                         <div class="control-group toggle-group-row" id="randomControlGroup" style="display: none;">
                             <label class="checkbox-label" for="randomFullRandomCheckbox">
                                 <input type="checkbox" id="randomFullRandomCheckbox">
@@ -267,7 +271,11 @@
                             </label>
                             <label class="checkbox-label" for="alternativeGlyphsCheckbox">
                                 <input type="checkbox" id="alternativeGlyphsCheckbox" checked>
-                                <span>Alternates</span>
+                                <span>Alt</span>
+                            </label>
+                            <label class="checkbox-label" id="dashChessLabelRandom" for="dashChessCheckbox">
+                                <input type="checkbox" id="dashChessCheckbox">
+                                <span>Chess</span>
                             </label>
                         </div>
                         <div class="control-group toggle-group-row" id="randomControlGroup4" style="display: none;">

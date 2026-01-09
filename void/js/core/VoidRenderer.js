@@ -224,7 +224,11 @@ export class VoidRenderer {
         // shouldUseEndpoints = true если нужны endpoints (для Round или Close Ends)
         // Это нужно для корректного определения концевых модулей
         
-        this.moduleDrawer.setDashParams(this.params.dashLength || 0.10, this.params.gapLength || 0.30);
+        this.moduleDrawer.setDashParams(
+            this.params.dashLength || 0.10, 
+            this.params.gapLength || 0.30,
+            this.params.dashChess || false
+        );
     }
 
     /**

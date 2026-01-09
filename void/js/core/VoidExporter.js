@@ -667,7 +667,8 @@ export class VoidExporter {
                     dashLength,
                     gapLength,
                     endpointSides,
-                    shouldUseCloseEnds
+                    shouldUseCloseEnds,
+                    params.dashChess || false
                 );
                 
                 if (moduleSVG) {
@@ -683,7 +684,7 @@ export class VoidExporter {
     /**
      * Отрисовать модуль в SVG
      */
-    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, strokeGapRatio, cornerRadius = 0, roundedCaps = false, dashLength = 0.10, gapLength = 0.30, endpointSides = null, closeEnds = false) {
+    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, strokeGapRatio, cornerRadius = 0, roundedCaps = false, dashLength = 0.10, gapLength = 0.30, endpointSides = null, closeEnds = false, dashChess = false) {
         if (type === 'E') return ''; // Empty
         
         // Вспомогательная функция: получить локальные стороны endpoints с учетом поворота
@@ -1500,9 +1501,10 @@ export class VoidExporter {
         const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
         
         for (let i = 0; i < strokesNum; i++) {
-            // Шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
+            // Если включен шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
             // четные линии (i % 2 === 1) начинаются с целого штриха
-            const dashOffset = (i % 2 === 0) ? adaptive.dashLength / 2 : 0;
+            // Если выключен: все линии начинаются с половины штриха
+            const dashOffset = dashChess ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
             const lineX = startX + i * (strokeWidth + gap);
             svg += `        <line x1="${lineX}" y1="${-h/2 + shortenTop}" x2="${lineX}" y2="${h/2 - shortenBottom}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" stroke-dashoffset="${dashOffset}"/>\n`;
         }
@@ -1553,9 +1555,10 @@ export class VoidExporter {
         const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
         
         for (let i = 0; i < strokesNum; i++) {
-            // Шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
+            // Если включен шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
             // четные линии (i % 2 === 1) начинаются с целого штриха
-            const dashOffset = (i % 2 === 0) ? adaptive.dashLength / 2 : 0;
+            // Если выключен: все линии начинаются с половины штриха
+            const dashOffset = dashChess ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
             const lineX = startX + i * (strokeWidth + gap);
             svg += `        <line x1="${lineX}" y1="${-h/2 + shortenTop}" x2="${lineX}" y2="${h/2 - shortenBottom}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" stroke-dashoffset="${dashOffset}"/>\n`;
         }
@@ -1607,7 +1610,7 @@ export class VoidExporter {
         for (let i = 0; i < strokesNum; i++) {
             // Шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
             // четные линии (i % 2 === 1) начинаются с целого штриха
-            const vertDashOffset = (i % 2 === 0) ? vertAdaptive.dashLength / 2 : 0;
+            const vertDashOffset = dashChess ? ((i % 2 === 0) ? vertAdaptive.dashLength / 2 : 0) : vertAdaptive.dashLength / 2;
             const lineX = vertStartX + i * (strokeWidth + gap);
             svg += `        <line x1="${lineX}" y1="${-h/2}" x2="${lineX}" y2="${h/2}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${vertAdaptive.dashLength} ${vertAdaptive.gapLength}" stroke-dashoffset="${vertDashOffset}"/>\n`;
         }
@@ -1619,7 +1622,7 @@ export class VoidExporter {
         for (let i = 0; i < strokesNum; i++) {
             // Шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
             // четные линии (i % 2 === 1) начинаются с целого штриха
-            const horizDashOffset = (i % 2 === 0) ? horizAdaptive.dashLength / 2 : 0;
+            const horizDashOffset = dashChess ? ((i % 2 === 0) ? horizAdaptive.dashLength / 2 : 0) : horizAdaptive.dashLength / 2;
             const lineY = horizStartY + i * (strokeWidth + gap);
             svg += `        <line x1="${lastVertX}" y1="${lineY}" x2="${w/2}" y2="${lineY}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${horizAdaptive.dashLength} ${horizAdaptive.gapLength}" stroke-dashoffset="${horizDashOffset}"/>\n`;
         }
@@ -1654,9 +1657,10 @@ export class VoidExporter {
             const totalLength = vertLength + horizLength;
             
             const adaptive = this.calculateAdaptiveDash(totalLength, dashPx, gapPx);
-            // Шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
+            // Если включен шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
             // четные линии (i % 2 === 1) начинаются с целого штриха
-            const dashOffset = (i % 2 === 0) ? adaptive.dashLength / 2 : 0;
+            // Если выключен: все линии начинаются с половины штриха
+            const dashOffset = dashChess ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
             
             const path = `M ${lineX} ${-h/2} L ${lineX} ${lineY} L ${w/2} ${lineY}`;
             svg += `        <path d="${path}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-linejoin="${lineJoin}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" stroke-dashoffset="${dashOffset}" fill="none"/>\n`;
@@ -1706,7 +1710,7 @@ export class VoidExporter {
             const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
             // Шахматный порядок: нечетные линии (j % 2 === 0) начинаются с половины штриха,
             // четные линии (j % 2 === 1) начинаются с целого штриха
-            const dashOffset = (j % 2 === 0) ? adaptive.dashLength / 2 : 0;
+            const dashOffset = dashChess ? ((j % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
             
             const path = `M ${startArcX} ${startArcY} A ${arcRadius} ${arcRadius} 0 0 1 ${endArcX} ${endArcY}`;
             svg += `        <path d="${path}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" stroke-dashoffset="${dashOffset}" fill="none"/>\n`;
@@ -1792,7 +1796,7 @@ export class VoidExporter {
             const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
             // Шахматный порядок: нечетные линии (j % 2 === 0) начинаются с половины штриха,
             // четные линии (j % 2 === 1) начинаются с целого штриха
-            const dashOffset = (j % 2 === 0) ? adaptive.dashLength / 2 : 0;
+            const dashOffset = dashChess ? ((j % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
             
             const path = `M ${startArcX} ${startArcY} A ${arcRadius} ${arcRadius} 0 0 1 ${endArcX} ${endArcY}`;
             svg += `        <path d="${path}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" stroke-dashoffset="${dashOffset}" fill="none"/>\n`;
