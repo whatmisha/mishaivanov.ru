@@ -614,7 +614,9 @@ export class VoidRenderer {
                     analysis.endpoints, 
                     moduleW,
                     x,
-                    y
+                    y,
+                    this.params.color,      // Letter Color
+                    this.params.bgColor     // Background Color
                 );
                 
                 // Отрисовать окружности на концевых точках (Test режим)

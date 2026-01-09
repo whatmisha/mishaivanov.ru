@@ -317,13 +317,13 @@ class GlyphEditorApp {
         
         // Собираем все существующие альтернативы из editedGlyphs
         const existingAlternatives = [];
-        const editedGlyphs = this.getEditedGlyphs();
-        if (editedGlyphs[this.selectedChar]) {
-            Object.keys(editedGlyphs[this.selectedChar]).forEach(key => {
-                if (key !== 'base') {
+            const editedGlyphs = this.getEditedGlyphs();
+            if (editedGlyphs[this.selectedChar]) {
+                Object.keys(editedGlyphs[this.selectedChar]).forEach(key => {
+                    if (key !== 'base') {
                     existingAlternatives.push(parseInt(key));
-                }
-            });
+                    }
+                });
         }
         
         // Сортируем альтернативы по индексу
@@ -337,7 +337,7 @@ class GlyphEditorApp {
         
         // Добавляем только существующие альтернативы
         existingAlternatives.forEach(index => {
-            alternativesToShow.push({ index, label: `Alt ${index}` });
+                alternativesToShow.push({ index, label: `Alt ${index}` });
         });
         
         // Показываем все существующие ячейки
@@ -345,11 +345,11 @@ class GlyphEditorApp {
             // Проверяем, существует ли альтернатива и не является ли она пустой
             // НЕ загружаем оригинальные глифы - только те, что в editedGlyphs
             let hasGlyph = false;
-            const editedGlyph = this.editor.getEditedGlyph(this.selectedChar, index);
-            
-            // Проверяем, что глиф существует и не пустой (ТОЛЬКО editedGlyph, БЕЗ originalGlyph)
-            if (editedGlyph && !this.isEmptyGlyph(editedGlyph)) {
-                hasGlyph = true;
+                const editedGlyph = this.editor.getEditedGlyph(this.selectedChar, index);
+                
+                // Проверяем, что глиф существует и не пустой (ТОЛЬКО editedGlyph, БЕЗ originalGlyph)
+                if (editedGlyph && !this.isEmptyGlyph(editedGlyph)) {
+                    hasGlyph = true;
             }
             
             this.addAlternativePreview(content, index, label, hasGlyph);

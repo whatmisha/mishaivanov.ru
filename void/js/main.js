@@ -1455,6 +1455,8 @@ class VoidTypeface {
                                 this.presetManager.deletePreset(name);
                             }
                         });
+                        // Перезагрузить пресеты из localStorage, чтобы синхронизировать объект
+                        this.presetManager.presets = this.presetManager.loadPresets();
                         // Переключиться на Default
                         this.loadPreset('Default');
                         presetDropdownText.textContent = 'Default';
@@ -1475,11 +1477,15 @@ class VoidTypeface {
                 
                 if (presetName && presetName !== this.currentPresetName) {
                     // Проверка на несохраненные изменения
-                    if (this.hasUnsavedChanges) {
+                    // Показываем попап только если есть изменения И это не Default пресет
+                    if (this.hasUnsavedChanges && this.currentPresetName !== 'Default') {
                         const shouldSave = confirm('You have unsaved changes. Save current preset before switching?');
                         if (shouldSave) {
-                            this.saveCurrentPreset();
+                            // Перезаписываем текущий пресет
+                            this.presetManager.savePreset(this.currentPresetName, this.settings.values);
+                            this.updatePresetList();
                         }
+                        // Если Cancel - просто переключаемся без сохранения
                     }
                     this.loadPreset(presetName);
                     // Отображать сокращенное имя в дропдауне
@@ -1511,6 +1517,8 @@ class VoidTypeface {
             // Показать полное название в модальном окне
             if (confirm(`Delete preset "${this.currentPresetName}"?`)) {
                 if (this.presetManager.deletePreset(this.currentPresetName)) {
+                    // Перезагрузить пресеты из localStorage, чтобы синхронизировать объект
+                    this.presetManager.presets = this.presetManager.loadPresets();
                     // Переключиться на Default
                     this.loadPreset('Default');
                     presetDropdownText.textContent = 'Default';
@@ -1893,17 +1901,29 @@ class VoidTypeface {
     }
 
     /**
-     * Сохранить текущий пресет с автогенерацией имени
+     * Сохранить текущий пресет
+     * Если текущий пресет - Default, создаём новый с автогенерированным именем
+     * Если текущий пресет - кастомный, перезаписываем его
      */
     saveCurrentPreset() {
-        const name = this.generatePresetName();
+        let name;
+        const isDefaultPreset = this.currentPresetName === 'Default';
+        
+        if (isDefaultPreset) {
+            // Для Default создаём новый пресет с автогенерированным именем
+            name = this.generatePresetName();
+        } else {
+            // Для кастомного пресета - перезаписываем его
+            name = this.currentPresetName;
+        }
+        
         const result = this.presetManager.savePreset(name, this.settings.values);
         if (result.success) {
             this.updatePresetList();
             const presetDropdownText = document.querySelector('.preset-dropdown-text');
             const presetDropdownMenu = document.getElementById('presetDropdownMenu');
             // Отображать сокращенное имя в дропдауне
-            const displayName = this.getDisplayName(name);
+            const displayName = name === 'Default' ? 'Default' : this.getDisplayName(name);
             presetDropdownText.textContent = displayName;
             this.currentPresetName = name;
             this.hasUnsavedChanges = false;
@@ -2054,19 +2074,25 @@ class VoidTypeface {
         
         const savePresetBtn = document.getElementById('savePresetBtn');
         const deletePresetBtn = document.getElementById('deletePresetBtn');
-        const presetNames = this.presetManager.getPresetNames();
-        const hasCustomPresets = presetNames.length > 1; // Больше чем только Default
         const isDefaultPreset = this.currentPresetName === 'Default';
         const isDefaultWithoutChanges = isDefaultPreset && !this.hasUnsavedChanges;
+        
+        // В Default без изменений - НИКОГДА не показывать Save и Delete
+        if (isDefaultWithoutChanges) {
+            if (savePresetBtn) savePresetBtn.style.display = 'none';
+            if (deletePresetBtn) deletePresetBtn.style.display = 'none';
+            return;
+        }
         
         // Показывать Save если есть несохраненные изменения
         if (savePresetBtn) {
             savePresetBtn.style.display = this.hasUnsavedChanges ? 'inline-flex' : 'none';
         }
         
-        // Показывать Delete если есть кастомные пресеты И это не Default без изменений
+        // Показывать Delete только если это НЕ Default пресет
+        // (кастомные пресеты можно удалять)
         if (deletePresetBtn) {
-            deletePresetBtn.style.display = (hasCustomPresets && !isDefaultWithoutChanges) ? 'inline-flex' : 'none';
+            deletePresetBtn.style.display = !isDefaultPreset ? 'inline-flex' : 'none';
         }
     }
     

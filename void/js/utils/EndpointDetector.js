@@ -444,15 +444,16 @@ export class EndpointDetector {
     /**
      * Отрисовать точки на канвасе
      */
-    renderPoints(ctx, connections, endpoints, moduleSize, offsetX = 0, offsetY = 0) {
+    renderPoints(ctx, connections, endpoints, moduleSize, offsetX = 0, offsetY = 0, letterColor = '#ffffff', backgroundColor = '#000000') {
         // Радиус точек в пикселях (не зависит от масштаба)
         const pointRadius = 6;
         const strokeWidth = 2;
         
         
         // Рисуем стыки (синие кружки)
-        ctx.fillStyle = '#0088ff';
-        ctx.strokeStyle = '#ffffff';
+        // Заливка: Background, Обводка: Letter Color
+        ctx.fillStyle = backgroundColor;
+        ctx.strokeStyle = letterColor;
         ctx.lineWidth = strokeWidth;
         
         connections.forEach(conn => {
@@ -470,8 +471,9 @@ export class EndpointDetector {
         });
         
         // Рисуем концевые точки (красные кружки)
-        ctx.fillStyle = '#ff0044';
-        ctx.strokeStyle = '#ffffff';
+        // Заливка: Letter Color, Обводка: Letter Color
+        ctx.fillStyle = letterColor;
+        ctx.strokeStyle = letterColor;
         ctx.lineWidth = strokeWidth;
         
         endpoints.forEach(ep => {

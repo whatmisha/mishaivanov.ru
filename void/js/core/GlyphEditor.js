@@ -310,12 +310,12 @@ export default class GlyphEditor {
                 type: this.getCurrentModuleType(),
                 rotation: this.currentRotation
             };
-            this.render();
-            this.updateModuleInfo();
-            this.updateGlyphString();
-            
-            // Автосохранение после каждого изменения
-            this.autoSave();
+        this.render();
+        this.updateModuleInfo();
+        this.updateGlyphString();
+        
+        // Автосохранение после каждого изменения
+        this.autoSave();
         }
     }
     
