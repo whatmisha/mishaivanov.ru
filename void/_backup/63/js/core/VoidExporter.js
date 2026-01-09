@@ -148,10 +148,6 @@ export class VoidExporter {
             if (this.settings.get('randomDash') !== undefined) {
                 params.randomDash = this.settings.get('randomDash');
             }
-            // Получаем dashChess из settings для режимов PD и Random
-            if (this.settings.get('dashChess') !== undefined) {
-                params.dashChess = this.settings.get('dashChess');
-            }
             // Получаем showEndpoints из settings
             if (this.settings.get('showEndpoints') !== undefined) {
                 params.showEndpoints = this.settings.get('showEndpoints');
@@ -634,12 +630,12 @@ export class VoidExporter {
                 }
                 
                 // roundedCaps применяется ТОЛЬКО к концевым модулям (тем, у которых есть endpointSides)
-                // ИСКЛЮЧЕНИЕ: в режимах Dash, SD roundedCaps применяется ко ВСЕМ модулям
-                // Для Random скругление применяется ко всем модулям, если включен dash
+                // ИСКЛЮЧЕНИЕ: в режиме SD roundedCaps применяется ко ВСЕМ модулям
+                // Для Random скругление применяется только к концевым модулям, если нет dash
                 const moduleKey = `${i}_${j}`;
                 const endpointSides = endpointMap && endpointMap[moduleKey];
-                // Для dash/sd/random с dash используем логику (roundedCaps для всех)
-                const isDashMode = params.mode === 'sd' || params.mode === 'dash' || moduleUseDash;
+                // Для random mode с dash используем sd логику (roundedCaps для всех)
+                const isDashMode = params.mode === 'sd' || moduleUseDash;
                 const moduleRoundedCaps = isDashMode ? shouldUseRounded : (shouldUseRounded && endpointSides);
                 
                 // Solid mode теперь это Stripes с Lines=1
@@ -672,7 +668,7 @@ export class VoidExporter {
                     gapLength,
                     endpointSides,
                     shouldUseCloseEnds,
-                    params.dashChess !== undefined ? params.dashChess : false
+                    params.dashChess || false
                 );
                 
                 if (moduleSVG) {
@@ -788,22 +784,22 @@ export class VoidExporter {
             // SD mode: stripes + dash
                 switch (type) {
                     case 'S':
-                    paths = this.renderStraightSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps, localEndpoints, closeEnds, dashChess);
+                    paths = this.renderStraightSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps, localEndpoints, closeEnds);
                         break;
                     case 'C':
-                    paths = this.renderCentralSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps, localEndpoints, closeEnds, dashChess);
+                    paths = this.renderCentralSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps, localEndpoints, closeEnds);
                         break;
                     case 'J':
-                    paths = this.renderJointSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps, dashChess);
+                    paths = this.renderJointSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps);
                         break;
                     case 'L':
-                    paths = this.renderLinkSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps, dashChess);
+                    paths = this.renderLinkSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps);
                         break;
                     case 'R':
-                    paths = this.renderRoundSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps, localEndpoints, closeEnds, dashChess);
+                    paths = this.renderRoundSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps, localEndpoints, closeEnds);
                         break;
                     case 'B':
-                    paths = this.renderBendSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps, localEndpoints, closeEnds, dashChess);
+                    paths = this.renderBendSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps, localEndpoints, closeEnds);
                         break;
             }
         }
@@ -1486,7 +1482,7 @@ export class VoidExporter {
     /**
      * S — Straight: несколько параллельных пунктирных линий (SD mode)
      */
-    renderStraightSVGStrokeSD(x, y, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps = false, localEndpoints = null, closeEnds = false, dashChess = false) {
+    renderStraightSVGStrokeSD(x, y, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps = false, localEndpoints = null, closeEnds = false) {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         
@@ -1539,7 +1535,7 @@ export class VoidExporter {
     /**
      * C — Central: несколько параллельных центрированных пунктирных линий (SD mode)
      */
-    renderCentralSVGStrokeSD(x, y, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps = false, localEndpoints = null, closeEnds = false, dashChess = false) {
+    renderCentralSVGStrokeSD(x, y, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps = false, localEndpoints = null, closeEnds = false) {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         
@@ -1593,7 +1589,7 @@ export class VoidExporter {
     /**
      * J — Joint: Т-образное соединение с пунктиром (SD mode)
      */
-    renderJointSVGStrokeSD(x, y, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps = false, dashChess = false) {
+    renderJointSVGStrokeSD(x, y, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps = false) {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         
@@ -1637,7 +1633,7 @@ export class VoidExporter {
     /**
      * L — Link/Corner: L-образное соединение с пунктиром (SD mode)
      */
-    renderLinkSVGStrokeSD(x, y, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps = false, dashChess = false) {
+    renderLinkSVGStrokeSD(x, y, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps = false) {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         
@@ -1676,7 +1672,7 @@ export class VoidExporter {
     /**
      * R — Round: несколько пунктирных дуг (SD mode)
      */
-    renderRoundSVGStrokeSD(x, y, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps = false, localEndpoints = null, closeEnds = false, dashChess = false) {
+    renderRoundSVGStrokeSD(x, y, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps = false, localEndpoints = null, closeEnds = false) {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         
@@ -1762,7 +1758,7 @@ export class VoidExporter {
     /**
      * B — Bend: несколько маленьких пунктирных дуг (SD mode)
      */
-    renderBendSVGStrokeSD(x, y, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps = false, localEndpoints = null, closeEnds = false, dashChess = false) {
+    renderBendSVGStrokeSD(x, y, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps = false, localEndpoints = null, closeEnds = false) {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         

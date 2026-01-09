@@ -958,41 +958,17 @@ class VoidTypeface {
      * Инициализация тогла Dash Chess
      */
     initDashChessToggle() {
-        const dashChessCheckboxPD = document.getElementById('dashChessCheckboxPD');
-        const dashChessCheckboxRandom = document.getElementById('dashChessCheckboxRandom');
-        
-        if (!dashChessCheckboxPD || !dashChessCheckboxRandom) {
-            console.warn('[Main] dashChessCheckbox not found');
-            return;
-        }
-        
-        // Функция для синхронизации состояния обоих checkbox
-        const syncCheckboxes = (sourceCheckbox, targetCheckbox) => {
-            targetCheckbox.checked = sourceCheckbox.checked;
-        };
-        
-        // Функция для обновления настроек и рендерера
-        const updateDashChess = (checked) => {
-            this.settings.set('dashChess', checked);
-            this.updateRenderer();
-            this.markAsChanged();
-        };
+        const dashChessCheckbox = document.getElementById('dashChessCheckbox');
+        if (!dashChessCheckbox) return;
         
         // Установить начальное значение
-        const initialValue = this.settings.get('dashChess') || false;
-        dashChessCheckboxPD.checked = initialValue;
-        dashChessCheckboxRandom.checked = initialValue;
+        dashChessCheckbox.checked = this.settings.get('dashChess') || false;
         
-        // Обработчик изменения для PD checkbox
-        dashChessCheckboxPD.addEventListener('change', (e) => {
-            syncCheckboxes(e.target, dashChessCheckboxRandom);
-            updateDashChess(e.target.checked);
-        });
-        
-        // Обработчик изменения для Random checkbox
-        dashChessCheckboxRandom.addEventListener('change', (e) => {
-            syncCheckboxes(e.target, dashChessCheckboxPD);
-            updateDashChess(e.target.checked);
+        // Обработчик изменения
+        dashChessCheckbox.addEventListener('change', () => {
+            this.settings.set('dashChess', dashChessCheckbox.checked);
+            this.updateRenderer();
+            this.markAsChanged();
         });
     }
 
@@ -1857,15 +1833,10 @@ class VoidTypeface {
         // Обновить сетку и endpoints
         document.getElementById('showGridCheckbox').checked = this.settings.get('showGrid');
         
-        // Обновить тоглы Dash Chess (для PD и Random)
-        const dashChessCheckboxPD = document.getElementById('dashChessCheckboxPD');
-        const dashChessCheckboxRandom = document.getElementById('dashChessCheckboxRandom');
-        const dashChessValue = this.settings.get('dashChess') || false;
-        if (dashChessCheckboxPD) {
-            dashChessCheckboxPD.checked = dashChessValue;
-        }
-        if (dashChessCheckboxRandom) {
-            dashChessCheckboxRandom.checked = dashChessValue;
+        // Обновить тогл Dash Chess
+        const dashChessCheckbox = document.getElementById('dashChessCheckbox');
+        if (dashChessCheckbox) {
+            dashChessCheckbox.checked = this.settings.get('dashChess') || false;
         }
         document.getElementById('showEndpointsCheckbox').checked = this.settings.get('showEndpoints') || false;
         document.getElementById('showTestCheckbox').checked = this.settings.get('showTestCircles') || false;
