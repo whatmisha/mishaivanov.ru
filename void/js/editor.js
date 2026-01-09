@@ -49,6 +49,9 @@ class GlyphEditorApp {
         this.populateCharList();
         console.log('[GlyphEditorApp] Character list populated');
         
+        // Автоматически выбрать глиф A по умолчанию
+        this.selectChar('A');
+        
         // Обработчики кнопок
         document.getElementById('importBtn').addEventListener('click', () => this.showImportDialog());
         document.getElementById('importFileInput').addEventListener('change', (e) => this.handleFileImport(e));
@@ -259,9 +262,9 @@ class GlyphEditorApp {
         this.selectedAlternativeIndex = null; // Сбросить выбор альтернативы
         
         // Обновить UI
-        const items = document.querySelectorAll('.char-item');
+        const items = document.querySelectorAll('.char-cell');
         items.forEach(item => {
-            if (item.querySelector('.char-label').textContent === char) {
+            if (item.dataset.char === char) {
                 item.classList.add('selected');
             } else {
                 item.classList.remove('selected');
@@ -274,9 +277,12 @@ class GlyphEditorApp {
         
         // Загружаем только если глиф есть в editedGlyphs
         const editedGlyph = this.editor.getEditedGlyph(char, null);
+        console.log('[GlyphEditorApp] selectChar - editedGlyph for', char, ':', editedGlyph ? 'found' : 'not found');
         if (editedGlyph && !this.isEmptyGlyph(editedGlyph)) {
+            console.log('[GlyphEditorApp] Loading glyph for', char);
             this.editor.loadGlyphWithEdits(char, null);
         } else {
+            console.log('[GlyphEditorApp] Clearing canvas for', char, '- glyph not found or empty');
             // Очищаем канвас для нового пустого глифа
             this.editor.clear();
         }
@@ -1045,6 +1051,18 @@ class GlyphEditorApp {
             this.populateCharList();
             this.updateAlternativesPanel();
             this.updateButtons();
+            
+            // Автоматически выбрать первый глиф (A) после импорта
+            // Используем setTimeout, чтобы убедиться, что UI обновлен
+            setTimeout(() => {
+                const importedChars = Array.from(importedCharsList).sort();
+                if (importedChars.length > 0) {
+                    // Выбираем 'A' если он есть, иначе первый символ
+                    const firstChar = importedChars.includes('A') ? 'A' : importedChars[0];
+                    console.log('[GlyphEditorApp] Auto-selecting first char after import:', firstChar);
+                    this.selectChar(firstChar);
+                }
+            }, 0);
             
             // Показать кнопку Clear All после импорта
             const clearAllBtn = document.getElementById('clearAllBtn');
