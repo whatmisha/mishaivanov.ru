@@ -351,6 +351,215 @@ class GlyphEditorApp {
         
         // Добавляем ячейку "+" в конец
         this.addAddButton(content);
+        
+        // Добавляем обработчики drag-and-drop для контейнера
+        this.setupDragAndDrop(content);
+    }
+    
+    /**
+     * Настроить drag-and-drop для контейнера альтернатив
+     */
+    setupDragAndDrop(container) {
+        container.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            
+            const afterElement = this.getDragAfterElement(container, e.clientY);
+            const dragging = document.querySelector('.alternative-item.dragging');
+            
+            if (dragging && afterElement == null) {
+                // Если перетаскиваем в конец, убираем все классы drag-over
+                document.querySelectorAll('.alternative-item').forEach(el => {
+                    el.classList.remove('drag-over');
+                });
+            } else if (dragging && afterElement) {
+                // Убираем все классы drag-over
+                document.querySelectorAll('.alternative-item').forEach(el => {
+                    el.classList.remove('drag-over');
+                });
+                
+                // Добавляем класс drag-over к элементу, после которого будет вставка
+                const afterIndex = afterElement.dataset.index;
+                if (afterIndex !== 'base' && afterIndex !== 'add') {
+                    afterElement.classList.add('drag-over');
+                }
+            }
+        });
+        
+        container.addEventListener('drop', (e) => {
+            e.preventDefault();
+            
+            const dragging = document.querySelector('.alternative-item.dragging');
+            if (!dragging) return;
+            
+            const draggedIndex = parseInt(dragging.dataset.index);
+            if (isNaN(draggedIndex)) return; // Не перетаскиваем Base или кнопку "+"
+            
+            const afterElement = this.getDragAfterElement(container, e.clientY);
+            
+            // Определяем новую позицию (индекс в массиве альтернатив, начиная с 0)
+            let newPosition = 0;
+            if (afterElement) {
+                const afterIndex = afterElement.dataset.index;
+                if (afterIndex === 'base') {
+                    newPosition = 0; // После Base, первая позиция
+                } else if (afterIndex === 'add') {
+                    // В конец, после всех альтернатив
+                    const editedGlyphs = this.getEditedGlyphs();
+                    const existingAlternatives = Object.keys(editedGlyphs[this.selectedChar] || {})
+                        .filter(k => k !== 'base')
+                        .map(k => parseInt(k))
+                        .sort((a, b) => a - b);
+                    newPosition = existingAlternatives.length; // После последнего элемента
+                } else {
+                    const afterAltIndex = parseInt(afterIndex);
+                    if (!isNaN(afterAltIndex)) {
+                        // Находим позицию после этого элемента
+                        const editedGlyphs = this.getEditedGlyphs();
+                        const existingAlternatives = Object.keys(editedGlyphs[this.selectedChar] || {})
+                            .filter(k => k !== 'base')
+                            .map(k => parseInt(k))
+                            .sort((a, b) => a - b);
+                        const afterPosition = existingAlternatives.indexOf(afterAltIndex);
+                        // Если перетаскиваемый элемент находится после найденного, корректируем позицию
+                        if (afterPosition !== -1) {
+                            newPosition = afterPosition + 1; // После найденного элемента
+                        }
+                    }
+                }
+            } else {
+                // Если afterElement не найден, вставляем в конец
+                const editedGlyphs = this.getEditedGlyphs();
+                const existingAlternatives = Object.keys(editedGlyphs[this.selectedChar] || {})
+                    .filter(k => k !== 'base')
+                    .map(k => parseInt(k))
+                    .sort((a, b) => a - b);
+                newPosition = existingAlternatives.length;
+            }
+            
+            // Переиндексируем альтернативы
+            this.reorderAlternatives(draggedIndex, newPosition);
+            
+            // Убираем все классы drag-over
+            document.querySelectorAll('.alternative-item').forEach(el => {
+                el.classList.remove('drag-over');
+            });
+        });
+    }
+    
+    /**
+     * Получить элемент, после которого нужно вставить перетаскиваемый элемент
+     */
+    getDragAfterElement(container, y) {
+        // Получаем все элементы, кроме перетаскиваемого, но включая Base и кнопку "+"
+        const draggableElements = [...container.querySelectorAll('.alternative-item:not(.dragging)')];
+        
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            
+            // Игнорируем Base и кнопку "+" при определении позиции для альтернатив
+            const index = child.dataset.index;
+            if (index === 'base' || index === 'add') {
+                // Для Base и "+" используем специальную логику
+                if (index === 'base' && y < box.bottom && y > box.top) {
+                    // Если курсор над Base, вставляем после него
+                    return { offset: 0, element: child };
+                } else if (index === 'add' && y > box.top && y < box.bottom) {
+                    // Если курсор над кнопкой "+", вставляем перед ней
+                    return { offset: 0, element: child };
+                }
+                return closest;
+            }
+            
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+    
+    /**
+     * Переиндексировать альтернативы при изменении порядка
+     * @param {number} draggedIndex - текущий индекс перетаскиваемой альтернативы
+     * @param {number} newPosition - новая позиция в массиве альтернатив (0 = первая после Base)
+     */
+    reorderAlternatives(draggedIndex, newPosition) {
+        if (!this.selectedChar) return;
+        
+        const editedGlyphs = this.getEditedGlyphs();
+        if (!editedGlyphs[this.selectedChar]) return;
+        
+        // Получаем все альтернативы (кроме base) в текущем порядке
+        const allAlternatives = Object.keys(editedGlyphs[this.selectedChar])
+            .filter(k => k !== 'base')
+            .map(k => parseInt(k))
+            .sort((a, b) => a - b);
+        
+        // Удаляем перетаскиваемый элемент из массива
+        const draggedIndexInArray = allAlternatives.indexOf(draggedIndex);
+        if (draggedIndexInArray === -1) return;
+        
+        // Сохраняем данные перетаскиваемого элемента
+        const draggedGlyph = editedGlyphs[this.selectedChar][String(draggedIndex)];
+        
+        // Удаляем из массива
+        allAlternatives.splice(draggedIndexInArray, 1);
+        
+        // Вставляем на новую позицию (с учетом того, что мы уже удалили элемент)
+        let insertPosition = newPosition;
+        if (draggedIndexInArray < newPosition) {
+            insertPosition = newPosition - 1; // Корректируем позицию, если элемент был удален до новой позиции
+        }
+        allAlternatives.splice(insertPosition, 0, draggedIndex);
+        
+        // Создаем новый объект данных с переиндексированными альтернативами
+        const newData = {};
+        newData['base'] = editedGlyphs[this.selectedChar]['base'];
+        
+        // Переиндексируем: создаем новый порядок с индексами 1, 2, 3...
+        allAlternatives.forEach((oldIndex, newIndex) => {
+            const newKey = String(newIndex + 1);
+            newData[newKey] = editedGlyphs[this.selectedChar][String(oldIndex)];
+        });
+        
+        // Обновляем данные
+        editedGlyphs[this.selectedChar] = newData;
+        this.saveEditedGlyphs(editedGlyphs);
+        
+        // Определяем новый индекс перетаскиваемой альтернативы
+        const newDraggedIndex = insertPosition + 1; // +1 потому что индексы начинаются с 1
+        
+        // Обновляем выбранный индекс, если перетаскиваемая альтернатива была выбрана
+        const wasDraggedSelected = this.selectedAlternativeIndex === draggedIndex;
+        if (wasDraggedSelected) {
+            this.selectedAlternativeIndex = newDraggedIndex;
+        } else if (this.selectedAlternativeIndex !== null) {
+            // Если была выбрана другая альтернатива, нужно найти её новый индекс
+            // Находим старый индекс выбранной альтернативы в новом порядке
+            const selectedOldIndex = this.selectedAlternativeIndex;
+            const selectedNewPosition = allAlternatives.indexOf(selectedOldIndex);
+            if (selectedNewPosition !== -1) {
+                this.selectedAlternativeIndex = selectedNewPosition + 1;
+            }
+        }
+        
+        // Обновляем панель альтернатив
+        this.updateAlternativesPanel();
+        
+        // Если перетаскиваемая альтернатива была выбрана, выбираем её снова с новым индексом
+        if (wasDraggedSelected) {
+            // Небольшая задержка, чтобы DOM обновился
+            setTimeout(() => {
+                this.selectAlternative(newDraggedIndex);
+            }, 0);
+        } else if (this.selectedAlternativeIndex !== null) {
+            // Обновляем выбор для других альтернатив
+            setTimeout(() => {
+                this.selectAlternative(this.selectedAlternativeIndex);
+            }, 0);
+        }
     }
     
     /**
@@ -393,6 +602,26 @@ class GlyphEditorApp {
             if (editedGlyph) {
                 item.classList.add('edited');
             }
+        }
+        
+        // Добавляем drag-and-drop только для альтернатив (не для Base и не для кнопки "+")
+        if (alternativeIndex !== null && this.selectedChar) {
+            item.draggable = true;
+            item.classList.add('draggable');
+            
+            item.addEventListener('dragstart', (e) => {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', String(alternativeIndex));
+                item.classList.add('dragging');
+            });
+            
+            item.addEventListener('dragend', (e) => {
+                item.classList.remove('dragging');
+                // Убираем все классы drag-over
+                document.querySelectorAll('.alternative-item').forEach(el => {
+                    el.classList.remove('drag-over');
+                });
+            });
         }
         
         item.addEventListener('click', (e) => {

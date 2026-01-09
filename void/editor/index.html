@@ -317,6 +317,25 @@
             color: var(--color-text);
         }
         
+        /* Drag-and-drop стили */
+        .alternative-item.draggable {
+            cursor: grab;
+        }
+        
+        .alternative-item.draggable:active {
+            cursor: grabbing;
+        }
+        
+        .alternative-item.dragging {
+            opacity: 0.5;
+            transform: scale(0.95);
+        }
+        
+        .alternative-item.drag-over {
+            border-top: 2px solid var(--color-text);
+            margin-top: -2px;
+        }
+        
         .alternative-delete {
             display: none;
             position: absolute;
