@@ -20,9 +20,9 @@ export default class GlyphEditor {
         // Массив модулей на сетке [row][col] = {type, rotation}
         this.grid = this.createEmptyGrid();
         
-        // Доступные типы модулей
-        this.moduleTypes = ['E', 'S', 'C', 'J', 'L', 'R', 'B'];
-        this.currentModuleIndex = 1; // начинаем с 'S'
+        // Доступные типы модулей (без 'E' - пустой модуль)
+        this.moduleTypes = ['S', 'C', 'J', 'L', 'R', 'B'];
+        this.currentModuleIndex = 0; // начинаем с 'S'
         this.currentRotation = 0; // 0, 1, 2, 3 (0°, 90°, 180°, 270°)
         
         // Флаг активности редактора
@@ -31,8 +31,19 @@ export default class GlyphEditor {
         // Выбранный символ
         this.selectedChar = null;
         
+        // Флаг зажатой мыши
+        this.isMouseDown = false;
+        // Последняя обработанная ячейка при зажатой мыши (чтобы не размещать повторно)
+        this.lastProcessedCell = null;
+        // Первая ячейка при mousedown (для размещения при первом движении)
+        this.startCell = null;
+        // Флаг: был ли drag (для различения клика от drag)
+        this.wasDrag = false;
+        
         // Bind методы
         this.handleClick = this.handleClick.bind(this);
+        this.handleMouseDown = this.handleMouseDown.bind(this);
+        this.handleMouseUp = this.handleMouseUp.bind(this);
         this.handleKeyDown = this.handleKeyDown.bind(this);
         this.handleMouseMove = this.handleMouseMove.bind(this);
         this.handleCharSelectorChange = this.handleCharSelectorChange.bind(this);
@@ -79,6 +90,9 @@ export default class GlyphEditor {
         this.updateGlyphString();
         
         this.canvas.addEventListener('click', this.handleClick);
+        this.canvas.addEventListener('mousedown', this.handleMouseDown);
+        this.canvas.addEventListener('mouseup', this.handleMouseUp);
+        this.canvas.addEventListener('mouseleave', this.handleMouseUp); // Отпускаем при выходе за пределы canvas
         this.canvas.addEventListener('mousemove', this.handleMouseMove);
         document.addEventListener('keydown', this.handleKeyDown);
         console.log('[GlyphEditor] Event listeners attached');
@@ -156,6 +170,9 @@ export default class GlyphEditor {
     deactivate() {
         this.isActive = false;
         this.canvas.removeEventListener('click', this.handleClick);
+        this.canvas.removeEventListener('mousedown', this.handleMouseDown);
+        this.canvas.removeEventListener('mouseup', this.handleMouseUp);
+        this.canvas.removeEventListener('mouseleave', this.handleMouseUp);
         this.canvas.removeEventListener('mousemove', this.handleMouseMove);
         document.removeEventListener('keydown', this.handleKeyDown);
         
@@ -185,9 +202,76 @@ export default class GlyphEditor {
     }
     
     /**
-     * Обработка клика мыши
+     * Обработка нажатия мыши
+     */
+    handleMouseDown(e) {
+        const rect = this.canvas.getBoundingClientRect();
+        
+        // В standalone редакторе не используем devicePixelRatio для координат
+        const isStandalone = window.location.pathname.includes('/editor');
+        
+        let x, y;
+        if (isStandalone) {
+            // Прямые CSS-координаты
+            x = (e.clientX - rect.left) * (this.canvas.width / rect.width);
+            y = (e.clientY - rect.top) * (this.canvas.height / rect.height);
+        } else {
+            // С учётом DPR для основного приложения
+            const dpr = window.devicePixelRatio || 1;
+            x = (e.clientX - rect.left) * dpr;
+            y = (e.clientY - rect.top) * dpr;
+        }
+        
+        const cell = this.getCellFromCoords(x, y);
+        if (!cell) return;
+        
+        this.isMouseDown = true;
+        this.wasDrag = false;
+        this.startCell = { row: cell.row, col: cell.col };
+        this.lastProcessedCell = null;
+    }
+    
+    /**
+     * Обработка отпускания мыши
+     */
+    handleMouseUp(e) {
+        // Если мышь была зажата и был drag, размещаем модуль на последней ячейке
+        if (this.isMouseDown && this.wasDrag && this.hoveredCell) {
+            const { row, col } = this.hoveredCell;
+            
+            // Проверяем, не обрабатывали ли мы уже эту ячейку
+            if (!this.lastProcessedCell || 
+                this.lastProcessedCell.row !== row || 
+                this.lastProcessedCell.col !== col) {
+                
+                // Размещаем модуль на последней ячейке
+                this.grid[row][col] = {
+                    type: this.getCurrentModuleType(),
+                    rotation: this.currentRotation
+                };
+                
+                this.updateGlyphString();
+                this.autoSave();
+                this.render();
+            }
+        }
+        
+        this.isMouseDown = false;
+        this.lastProcessedCell = null;
+        this.startCell = null;
+        // wasDrag НЕ сбрасываем здесь - он нужен для handleClick
+    }
+    
+    /**
+     * Обработка клика мыши (для размещения модуля или очистки ячейки)
      */
     handleClick(e) {
+        // Если был drag, игнорируем клик и сбрасываем флаг
+        if (this.wasDrag) {
+            this.wasDrag = false;
+            return;
+        }
+        
         const rect = this.canvas.getBoundingClientRect();
         
         // В standalone редакторе не используем devicePixelRatio для координат
@@ -210,22 +294,29 @@ export default class GlyphEditor {
         
         const { row, col } = cell;
         
-        // Если ячейка пустая - добавить модуль, если занята - удалить
+        // Если ячейка занята - удалить модуль (очистить)
         if (this.grid[row][col]) {
             this.grid[row][col] = null;
-        } else {
+            this.render();
+            this.updateModuleInfo();
+            this.updateGlyphString();
+            
+            // Автосохранение после каждого изменения
+            this.autoSave();
+        }
+        // Если ячейка пустая - разместить модуль
+        else {
             this.grid[row][col] = {
                 type: this.getCurrentModuleType(),
                 rotation: this.currentRotation
             };
+            this.render();
+            this.updateModuleInfo();
+            this.updateGlyphString();
+            
+            // Автосохранение после каждого изменения
+            this.autoSave();
         }
-        
-        this.render();
-        this.updateModuleInfo();
-        this.updateGlyphString();
-        
-        // Автосохранение после каждого изменения
-        this.autoSave();
     }
     
     /**
@@ -258,6 +349,55 @@ export default class GlyphEditor {
         
         if (cellChanged) {
             this.hoveredCell = cell;
+            
+            // Синхронизируем currentRotation и currentModuleIndex с модулем в ячейке
+            // (если мышь не зажата и в ячейке есть модуль)
+            if (cell && !this.isMouseDown && this.grid[cell.row][cell.col]) {
+                const module = this.grid[cell.row][cell.col];
+                this.currentRotation = module.rotation;
+                const moduleIndex = this.moduleTypes.indexOf(module.type);
+                if (moduleIndex !== -1) {
+                    this.currentModuleIndex = moduleIndex;
+                }
+            }
+            
+            // Если мышь зажата, размещаем модуль на новой ячейке
+            if (this.isMouseDown && cell) {
+                const { row, col } = cell;
+                
+                // Если это первое движение после mousedown, устанавливаем флаг drag
+                // и размещаем модуль на первой ячейке (startCell)
+                if (!this.wasDrag && this.startCell) {
+                    this.wasDrag = true;
+                    
+                    // Размещаем модуль на первой ячейке
+                    this.grid[this.startCell.row][this.startCell.col] = {
+                        type: this.getCurrentModuleType(),
+                        rotation: this.currentRotation
+                    };
+                    this.lastProcessedCell = { row: this.startCell.row, col: this.startCell.col };
+                    this.updateGlyphString();
+                    this.autoSave();
+                }
+                
+                // Проверяем, не обрабатывали ли мы уже эту ячейку
+                if (!this.lastProcessedCell || 
+                    this.lastProcessedCell.row !== row || 
+                    this.lastProcessedCell.col !== col) {
+                    
+                    // Размещаем модуль
+                    this.grid[row][col] = {
+                        type: this.getCurrentModuleType(),
+                        rotation: this.currentRotation
+                    };
+                    
+                    this.lastProcessedCell = { row, col };
+                    
+                    this.updateGlyphString();
+                    this.autoSave();
+                }
+            }
+            
             this.render();
         }
     }
@@ -317,27 +457,60 @@ export default class GlyphEditor {
             return;
         }
         
+        // Проверяем, есть ли ячейка под курсором
+        if (!this.hoveredCell) {
+            return;
+        }
+        
+        const { row, col } = this.hoveredCell;
+        const cellHasModule = this.grid[row][col] !== null;
+        
+        let shouldUpdate = false;
+        
         // Стрелки вверх/вниз или W/S (или Ц/Ы в русской раскладке) - выбор модуля
         if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === 'ц' || e.key === 'Ц') {
             e.preventDefault();
             this.currentModuleIndex = (this.currentModuleIndex - 1 + this.moduleTypes.length) % this.moduleTypes.length;
-            this.updateModuleInfo();
-            this.render();
+            shouldUpdate = true;
         } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S' || e.key === 'ы' || e.key === 'Ы') {
             e.preventDefault();
             this.currentModuleIndex = (this.currentModuleIndex + 1) % this.moduleTypes.length;
-            this.updateModuleInfo();
-            this.render();
+            shouldUpdate = true;
         }
         // Стрелки влево/вправо или A/D (или Ф/В в русской раскладке) - поворот
         else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A' || e.key === 'ф' || e.key === 'Ф') {
             e.preventDefault();
             this.currentRotation = (this.currentRotation - 1 + 4) % 4;
-            this.updateModuleInfo();
-            this.render();
+            shouldUpdate = true;
         } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D' || e.key === 'в' || e.key === 'В') {
             e.preventDefault();
             this.currentRotation = (this.currentRotation + 1) % 4;
+            shouldUpdate = true;
+        }
+        
+        if (shouldUpdate) {
+            // Если ячейка пустая и мышь зажата - размещаем модуль
+            if (!cellHasModule && this.isMouseDown) {
+                this.grid[row][col] = {
+                    type: this.getCurrentModuleType(),
+                    rotation: this.currentRotation
+                };
+                this.lastProcessedCell = { row, col };
+                this.updateGlyphString();
+                this.autoSave();
+            }
+            // Если ячейка не пустая - обновляем модуль (работает и с зажатой мышью, и без)
+            else if (cellHasModule) {
+                this.grid[row][col] = {
+                    type: this.getCurrentModuleType(),
+                    rotation: this.currentRotation
+                };
+                this.updateGlyphString();
+                this.autoSave();
+            }
+            // Если ячейка пустая и мышь не зажата - только обновляем превью (не размещаем модуль)
+            // Это позволяет выбрать модуль и поворот перед кликом
+            
             this.updateModuleInfo();
             this.render();
         }

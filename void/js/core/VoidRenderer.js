@@ -90,7 +90,7 @@ export class VoidRenderer {
         const gapLengthMin = this.params.randomGapLengthMin !== undefined ? this.params.randomGapLengthMin : 1.0;
         const gapLengthMax = this.params.randomGapLengthMax !== undefined ? this.params.randomGapLengthMax : 1.5;
         const randomModeType = this.params.randomModeType || 'byType';
-        
+
         if (randomModeType === 'byType') {
             // Режим по типу модуля: генерируем значения один раз для каждого типа
             if (!this.moduleTypeCache[moduleType]) {
