@@ -413,24 +413,8 @@ class GlyphEditorApp {
                 return;
             }
             
-            // Определяем новую позицию
-            let newPosition = 0;
-            if (isTargetBase) {
-                // Перетаскиваем на Base - вставляем после Base (позиция 0)
-                newPosition = 0;
-            } else if (!isNaN(targetAltIndex)) {
-                // Перетаскиваем на альтернативу - вставляем на её позицию
-                const editedGlyphs = this.getEditedGlyphs();
-                const existingAlternatives = Object.keys(editedGlyphs[this.selectedChar] || {})
-                    .filter(k => k !== 'base')
-                    .map(k => parseInt(k))
-                    .sort((a, b) => a - b);
-                newPosition = existingAlternatives.indexOf(targetAltIndex);
-                if (newPosition === -1) newPosition = 0;
-            }
-            
-            // Переиндексируем альтернативы
-            this.reorderAlternatives(draggedIndex, newPosition, isDraggingBase);
+            // Просто меняем местами две ячейки
+            this.swapAlternatives(draggedData, targetIndex);
             
             // Убираем все классы drag-over
             document.querySelectorAll('.alternative-item').forEach(el => {
@@ -456,157 +440,80 @@ class GlyphEditorApp {
     }
     
     /**
-     * Переиндексировать альтернативы при изменении порядка
-     * @param {number|null} draggedIndex - текущий индекс перетаскиваемой альтернативы (null для Base)
-     * @param {number} newPosition - новая позиция в массиве альтернатив (0 = первая после Base)
-     * @param {boolean} isDraggingBase - перетаскиваем ли Base
+     * Поменять местами две ячейки (Base или альтернативы)
+     * @param {string} draggedData - индекс перетаскиваемой ячейки ('base' или число)
+     * @param {string} targetData - индекс целевой ячейки ('base' или число)
      */
-    reorderAlternatives(draggedIndex, newPosition, isDraggingBase = false) {
+    swapAlternatives(draggedData, targetData) {
         if (!this.selectedChar) return;
         
         const editedGlyphs = this.getEditedGlyphs();
         if (!editedGlyphs[this.selectedChar]) return;
         
-        // Сохраняем Base глиф
-        const baseGlyph = editedGlyphs[this.selectedChar]['base'];
+        const isDraggingBase = draggedData === 'base';
+        const isTargetBase = targetData === 'base';
+        const draggedIndex = isDraggingBase ? null : parseInt(draggedData);
+        const targetAltIndex = isTargetBase ? null : parseInt(targetData);
         
-        // Получаем все альтернативы (кроме base) в текущем порядке
-        const allAlternatives = Object.keys(editedGlyphs[this.selectedChar])
-            .filter(k => k !== 'base')
-            .map(k => parseInt(k))
-            .sort((a, b) => a - b);
+        // Сохраняем глифы
+        const draggedGlyph = isDraggingBase 
+            ? editedGlyphs[this.selectedChar]['base']
+            : editedGlyphs[this.selectedChar][String(draggedIndex)];
+        const targetGlyph = isTargetBase
+            ? editedGlyphs[this.selectedChar]['base']
+            : editedGlyphs[this.selectedChar][String(targetAltIndex)];
         
-        // Если перетаскиваем Base, добавляем его в альтернативы
-        if (isDraggingBase) {
-            // Base становится альтернативой на позиции newPosition
-            // Первая альтернатива становится новым Base (если есть альтернативы)
-            if (allAlternatives.length > 0) {
-                // Первая альтернатива становится Base
-                const firstAltIndex = allAlternatives[0];
-                const newBase = editedGlyphs[this.selectedChar][String(firstAltIndex)];
-                
-                // Удаляем первую альтернативу из массива
-                allAlternatives.shift();
-                
-                // Вставляем Base на новую позицию
-                allAlternatives.splice(newPosition, 0, 0); // Используем 0 как временный маркер для Base
-                
-                // Создаем новый объект данных
-                const newData = {};
-                newData['base'] = newBase;
-                
-                // Переиндексируем альтернативы, заменяя 0 на Base
-                allAlternatives.forEach((oldIndex, newIndex) => {
-                    const newKey = String(newIndex + 1);
-                    if (oldIndex === 0) {
-                        // Это бывший Base
-                        newData[newKey] = baseGlyph;
-                    } else {
-                        newData[newKey] = editedGlyphs[this.selectedChar][String(oldIndex)];
-                    }
-                });
-                
-                editedGlyphs[this.selectedChar] = newData;
-                this.saveEditedGlyphs(editedGlyphs);
-                
-                // Обновляем выбранный индекс
-                const newBaseAltIndex = newPosition + 1;
-                this.selectedAlternativeIndex = newBaseAltIndex;
-                
-                // Обновляем панель альтернатив
-                this.updateAlternativesPanel();
-                
-                // Выбираем новую альтернативу (бывший Base)
-                setTimeout(() => {
-                    this.selectAlternative(newBaseAltIndex);
-                }, 0);
-            } else {
-                // Если нет альтернатив, просто перемещаем Base в альтернативы (создаем первую альтернативу)
-                const newData = {};
-                newData['base'] = 'E0'.repeat(25); // Пустой глиф как новый Base
-                newData['1'] = baseGlyph; // Старый Base становится первой альтернативой
-                
-                editedGlyphs[this.selectedChar] = newData;
-                this.saveEditedGlyphs(editedGlyphs);
-                
-                // Обновляем выбранный индекс
-                this.selectedAlternativeIndex = 1;
-                
-                // Обновляем панель альтернатив
-                this.updateAlternativesPanel();
-                
-                // Выбираем новую альтернативу (бывший Base)
-                setTimeout(() => {
-                    this.selectAlternative(1);
-                }, 0);
-            }
+        // Меняем местами
+        if (isDraggingBase && isTargetBase) {
+            // Base на Base - ничего не делаем
             return;
+        } else if (isDraggingBase && !isTargetBase) {
+            // Base на альтернативу
+            editedGlyphs[this.selectedChar]['base'] = targetGlyph;
+            editedGlyphs[this.selectedChar][String(targetAltIndex)] = draggedGlyph;
+        } else if (!isDraggingBase && isTargetBase) {
+            // Альтернатива на Base
+            editedGlyphs[this.selectedChar]['base'] = draggedGlyph;
+            editedGlyphs[this.selectedChar][String(draggedIndex)] = targetGlyph;
+        } else {
+            // Альтернатива на альтернативу
+            editedGlyphs[this.selectedChar][String(draggedIndex)] = targetGlyph;
+            editedGlyphs[this.selectedChar][String(targetAltIndex)] = draggedGlyph;
         }
         
-        // Обычная логика переиндексации альтернатив
-        const draggedIndexInArray = allAlternatives.indexOf(draggedIndex);
-        if (draggedIndexInArray === -1) return;
-        
-        // Сохраняем данные перетаскиваемого элемента
-        const draggedGlyph = editedGlyphs[this.selectedChar][String(draggedIndex)];
-        
-        // Удаляем из массива
-        allAlternatives.splice(draggedIndexInArray, 1);
-        
-        // Вставляем на новую позицию (с учетом того, что мы уже удалили элемент)
-        let insertPosition = newPosition;
-        if (draggedIndexInArray < newPosition) {
-            insertPosition = newPosition - 1; // Корректируем позицию, если элемент был удален до новой позиции
-        }
-        allAlternatives.splice(insertPosition, 0, draggedIndex);
-        
-        // Создаем новый объект данных с переиндексированными альтернативами
-        const newData = {};
-        newData['base'] = baseGlyph;
-        
-        // Переиндексируем: создаем новый порядок с индексами 1, 2, 3...
-        allAlternatives.forEach((oldIndex, newIndex) => {
-            const newKey = String(newIndex + 1);
-            newData[newKey] = editedGlyphs[this.selectedChar][String(oldIndex)];
-        });
-        
-        // Обновляем данные
-        editedGlyphs[this.selectedChar] = newData;
+        // Сохраняем изменения
         this.saveEditedGlyphs(editedGlyphs);
         
-        // Определяем новый индекс перетаскиваемой альтернативы
-        const newDraggedIndex = insertPosition + 1; // +1 потому что индексы начинаются с 1
-        
-        // Обновляем выбранный индекс, если перетаскиваемая альтернатива была выбрана
-        const wasDraggedSelected = this.selectedAlternativeIndex === draggedIndex;
-        if (wasDraggedSelected) {
-            this.selectedAlternativeIndex = newDraggedIndex;
-        } else if (this.selectedAlternativeIndex !== null) {
-            // Если была выбрана другая альтернатива, нужно найти её новый индекс
-            // Находим старый индекс выбранной альтернативы в новом порядке
-            const selectedOldIndex = this.selectedAlternativeIndex;
-            const selectedNewPosition = allAlternatives.indexOf(selectedOldIndex);
-            if (selectedNewPosition !== -1) {
-                this.selectedAlternativeIndex = selectedNewPosition + 1;
+        // Обновляем выбранный индекс
+        if (isDraggingBase) {
+            // Если перетаскивали Base, выбираем целевую ячейку
+            if (isTargetBase) {
+                this.selectedAlternativeIndex = null;
+            } else {
+                this.selectedAlternativeIndex = targetAltIndex;
+            }
+        } else {
+            // Если перетаскивали альтернативу, выбираем целевую ячейку
+            if (isTargetBase) {
+                this.selectedAlternativeIndex = null;
+            } else {
+                this.selectedAlternativeIndex = targetAltIndex;
             }
         }
         
         // Обновляем панель альтернатив
         this.updateAlternativesPanel();
         
-        // Если перетаскиваемая альтернатива была выбрана, выбираем её снова с новым индексом
-        if (wasDraggedSelected) {
-            // Небольшая задержка, чтобы DOM обновился
-            setTimeout(() => {
-                this.selectAlternative(newDraggedIndex);
-            }, 0);
-        } else if (this.selectedAlternativeIndex !== null) {
-            // Обновляем выбор для других альтернатив
-            setTimeout(() => {
-                this.selectAlternative(this.selectedAlternativeIndex);
-            }, 0);
-        }
+        // Выбираем целевую ячейку
+        setTimeout(() => {
+            if (isTargetBase) {
+                this.selectAlternative(null);
+            } else {
+                this.selectAlternative(targetAltIndex);
+            }
+        }, 0);
     }
+    
     
     /**
      * Добавить превью альтернативы
