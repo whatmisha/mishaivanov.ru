@@ -364,25 +364,20 @@ class GlyphEditorApp {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
             
-            const afterElement = this.getDragAfterElement(container, e.clientY);
             const dragging = document.querySelector('.alternative-item.dragging');
+            if (!dragging) return;
             
-            if (dragging && afterElement == null) {
-                // Если перетаскиваем в конец, убираем все классы drag-over
-                document.querySelectorAll('.alternative-item').forEach(el => {
-                    el.classList.remove('drag-over');
-                });
-            } else if (dragging && afterElement) {
-                // Убираем все классы drag-over
-                document.querySelectorAll('.alternative-item').forEach(el => {
-                    el.classList.remove('drag-over');
-                });
-                
-                // Добавляем класс drag-over к элементу, после которого будет вставка
-                const afterIndex = afterElement.dataset.index;
-                if (afterIndex !== 'base' && afterIndex !== 'add') {
-                    afterElement.classList.add('drag-over');
-                }
+            // Находим элемент, над которым находится курсор
+            const targetElement = this.getElementUnderCursor(container, e.clientX, e.clientY);
+            
+            // Убираем все классы drag-over
+            document.querySelectorAll('.alternative-item').forEach(el => {
+                el.classList.remove('drag-over');
+            });
+            
+            // Подсвечиваем элемент, над которым находится курсор (кроме кнопки "+")
+            if (targetElement && targetElement.dataset.index !== 'add') {
+                targetElement.classList.add('drag-over');
             }
         });
         
@@ -392,53 +387,50 @@ class GlyphEditorApp {
             const dragging = document.querySelector('.alternative-item.dragging');
             if (!dragging) return;
             
-            const draggedIndex = parseInt(dragging.dataset.index);
-            if (isNaN(draggedIndex)) return; // Не перетаскиваем Base или кнопку "+"
+            const draggedData = dragging.dataset.index;
+            const isDraggingBase = draggedData === 'base';
+            const draggedIndex = isDraggingBase ? null : parseInt(draggedData);
             
-            const afterElement = this.getDragAfterElement(container, e.clientY);
+            // Находим элемент, над которым был drop
+            const targetElement = this.getElementUnderCursor(container, e.clientX, e.clientY);
+            if (!targetElement || targetElement.dataset.index === 'add') {
+                // Убираем все классы drag-over
+                document.querySelectorAll('.alternative-item').forEach(el => {
+                    el.classList.remove('drag-over');
+                });
+                return;
+            }
             
-            // Определяем новую позицию (индекс в массиве альтернатив, начиная с 0)
+            const targetIndex = targetElement.dataset.index;
+            const isTargetBase = targetIndex === 'base';
+            const targetAltIndex = isTargetBase ? null : parseInt(targetIndex);
+            
+            // Если перетаскиваем на тот же элемент, ничего не делаем
+            if (draggedData === targetIndex) {
+                document.querySelectorAll('.alternative-item').forEach(el => {
+                    el.classList.remove('drag-over');
+                });
+                return;
+            }
+            
+            // Определяем новую позицию
             let newPosition = 0;
-            if (afterElement) {
-                const afterIndex = afterElement.dataset.index;
-                if (afterIndex === 'base') {
-                    newPosition = 0; // После Base, первая позиция
-                } else if (afterIndex === 'add') {
-                    // В конец, после всех альтернатив
-                    const editedGlyphs = this.getEditedGlyphs();
-                    const existingAlternatives = Object.keys(editedGlyphs[this.selectedChar] || {})
-                        .filter(k => k !== 'base')
-                        .map(k => parseInt(k))
-                        .sort((a, b) => a - b);
-                    newPosition = existingAlternatives.length; // После последнего элемента
-                } else {
-                    const afterAltIndex = parseInt(afterIndex);
-                    if (!isNaN(afterAltIndex)) {
-                        // Находим позицию после этого элемента
-                        const editedGlyphs = this.getEditedGlyphs();
-                        const existingAlternatives = Object.keys(editedGlyphs[this.selectedChar] || {})
-                            .filter(k => k !== 'base')
-                            .map(k => parseInt(k))
-                            .sort((a, b) => a - b);
-                        const afterPosition = existingAlternatives.indexOf(afterAltIndex);
-                        // Если перетаскиваемый элемент находится после найденного, корректируем позицию
-                        if (afterPosition !== -1) {
-                            newPosition = afterPosition + 1; // После найденного элемента
-                        }
-                    }
-                }
-            } else {
-                // Если afterElement не найден, вставляем в конец
+            if (isTargetBase) {
+                // Перетаскиваем на Base - вставляем после Base (позиция 0)
+                newPosition = 0;
+            } else if (!isNaN(targetAltIndex)) {
+                // Перетаскиваем на альтернативу - вставляем на её позицию
                 const editedGlyphs = this.getEditedGlyphs();
                 const existingAlternatives = Object.keys(editedGlyphs[this.selectedChar] || {})
                     .filter(k => k !== 'base')
                     .map(k => parseInt(k))
                     .sort((a, b) => a - b);
-                newPosition = existingAlternatives.length;
+                newPosition = existingAlternatives.indexOf(targetAltIndex);
+                if (newPosition === -1) newPosition = 0;
             }
             
             // Переиндексируем альтернативы
-            this.reorderAlternatives(draggedIndex, newPosition);
+            this.reorderAlternatives(draggedIndex, newPosition, isDraggingBase);
             
             // Убираем все классы drag-over
             document.querySelectorAll('.alternative-item').forEach(el => {
@@ -448,48 +440,35 @@ class GlyphEditorApp {
     }
     
     /**
-     * Получить элемент, после которого нужно вставить перетаскиваемый элемент
+     * Получить элемент, над которым находится курсор
      */
-    getDragAfterElement(container, y) {
-        // Получаем все элементы, кроме перетаскиваемого, но включая Base и кнопку "+"
-        const draggableElements = [...container.querySelectorAll('.alternative-item:not(.dragging)')];
+    getElementUnderCursor(container, x, y) {
+        const elements = [...container.querySelectorAll('.alternative-item:not(.dragging)')];
         
-        return draggableElements.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-            
-            // Игнорируем Base и кнопку "+" при определении позиции для альтернатив
-            const index = child.dataset.index;
-            if (index === 'base' || index === 'add') {
-                // Для Base и "+" используем специальную логику
-                if (index === 'base' && y < box.bottom && y > box.top) {
-                    // Если курсор над Base, вставляем после него
-                    return { offset: 0, element: child };
-                } else if (index === 'add' && y > box.top && y < box.bottom) {
-                    // Если курсор над кнопкой "+", вставляем перед ней
-                    return { offset: 0, element: child };
-                }
-                return closest;
+        for (const element of elements) {
+            const box = element.getBoundingClientRect();
+            if (x >= box.left && x <= box.right && y >= box.top && y <= box.bottom) {
+                return element;
             }
-            
-            if (offset < 0 && offset > closest.offset) {
-                return { offset: offset, element: child };
-            } else {
-                return closest;
-            }
-        }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+        
+        return null;
     }
     
     /**
      * Переиндексировать альтернативы при изменении порядка
-     * @param {number} draggedIndex - текущий индекс перетаскиваемой альтернативы
+     * @param {number|null} draggedIndex - текущий индекс перетаскиваемой альтернативы (null для Base)
      * @param {number} newPosition - новая позиция в массиве альтернатив (0 = первая после Base)
+     * @param {boolean} isDraggingBase - перетаскиваем ли Base
      */
-    reorderAlternatives(draggedIndex, newPosition) {
+    reorderAlternatives(draggedIndex, newPosition, isDraggingBase = false) {
         if (!this.selectedChar) return;
         
         const editedGlyphs = this.getEditedGlyphs();
         if (!editedGlyphs[this.selectedChar]) return;
+        
+        // Сохраняем Base глиф
+        const baseGlyph = editedGlyphs[this.selectedChar]['base'];
         
         // Получаем все альтернативы (кроме base) в текущем порядке
         const allAlternatives = Object.keys(editedGlyphs[this.selectedChar])
@@ -497,7 +476,74 @@ class GlyphEditorApp {
             .map(k => parseInt(k))
             .sort((a, b) => a - b);
         
-        // Удаляем перетаскиваемый элемент из массива
+        // Если перетаскиваем Base, добавляем его в альтернативы
+        if (isDraggingBase) {
+            // Base становится альтернативой на позиции newPosition
+            // Первая альтернатива становится новым Base (если есть альтернативы)
+            if (allAlternatives.length > 0) {
+                // Первая альтернатива становится Base
+                const firstAltIndex = allAlternatives[0];
+                const newBase = editedGlyphs[this.selectedChar][String(firstAltIndex)];
+                
+                // Удаляем первую альтернативу из массива
+                allAlternatives.shift();
+                
+                // Вставляем Base на новую позицию
+                allAlternatives.splice(newPosition, 0, 0); // Используем 0 как временный маркер для Base
+                
+                // Создаем новый объект данных
+                const newData = {};
+                newData['base'] = newBase;
+                
+                // Переиндексируем альтернативы, заменяя 0 на Base
+                allAlternatives.forEach((oldIndex, newIndex) => {
+                    const newKey = String(newIndex + 1);
+                    if (oldIndex === 0) {
+                        // Это бывший Base
+                        newData[newKey] = baseGlyph;
+                    } else {
+                        newData[newKey] = editedGlyphs[this.selectedChar][String(oldIndex)];
+                    }
+                });
+                
+                editedGlyphs[this.selectedChar] = newData;
+                this.saveEditedGlyphs(editedGlyphs);
+                
+                // Обновляем выбранный индекс
+                const newBaseAltIndex = newPosition + 1;
+                this.selectedAlternativeIndex = newBaseAltIndex;
+                
+                // Обновляем панель альтернатив
+                this.updateAlternativesPanel();
+                
+                // Выбираем новую альтернативу (бывший Base)
+                setTimeout(() => {
+                    this.selectAlternative(newBaseAltIndex);
+                }, 0);
+            } else {
+                // Если нет альтернатив, просто перемещаем Base в альтернативы (создаем первую альтернативу)
+                const newData = {};
+                newData['base'] = 'E0'.repeat(25); // Пустой глиф как новый Base
+                newData['1'] = baseGlyph; // Старый Base становится первой альтернативой
+                
+                editedGlyphs[this.selectedChar] = newData;
+                this.saveEditedGlyphs(editedGlyphs);
+                
+                // Обновляем выбранный индекс
+                this.selectedAlternativeIndex = 1;
+                
+                // Обновляем панель альтернатив
+                this.updateAlternativesPanel();
+                
+                // Выбираем новую альтернативу (бывший Base)
+                setTimeout(() => {
+                    this.selectAlternative(1);
+                }, 0);
+            }
+            return;
+        }
+        
+        // Обычная логика переиндексации альтернатив
         const draggedIndexInArray = allAlternatives.indexOf(draggedIndex);
         if (draggedIndexInArray === -1) return;
         
@@ -516,7 +562,7 @@ class GlyphEditorApp {
         
         // Создаем новый объект данных с переиндексированными альтернативами
         const newData = {};
-        newData['base'] = editedGlyphs[this.selectedChar]['base'];
+        newData['base'] = baseGlyph;
         
         // Переиндексируем: создаем новый порядок с индексами 1, 2, 3...
         allAlternatives.forEach((oldIndex, newIndex) => {
@@ -604,14 +650,16 @@ class GlyphEditorApp {
             }
         }
         
-        // Добавляем drag-and-drop только для альтернатив (не для Base и не для кнопки "+")
-        if (alternativeIndex !== null && this.selectedChar) {
+        // Добавляем drag-and-drop для Base и альтернатив (не для кнопки "+")
+        if (alternativeIndex !== null || (alternativeIndex === null && this.selectedChar)) {
             item.draggable = true;
             item.classList.add('draggable');
             
             item.addEventListener('dragstart', (e) => {
                 e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData('text/plain', String(alternativeIndex));
+                // Для Base используем 'base', для альтернатив - индекс
+                const data = alternativeIndex === null ? 'base' : String(alternativeIndex);
+                e.dataTransfer.setData('text/plain', data);
                 item.classList.add('dragging');
             });
             
