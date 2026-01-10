@@ -1,0 +1,4 @@
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Три линии разной длины, выровненные по центру -->
+    <path d="M2 3H14M4 6.5H12M3 10H13M5 13.5H11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+</svg>
