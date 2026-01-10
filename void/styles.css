@@ -22,13 +22,13 @@
     --color-bg: #000;
     --color-bg-panel: #1a1a1a;
     --color-bg-input: #0a0a0a;
-    --color-text: #b8b8b8;
+    --color-text: #d2d2d2;
     --color-text-secondary: #ccc;
     --color-text-muted: #888;
     --color-text-dim: #666;
     --color-text-subtle: #555;
     --color-border: #333;
-    --color-grid: #b8b8b8;
+    --color-grid: #d2d2d2;
     
     /* Отступы - используйте для консистентности */
     --spacing-xs: 2px;
@@ -169,7 +169,7 @@ body {
 
 #deletePresetBtn:hover {
     background: #ff4444;
-    color: #b8b8b8;
+    color: #d2d2d2;
     border-color: #ff4444;
 }
 
@@ -1296,7 +1296,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 .btn-apply:hover {
     background: #000;
-    color: #b8b8b8;
+    color: #d2d2d2;
 }
 
 .btn-close {
@@ -1315,7 +1315,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 .btn-close:hover {
     background: #000;
-    color: #b8b8b8;
+    color: #d2d2d2;
     border-color: #000;
 }
 
@@ -1335,9 +1335,9 @@ input[name="textAlign"]:checked + .align-icon-btn {
 }
 
 .btn-add-object:hover {
-    background: #b8b8b8;
+    background: #d2d2d2;
     color: #000;
-    border-color: #b8b8b8;
+    border-color: #d2d2d2;
 }
 
 /* Button Group - группа кнопок */
@@ -1715,7 +1715,7 @@ legend {
     transform: translateY(-50%);
     width: 14px;
     height: 14px;
-    background-color: #b8b8b8;
+    background-color: #d2d2d2;
     border-radius: 50%;
     transition: left 0.3s ease;
 }
@@ -1728,7 +1728,7 @@ legend {
 .control-group input[type="checkbox"]:checked + .checkbox-label::after,
 .checkbox-label:has(input[type="checkbox"]:checked)::after {
     left: 17px;
-    background-color: #b8b8b8;
+    background-color: #d2d2d2;
 }
 
 .checkbox-label:hover::before {
@@ -2692,7 +2692,7 @@ textarea::placeholder {
     padding: 36px 12px;
     text-align: center;
     background: #808080;
-    color: #b8b8b8;
+    color: #d2d2d2;
     border: 1px solid var(--color-border);
     border-radius: 100px;
     font-feature-settings: "case" 1;

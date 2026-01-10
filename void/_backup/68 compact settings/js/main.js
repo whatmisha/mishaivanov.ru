@@ -1942,6 +1942,26 @@ class VoidTypeface {
                 e.preventDefault();
                 this.exportSVG();
             }
+            
+            // Шорткат ⌘C (Cmd на Mac, Ctrl на Windows/Linux)
+            if ((e.metaKey || e.ctrlKey) && e.key === 'c') {
+                // Не копировать в режиме редактора
+                const currentMode = this.settings.get('currentMode') || 'normal';
+                if (currentMode === 'editor') return;
+                
+                // Проверяем, что не выделен текст в input/textarea
+                const activeElement = document.activeElement;
+                const isInputFocused = activeElement && (
+                    activeElement.tagName === 'INPUT' ||
+                    activeElement.tagName === 'TEXTAREA' ||
+                    activeElement.isContentEditable
+                );
+                
+                if (!isInputFocused) {
+                    e.preventDefault();
+                    this.copySVG();
+                }
+            }
         });
     }
 
