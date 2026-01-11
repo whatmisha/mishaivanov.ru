@@ -5,8 +5,6 @@
 import { VOID_ALPHABET_ALTERNATIVES, VOID_ALPHABET } from './VoidAlphabet.js';
 import { getGlyph } from './GlyphLoader.js';
 import { EndpointDetector } from '../utils/EndpointDetector.js';
-import { RandomUtils } from '../utils/RandomUtils.js';
-import { MathUtils } from '../utils/MathUtils.js';
 
 export class VoidExporter {
     constructor(renderer, settings = null) {
@@ -26,15 +24,56 @@ export class VoidExporter {
 
     /**
      * Получить случайные значения для модуля (с учетом режима рандома)
-     * Использует кэш из renderer для согласованности значений
      */
-    getRandomModuleValues(moduleType, params, cacheKey = null) {
-        // Используем кэш из renderer, если доступен
-        const cache = this.renderer && this.renderer.moduleTypeCache 
-            ? (params.randomModeType === 'full' ? this.renderer.moduleValueCache : this.renderer.moduleTypeCache)
-            : this.moduleTypeCache;
-        
-        return RandomUtils.getRandomModuleValues(moduleType, cacheKey, params, cache);
+    getRandomModuleValues(moduleType, params) {
+        const stemMin = params.randomStemMin || 0.5;
+        const stemMax = params.randomStemMax || 1.0;
+        const strokesMin = params.randomStrokesMin || 1;
+        const strokesMax = params.randomStrokesMax || 8;
+        const contrastMin = params.randomContrastMin || 0.5;
+        const contrastMax = params.randomContrastMax || 1.0;
+        const dashLengthMin = params.randomDashLengthMin || 1.0;
+        const dashLengthMax = params.randomDashLengthMax || 1.5;
+        const gapLengthMin = params.randomGapLengthMin || 1.0;
+        const gapLengthMax = params.randomGapLengthMax || 1.5;
+        const randomModeType = params.randomModeType || 'byType';
+
+        if (randomModeType === 'byType') {
+            // Режим по типу модуля: генерируем значения один раз для каждого типа
+            if (!this.moduleTypeCache[moduleType]) {
+                const randomMultiplier = stemMin + Math.random() * (stemMax - stemMin);
+                const stem = params.moduleSize * randomMultiplier * 2;
+                const strokesNum = Math.floor(strokesMin + Math.random() * (strokesMax - strokesMin + 1));
+                const strokeGapRatio = contrastMin + Math.random() * (contrastMax - contrastMin);
+                const dashLength = dashLengthMin + Math.random() * (dashLengthMax - dashLengthMin);
+                const gapLength = gapLengthMin + Math.random() * (gapLengthMax - gapLengthMin);
+                
+                // Определяем useDash для этого типа модуля
+                // Dash применяется только если randomDash включен и strokesNum > 1
+                const moduleUseDash = params.randomDash && strokesNum > 1 
+                    ? Math.random() < 0.5  // 50% вероятность dash
+                    : false;
+                
+                this.moduleTypeCache[moduleType] = { stem, strokesNum, strokeGapRatio, dashLength, gapLength, useDash: moduleUseDash };
+            }
+            return this.moduleTypeCache[moduleType];
+        } else {
+            // Полный рандом: генерируем новые значения для каждого модуля
+            const randomMultiplier = stemMin + Math.random() * (stemMax - stemMin);
+            const stem = params.moduleSize * randomMultiplier * 2;
+            const strokesNum = Math.floor(strokesMin + Math.random() * (strokesMax - strokesMin + 1));
+            const strokeGapRatio = contrastMin + Math.random() * (contrastMax - contrastMin);
+            const dashLength = dashLengthMin + Math.random() * (dashLengthMax - dashLengthMin);
+            const gapLength = gapLengthMin + Math.random() * (gapLengthMax - gapLengthMin);
+            
+            // Определяем useDash для этого модуля
+            // Dash применяется только если randomDash включен и strokesNum > 1
+            const moduleUseDash = params.randomDash && strokesNum > 1 
+                ? Math.random() < 0.5  // 50% вероятность dash
+                : false;
+            
+            return { stem, strokesNum, strokeGapRatio, dashLength, gapLength, useDash: moduleUseDash };
+        }
     }
 
     /**
@@ -45,7 +84,36 @@ export class VoidExporter {
      * @returns {Object} {dashLength, gapLength, numDashes}
      */
     calculateAdaptiveDash(lineLength, dashLength, gapLength) {
-        return MathUtils.calculateAdaptiveDash(lineLength, dashLength, gapLength);
+        // Минимум один штрих
+        if (lineLength <= dashLength) {
+            return { dashLength: lineLength, gapLength: 0, numDashes: 1 };
+        }
+
+        // Формула для ПОЛОВИННЫХ концов:
+        // lineLength = dashLength/2 + (n-2)*dashLength + dashLength/2 + (n-1)*gap
+        // lineLength = (n-1)*dashLength + (n-1)*gap
+        // lineLength = (n-1)*(dashLength + gap)
+        // n = lineLength/(dashLength + gap) + 1
+        let numDashes = Math.round(lineLength / (dashLength + gapLength)) + 1;
+        
+        // Минимум 2 штриха (начало и конец)
+        if (numDashes < 2) {
+            numDashes = 2;
+        }
+
+        // Вычисляем адаптивный gap для половинных концов:
+        // lineLength = (n-1)*(dashLength + gap)
+        // gap = lineLength/(n-1) - dashLength
+        const adaptiveGap = lineLength / (numDashes - 1) - dashLength;
+
+        // Если gap получился отрицательным, уменьшаем количество штрихов
+        if (adaptiveGap < 0 && numDashes > 2) {
+            numDashes--;
+            const newGap = lineLength / (numDashes - 1) - dashLength;
+            return { dashLength, gapLength: Math.max(0, newGap), numDashes };
+        }
+
+        return { dashLength, gapLength: Math.max(0, adaptiveGap), numDashes };
     }
 
     /**

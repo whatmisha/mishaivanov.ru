@@ -112,46 +112,5 @@ export class MathUtils {
             }
         };
     }
-
-    /**
-     * Вычислить адаптивный Gap для режима Dash
-     * Линия начинается и заканчивается штрихом длиной dashLength
-     * @param {number} lineLength - длина линии в пикселях
-     * @param {number} dashLength - длина штриха в пикселях
-     * @param {number} gapLength - начальная длина промежутка (используется для оценки)
-     * @returns {Object} {dashLength, gapLength, numDashes} - адаптивные параметры
-     */
-    static calculateAdaptiveDash(lineLength, dashLength, gapLength) {
-        // Минимум один штрих
-        if (lineLength <= dashLength) {
-            return { dashLength: lineLength, gapLength: 0, numDashes: 1 };
-        }
-
-        // Формула для ПОЛОВИННЫХ концов:
-        // lineLength = dashLength/2 + (n-2)*dashLength + dashLength/2 + (n-1)*gap
-        // lineLength = (n-1)*dashLength + (n-1)*gap
-        // lineLength = (n-1)*(dashLength + gap)
-        // n = lineLength/(dashLength + gap) + 1
-        let numDashes = Math.round(lineLength / (dashLength + gapLength)) + 1;
-        
-        // Минимум 2 штриха (начало и конец)
-        if (numDashes < 2) {
-            numDashes = 2;
-        }
-
-        // Вычисляем адаптивный gap для половинных концов:
-        // lineLength = (n-1)*(dashLength + gap)
-        // gap = lineLength/(n-1) - dashLength
-        const adaptiveGap = lineLength / (numDashes - 1) - dashLength;
-
-        // Если gap получился отрицательным, уменьшаем количество штрихов
-        if (adaptiveGap < 0 && numDashes > 2) {
-            numDashes--;
-            const newGap = lineLength / (numDashes - 1) - dashLength;
-            return { dashLength, gapLength: Math.max(0, newGap), numDashes };
-        }
-
-        return { dashLength, gapLength: Math.max(0, adaptiveGap), numDashes };
-    }
 }
 

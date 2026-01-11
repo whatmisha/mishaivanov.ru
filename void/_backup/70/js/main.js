@@ -725,58 +725,8 @@ class VoidTypeface {
             if (label) {
                 const luminance = ColorUtils.getLuminance(color);
                 label.style.color = luminance > 0.5 ? '#000000' : '#ffffff';
-                
-                // Сохраняем оригинальный текст в data-атрибуте, если еще не сохранен
-                if (!label.dataset.originalText) {
-                    // Убираем символ ● если он есть при сохранении оригинального текста
-                    const text = label.textContent.trim();
-                    label.dataset.originalText = text.startsWith('●') ? text.substring(1).trim() : text;
-                }
             }
         }
-    }
-
-    /**
-     * Обновление индикатора активного цвета (символ ●)
-     * @param {boolean} show - показывать ли индикатор (true - показать у активного, false - убрать у всех)
-     */
-    updateColorIndicator(show) {
-        const previewMap = {
-            'letter': document.getElementById('letterColorPreview'),
-            'bg': document.getElementById('bgColorPreview'),
-            'grid': document.getElementById('gridColorPreview')
-        };
-        
-        // Обрабатываем все цвета
-        Object.keys(previewMap).forEach(colorType => {
-            const preview = previewMap[colorType];
-            if (!preview) return;
-            
-            const label = preview.querySelector('.color-label-inside');
-            if (!label) return;
-            
-            // Сохраняем оригинальный текст, если еще не сохранен
-            if (!label.dataset.originalText) {
-                const text = label.textContent.trim();
-                label.dataset.originalText = text.startsWith('●') ? text.substring(1).trim() : text;
-            }
-            
-            const originalText = label.dataset.originalText;
-            const isActive = colorType === this.activeColorType;
-            
-            if (show && isActive) {
-                // Добавляем символ ● только к активному цвету, если его еще нет
-                if (!label.textContent.trim().startsWith('●')) {
-                    label.textContent = '● ' + originalText;
-                }
-            } else {
-                // Убираем символ ● у всех цветов
-                const currentText = label.textContent.trim();
-                if (currentText.startsWith('●')) {
-                    label.textContent = originalText;
-                }
-            }
-        });
     }
 
     initColorPickers() {
@@ -823,7 +773,7 @@ class VoidTypeface {
         this.unifiedColorPicker.init();
         
         // Обработчики клика на превью
-        const switchColor = (colorType, openPicker = true) => {
+        const switchColor = (colorType) => {
             const previewMap = {
                 'letter': letterPreview,
                 'bg': bgPreview,
@@ -831,21 +781,23 @@ class VoidTypeface {
             };
             const activePreview = previewMap[colorType];
             
-            // Если кликнули на уже активный цвет - закрываем пикер и убираем символ ●
-            const pickerElement = this.unifiedColorPicker.elements?.picker;
-            const isCurrentlyActive = this.activeColorType === colorType && 
-                pickerElement && pickerElement.style.display !== 'none';
-            if (isCurrentlyActive && openPicker) {
-                this.unifiedColorPicker.toggle();
-                // Убираем символ ● при закрытии пикера
-                this.updateColorIndicator(false);
-                return;
+            // Если кликнули на уже активный цвет - закрываем пикер
+            if (this.activeColorType === colorType && activePreview?.classList.contains('active')) {
+                const pickerElement = this.unifiedColorPicker.elements?.picker;
+                if (pickerElement && pickerElement.style.display !== 'none') {
+                    this.unifiedColorPicker.toggle();
+                    return;
+                }
             }
             
-            // Убираем символ ● у всех цветов перед переключением
-            this.updateColorIndicator(false);
-            
             this.activeColorType = colorType;
+            
+            // Обновляем активное состояние превью
+            if (letterPreview) letterPreview.classList.remove('active');
+            if (bgPreview) bgPreview.classList.remove('active');
+            if (gridPreview) gridPreview.classList.remove('active');
+            
+            activePreview?.classList.add('active');
             
             // Загружаем цвет в пикер
             const colorMap = {
@@ -855,19 +807,11 @@ class VoidTypeface {
             };
             this.unifiedColorPicker.setColor(colorMap[colorType]);
             
-            // Открываем пикер только если нужно и он еще не открыт
-            if (openPicker) {
-                const pickerElement = this.unifiedColorPicker.elements?.picker;
-                if (pickerElement && pickerElement.style.display === 'none') {
-                    this.unifiedColorPicker.toggle();
-                    // После открытия пикера добавляем символ ● только к новому активному цвету
-                    this.updateColorIndicator(true);
-                } else if (pickerElement && pickerElement.style.display !== 'none') {
-                    // Пикер уже открыт - добавляем символ ● только к новому активному цвету
-                    this.updateColorIndicator(true);
-                }
+            // Открываем пикер
+            const pickerElement = this.unifiedColorPicker.elements?.picker;
+            if (pickerElement && pickerElement.style.display === 'none') {
+                this.unifiedColorPicker.toggle();
             }
-            // Если openPicker = false, символ ● уже убран выше
         };
         
         if (letterPreview) {
@@ -880,16 +824,10 @@ class VoidTypeface {
             gridPreview.addEventListener('click', () => switchColor('grid'));
         }
         
-        // Устанавливаем начальное активное состояние (цвет букв по умолчанию) без открытия пикера и без индикатора
-        this.activeColorType = 'letter';
-        const colorMap = {
-            'letter': this.settings.get('letterColor'),
-            'bg': this.settings.get('bgColor'),
-            'grid': this.settings.get('gridColor')
-        };
-        this.unifiedColorPicker.setColor(colorMap['letter']);
-        // Убеждаемся, что индикатор не отображается
-        this.updateColorIndicator(false);
+        // Устанавливаем активным цвет букв по умолчанию
+        if (letterPreview) {
+            letterPreview.classList.add('active');
+        }
     }
 
     /**

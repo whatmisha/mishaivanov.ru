@@ -6,7 +6,6 @@ import { VOID_ALPHABET_ALTERNATIVES, VOID_ALPHABET } from './VoidAlphabet.js';
 import { getGlyph } from './GlyphLoader.js';
 import { ModuleDrawer } from './ModuleDrawer.js';
 import { EndpointDetector } from '../utils/EndpointDetector.js';
-import { RandomUtils } from '../utils/RandomUtils.js';
 
 export class VoidRenderer {
     constructor(canvas) {
@@ -77,9 +76,70 @@ export class VoidRenderer {
     /**
      * Получить случайные значения для модуля (с учетом режима рандома)
      */
-    getRandomModuleValues(moduleType, cacheKey = null) {
-        const cache = this.params.randomModeType === 'full' ? this.moduleValueCache : this.moduleTypeCache;
-        return RandomUtils.getRandomModuleValues(moduleType, cacheKey, this.params, cache);
+    getRandomModuleValues(moduleType) {
+        // Используем значения из params, если они определены, иначе значения по умолчанию
+        // Значения по умолчанию должны совпадать с дефолтными значениями в main.js
+        const stemMin = this.params.randomStemMin !== undefined ? this.params.randomStemMin : 0.5;
+        const stemMax = this.params.randomStemMax !== undefined ? this.params.randomStemMax : 1.0;
+        const strokesMin = this.params.randomStrokesMin !== undefined ? this.params.randomStrokesMin : 1;
+        const strokesMax = this.params.randomStrokesMax !== undefined ? this.params.randomStrokesMax : 8;
+        const contrastMin = this.params.randomContrastMin !== undefined ? this.params.randomContrastMin : 0.5;
+        const contrastMax = this.params.randomContrastMax !== undefined ? this.params.randomContrastMax : 1.0;
+        const dashLengthMin = this.params.randomDashLengthMin !== undefined ? this.params.randomDashLengthMin : 1.0;
+        const dashLengthMax = this.params.randomDashLengthMax !== undefined ? this.params.randomDashLengthMax : 1.5;
+        const gapLengthMin = this.params.randomGapLengthMin !== undefined ? this.params.randomGapLengthMin : 1.0;
+        const gapLengthMax = this.params.randomGapLengthMax !== undefined ? this.params.randomGapLengthMax : 1.5;
+        const randomModeType = this.params.randomModeType || 'byType';
+
+        if (randomModeType === 'byType') {
+            // Режим по типу модуля: генерируем значения один раз для каждого типа
+            if (!this.moduleTypeCache[moduleType]) {
+                const randomMultiplier = stemMin + Math.random() * (stemMax - stemMin);
+                const stem = this.params.moduleSize * randomMultiplier * 2;
+                const strokesNum = Math.floor(strokesMin + Math.random() * (strokesMax - strokesMin + 1));
+                const strokeGapRatio = contrastMin + Math.random() * (contrastMax - contrastMin);
+                const dashLength = dashLengthMin + Math.random() * (dashLengthMax - dashLengthMin);
+                const gapLength = gapLengthMin + Math.random() * (gapLengthMax - gapLengthMin);
+                
+                // Определяем useDash для этого типа модуля
+                // Dash применяется только если randomDash включен и strokesNum > 1
+                const moduleUseDash = this.params.randomDash && strokesNum > 1 
+                    ? Math.random() < 0.5  // 50% вероятность dash
+                    : false;
+                
+                this.moduleTypeCache[moduleType] = { stem, strokesNum, strokeGapRatio, dashLength, gapLength, useDash: moduleUseDash };
+            }
+            return this.moduleTypeCache[moduleType];
+        } else {
+            // Полный рандом: генерируем новые значения для каждого модуля
+            // Но используем кэш, чтобы при экспорте использовать те же значения
+            const cacheKey = arguments[1] || null; // ключ кэша передается вторым параметром
+            
+            if (cacheKey && this.moduleValueCache[cacheKey]) {
+                return this.moduleValueCache[cacheKey];
+            }
+            
+            const randomMultiplier = stemMin + Math.random() * (stemMax - stemMin);
+            const stem = this.params.moduleSize * randomMultiplier * 2;
+            const strokesNum = Math.floor(strokesMin + Math.random() * (strokesMax - strokesMin + 1));
+            const strokeGapRatio = contrastMin + Math.random() * (contrastMax - contrastMin);
+            const dashLength = dashLengthMin + Math.random() * (dashLengthMax - dashLengthMin);
+            const gapLength = gapLengthMin + Math.random() * (gapLengthMax - gapLengthMin);
+            
+            // Определяем useDash для этого модуля
+            // Dash применяется только если randomDash включен и strokesNum > 1
+            const moduleUseDash = this.params.randomDash && strokesNum > 1 
+                ? Math.random() < 0.5  // 50% вероятность dash
+                : false;
+            
+            const values = { stem, strokesNum, strokeGapRatio, dashLength, gapLength, useDash: moduleUseDash };
+            
+            if (cacheKey) {
+                this.moduleValueCache[cacheKey] = values;
+            }
+            
+            return values;
+        }
     }
 
     /**

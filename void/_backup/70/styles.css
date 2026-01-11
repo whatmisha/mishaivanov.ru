@@ -508,11 +508,6 @@ body {
     margin-bottom: 12px;
 }
 
-/* Убираем нижний margin у блока превью цвета в свернутом состоянии */
-.control-group:has(.color-pickers-compact-row) {
-    margin-bottom: 0;
-}
-
 /* Последний элемент в секции без нижнего margin */
 .control-section > .control-group:last-child {
     margin-bottom: 0;
@@ -1646,7 +1641,7 @@ legend {
     flex: 1;
     height: 48px;
     border: 1px solid var(--color-border);
-    border-radius: 18px;
+    border-radius: var(--radius-input);
     background: var(--color-bg-input);
     cursor: pointer;
     padding: 0;
@@ -1669,7 +1664,8 @@ legend {
 }
 
 .color-preview-rect.active {
-    /* Активное состояние теперь индицируется символом ● в начале текста */
+    border-color: var(--color-text);
+    border-width: 2px;
 }
 
 .color-label-inside {
