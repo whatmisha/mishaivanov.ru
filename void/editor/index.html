@@ -523,14 +523,12 @@
     </style>
 </head>
 <body>
-    <!-- Верхняя навигация -->
     <div class="editor-top-nav">
         <a href="../index.html" class="top-link">← Void Typeface</a>
         <button class="editor-clear-all-btn" id="clearAllBtn">Clear All</button>
     </div>
     
     <div class="editor-container">
-        <!-- Левая панель - Glyphs -->
         <aside class="editor-nav-panel">
             <div class="editor-nav-header">
                 <h2>Glyphs</h2>
@@ -538,7 +536,6 @@
             
             <div class="char-list" id="charList">
                 <div class="char-grid" id="charGrid">
-                    <!-- Заполняется JS -->
                 </div>
             </div>
             <div style="padding: 20px var(--spacing-lg); border-top: 1px solid var(--color-border); flex: 0 0 auto;">
@@ -549,7 +546,6 @@
             </div>
         </aside>
         
-        <!-- Центральная область - канвас -->
         <div class="canvas-area">
             <div class="canvas-wrapper">
                 <canvas id="editorCanvas" width="600" height="600"></canvas>
@@ -579,18 +575,15 @@
             </div>
         </div>
         
-        <!-- Правая панель - Alternates -->
         <aside class="editor-alternatives-panel">
             <div class="editor-alternatives-header">
                 <h2>Alternates</h2>
             </div>
             <div class="alternatives-content" id="alternativesContent">
-                <!-- Заполняется JS -->
             </div>
         </aside>
     </div>
     
-    <!-- Кнопки внизу -->
     <nav class="editor-bottom-buttons">
         <input type="file" id="importFileInput" accept=".js" style="display: none;">
         <button class="btn-fixed" id="importBtn">Import</button>

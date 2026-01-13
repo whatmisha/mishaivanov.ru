@@ -1,20 +1,12 @@
 /**
- * UI Framework - Стили
+ * UI Framework - Styles
  * 
- * Универсальная библиотека стилей для создания веб-инструментов.
- * Включает все UI компоненты: панели, слайдеры, кнопки, дропдауны, модалки и т.д.
- * 
- * Структура файла:
- * 1. CSS переменные (цвета, отступы, анимации)
- * 2. Базовые стили (reset, typography)
- * 3. Layout (container, top-links, panels)
- * 4. UI компоненты (buttons, sliders, inputs)
- * 5. Модальные окна
- * 6. Адаптивность
+ * Universal style library for web tools.
+ * Includes all UI components: panels, sliders, buttons, dropdowns, modals, etc.
  */
 
 /* ============================================
-   0. ШРИФТЫ
+   0. FONTS
    ============================================ */
 
 @font-face {
@@ -36,11 +28,10 @@
 }
 
 /* ============================================
-   1. CSS ПЕРЕМЕННЫЕ
+   1. CSS VARIABLES
    ============================================ */
 
 :root {
-    /* Цветовая схема - темная тема */
     --color-bg: #000;
     --color-bg-panel: #1a1a1a;
     --color-bg-input: #0a0a0a;
@@ -52,7 +43,6 @@
     --color-border: #333;
     --color-grid: #d2d2d2;
     
-    /* Отступы - используйте для консистентности */
     --spacing-xs: 2px;
     --spacing-sm: 4px;
     --spacing-md: 8px;
@@ -62,29 +52,24 @@
     --spacing-3xl: 20px;
     --spacing-4xl: 30px;
     
-    /* Радиусы скругления */
-    --radius: 12px;           /* Панели */
+    --radius: 12px;
     --radius-sm: 12px;
-    --radius-button: 20px;    /* Кнопки */
-    --radius-input: 6px;      /* Inputs, dropdowns */
+    --radius-button: 20px;
+    --radius-input: 6px;
     
-    /* Transitions - базовые */
     --transition-fast: 0.15s ease;
     --transition-normal: 0.2s ease;
     --transition-slow: 0.3s ease;
     
-    /* Premium Easing Functions - для плавных анимаций */
     --easing-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
     --easing-decelerate: cubic-bezier(0.0, 0.0, 0.2, 1);
     --easing-accelerate: cubic-bezier(0.4, 0.0, 1, 1);
     --easing-sharp: cubic-bezier(0.4, 0.0, 0.6, 1);
     
-    /* Animation Durations - для сложных анимаций */
     --duration-collapse: 0.35s;
     --duration-expand: 0.35s;
     --duration-fade: 0.25s;
     
-    /* Размеры UI элементов */
     --slider-thumb-size: 8px;
     --checkbox-size: 14px;
     --handle-size: 8px;
@@ -92,7 +77,7 @@
 }
 
 /* ============================================
-   2. БАЗОВЫЕ СТИЛИ
+   2. BASE STYLES
    ============================================ */
 
 * {
@@ -101,7 +86,6 @@
     box-sizing: border-box;
 }
 
-/* Screen reader only - для accessibility */
 .sr-only {
     position: absolute;
     width: 1px;
@@ -121,7 +105,6 @@ body {
     padding: 0;
     color: var(--color-text);
     overflow: hidden;
-    /* Защита от двойного тапа зума на мобильных */
     touch-action: pan-x pan-y;
 }
 
@@ -140,10 +123,8 @@ body {
     position: relative;
 }
 
-/* Top Links Container - навигация сверху */
 .top-links {
     position: absolute;
-    /* Учитываем безопасную область для устройств с вырезом камеры (iPhone) */
     top: calc(var(--spacing-3xl) + env(safe-area-inset-top, 0px));
     left: 50%;
     transform: translateX(-50%);
@@ -153,7 +134,6 @@ body {
     align-items: center;
 }
 
-/* Top Link - кнопка возврата */
 .top-link {
     padding: var(--spacing-md) var(--spacing-2xl);
     background: var(--color-text);
@@ -177,7 +157,6 @@ body {
     color: var(--color-text);
 }
 
-/* Кнопки Save и Delete preset */
 #savePresetBtn,
 #deletePresetBtn {
     background: var(--color-bg-panel);
@@ -206,7 +185,6 @@ body {
     flex: 1;
 }
 
-/* Canvas Container - для инструментов с canvas/SVG */
 .canvas-container {
     background: var(--color-bg);
     border-radius: 0;
@@ -222,13 +200,9 @@ body {
 }
 
 /* ============================================
-   4. ПАНЕЛИ (Controls Panels)
+   4. PANELS
    ============================================ */
 
-/**
- * Базовый класс для боковых панелей управления
- * Используйте в сочетании с модификаторами для позиционирования
- */
 .controls-panel {
     position: fixed;
     top: var(--spacing-3xl);
@@ -246,13 +220,11 @@ body {
     flex-direction: column;
 }
 
-/* Панель слева */
 .controls-panel-left {
     left: var(--spacing-3xl);
     right: auto;
 }
 
-/* Панель текста (снизу слева) */
 .controls-panel-text {
     left: var(--spacing-3xl);
     right: auto;
@@ -260,7 +232,6 @@ body {
     bottom: var(--spacing-3xl);
 }
 
-/* Панель Presets (справа внизу) */
 .controls-panel-presets {
     right: var(--spacing-3xl);
     left: auto;
@@ -268,7 +239,6 @@ body {
     bottom: var(--spacing-3xl);
 }
 
-/* Paragraph settings panel - модальная панель для настроек объектов */
 .paragraph-settings-panel {
     z-index: 1001;
     display: none;
@@ -278,7 +248,6 @@ body {
     display: flex;
 }
 
-/* Panel Header - заголовок с drag & drop */
 .panel-header {
     background: var(--color-bg-panel);
     padding: var(--spacing-2xl) var(--spacing-3xl);
@@ -308,7 +277,6 @@ body {
     color: var(--color-text-secondary);
 }
 
-/* Panel params - дополнительная информация в заголовке */
 .panel-params {
     opacity: 0;
     white-space: nowrap;
@@ -322,7 +290,6 @@ body {
     opacity: 0.4;
 }
 
-/* Collapse Icon - иконка сворачивания панели */
 .collapse-icon {
     color: var(--color-text-muted);
     cursor: pointer;
@@ -343,7 +310,6 @@ body {
     transform: rotate(-90deg);
 }
 
-/* Panel Content - контент панели с анимацией сворачивания */
 .panel-content {
     padding-left: var(--spacing-3xl);
     padding-right: var(--spacing-3xl);
@@ -371,7 +337,6 @@ body {
                 padding-bottom var(--duration-collapse) var(--easing-standard);
 }
 
-/* Panel Header Actions - кнопки в заголовке (Hide, Duplicate, Delete) */
 .panel-header-actions {
     display: flex;
     gap: var(--spacing-sm);
@@ -401,7 +366,6 @@ body {
     height: 16px;
 }
 
-/* Control Section - секция контролов внутри панели */
 .control-section {
     margin-bottom: 20px;
     border-bottom: none;
@@ -415,7 +379,6 @@ body {
     margin-bottom: 0;
 }
 
-/* Разделительные линии между секциями (опционально) */
 .controls-panel-text .control-section {
     border-top: 1px solid var(--color-border);
     padding-top: var(--spacing-lg);
@@ -446,7 +409,6 @@ body {
     align-items: center;
 }
 
-/* Collapsible Header - складные секции */
 .control-section h3.collapsible-header {
     font-size: 0.85rem;
     font-weight: 400;
@@ -501,7 +463,6 @@ body {
     transform: rotate(-90deg);
 }
 
-/* Collapsible Content - контент складной секции */
 .collapsible-content {
     overflow: hidden;
     max-height: 1000px;
@@ -531,12 +492,10 @@ body {
     margin-bottom: 12px;
 }
 
-/* Убираем нижний margin у блока превью цвета в свернутом состоянии */
 .control-group:has(.color-pickers-compact-row) {
     margin-bottom: 0;
 }
 
-/* Последний элемент в секции без нижнего margin */
 .control-section > .control-group:last-child {
     margin-bottom: 0;
 }
@@ -585,7 +544,6 @@ body {
    5.1 COMPACT TEXT CONTROLS (Figma-style)
    ============================================ */
 
-/* Screen reader only (скрытые radio для accessibility) */
 .sr-only {
     position: absolute;
     width: 1px;
@@ -598,14 +556,12 @@ body {
     border: 0;
 }
 
-/* Строка с компактными контролами */
 .text-controls-row {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-/* Группа иконка + инпут */
 .compact-input-group {
     display: flex;
     align-items: center;
@@ -650,7 +606,6 @@ body {
     margin: 0;
 }
 
-/* Иконки выравнивания текста */
 .text-align-icons {
     display: flex;
     align-items: center;
@@ -675,25 +630,18 @@ body {
     color: var(--color-text);
 }
 
-/* Активное состояние выравнивания */
 input[name="textAlign"]:checked + .align-icon-btn {
     background: #666666;
     color: var(--color-text);
 }
 
 /* ============================================
-   6. СЛАЙДЕРЫ (Range Sliders)
-   ============================================
-   
-   Особенности:
-   - Тонкий трек (1px)
-   - Круглый thumb (8px), увеличивается до 10px при hover
-   - Клавиатурное управление (↑↓, Shift+↑↓)
+   6. SLIDERS
    ============================================ */
 
 .control-group input[type="range"] {
     width: 100%;
-    height: 10px; /* Кликабельная область */
+    height: 10px;
     border-radius: var(--radius);
     background: transparent;
     outline: none;
@@ -705,7 +653,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
     position: relative;
 }
 
-/* Slider Thumb - ползунок */
 .control-group input[type="range"]::-webkit-slider-thumb {
     appearance: none;
     -webkit-appearance: none;
@@ -716,7 +663,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     cursor: pointer;
     border: none;
     transition: all var(--transition-fast);
-    margin-top: calc((1px - var(--slider-thumb-size)) / 2); /* Центрирование относительно track */
+    margin-top: calc((1px - var(--slider-thumb-size)) / 2);
 }
 
 .control-group input[type="range"]::-moz-range-thumb {
@@ -731,7 +678,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
 }
 
 .control-group input[type="range"]::-webkit-slider-thumb:hover {
-    transform: scale(1.25); /* 8px × 1.25 = 10px */
+    transform: scale(1.25);
     background: var(--color-text);
 }
 
@@ -740,7 +687,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
     background: var(--color-text);
 }
 
-/* Slider Track - дорожка */
 .control-group input[type="range"]::-webkit-slider-runnable-track {
     width: 100%;
     height: 1px;
@@ -757,7 +703,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
     border-radius: var(--radius);
 }
 
-/* Focus State - фокус для accessibility */
 .control-group input[type="range"]:focus {
     outline: none;
 }
@@ -770,7 +715,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
     box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-text);
 }
 
-/* Disabled State для слайдеров */
 .control-group input[type="range"]:disabled {
     opacity: 0.4;
     cursor: not-allowed;
@@ -796,16 +740,14 @@ input[name="textAlign"]:checked + .align-icon-btn {
     background: var(--color-text-subtle);
 }
 
-/* Range Slider - слайдер с двумя ручками */
 .range-slider-container {
     width: 100%;
-    margin-top: var(--spacing-md); /* +2px от обычного слайдера */
-    margin-bottom: 26px; /* Увеличенный нижний отступ для range-слайдеров */
+    margin-top: var(--spacing-md);
+    margin-bottom: 26px;
     position: relative;
-    height: 10px; /* Кликабельная область */
+    height: 10px;
 }
 
-/* Блок отображения диапазона значений (min–max) */
 .range-value-display {
     display: flex;
     align-items: center;
@@ -859,15 +801,13 @@ input[name="textAlign"]:checked + .align-icon-btn {
     outline: none;
 }
 
-/* Min thumb (левый) — треугольник указывает вправо, острие (правый край) на значении */
 .range-slider-thumb-min {
-    transform: translate(-100%, -50%); /* Смещаем влево на 100% ширины, чтобы правый край был на позиции */
+    transform: translate(-100%, -50%);
     clip-path: polygon(100% 50%, 0 0, 0 100%);
 }
 
-/* Max thumb (правый) — треугольник указывает влево, острие (левый край) на значении */
 .range-slider-thumb-max {
-    transform: translateY(-50%); /* Левый край на позиции */
+    transform: translateY(-50%);
     clip-path: polygon(0 50%, 100% 0, 100% 100%);
 }
 
@@ -887,7 +827,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
    7. TEXT INPUTS & VALUE DISPLAYS
    ============================================ */
 
-/* Value Display - текстовое поле со значением слайдера */
 .value-display-wrapper {
     display: flex;
     align-items: center;
@@ -925,13 +864,11 @@ input[name="textAlign"]:checked + .align-icon-btn {
     color: var(--color-text-muted);
 }
 
-/* Визуальное выделение неактивной control-group */
 .control-group:has(input[type="range"]:disabled) label span:first-child {
     opacity: 0.5;
     color: var(--color-text-muted);
 }
 
-/* Unit Buttons - переключатели единиц измерения (mod/mm, mod/pt) */
 .unit-buttons {
     display: inline-flex;
     gap: 2px;
@@ -963,7 +900,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
     background: #333;
 }
 
-/* Lock Button - кнопка блокировки параметра */
 .lock-btn {
     background: transparent;
     border: none;
@@ -1033,7 +969,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
     gap: var(--spacing-md);
 }
 
-/* Color Preview Button (встроенный в ColorPicker) */
 .color-picker-wrapper .color-preview {
     width: 30px;
     height: 30px;
@@ -1056,12 +991,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
     outline: none;
 }
 
-/* Скрываем стандартное превью-кнопку в унифицированном пикере */
 #unifiedColorPickerContainer .color-preview {
     display: none;
 }
 
-/* HEX input - скрыт по умолчанию, показывается через JS при открытии пикера */
 #unifiedColorPickerContainer .color-input-group {
     display: none;
     gap: var(--spacing-md);
@@ -1088,7 +1021,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
     border-color: var(--color-text-subtle);
 }
 
-/* HSB Picker - выпадающий HSB пикер */
 .hsb-picker {
     margin-top: var(--spacing-lg);
     animation: slideDown var(--transition-normal) ease-out;
@@ -1155,7 +1087,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
     color: var(--color-text);
 }
 
-/* HSB Sliders - такие же стили как у обычных слайдеров */
 .hsb-control-group input[type="range"] {
     width: 100%;
     height: 10px;
@@ -1230,7 +1161,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
     box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-text);
 }
 
-/* Color Gradients для HSB слайдеров - устанавливаются динамически через JS в ColorPicker.updateGradients() */
 
 /* Color Preset Button */
 .color-preset {
@@ -1252,10 +1182,9 @@ input[name="textAlign"]:checked + .align-icon-btn {
 }
 
 /* ============================================
-   9. КНОПКИ
+   9. BUTTONS
    ============================================ */
 
-/* Base Button Styles - общие стили для всех кнопок */
 .btn-primary,
 .btn-secondary,
 .btn-fixed {
@@ -1271,7 +1200,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    /* Защита от двойного тапа зума на мобильных */
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
 }
@@ -1304,7 +1232,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
     cursor: not-allowed;
 }
 
-/* Fixed Buttons - для bottom bar */
 .btn-fixed {
     background: var(--color-text);
     color: var(--color-bg);
@@ -1320,7 +1247,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
     transform: none;
 }
 
-/* Apply/Close Buttons в модальных панелях */
 .btn-apply {
     padding: var(--spacing-sm) var(--spacing-2xl);
     background: var(--color-text);
@@ -1381,7 +1307,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
     border-color: #d2d2d2;
 }
 
-/* Button Group - группа кнопок */
 .button-group {
     display: flex;
     gap: var(--spacing-md);
@@ -1389,8 +1314,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 /* ============================================
    10. TOGGLE CHIPS
-   ============================================
-   Переключатели в виде чипов (например, Show Columns/Rows/Baseline)
    ============================================ */
 
 .show-toggle-chip-group {
@@ -1412,7 +1335,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
     transition: border-color var(--transition-normal), 
                 background var(--transition-normal), 
                 color var(--transition-normal);
-    /* Защита от двойного тапа зума на мобильных */
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
 }
@@ -1436,7 +1358,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
     gap: 2px;
 }
 
-/* Toggle Chip Icons - иконки внутри чипов */
 .toggle-chip-icon-wrapper {
     position: relative;
     width: 14px;
@@ -1458,7 +1379,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
     display: block;
 }
 
-/* Неактивные кнопки: перечеркнутая иконка по умолчанию */
 .toggle-chip:not(.toggle-chip-checked) .toggle-chip-icon-open {
     opacity: 0;
 }
@@ -1475,7 +1395,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
     opacity: 0;
 }
 
-/* Активные кнопки: неперечеркнутая иконка */
 .toggle-chip-checked .toggle-chip-icon-open,
 .toggle-chip input:checked + span .toggle-chip-icon-open {
     opacity: 1;
@@ -1530,8 +1449,6 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 /* ============================================
    11. SEGMENTED CONTROL
-   ============================================
-   Переключатель с несколькими вариантами (радио-кнопки)
    ============================================ */
 
 fieldset {
@@ -1551,7 +1468,6 @@ legend {
     padding: 4px;
     gap: 4px;
     margin-top: var(--spacing-md);
-    /* Защита от двойного тапа зума на мобильных */
     touch-action: manipulation;
 }
 
@@ -1597,17 +1513,14 @@ legend {
     outline-offset: 2px;
 }
 
-/* Compact Segmented Control - меньшая высота */
 .segmented-control-compact label {
     padding: 6px var(--spacing-lg);
 }
 
-/* Убрать верхний margin у segmented-control-compact на панели Variability */
 #variabilityPanel .segmented-control-compact {
     margin-top: 0;
 }
 
-/* Style Buttons Container - кнопки стилей с переносом */
 .style-buttons-container {
     display: flex;
     flex-wrap: wrap;
@@ -1622,15 +1535,12 @@ legend {
     line-height: 1;
     font-weight: 400;
     border: none;
-    border-radius: 999px; /* Полностью скругленные */
+    border-radius: 999px;
     cursor: pointer;
     transition: all var(--transition-normal);
     user-select: none;
-    /* Защита от двойного тапа зума на мобильных */
     touch-action: manipulation;
-    /* Ширина зависит от содержимого */
     white-space: nowrap;
-    /* Неактивное состояние: черный фон, белый текст */
     background: var(--color-bg);
     color: var(--color-text);
 }
@@ -1640,7 +1550,6 @@ legend {
 }
 
 .style-button.active {
-    /* Активное состояние: белый фон, черный текст */
     background: var(--color-text);
     color: var(--color-bg);
     font-weight: 500;
@@ -1651,19 +1560,16 @@ legend {
     outline-offset: 2px;
 }
 
-/* Увеличить расстояние между переключателем табов и первым слайдером на вкладке Random */
 #randomControlGroupStem {
     margin-top: 18px;
 }
 
-/* Контейнер для группы пикеров цветов */
-/* Компактная строка с превью цветов - прямоугольные */
 .color-pickers-compact-row {
     display: flex;
     align-items: stretch;
     gap: 8px;
     margin-bottom: 20px;
-    padding-top: 1px; /* Защита от обрезки при ховере */
+    padding-top: 1px;
 }
 
 .color-preview-rect {
@@ -1693,7 +1599,6 @@ legend {
 }
 
 .color-preview-rect.active {
-    /* Активное состояние теперь индицируется символом ● в начале текста */
 }
 
 .color-label-inside {
@@ -1703,7 +1608,6 @@ legend {
     position: relative;
     z-index: 1;
     pointer-events: none;
-    /* Цвет будет устанавливаться динамически через JS */
 }
 
 .color-pickers-group {
@@ -1731,7 +1635,6 @@ legend {
     padding: 10px 0;
     margin-bottom: 0 !important;
     position: relative;
-    /* Защита от двойного тапа зума на мобильных */
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
 }
@@ -1740,8 +1643,6 @@ legend {
     margin-bottom: var(--spacing-xs);
 }
 
-/* Группы тоглов в одну строку (2 или 3 тогла) */
-/* display устанавливается через inline style: flex для видимых, none для скрытых */
 .control-group.toggle-group-row {
     gap: 15px;
     flex-wrap: nowrap;
@@ -1934,7 +1835,6 @@ legend {
     color: var(--color-text);
 }
 
-/* Custom Preset Dropdown (в top-links) */
 .preset-dropdown {
     position: relative;
     display: inline-block;
@@ -2105,7 +2005,6 @@ textarea::placeholder {
     font-weight: 400;
 }
 
-/* Text Input - обычное текстовое поле */
 .text-input {
     width: 100%;
     background: var(--color-bg-input);
@@ -2127,7 +2026,6 @@ textarea::placeholder {
     color: var(--color-text-muted);
 }
 
-/* Select Input - выпадающий список */
 .select-input {
     width: 100%;
     background: var(--color-bg-input);
@@ -2156,7 +2054,6 @@ textarea::placeholder {
     border-color: var(--color-text-dim);
 }
 
-/* Button Danger - кнопка удаления */
 .btn-danger {
     background: var(--color-bg);
     color: var(--color-text-secondary);
@@ -2169,7 +2066,7 @@ textarea::placeholder {
 }
 
 /* ============================================
-   15. МОДАЛЬНЫЕ ОКНА
+   15. MODALS
    ============================================ */
 
 .modal-overlay {
@@ -2296,7 +2193,6 @@ textarea::placeholder {
     z-index: 10000;
 }
 
-/* Toggle Label для "Outline fonts" и подобных */
 .toggle-label {
     display: flex;
     align-items: center;
@@ -2368,7 +2264,6 @@ textarea::placeholder {
    17. ZOOM CONTROLS
    ============================================ */
 
-/* Zoom Indicator Button (в top-links) */
 .zoom-indicator {
     padding: var(--spacing-md) var(--spacing-lg);
     background: var(--color-bg-panel);
@@ -2392,7 +2287,6 @@ textarea::placeholder {
     background-color: #2a2a2a;
 }
 
-/* Zoom Controls (в bottom-buttons) */
 .zoom-controls {
     display: flex;
     align-items: center;
@@ -2516,7 +2410,7 @@ textarea::placeholder {
 }
 
 /* ============================================
-   19. АДАПТИВНОСТЬ (Responsive Design)
+   19. RESPONSIVE DESIGN
    ============================================ */
 
 @media (max-width: 1024px) {
@@ -2525,7 +2419,6 @@ textarea::placeholder {
     }
 }
 
-/* Скрыть панели на мобильных устройствах сразу (до загрузки JS) */
 .is-mobile .controls-panel,
 .is-mobile #presetDropdown,
 .is-mobile #savePresetBtn,
@@ -2535,7 +2428,6 @@ textarea::placeholder {
     display: none !important;
 }
 
-/* Показать кнопку Update только на мобильных устройствах */
 .is-mobile #renewBtn {
     display: inline-flex !important;
     align-items: center;
@@ -2667,14 +2559,12 @@ textarea::placeholder {
     border-color: var(--color-text-dim);
 }
 
-/* Font Size Display (для отображения текущего размера шрифта) */
 .font-size-display {
     opacity: 0.4;
     white-space: nowrap;
     margin-left: 6px;
 }
 
-/* Linked Controls Group - визуальное группирование связанных контролов */
 #linkedControlsContainer {
     padding: var(--spacing-lg);
     margin: var(--spacing-3xl) calc(-1 * var(--spacing-lg)) 0;
@@ -2826,7 +2716,6 @@ textarea::placeholder {
     resize: none;
 }
 
-/* Editor Hint - подсказка в правом нижнем углу */
 .editor-hint {
     position: absolute;
     bottom: 20px;
@@ -2842,7 +2731,6 @@ textarea::placeholder {
     backdrop-filter: blur(4px);
 }
 
-/* Editor Alternatives Panel - панель альтернативных начертаний */
 .editor-alternatives-panel {
     position: absolute;
     right: 20px;
@@ -2938,18 +2826,10 @@ textarea::placeholder {
     display: none !important;
 }
 
-/* ============================================
-   СКРЫТИЕ УПРАВЛЕНИЯ ПРЕСЕТАМИ
-   ============================================ */
-
-/* Скрыть элементы управления пресетами (функционал остается) */
 #presetDropdown,
 #savePresetBtn,
 #deletePresetBtn {
     display: none !important;
 }
 
-/* ============================================
-   КОНЕЦ ФАЙЛА
-   ============================================ */
 
