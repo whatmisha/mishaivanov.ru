@@ -3,6 +3,7 @@
  * 
  * Universal style library for web tools.
  * Includes all UI components: panels, sliders, buttons, dropdowns, modals, etc.
+<<<<<<< HEAD
  * 
  * File structure:
  * 1. CSS variables (colors, spacing, animations)
@@ -11,6 +12,8 @@
  * 4. UI components (buttons, sliders, inputs)
  * 5. Modals
  * 6. Responsive design
+=======
+>>>>>>> parent of e1a49ee (-)
  */
 
 /* ============================================
@@ -40,7 +43,10 @@
    ============================================ */
 
 :root {
+<<<<<<< HEAD
     /* Color scheme - dark theme */
+=======
+>>>>>>> parent of e1a49ee (-)
     --color-bg: #000;
     --color-bg-panel: #1a1a1a;
     --color-bg-input: #0a0a0a;
@@ -52,7 +58,10 @@
     --color-border: #333;
     --color-grid: #d2d2d2;
     
+<<<<<<< HEAD
     /* Spacing - use for consistency */
+=======
+>>>>>>> parent of e1a49ee (-)
     --spacing-xs: 2px;
     --spacing-sm: 4px;
     --spacing-md: 8px;
@@ -62,29 +71,44 @@
     --spacing-3xl: 20px;
     --spacing-4xl: 30px;
     
+<<<<<<< HEAD
     /* Border radius */
+=======
+>>>>>>> parent of e1a49ee (-)
     --radius: 12px;
     --radius-sm: 12px;
     --radius-button: 20px;
     --radius-input: 6px;
     
+<<<<<<< HEAD
     /* Transitions */
+=======
+>>>>>>> parent of e1a49ee (-)
     --transition-fast: 0.15s ease;
     --transition-normal: 0.2s ease;
     --transition-slow: 0.3s ease;
     
+<<<<<<< HEAD
     /* Easing functions */
+=======
+>>>>>>> parent of e1a49ee (-)
     --easing-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
     --easing-decelerate: cubic-bezier(0.0, 0.0, 0.2, 1);
     --easing-accelerate: cubic-bezier(0.4, 0.0, 1, 1);
     --easing-sharp: cubic-bezier(0.4, 0.0, 0.6, 1);
     
+<<<<<<< HEAD
     /* Animation durations */
+=======
+>>>>>>> parent of e1a49ee (-)
     --duration-collapse: 0.35s;
     --duration-expand: 0.35s;
     --duration-fade: 0.25s;
     
+<<<<<<< HEAD
     /* UI element sizes */
+=======
+>>>>>>> parent of e1a49ee (-)
     --slider-thumb-size: 8px;
     --checkbox-size: 14px;
     --handle-size: 8px;
@@ -101,7 +125,10 @@
     box-sizing: border-box;
 }
 
+<<<<<<< HEAD
 /* Screen reader only */
+=======
+>>>>>>> parent of e1a49ee (-)
 .sr-only {
     position: absolute;
     width: 1px;
@@ -139,7 +166,10 @@ body {
     position: relative;
 }
 
+<<<<<<< HEAD
 /* Top navigation links */
+=======
+>>>>>>> parent of e1a49ee (-)
 .top-links {
     position: absolute;
     top: calc(var(--spacing-3xl) + env(safe-area-inset-top, 0px));
@@ -151,14 +181,17 @@ body {
     align-items: center;
 }
 
+<<<<<<< HEAD
 /* Top link button */
+=======
+>>>>>>> parent of e1a49ee (-)
 .top-link {
     padding: var(--spacing-md) var(--spacing-2xl);
     background: var(--color-text);
     color: var(--color-bg);
     border: none;
     border-radius: var(--radius-button);
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 500;
     letter-spacing: 0;
     text-decoration: none;
@@ -175,7 +208,10 @@ body {
     color: var(--color-text);
 }
 
+<<<<<<< HEAD
 /* Save and Delete preset buttons */
+=======
+>>>>>>> parent of e1a49ee (-)
 #savePresetBtn,
 #deletePresetBtn {
     background: var(--color-bg-panel);
@@ -204,7 +240,10 @@ body {
     flex: 1;
 }
 
+<<<<<<< HEAD
 /* Canvas container */
+=======
+>>>>>>> parent of e1a49ee (-)
 .canvas-container {
     background: var(--color-bg);
     border-radius: 0;
@@ -223,10 +262,13 @@ body {
    4. PANELS
    ============================================ */
 
+<<<<<<< HEAD
 /**
  * Base class for control panels
  * Use with modifiers for positioning
  */
+=======
+>>>>>>> parent of e1a49ee (-)
 .controls-panel {
     position: fixed;
     top: var(--spacing-3xl);
@@ -244,13 +286,19 @@ body {
     flex-direction: column;
 }
 
+<<<<<<< HEAD
 /* Left panel */
+=======
+>>>>>>> parent of e1a49ee (-)
 .controls-panel-left {
     left: var(--spacing-3xl);
     right: auto;
 }
 
+<<<<<<< HEAD
 /* Text panel (bottom left) */
+=======
+>>>>>>> parent of e1a49ee (-)
 .controls-panel-text {
     left: var(--spacing-3xl);
     right: auto;
@@ -258,7 +306,10 @@ body {
     bottom: var(--spacing-3xl);
 }
 
+<<<<<<< HEAD
 /* Presets panel (bottom right) */
+=======
+>>>>>>> parent of e1a49ee (-)
 .controls-panel-presets {
     right: var(--spacing-3xl);
     left: auto;
@@ -266,7 +317,10 @@ body {
     bottom: var(--spacing-3xl);
 }
 
+<<<<<<< HEAD
 /* Paragraph settings panel */
+=======
+>>>>>>> parent of e1a49ee (-)
 .paragraph-settings-panel {
     z-index: 1001;
     display: none;
@@ -276,7 +330,10 @@ body {
     display: flex;
 }
 
+<<<<<<< HEAD
 /* Panel header with drag & drop */
+=======
+>>>>>>> parent of e1a49ee (-)
 .panel-header {
     background: var(--color-bg-panel);
     padding: var(--spacing-2xl) var(--spacing-3xl);
@@ -297,7 +354,7 @@ body {
 
 .panel-header span:first-child {
     font-weight: 500;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--color-text);
 }
 
@@ -306,7 +363,10 @@ body {
     color: var(--color-text-secondary);
 }
 
+<<<<<<< HEAD
 /* Panel params - additional info in header */
+=======
+>>>>>>> parent of e1a49ee (-)
 .panel-params {
     opacity: 0;
     white-space: nowrap;
@@ -320,7 +380,10 @@ body {
     opacity: 0.4;
 }
 
+<<<<<<< HEAD
 /* Collapse icon */
+=======
+>>>>>>> parent of e1a49ee (-)
 .collapse-icon {
     color: var(--color-text-muted);
     cursor: pointer;
@@ -341,7 +404,10 @@ body {
     transform: rotate(-90deg);
 }
 
+<<<<<<< HEAD
 /* Panel content with collapse animation */
+=======
+>>>>>>> parent of e1a49ee (-)
 .panel-content {
     padding-left: var(--spacing-3xl);
     padding-right: var(--spacing-3xl);
@@ -369,7 +435,10 @@ body {
                 padding-bottom var(--duration-collapse) var(--easing-standard);
 }
 
+<<<<<<< HEAD
 /* Panel header actions */
+=======
+>>>>>>> parent of e1a49ee (-)
 .panel-header-actions {
     display: flex;
     gap: var(--spacing-sm);
@@ -399,7 +468,10 @@ body {
     height: 16px;
 }
 
+<<<<<<< HEAD
 /* Control section */
+=======
+>>>>>>> parent of e1a49ee (-)
 .control-section {
     margin-bottom: 20px;
     border-bottom: none;
@@ -413,7 +485,10 @@ body {
     margin-bottom: 0;
 }
 
+<<<<<<< HEAD
 /* Section dividers */
+=======
+>>>>>>> parent of e1a49ee (-)
 .controls-panel-text .control-section {
     border-top: 1px solid var(--color-border);
     padding-top: var(--spacing-lg);
@@ -434,7 +509,7 @@ body {
 }
 
 .control-section h3 {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     margin-bottom: var(--spacing-md);
     color: var(--color-text);
     font-weight: 500;
@@ -444,9 +519,12 @@ body {
     align-items: center;
 }
 
+<<<<<<< HEAD
 /* Collapsible header */
+=======
+>>>>>>> parent of e1a49ee (-)
 .control-section h3.collapsible-header {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 400;
     color: var(--color-text-secondary);
     letter-spacing: 0;
@@ -499,7 +577,10 @@ body {
     transform: rotate(-90deg);
 }
 
+<<<<<<< HEAD
 /* Collapsible content */
+=======
+>>>>>>> parent of e1a49ee (-)
 .collapsible-content {
     overflow: hidden;
     max-height: 1000px;
@@ -543,7 +624,7 @@ body {
     font-weight: 400;
     margin-bottom: var(--spacing-xs);
     color: var(--color-text-secondary);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     gap: var(--spacing-md);
 }
 
@@ -553,7 +634,7 @@ body {
     font-weight: 400;
     margin-bottom: var(--spacing-xs);
     color: var(--color-text-secondary);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     gap: var(--spacing-md);
 }
 
@@ -581,7 +662,10 @@ body {
    5.1 COMPACT TEXT CONTROLS (Figma-style)
    ============================================ */
 
+<<<<<<< HEAD
 /* Screen reader only */
+=======
+>>>>>>> parent of e1a49ee (-)
 .sr-only {
     position: absolute;
     width: 1px;
@@ -594,14 +678,20 @@ body {
     border: 0;
 }
 
+<<<<<<< HEAD
 /* Compact controls row */
+=======
+>>>>>>> parent of e1a49ee (-)
 .text-controls-row {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
+<<<<<<< HEAD
 /* Icon + input group */
+=======
+>>>>>>> parent of e1a49ee (-)
 .compact-input-group {
     display: flex;
     align-items: center;
@@ -646,7 +736,10 @@ body {
     margin: 0;
 }
 
+<<<<<<< HEAD
 /* Text alignment icons */
+=======
+>>>>>>> parent of e1a49ee (-)
 .text-align-icons {
     display: flex;
     align-items: center;
@@ -671,7 +764,10 @@ body {
     color: var(--color-text);
 }
 
+<<<<<<< HEAD
 /* Active alignment state */
+=======
+>>>>>>> parent of e1a49ee (-)
 input[name="textAlign"]:checked + .align-icon-btn {
     background: #666666;
     color: var(--color-text);
@@ -695,7 +791,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
     position: relative;
 }
 
+<<<<<<< HEAD
 /* Slider thumb */
+=======
+>>>>>>> parent of e1a49ee (-)
 .control-group input[type="range"]::-webkit-slider-thumb {
     appearance: none;
     -webkit-appearance: none;
@@ -730,7 +829,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
     background: var(--color-text);
 }
 
+<<<<<<< HEAD
 /* Slider track */
+=======
+>>>>>>> parent of e1a49ee (-)
 .control-group input[type="range"]::-webkit-slider-runnable-track {
     width: 100%;
     height: 1px;
@@ -747,7 +849,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
     border-radius: var(--radius);
 }
 
+<<<<<<< HEAD
 /* Focus state */
+=======
+>>>>>>> parent of e1a49ee (-)
 .control-group input[type="range"]:focus {
     outline: none;
 }
@@ -760,7 +865,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
     box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-text);
 }
 
+<<<<<<< HEAD
 /* Disabled state */
+=======
+>>>>>>> parent of e1a49ee (-)
 .control-group input[type="range"]:disabled {
     opacity: 0.4;
     cursor: not-allowed;
@@ -786,7 +894,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
     background: var(--color-text-subtle);
 }
 
+<<<<<<< HEAD
 /* Range slider with two handles */
+=======
+>>>>>>> parent of e1a49ee (-)
 .range-slider-container {
     width: 100%;
     margin-top: var(--spacing-md);
@@ -795,7 +906,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
     height: 10px;
 }
 
+<<<<<<< HEAD
 /* Range value display (min–max) */
+=======
+>>>>>>> parent of e1a49ee (-)
 .range-value-display {
     display: flex;
     align-items: center;
@@ -849,13 +963,19 @@ input[name="textAlign"]:checked + .align-icon-btn {
     outline: none;
 }
 
+<<<<<<< HEAD
 /* Min thumb (left) - triangle points right, tip (right edge) at value */
+=======
+>>>>>>> parent of e1a49ee (-)
 .range-slider-thumb-min {
     transform: translate(-100%, -50%);
     clip-path: polygon(100% 50%, 0 0, 0 100%);
 }
 
+<<<<<<< HEAD
 /* Max thumb (right) - triangle points left, tip (left edge) at value */
+=======
+>>>>>>> parent of e1a49ee (-)
 .range-slider-thumb-max {
     transform: translateY(-50%);
     clip-path: polygon(0 50%, 100% 0, 100% 100%);
@@ -877,7 +997,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
    7. TEXT INPUTS & VALUE DISPLAYS
    ============================================ */
 
+<<<<<<< HEAD
 /* Value display - text field with slider value */
+=======
+>>>>>>> parent of e1a49ee (-)
 .value-display-wrapper {
     display: flex;
     align-items: center;
@@ -915,13 +1038,19 @@ input[name="textAlign"]:checked + .align-icon-btn {
     color: var(--color-text-muted);
 }
 
+<<<<<<< HEAD
 /* Visual indication of disabled control-group */
+=======
+>>>>>>> parent of e1a49ee (-)
 .control-group:has(input[type="range"]:disabled) label span:first-child {
     opacity: 0.5;
     color: var(--color-text-muted);
 }
 
+<<<<<<< HEAD
 /* Unit buttons - measurement unit toggles */
+=======
+>>>>>>> parent of e1a49ee (-)
 .unit-buttons {
     display: inline-flex;
     gap: 2px;
@@ -933,7 +1062,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     border: none;
     padding: 1px 5px;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: #ccc;
     opacity: 0.4;
     border-radius: 2px;
@@ -953,7 +1082,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
     background: #333;
 }
 
+<<<<<<< HEAD
 /* Lock button */
+=======
+>>>>>>> parent of e1a49ee (-)
 .lock-btn {
     background: transparent;
     border: none;
@@ -1023,7 +1155,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
     gap: var(--spacing-md);
 }
 
+<<<<<<< HEAD
 /* Color preview button */
+=======
+>>>>>>> parent of e1a49ee (-)
 .color-picker-wrapper .color-preview {
     width: 30px;
     height: 30px;
@@ -1046,12 +1181,18 @@ input[name="textAlign"]:checked + .align-icon-btn {
     outline: none;
 }
 
+<<<<<<< HEAD
 /* Hide default preview button in unified picker */
+=======
+>>>>>>> parent of e1a49ee (-)
 #unifiedColorPickerContainer .color-preview {
     display: none;
 }
 
+<<<<<<< HEAD
 /* HEX input - hidden by default, shown via JS when picker opens */
+=======
+>>>>>>> parent of e1a49ee (-)
 #unifiedColorPickerContainer .color-input-group {
     display: none;
     gap: var(--spacing-md);
@@ -1078,7 +1219,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
     border-color: var(--color-text-subtle);
 }
 
+<<<<<<< HEAD
 /* HSB picker dropdown */
+=======
+>>>>>>> parent of e1a49ee (-)
 .hsb-picker {
     margin-top: var(--spacing-lg);
     animation: slideDown var(--transition-normal) ease-out;
@@ -1117,7 +1261,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     font-weight: 400;
     margin-bottom: var(--spacing-xs);
     color: var(--color-text-secondary);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
 }
 
 .hsb-control-group label > span {
@@ -1145,7 +1289,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
     color: var(--color-text);
 }
 
+<<<<<<< HEAD
 /* HSB sliders - same styles as regular sliders */
+=======
+>>>>>>> parent of e1a49ee (-)
 .hsb-control-group input[type="range"] {
     width: 100%;
     height: 10px;
@@ -1220,11 +1367,14 @@ input[name="textAlign"]:checked + .align-icon-btn {
     box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-text);
 }
 
+<<<<<<< HEAD
 /* Color gradients for HSB sliders - set dynamically via JS in ColorPicker.updateGradients() */
+=======
+>>>>>>> parent of e1a49ee (-)
 
 /* Color Preset Button */
 .color-preset {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--color-text-dim);
     cursor: pointer;
     padding: var(--spacing-xs) 6px;
@@ -1245,15 +1395,17 @@ input[name="textAlign"]:checked + .align-icon-btn {
    9. BUTTONS
    ============================================ */
 
+<<<<<<< HEAD
 /* Base button styles */
+=======
+>>>>>>> parent of e1a49ee (-)
 .btn-primary,
 .btn-secondary,
 .btn-fixed {
     padding: var(--spacing-md) var(--spacing-2xl);
     border: none;
     border-radius: var(--radius-button);
-    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 500;
     letter-spacing: 0;
     cursor: pointer;
@@ -1294,7 +1446,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
     cursor: not-allowed;
 }
 
+<<<<<<< HEAD
 /* Fixed buttons for bottom bar */
+=======
+>>>>>>> parent of e1a49ee (-)
 .btn-fixed {
     background: var(--color-text);
     color: var(--color-bg);
@@ -1310,14 +1465,17 @@ input[name="textAlign"]:checked + .align-icon-btn {
     transform: none;
 }
 
+<<<<<<< HEAD
 /* Apply/Close buttons in modal panels */
+=======
+>>>>>>> parent of e1a49ee (-)
 .btn-apply {
     padding: var(--spacing-sm) var(--spacing-2xl);
     background: var(--color-text);
     color: var(--color-bg);
     border: none;
     border-radius: var(--radius-button);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 500;
     cursor: pointer;
     transition: all var(--transition-normal);
@@ -1336,7 +1494,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     color: var(--color-text-secondary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-button);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 500;
     cursor: pointer;
     transition: all var(--transition-normal);
@@ -1358,7 +1516,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     color: var(--color-text-secondary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-button);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 500;
     cursor: pointer;
     transition: all var(--transition-normal);
@@ -1371,7 +1529,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
     border-color: #d2d2d2;
 }
 
+<<<<<<< HEAD
 /* Button group */
+=======
+>>>>>>> parent of e1a49ee (-)
 .button-group {
     display: flex;
     gap: var(--spacing-md);
@@ -1423,7 +1584,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
     gap: 2px;
 }
 
+<<<<<<< HEAD
 /* Toggle chip icons */
+=======
+>>>>>>> parent of e1a49ee (-)
 .toggle-chip-icon-wrapper {
     position: relative;
     width: 14px;
@@ -1445,7 +1609,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
     display: block;
 }
 
+<<<<<<< HEAD
 /* Inactive buttons: crossed icon by default */
+=======
+>>>>>>> parent of e1a49ee (-)
 .toggle-chip:not(.toggle-chip-checked) .toggle-chip-icon-open {
     opacity: 0;
 }
@@ -1462,7 +1629,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
     opacity: 0;
 }
 
+<<<<<<< HEAD
 /* Active buttons: uncrossed icon */
+=======
+>>>>>>> parent of e1a49ee (-)
 .toggle-chip-checked .toggle-chip-icon-open,
 .toggle-chip input:checked + span .toggle-chip-icon-open {
     opacity: 1;
@@ -1554,7 +1724,7 @@ legend {
     text-align: center;
     padding: var(--spacing-lg);
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     line-height: 1;
     color: var(--color-text-secondary);
     background: transparent;
@@ -1581,7 +1751,10 @@ legend {
     outline-offset: 2px;
 }
 
+<<<<<<< HEAD
 /* Compact segmented control */
+=======
+>>>>>>> parent of e1a49ee (-)
 .segmented-control-compact label {
     padding: 6px var(--spacing-lg);
 }
@@ -1590,7 +1763,10 @@ legend {
     margin-top: 0;
 }
 
+<<<<<<< HEAD
 /* Style buttons container */
+=======
+>>>>>>> parent of e1a49ee (-)
 .style-buttons-container {
     display: flex;
     flex-wrap: wrap;
@@ -1600,8 +1776,8 @@ legend {
 }
 
 .style-button {
-    padding: 8px 14px;
-    font-size: 0.9rem;
+    padding: 8px 12px;
+    font-size: 0.85rem;
     line-height: 1;
     font-weight: 400;
     border: none;
@@ -1634,7 +1810,10 @@ legend {
     margin-top: 18px;
 }
 
+<<<<<<< HEAD
 /* Compact color pickers row */
+=======
+>>>>>>> parent of e1a49ee (-)
 .color-pickers-compact-row {
     display: flex;
     align-items: stretch;
@@ -1673,7 +1852,7 @@ legend {
 }
 
 .color-label-inside {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     text-align: center;
     font-weight: 500;
     position: relative;
@@ -1714,7 +1893,10 @@ legend {
     margin-bottom: var(--spacing-xs);
 }
 
+<<<<<<< HEAD
 /* Toggle groups in a row */
+=======
+>>>>>>> parent of e1a49ee (-)
 .control-group.toggle-group-row {
     gap: 15px;
     flex-wrap: nowrap;
@@ -1728,7 +1910,7 @@ legend {
 }
 
 .checkbox-label span {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--color-text-secondary);
     display: inline-flex;
     align-items: center;
@@ -1810,7 +1992,7 @@ legend {
     border: none;
     color: var(--color-text);
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     border-radius: var(--radius-input);
     margin-top: var(--spacing-md);
     cursor: pointer;
@@ -1907,7 +2089,10 @@ legend {
     color: var(--color-text);
 }
 
+<<<<<<< HEAD
 /* Custom preset dropdown */
+=======
+>>>>>>> parent of e1a49ee (-)
 .preset-dropdown {
     position: relative;
     display: inline-block;
@@ -2047,7 +2232,7 @@ textarea {
     border: 1px solid var(--color-border);
     color: var(--color-text);
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     padding: var(--spacing-md);
     border-radius: var(--radius-input);
     resize: vertical;
@@ -2078,14 +2263,17 @@ textarea::placeholder {
     font-weight: 400;
 }
 
+<<<<<<< HEAD
 /* Text input */
+=======
+>>>>>>> parent of e1a49ee (-)
 .text-input {
     width: 100%;
     background: var(--color-bg-input);
     border: 1px solid var(--color-border);
     color: var(--color-text);
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     padding: var(--spacing-md);
     border-radius: var(--radius-input);
     transition: border-color var(--transition-fast);
@@ -2100,14 +2288,17 @@ textarea::placeholder {
     color: var(--color-text-muted);
 }
 
+<<<<<<< HEAD
 /* Select input */
+=======
+>>>>>>> parent of e1a49ee (-)
 .select-input {
     width: 100%;
     background: var(--color-bg-input);
     border: 1px solid var(--color-border);
     color: var(--color-text);
     font-family: inherit;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     padding: var(--spacing-md);
     border-radius: var(--radius-input);
     cursor: pointer;
@@ -2129,7 +2320,10 @@ textarea::placeholder {
     border-color: var(--color-text-dim);
 }
 
+<<<<<<< HEAD
 /* Danger button */
+=======
+>>>>>>> parent of e1a49ee (-)
 .btn-danger {
     background: var(--color-bg);
     color: var(--color-text-secondary);
@@ -2217,7 +2411,7 @@ textarea::placeholder {
 .modal-body {
     color: var(--color-text-secondary);
     line-height: 1.7;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
 }
 
 .modal-body h3 {
@@ -2269,7 +2463,10 @@ textarea::placeholder {
     z-index: 10000;
 }
 
+<<<<<<< HEAD
 /* Toggle label */
+=======
+>>>>>>> parent of e1a49ee (-)
 .toggle-label {
     display: flex;
     align-items: center;
@@ -2279,7 +2476,7 @@ textarea::placeholder {
 }
 
 .toggle-label-text {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--color-text-secondary);
     transition: color var(--transition-fast);
 }
@@ -2341,7 +2538,10 @@ textarea::placeholder {
    17. ZOOM CONTROLS
    ============================================ */
 
+<<<<<<< HEAD
 /* Zoom indicator button */
+=======
+>>>>>>> parent of e1a49ee (-)
 .zoom-indicator {
     padding: var(--spacing-md) var(--spacing-lg);
     background: var(--color-bg-panel);
@@ -2365,7 +2565,10 @@ textarea::placeholder {
     background-color: #2a2a2a;
 }
 
+<<<<<<< HEAD
 /* Zoom controls */
+=======
+>>>>>>> parent of e1a49ee (-)
 .zoom-controls {
     display: flex;
     align-items: center;
@@ -2498,7 +2701,10 @@ textarea::placeholder {
     }
 }
 
+<<<<<<< HEAD
 /* Hide panels on mobile devices before JS loads */
+=======
+>>>>>>> parent of e1a49ee (-)
 .is-mobile .controls-panel,
 .is-mobile #presetDropdown,
 .is-mobile #savePresetBtn,
@@ -2508,7 +2714,10 @@ textarea::placeholder {
     display: none !important;
 }
 
+<<<<<<< HEAD
 /* Show Update button only on mobile devices */
+=======
+>>>>>>> parent of e1a49ee (-)
 .is-mobile #renewBtn {
     display: inline-flex !important;
     align-items: center;
@@ -2541,7 +2750,7 @@ textarea::placeholder {
     
     .btn-fixed {
         padding: calc(var(--spacing-xl) * 1.5) calc(var(--spacing-3xl) * 1.5);
-        font-size: calc(1rem * 1.5);
+        font-size: calc(0.9rem * 1.5);
         height: calc(var(--button-height) * 1.5);
         border-radius: calc(calc(var(--button-height) * 1.5) / 2);
     }
@@ -2555,7 +2764,7 @@ textarea::placeholder {
     
     .top-link {
         padding: calc(var(--spacing-md) * 1.5) calc(var(--spacing-2xl) * 1.5);
-        font-size: calc(1rem * 1.5);
+        font-size: calc(0.9rem * 1.5);
         height: calc(var(--button-height) * 1.5);
         border-radius: calc(calc(var(--button-height) * 1.5) / 2);
     }
@@ -2604,7 +2813,7 @@ textarea::placeholder {
 .upload-placeholder p {
     margin: 0;
     color: var(--color-text-secondary);
-    font-size: 0.9rem;
+    font-size: 0.85rem;
 }
 
 /* Row Presets Buttons */
@@ -2640,14 +2849,20 @@ textarea::placeholder {
     border-color: var(--color-text-dim);
 }
 
+<<<<<<< HEAD
 /* Font size display */
+=======
+>>>>>>> parent of e1a49ee (-)
 .font-size-display {
     opacity: 0.4;
     white-space: nowrap;
     margin-left: 6px;
 }
 
+<<<<<<< HEAD
 /* Linked controls group */
+=======
+>>>>>>> parent of e1a49ee (-)
 #linkedControlsContainer {
     padding: var(--spacing-lg);
     margin: var(--spacing-3xl) calc(-1 * var(--spacing-lg)) 0;
@@ -2799,7 +3014,10 @@ textarea::placeholder {
     resize: none;
 }
 
+<<<<<<< HEAD
 /* Editor hint */
+=======
+>>>>>>> parent of e1a49ee (-)
 .editor-hint {
     position: absolute;
     bottom: 20px;
@@ -2815,7 +3033,10 @@ textarea::placeholder {
     backdrop-filter: blur(4px);
 }
 
+<<<<<<< HEAD
 /* Editor alternatives panel */
+=======
+>>>>>>> parent of e1a49ee (-)
 .editor-alternatives-panel {
     position: absolute;
     right: 20px;
@@ -2835,7 +3056,7 @@ textarea::placeholder {
     padding: var(--spacing-xl) var(--spacing-2xl);
     border-bottom: 1px solid var(--color-border);
     font-weight: 500;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--color-text);
     flex-shrink: 0;
 }
@@ -2911,11 +3132,14 @@ textarea::placeholder {
     display: none !important;
 }
 
+<<<<<<< HEAD
 /* ============================================
    HIDE PRESET CONTROLS
    ============================================ */
 
 /* Hide preset controls (functionality remains) */
+=======
+>>>>>>> parent of e1a49ee (-)
 #presetDropdown,
 #savePresetBtn,
 #deletePresetBtn {

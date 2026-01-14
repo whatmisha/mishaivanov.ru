@@ -1,5 +1,5 @@
 /**
- * PanelManager - Panel management (open, close, drag, z-index)
+ * PanelManager - Управление панелями (открытие, закрытие, перетаскивание, z-index)
  */
 export class PanelManager {
     constructor() {
@@ -16,7 +16,7 @@ export class PanelManager {
     }
 
     /**
-     * Register panel
+     * Регистрация панели
      */
     registerPanel(panelId, config = {}) {
         const panel = document.getElementById(panelId);
@@ -35,7 +35,7 @@ export class PanelManager {
                 initialPosition: config.initialPosition || null,
                 onOpen: config.onOpen || null,
                 onClose: config.onClose || null,
-                persistent: config.persistent || false
+                persistent: config.persistent || false // Не закрывается при клике вне
             },
             isOpen: !panel.style.display || panel.style.display !== 'none',
             position: { x: 0, y: 0 }
@@ -43,21 +43,25 @@ export class PanelManager {
 
         this.panels.set(panelId, panelData);
 
+        // Инициализация drag & drop если включено
         if (panelData.config.draggable && header) {
             this.initDragging(panelId);
         }
 
+        // Установка начальной позиции если указана
         if (panelData.config.initialPosition) {
             this.setPosition(panelId, 
                 panelData.config.initialPosition.x, 
                 panelData.config.initialPosition.y
             );
         }
+
+        // Клик по панели поднимает её наверх
         panel.addEventListener('mousedown', () => this.bringToFront(panelId));
     }
 
     /**
-     * Initialize panel dragging
+     * Инициализация перетаскивания панели
      */
     initDragging(panelId) {
         const panelData = this.panels.get(panelId);
@@ -68,6 +72,7 @@ export class PanelManager {
         header.style.cursor = 'grab';
         
         header.addEventListener('mousedown', (e) => {
+            // Проверяем, что клик не по кнопке закрытия
             if (e.target.closest('.collapse-toggle, .modal-close')) {
                 return;
             }
@@ -89,7 +94,7 @@ export class PanelManager {
     }
 
     /**
-     * Start dragging
+     * Начало перетаскивания
      */
     startDragging(panelId, event) {
         const panelData = this.panels.get(panelId);
@@ -118,7 +123,7 @@ export class PanelManager {
     }
 
     /**
-     * Dragging process
+     * Процесс перетаскивания
      */
     onDragging(event) {
         if (!this.dragState.isDragging) return;
@@ -132,6 +137,7 @@ export class PanelManager {
         const newX = this.dragState.initialX + deltaX;
         const newY = this.dragState.initialY + deltaY;
 
+        // Ограничение по границам окна
         const panel = panelData.element;
         const rect = panel.getBoundingClientRect();
         const maxX = window.innerWidth - rect.width;
@@ -144,7 +150,7 @@ export class PanelManager {
     }
 
     /**
-     * Stop dragging
+     * Завершение перетаскивания
      */
     stopDragging() {
         if (!this.dragState.isDragging) return;
@@ -170,7 +176,7 @@ export class PanelManager {
     }
 
     /**
-     * Set panel position
+     * Установка позиции панели
      */
     setPosition(panelId, x, y) {
         const panelData = this.panels.get(panelId);
@@ -186,7 +192,7 @@ export class PanelManager {
     }
 
     /**
-     * Open panel
+     * Открытие панели
      */
     open(panelId) {
         const panelData = this.panels.get(panelId);
@@ -203,7 +209,7 @@ export class PanelManager {
     }
 
     /**
-     * Close panel
+     * Закрытие панели
      */
     close(panelId) {
         const panelData = this.panels.get(panelId);
@@ -218,7 +224,7 @@ export class PanelManager {
     }
 
     /**
-     * Toggle panel visibility
+     * Переключение видимости панели
      */
     toggle(panelId) {
         const panelData = this.panels.get(panelId);
@@ -232,7 +238,7 @@ export class PanelManager {
     }
 
     /**
-     * Bring panel to front
+     * Поднятие панели на передний план
      */
     bringToFront(panelId) {
         const panelData = this.panels.get(panelId);
@@ -243,7 +249,7 @@ export class PanelManager {
     }
 
     /**
-     * Check if panel is open
+     * Проверка открыта ли панель
      */
     isOpen(panelId) {
         const panelData = this.panels.get(panelId);
@@ -251,7 +257,7 @@ export class PanelManager {
     }
 
     /**
-     * Close all non-persistent panels
+     * Закрытие всех непостоянных панелей
      */
     closeAll(except = []) {
         this.panels.forEach((panelData, panelId) => {
@@ -262,7 +268,7 @@ export class PanelManager {
     }
 
     /**
-     * Reset panel position to initial
+     * Сброс позиции панели к начальной
      */
     resetPosition(panelId) {
         const panelData = this.panels.get(panelId);
@@ -283,7 +289,7 @@ export class PanelManager {
     }
 
     /**
-     * Get current panel position
+     * Получение текущей позиции панели
      */
     getPosition(panelId) {
         const panelData = this.panels.get(panelId);
@@ -291,7 +297,7 @@ export class PanelManager {
     }
 
     /**
-     * Center panel on screen
+     * Центрирование панели на экране
      */
     center(panelId) {
         const panelData = this.panels.get(panelId);

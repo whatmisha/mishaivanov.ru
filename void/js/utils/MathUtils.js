@@ -1,29 +1,29 @@
 /**
- * Math utilities and unit conversion
+ * Математические утилиты и конвертация единиц измерения
  */
 export class MathUtils {
     /**
-     * Convert millimeters to points
-     * @param {number} mm - value in millimeters
-     * @returns {number} - value in points
+     * Конвертация миллиметров в пункты (points)
+     * @param {number} mm - значение в миллиметрах
+     * @returns {number} - значение в пунктах
      */
     static mmToPt(mm) {
         return mm * 2.83465;
     }
 
     /**
-     * Convert points to millimeters
-     * @param {number} pt - value in points
-     * @returns {number} - value in millimeters
+     * Конвертация пунктов в миллиметры
+     * @param {number} pt - значение в пунктах
+     * @returns {number} - значение в миллиметрах
      */
     static ptToMm(pt) {
         return pt / 2.83465;
     }
 
     /**
-     * Round value to specified number of decimal places
-     * @param {number} value - value to round
-     * @param {number} decimals - number of decimal places
+     * Округление значения до заданного количества знаков после запятой
+     * @param {number} value - значение для округления
+     * @param {number} decimals - количество знаков после запятой
      * @returns {number}
      */
     static roundTo(value, decimals) {
@@ -32,10 +32,10 @@ export class MathUtils {
     }
 
     /**
-     * Clamp value to specified range
-     * @param {number} value - value
-     * @param {number} min - minimum
-     * @param {number} max - maximum
+     * Ограничение значения в заданном диапазоне
+     * @param {number} value - значение
+     * @param {number} min - минимум
+     * @param {number} max - максимум
      * @returns {number}
      */
     static clamp(value, min, max) {
@@ -43,9 +43,9 @@ export class MathUtils {
     }
 
     /**
-     * Snap value to nearest grid step
-     * @param {number} value - value
-     * @param {number} gridSize - grid size
+     * Привязка значения к ближайшему шагу сетки
+     * @param {number} value - значение
+     * @param {number} gridSize - размер сетки
      * @returns {number}
      */
     static snapToGrid(value, gridSize) {
@@ -53,20 +53,22 @@ export class MathUtils {
     }
 
     /**
-     * Convert Row + BaselineOffset to Y (position in baseline modules)
-     * @param {number} row - row number
-     * @param {number} baselineOffset - offset in baseline modules
-     * @param {number} rowHeight - row height in modules
+     * Конвертация Row + BaselineOffset в Y (позиция в baseline модулях)
+     * @param {number} row - номер строки
+     * @param {number} baselineOffset - смещение в модулях baseline
+     * @param {number} rowHeight - высота строки в модулях
      * @returns {number}
      */
     static rowBaselineToY(row, baselineOffset, rowHeight) {
+        // row * (rowHeight + 1) + baselineOffset
+        // +1 это gutter между rows (1 модуль baseline)
         return row * (rowHeight + 1) + baselineOffset;
     }
 
     /**
-     * Convert Y (position in baseline modules) to Row + BaselineOffset
-     * @param {number} y - position in baseline modules
-     * @param {number} rowHeight - row height in modules
+     * Конвертация Y (позиция в baseline модулях) в Row + BaselineOffset
+     * @param {number} y - позиция в baseline модулях
+     * @param {number} rowHeight - высота строки в модулях
      * @returns {{row: number, baselineOffset: number}}
      */
     static yToRowBaseline(y, rowHeight) {
@@ -77,9 +79,9 @@ export class MathUtils {
     }
 
     /**
-     * Debounce function - delays execution until calls stop
-     * @param {Function} func - function to debounce
-     * @param {number} wait - wait time in ms
+     * Дебаунс функции - откладывает выполнение до прекращения вызовов
+     * @param {Function} func - функция для дебаунса
+     * @param {number} wait - время ожидания в мс
      * @returns {Function}
      */
     static debounce(func, wait) {
@@ -95,9 +97,9 @@ export class MathUtils {
     }
 
     /**
-     * Throttle function - limits call frequency
-     * @param {Function} func - function to throttle
-     * @param {number} limit - minimum interval between calls in ms
+     * Троттлинг функции - ограничивает частоту вызовов
+     * @param {Function} func - функция для троттлинга
+     * @param {number} limit - минимальный интервал между вызовами в мс
      * @returns {Function}
      */
     static throttle(func, limit) {
@@ -112,24 +114,37 @@ export class MathUtils {
     }
 
     /**
-     * Calculate adaptive Gap for Dash mode
-     * Line starts and ends with dash of dashLength
-     * @param {number} lineLength - line length in pixels
-     * @param {number} dashLength - dash length in pixels
-     * @param {number} gapLength - initial gap length (used for estimation)
-     * @returns {Object} {dashLength, gapLength, numDashes} - adaptive parameters
+     * Вычислить адаптивный Gap для режима Dash
+     * Линия начинается и заканчивается штрихом длиной dashLength
+     * @param {number} lineLength - длина линии в пикселях
+     * @param {number} dashLength - длина штриха в пикселях
+     * @param {number} gapLength - начальная длина промежутка (используется для оценки)
+     * @returns {Object} {dashLength, gapLength, numDashes} - адаптивные параметры
      */
     static calculateAdaptiveDash(lineLength, dashLength, gapLength) {
+        // Минимум один штрих
         if (lineLength <= dashLength) {
             return { dashLength: lineLength, gapLength: 0, numDashes: 1 };
         }
 
+        // Формула для ПОЛОВИННЫХ концов:
+        // lineLength = dashLength/2 + (n-2)*dashLength + dashLength/2 + (n-1)*gap
+        // lineLength = (n-1)*dashLength + (n-1)*gap
+        // lineLength = (n-1)*(dashLength + gap)
+        // n = lineLength/(dashLength + gap) + 1
         let numDashes = Math.round(lineLength / (dashLength + gapLength)) + 1;
+        
+        // Минимум 2 штриха (начало и конец)
         if (numDashes < 2) {
             numDashes = 2;
         }
 
+        // Вычисляем адаптивный gap для половинных концов:
+        // lineLength = (n-1)*(dashLength + gap)
+        // gap = lineLength/(n-1) - dashLength
         const adaptiveGap = lineLength / (numDashes - 1) - dashLength;
+
+        // Если gap получился отрицательным, уменьшаем количество штрихов
         if (adaptiveGap < 0 && numDashes > 2) {
             numDashes--;
             const newGap = lineLength / (numDashes - 1) - dashLength;

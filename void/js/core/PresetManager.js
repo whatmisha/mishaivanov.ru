@@ -1,6 +1,6 @@
 /**
- * PresetManager - parameter preset management
- * Saves and loads parameter sets in localStorage
+ * PresetManager - управление preset'ами параметров
+ * Сохраняет и загружает наборы параметров в localStorage
  */
 
 export class PresetManager {
@@ -10,7 +10,7 @@ export class PresetManager {
     }
 
     /**
-     * Load all presets from localStorage
+     * Загрузить все preset'ы из localStorage
      */
     loadPresets() {
         try {
@@ -23,7 +23,7 @@ export class PresetManager {
     }
 
     /**
-     * Save all presets to localStorage
+     * Сохранить все preset'ы в localStorage
      */
     savePresets() {
         try {
@@ -36,20 +36,24 @@ export class PresetManager {
     }
 
     /**
-     * Save current parameters as preset
-     * @param {string} name - preset name
-     * @param {object} params - parameters object
+     * Сохранить текущие параметры как preset
+     * @param {string} name - имя preset'а
+     * @param {object} params - объект с параметрами
      */
     savePreset(name, params) {
         if (!name || name.trim() === '') {
-            return { success: false, error: 'Preset name cannot be empty' };
+            return { success: false, error: 'Имя preset\'а не может быть пустым' };
         }
 
+        // Очистить имя от лишних пробелов
         name = name.trim();
 
+        // Проверить, не существует ли уже preset с таким именем
         if (this.presets[name]) {
-            return { success: false, error: 'Preset with this name already exists' };
+            return { success: false, error: 'Preset с таким именем уже существует' };
         }
+
+        // Сохранить preset
         this.presets[name] = {
             ...params,
             createdAt: new Date().toISOString()
@@ -58,22 +62,22 @@ export class PresetManager {
         if (this.savePresets()) {
             return { success: true };
         } else {
-            return { success: false, error: 'Save error' };
+            return { success: false, error: 'Ошибка сохранения' };
         }
     }
 
     /**
-     * Load preset
-     * @param {string} name - preset name
-     * @returns {object|null} - preset parameters or null
+     * Загрузить preset
+     * @param {string} name - имя preset'а
+     * @returns {object|null} - параметры preset'а или null
      */
     loadPreset(name) {
         return this.presets[name] || null;
     }
 
     /**
-     * Delete preset
-     * @param {string} name - preset name
+     * Удалить preset
+     * @param {string} name - имя preset'а
      */
     deletePreset(name) {
         if (this.presets[name]) {
@@ -84,16 +88,16 @@ export class PresetManager {
     }
 
     /**
-     * Get list of all presets
-     * @returns {string[]} - array of preset names
+     * Получить список всех preset'ов
+     * @returns {string[]} - массив имен preset'ов
      */
     getPresetNames() {
         return Object.keys(this.presets).sort();
     }
 
     /**
-     * Check if preset exists
-     * @param {string} name - preset name
+     * Проверить, существует ли preset
+     * @param {string} name - имя preset'а
      * @returns {boolean}
      */
     hasPreset(name) {
