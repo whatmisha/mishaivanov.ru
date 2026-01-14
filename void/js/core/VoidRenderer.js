@@ -1,5 +1,5 @@
 /**
- * VoidRenderer - рендеринг текста шрифтом Void на canvas
+ * VoidRenderer - render text with Void typeface on canvas
  */
 
 import { VOID_ALPHABET_ALTERNATIVES, VOID_ALPHABET } from './VoidAlphabet.js';
@@ -15,44 +15,44 @@ export class VoidRenderer {
         this.moduleDrawer = new ModuleDrawer('stroke');
         this.endpointDetector = new EndpointDetector();
         
-        // Параметры шрифта (по умолчанию)
+        // Font parameters (default)
         this.params = {
             text: 'VOID TYPEFACE',
-            stem: 24,              // толщина штриха
-            moduleSize: 24,        // размер одного модуля (в пикселях)
-            letterSpacing: 24,     // отступ между буквами
-            lineHeight: 144,       // интерлиньяж
-            strokesNum: 2,         // количество полосок (для stripes mode)
-            strokeGapRatio: 1.0,   // отношение толщины штриха к промежутку
-            mode: 'fill',          // 'fill', 'stripes' или 'dash'
-            color: '#ffffff',      // цвет букв
-            bgColor: '#000000',    // цвет фона
-            gridColor: '#333333',  // цвет сетки
-            showGrid: true,        // показать сетку
-            textAlign: 'center',   // выравнивание текста: 'left', 'center', 'right'
-            cornerRadius: 0,       // радиус скругления углов
-            roundedCaps: false,    // скругления на концах линий в режиме Stroke (Rounded)
-            showEndpoints: false,   // показать концевые точки и стыки (для отладки)
-            showTestCircles: false // показать окружности на концевых точках (Test режим)
+            stem: 24,              // stroke width
+            moduleSize: 24,        // single module size (in pixels)
+            letterSpacing: 24,     // spacing between letters
+            lineHeight: 144,       // line height
+            strokesNum: 2,         // number of stripes (for stripes mode)
+            strokeGapRatio: 1.0,   // stroke to gap ratio
+            mode: 'fill',          // 'fill', 'stripes' or 'dash'
+            color: '#ffffff',      // letter color
+            bgColor: '#000000',    // background color
+            gridColor: '#333333',  // grid color
+            showGrid: true,        // show grid
+            textAlign: 'center',   // text alignment: 'left', 'center', 'right'
+            cornerRadius: 0,       // corner radius
+            roundedCaps: false,    // rounded line caps in Stroke mode (Rounded)
+            showEndpoints: false,   // show endpoints and joints (for debugging)
+            showTestCircles: false // show circles on endpoints (Test mode)
         };
         
-        this.cols = 5; // колонок в сетке
-        this.rows = 5; // строк в сетке
+        this.cols = 5; // columns in grid
+        this.rows = 5; // rows in grid
         
-        // Кэш для значений по типу модуля (для режима random byType)
+        // Cache for values by module type (for random byType mode)
         this.moduleTypeCache = {};
-        // Кэш для значений каждого модуля (для режима random full)
+        // Cache for values of each module (for random full mode)
         this.moduleValueCache = {};
         
-        // Кэш выбранных альтернативных глифов для каждой буквы
-        // Ключ: `${lineIndex}_${charIndex}`, значение: индекс альтернативы (0 = базовый, 1+ = альтернативы)
-        // Если ключа нет в кэше, значит буква использует случайную альтернативу (в режиме Random)
+        // Cache of selected alternative glyphs for each letter
+        // Key: `${lineIndex}_${charIndex}`, value: alternative index (0 = base, 1+ = alternatives)
+        // If key not in cache, letter uses random alternative (in Random mode)
         this.alternativeGlyphCache = {};
         
-        // Текущая буква под курсором (для эффекта прозрачности)
-        this.hoveredLetter = null; // {lineIndex, charIndex} или null
+        // Current letter under cursor (for transparency effect)
+        this.hoveredLetter = null; // {lineIndex, charIndex} or null
         
-        // Сохранить размеры канваса в CSS пикселях
+        // Save canvas dimensions in CSS pixels
         this.canvasWidth = 0;
         this.canvasHeight = 0;
         
@@ -60,7 +60,7 @@ export class VoidRenderer {
     }
 
     /**
-     * Очистить кэш значений по типу модуля
+     * Clear cache of values by module type
      */
     clearModuleTypeCache() {
         this.moduleTypeCache = {};
@@ -68,14 +68,14 @@ export class VoidRenderer {
     }
 
     /**
-     * Очистить кэш альтернативных глифов (при Update в режиме Random)
+     * Clear alternative glyphs cache (on Update in Random mode)
      */
     clearAlternativeGlyphCache() {
         this.alternativeGlyphCache = {};
     }
 
     /**
-     * Получить случайные значения для модуля (с учетом режима рандома)
+     * Get random values for module (considering random mode)
      */
     getRandomModuleValues(moduleType, cacheKey = null) {
         const cache = this.params.randomModeType === 'full' ? this.moduleValueCache : this.moduleTypeCache;
@@ -83,13 +83,13 @@ export class VoidRenderer {
     }
 
     /**
-     * Настройка canvas с учетом devicePixelRatio
+     * Setup canvas considering devicePixelRatio
      */
     setupCanvas() {
         const dpr = window.devicePixelRatio || 1;
         const rect = this.canvas.getBoundingClientRect();
         
-        // Сохранить размеры в CSS пикселях
+        // Save dimensions in CSS pixels
         this.canvasWidth = rect.width;
         this.canvasHeight = rect.height;
         
@@ -103,10 +103,10 @@ export class VoidRenderer {
     }
 
     /**
-     * Обновить параметры
+     * Update parameters
      */
     updateParams(newParams) {
-        // Проверить, изменились ли параметры random, и очистить кэш если да
+        // Check if random parameters changed and clear cache if yes
         const oldStemMin = this.params.randomStemMin;
         const oldStemMax = this.params.randomStemMax;
         const oldStrokesMin = this.params.randomStrokesMin;
@@ -117,7 +117,7 @@ export class VoidRenderer {
         
         Object.assign(this.params, newParams);
         
-        // Если параметры random изменились, очистить кэш
+        // If random parameters changed, clear cache
         if (this.params.mode === 'random' && (
             oldStemMin !== this.params.randomStemMin ||
             oldStemMax !== this.params.randomStemMax ||
@@ -130,15 +130,15 @@ export class VoidRenderer {
             this.clearModuleTypeCache();
         }
         
-        // Обновить параметры модуля
-        // Solid mode теперь это Stripes с Lines=1
-        // Random mode использует 'stripes' по умолчанию, dash применяется случайно для каждого модуля
+        // Update module parameters
+        // Solid mode is now Stripes with Lines=1
+        // Random mode uses 'stripes' by default, dash is applied randomly for each module
         let actualMode;
         if (this.params.mode === 'fill') {
             actualMode = 'stripes';
         } else if (this.params.mode === 'random') {
-            // В режиме random используем 'stripes' по умолчанию
-            // Dash будет применяться случайно для каждого модуля отдельно
+            // In random mode use 'stripes' by default
+            // Dash will be applied randomly for each module separately
             actualMode = 'stripes';
         } else {
             actualMode = this.params.mode;
@@ -149,20 +149,20 @@ export class VoidRenderer {
         this.moduleDrawer.setStripesParams(actualStrokesNum, this.params.strokeGapRatio);
         this.moduleDrawer.setCornerRadius(this.params.cornerRadius || 0);
         
-        // В режиме Random использовать randomRounded, иначе roundedCaps
+        // In Random mode use randomRounded, otherwise roundedCaps
         const shouldUseRounded = this.params.mode === 'random' 
             ? (this.params.randomRounded || false)
             : (this.params.roundedCaps || false);
         this.moduleDrawer.setRoundedCaps(shouldUseRounded);
         
-        // В режиме Random использовать randomCloseEnds, иначе closeEnds
+        // In Random mode use randomCloseEnds, otherwise closeEnds
         const shouldUseCloseEnds = this.params.mode === 'random'
             ? (this.params.randomCloseEnds || false)
             : (this.params.closeEnds || false);
         this.moduleDrawer.setCloseEnds(shouldUseCloseEnds);
         
-        // shouldUseEndpoints = true если нужны endpoints (для Round или Close Ends)
-        // Это нужно для корректного определения концевых модулей
+        // shouldUseEndpoints = true if endpoints needed (for Round or Close Ends)
+        // This is needed for correct determination of end modules
         
         this.moduleDrawer.setDashParams(
             this.params.dashLength || 0.10, 
@@ -172,31 +172,31 @@ export class VoidRenderer {
     }
 
     /**
-     * Установить текст
+     * Set text
      */
     setText(text) {
         this.params.text = text;
     }
 
     /**
-     * Отрисовать весь текст
+     * Render entire text
      */
     render() {
-        // Проверить, изменились ли размеры контейнера, и обновить канвас если нужно
+        // Check if container dimensions changed and update canvas if needed
         const rect = this.canvas.getBoundingClientRect();
         if (this.canvasWidth !== rect.width || this.canvasHeight !== rect.height) {
             this.setupCanvas();
         }
         
-        // Использовать сохраненные размеры канваса
+        // Use saved canvas dimensions
         const canvasW = this.canvasWidth;
         const canvasH = this.canvasHeight;
         
-        // Очистить canvas
+        // Clear canvas
         this.ctx.fillStyle = this.params.bgColor;
         this.ctx.fillRect(0, 0, canvasW, canvasH);
         
-        // Нарисовать сетку если включена
+        // Draw grid if enabled
         if (this.params.showGrid) {
             this.drawGrid(canvasW, canvasH);
         }
@@ -204,28 +204,28 @@ export class VoidRenderer {
         const text = this.params.text;
         if (!text) return;
         
-        // Разбить текст на строки и удалить пробелы в начале и конце каждой строки
+        // Split text into lines and remove spaces at start and end of each line
         const lines = text.split('\n').map(line => line.replace(/^\s+|\s+$/g, ''));
         
-        // Вычислить размеры
+        // Calculate dimensions
         const letterW = this.cols * this.params.moduleSize;
         const letterH = this.rows * this.params.moduleSize;
         
-        // Вычислить общие размеры блока текста с учетом разной ширины пробела
+        // Calculate total text block dimensions considering different space width
         let totalWidth = 0;
         for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
             const line = lines[lineIndex];
             let lineWidth = 0;
             for (let i = 0; i < line.length; i++) {
                 const char = line[i];
-                // Двойной пробел (и более) имеет ширину 5 модулей (3+2) без letter spacing между пробелами
+                // Double space (and more) has width of 5 modules (3+2) without letter spacing between spaces
                 let charWidth;
                 let addSpacing = true;
                 if (char === ' ') {
-                    // Если предыдущий символ тоже пробел, то этот пробел = 2 модуля и БЕЗ letter spacing перед ним
+                    // If previous character is also space, this space = 2 modules and WITHOUT letter spacing before it
                     if (i > 0 && line[i - 1] === ' ') {
                         charWidth = 2 * this.params.moduleSize;
-                        addSpacing = false; // Не добавляем spacing между пробелами
+                        addSpacing = false; // Don't add spacing between spaces
                     } else {
                         charWidth = 3 * this.params.moduleSize;
                     }
@@ -234,7 +234,7 @@ export class VoidRenderer {
                 }
                 lineWidth += charWidth + (addSpacing ? this.params.letterSpacing : 0);
             }
-            // Убрать последний отступ (если последний символ не пробел после пробела)
+            // Remove last spacing (if last character is not space after space)
             if (line.length > 0 && !(line[line.length - 1] === ' ' && line.length > 1 && line[line.length - 2] === ' ')) {
                 lineWidth -= this.params.letterSpacing;
             }
@@ -242,27 +242,27 @@ export class VoidRenderer {
         }
         const totalHeight = lines.length * (letterH + this.params.lineHeight) - this.params.lineHeight;
         
-        // Начальная позиция по вертикали (центрирование)
+        // Initial vertical position (centering)
         const startY = (canvasH - totalHeight) / 2;
         
-        // Выравнивание текста
+        // Text alignment
         const textAlign = this.params.textAlign || 'center';
         
-        // Отрисовать каждую строку
+        // Render each line
         for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
             const line = lines[lineIndex];
-            // Вычислить ширину строки с учетом разной ширины пробела
+            // Calculate line width considering different space width
             let lineWidth = 0;
             for (let i = 0; i < line.length; i++) {
                 const char = line[i];
-                // Двойной пробел (и более) имеет ширину 5 модулей (3+2) без letter spacing между пробелами
+                // Double space (and more) has width of 5 modules (3+2) without letter spacing between spaces
                 let charWidth;
                 let addSpacing = true;
                 if (char === ' ') {
-                    // Если предыдущий символ тоже пробел, то этот пробел = 2 модуля и БЕЗ letter spacing перед ним
+                    // If previous character is also space, this space = 2 modules and WITHOUT letter spacing before it
                     if (i > 0 && line[i - 1] === ' ') {
                         charWidth = 2 * this.params.moduleSize;
-                        addSpacing = false; // Не добавляем spacing между пробелами
+                        addSpacing = false; // Don't add spacing between spaces
                     } else {
                         charWidth = 3 * this.params.moduleSize;
                     }
@@ -271,12 +271,12 @@ export class VoidRenderer {
                 }
                 lineWidth += charWidth + (addSpacing ? this.params.letterSpacing : 0);
             }
-            // Убрать последний отступ (если последний символ не пробел после пробела)
+            // Remove last spacing (if last character is not space after space)
             if (line.length > 0 && !(line[line.length - 1] === ' ' && line.length > 1 && line[line.length - 2] === ' ')) {
                 lineWidth -= this.params.letterSpacing;
             }
             
-            // Вычислить позицию строки в зависимости от выравнивания
+            // Calculate line position depending on alignment
             let lineX;
             if (textAlign === 'left') {
                 lineX = (canvasW - totalWidth) / 2;
@@ -288,18 +288,18 @@ export class VoidRenderer {
             
             const lineY = startY + lineIndex * (letterH + this.params.lineHeight);
             
-            // Отрисовать каждую букву в строке
+            // Render each letter in line
             let currentX = lineX;
             for (let charIndex = 0; charIndex < line.length; charIndex++) {
                 const char = line[charIndex];
-                // Двойной пробел (и более) имеет ширину 5 модулей (3+2) без letter spacing между пробелами
+                // Double space (and more) has width of 5 modules (3+2) without letter spacing between spaces
                 let charWidth;
                 let addSpacing = true;
                 if (char === ' ') {
-                    // Если предыдущий символ тоже пробел, то этот пробел = 2 модуля и БЕЗ letter spacing перед ним
+                    // If previous character is also space, this space = 2 modules and WITHOUT letter spacing before it
                     if (charIndex > 0 && line[charIndex - 1] === ' ') {
                         charWidth = 2 * this.params.moduleSize;
-                        addSpacing = false; // Не добавляем spacing между пробелами
+                        addSpacing = false; // Don't add spacing between spaces
                     } else {
                         charWidth = 3 * this.params.moduleSize;
                     }
@@ -314,8 +314,8 @@ export class VoidRenderer {
     }
 
     /**
-     * Отрисовать сетку модулей на весь фон
-     * Сетка выравнивается по позиции букв
+     * Draw module grid on entire background
+     * Grid aligns to letter positions
      */
     drawGrid(canvasW, canvasH) {
         const moduleSize = this.params.moduleSize;
@@ -325,20 +325,20 @@ export class VoidRenderer {
         const text = this.params.text;
         if (!text) return;
         
-        // Разбить текст на строки и удалить пробелы в начале и конце каждой строки
+        // Split text into lines and remove spaces at start and end of each line
         const lines = text.split('\n').map(line => line.replace(/^\s+|\s+$/g, ''));
         
-        // Вычислить размеры блока текста (копируем логику из render)
+        // Calculate text block dimensions (copy logic from render)
         const maxLineLength = Math.max(...lines.map(line => line.length));
         const totalWidth = maxLineLength * (letterW + this.params.letterSpacing) - this.params.letterSpacing;
         const totalHeight = lines.length * (letterH + this.params.lineHeight) - this.params.lineHeight;
         
-        // Начальная позиция первой буквы (центрирование)
+        // Initial position of first letter (centering)
         const startX = (canvasW - totalWidth) / 2;
         const startY = (canvasH - totalHeight) / 2;
         
-        // Вычисляем offset для сетки - сетка должна быть кратна moduleSize
-        // и проходить через startX, startY
+        // Calculate grid offset - grid should be multiple of moduleSize
+        // and pass through startX, startY
         const offsetX = startX % moduleSize;
         const offsetY = startY % moduleSize;
         
@@ -346,13 +346,13 @@ export class VoidRenderer {
         this.ctx.lineWidth = 0.5;
         this.ctx.beginPath();
         
-        // Вертикальные линии - начинаем с offsetX
+        // Vertical lines - start from offsetX
         for (let x = offsetX; x <= canvasW; x += moduleSize) {
             this.ctx.moveTo(x, 0);
             this.ctx.lineTo(x, canvasH);
         }
         
-        // Горизонтальные линии - начинаем с offsetY
+        // Horizontal lines - start from offsetY
         for (let y = offsetY; y <= canvasH; y += moduleSize) {
             this.ctx.moveTo(0, y);
             this.ctx.lineTo(canvasW, y);
@@ -362,27 +362,27 @@ export class VoidRenderer {
     }
 
     /**
-     * Отрисовать одну букву
+     * Render single letter
      */
     drawLetter(char, x, y, lineIndex = null, charIndex = null) {
-        // Определяем, использовать ли альтернативу
+        // Determine whether to use alternative
         let alternativeIndex = null;
         const cacheKey = lineIndex !== null && charIndex !== null ? `${lineIndex}_${charIndex}` : null;
         
         if (cacheKey && this.alternativeGlyphCache.hasOwnProperty(cacheKey)) {
-            // Буква зафиксирована в кэше - используем её альтернативу
+            // Letter fixed in cache - use its alternative
             alternativeIndex = this.alternativeGlyphCache[cacheKey];
         } else if (this.params.mode === 'random' && this.params.useAlternativesInRandom && cacheKey) {
-            // В режиме Random с включенными альтернативами - генерируем случайную альтернативу один раз
-            // и сохраняем её в кэш для стабильности между рендерами
+            // In Random mode with alternatives enabled - generate random alternative once
+            // and save it to cache for stability between renders
             const charUpper = char.toUpperCase();
             const alternatives = VOID_ALPHABET_ALTERNATIVES[charUpper];
             if (alternatives && alternatives.length > 0) {
-                // Генерируем случайный индекс (0 = базовый, 1+ = альтернативы)
+                // Generate random index (0 = base, 1+ = alternatives)
                 const baseGlyph = VOID_ALPHABET[charUpper] || VOID_ALPHABET[" "];
                 const allGlyphs = [baseGlyph, ...alternatives];
                 const randomIndex = Math.floor(Math.random() * allGlyphs.length);
-                // Сохраняем в кэш
+                // Save to cache
                 this.alternativeGlyphCache[cacheKey] = randomIndex;
                 alternativeIndex = randomIndex;
             }
@@ -394,45 +394,45 @@ export class VoidRenderer {
         
         const moduleW = this.params.moduleSize;
         const moduleH = this.params.moduleSize;
-        // Пробел имеет ширину 3 модуля вместо 5
+        // Space has width of 3 modules instead of 5
         const letterCols = char === ' ' ? 3 : this.cols;
         const letterW = letterCols * moduleW;
         const letterH = this.rows * moduleH;
         
-        // Проверяем, наведена ли мышь на эту букву (для эффекта прозрачности)
+        // Check if mouse is hovering over this letter (for transparency effect)
         const isHovered = this.hoveredLetter && 
             this.hoveredLetter.lineIndex === lineIndex && 
             this.hoveredLetter.charIndex === charIndex;
         
-        // Сохраняем текущий globalAlpha
+        // Save current globalAlpha
         const originalAlpha = this.ctx.globalAlpha;
         if (isHovered) {
             this.ctx.globalAlpha = 0.8;
         }
         
-        // Базовое значение stem для окружностей (используется если модуль не найден)
+        // Base stem value for circles (used if module not found)
         const baseStem = this.params.stem;
         
-        // Определяем, нужно ли применять roundedCaps только к концевым модулям
+        // Determine if roundedCaps should be applied only to end modules
         const shouldUseRounded = this.params.mode === 'random' 
             ? (this.params.randomRounded || false)
             : (this.params.roundedCaps || false);
         
-        // В режиме Random использовать randomCloseEnds, иначе closeEnds
+        // In Random mode use randomCloseEnds, otherwise closeEnds
         const shouldUseCloseEnds = this.params.mode === 'random'
             ? (this.params.randomCloseEnds || false)
             : (this.params.closeEnds || false);
         
-        // Нужны endpoints если включен Round ИЛИ Close Ends
+        // Endpoints needed if Round OR Close Ends enabled
         const shouldUseEndpoints = shouldUseRounded || shouldUseCloseEnds;
         
-        // Анализируем глиф для определения endpoints (если нужны для Round или Close Ends)
-        let endpointMap = null; // Карта: "i_j" -> {top, right, bottom, left}
+        // Analyze glyph to determine endpoints (if needed for Round or Close Ends)
+        let endpointMap = null; // Map: "i_j" -> {top, right, bottom, left}
         if (shouldUseEndpoints) {
             try {
                 const analysis = this.endpointDetector.analyzeGlyph(glyphCode, letterCols, this.rows);
                 endpointMap = {};
-                // Создаем карту модулей с endpoints, указывая стороны
+                // Create map of modules with endpoints, indicating sides
                 analysis.endpoints.forEach(ep => {
                     const key = `${ep.col}_${ep.row}`;
                     if (!endpointMap[key]) {
@@ -445,7 +445,7 @@ export class VoidRenderer {
             }
         }
         
-        // Отрисовать каждый модуль в сетке 5×5 (или 3×5 для пробела)
+        // Render each module in 5×5 grid (or 3×5 for space)
         for (let i = 0; i < letterCols; i++) {
             for (let j = 0; j < this.rows; j++) {
                 const index = (i + j * this.cols) * 2;
@@ -455,13 +455,13 @@ export class VoidRenderer {
                 const moduleX = x + i * moduleW;
                 const moduleY = y + j * moduleH;
                 
-                // Для random mode генерируем случайные значения для каждого модуля
+                // For random mode generate random values for each module
                 let stem = baseStem;
                 let strokesNum = this.params.strokesNum;
                 let strokeGapRatio = this.params.strokeGapRatio;
                 
                 if (this.params.mode === 'random') {
-                    // Создаем уникальный ключ для этого модуля (позиция в тексте + позиция в модуле)
+                    // Create unique key for this module (position in text + position in module)
                     const cacheKey = this.params.randomModeType === 'full' && lineIndex !== null && charIndex !== null
                         ? `${lineIndex}_${charIndex}_${i}_${j}` 
                         : null;
@@ -471,7 +471,7 @@ export class VoidRenderer {
                     strokeGapRatio = randomValues.strokeGapRatio;
                 }
                 
-                // Временно обновить параметры в moduleDrawer для этого модуля
+                // Temporarily update parameters in moduleDrawer for this module
                 const originalStrokeGapRatio = this.moduleDrawer.strokeGapRatio;
                 const originalDashLength = this.moduleDrawer.dashLength;
                 const originalGapLength = this.moduleDrawer.gapLength;
@@ -480,7 +480,7 @@ export class VoidRenderer {
                 
                 if (this.params.mode === 'random') {
                     this.moduleDrawer.strokeGapRatio = strokeGapRatio;
-                    // Применяем dashLength и gapLength из randomValues
+                    // Apply dashLength and gapLength from randomValues
                     const cacheKey = this.params.randomModeType === 'full' && lineIndex !== null && charIndex !== null
                         ? `${lineIndex}_${charIndex}_${i}_${j}` 
                         : null;
@@ -489,29 +489,29 @@ export class VoidRenderer {
                     this.moduleDrawer.gapLength = randomValues.gapLength;
                     moduleUseDash = randomValues.useDash || false;
                     
-                    // Если модуль должен использовать dash, временно меняем режим на 'sd'
+                    // If module should use dash, temporarily change mode to 'sd'
                     if (moduleUseDash) {
                         this.moduleDrawer.mode = 'sd';
                     }
                 }
                 
-                // Устанавливаем endpoints для модуля
+                // Set endpoints for module
                 const moduleKey = `${i}_${j}`;
                 const endpointSides = endpointMap && endpointMap[moduleKey];
                 const hasEndpoints = endpointSides ? true : false;
                 const originalRoundedCaps = this.moduleDrawer.roundedCaps;
                 const originalEndpointSides = this.moduleDrawer.endpointSides;
                 
-                // endpointSides нужен для Round и Close Ends
+                // endpointSides needed for Round and Close Ends
                 if (shouldUseEndpoints) {
                     this.moduleDrawer.endpointSides = endpointSides || null;
                 }
                 
-                // roundedCaps управляет скруглением концов линий
+                // roundedCaps controls rounding of line ends
                 if (shouldUseRounded) {
-                    // В dash/sd mode: скругление для всех модулей, укорачивание только для концевых
-                    // В solid/stripes: скругление и укорачивание только для концевых
-                    // Для random mode с dash используем sd логику
+                    // In dash/sd mode: rounding for all modules, shortening only for end modules
+                    // In solid/stripes: rounding and shortening only for end modules
+                    // For random mode with dash use sd logic
                     const isDashMode = this.params.mode === 'dash' || this.params.mode === 'sd' || moduleUseDash;
                     this.moduleDrawer.roundedCaps = isDashMode ? true : hasEndpoints;
                 }
@@ -529,7 +529,7 @@ export class VoidRenderer {
                     this.params.mode === 'random' ? strokesNum : null
                 );
                 
-                // Восстановить оригинальные значения
+                // Restore original values
                 if (this.params.mode === 'random') {
                     this.moduleDrawer.strokeGapRatio = originalStrokeGapRatio;
                     this.moduleDrawer.dashLength = originalDashLength;
@@ -545,10 +545,10 @@ export class VoidRenderer {
             }
         }
         
-        // Восстанавливаем globalAlpha
+        // Restore globalAlpha
         this.ctx.globalAlpha = originalAlpha;
         
-        // Отрисовать концевые точки и стыки (если включено)
+        // Render endpoints and joints (if enabled)
         if (this.params.showEndpoints) {
             try {
                 const analysis = this.endpointDetector.analyzeGlyph(glyphCode, letterCols, this.rows);
@@ -563,7 +563,7 @@ export class VoidRenderer {
                     this.params.bgColor     // Background Color
                 );
                 
-                // Отрисовать окружности на концевых точках (Test режим)
+                // Render circles on endpoints (Test mode)
                 if (this.params.showTestCircles) {
                     this.renderTestCircles(glyphCode, letterCols, analysis.endpoints, moduleW, x, y, baseStem);
                 }
@@ -571,7 +571,7 @@ export class VoidRenderer {
                 console.error('Error rendering endpoints:', error);
             }
         } else if (this.params.showTestCircles) {
-            // Если только Test включен, но не Endpoints, все равно анализируем и рисуем окружности
+            // If only Test enabled but not Endpoints, still analyze and draw circles
             try {
                 const analysis = this.endpointDetector.analyzeGlyph(glyphCode, letterCols, this.rows);
                 this.renderTestCircles(glyphCode, letterCols, analysis.endpoints, moduleW, x, y, baseStem);
@@ -582,12 +582,12 @@ export class VoidRenderer {
     }
 
     /**
-     * Отрисовать окружности на концевых точках (Test режим)
+     * Render circles on endpoints (Test mode)
      */
     renderTestCircles(glyphCode, letterCols, endpoints, moduleW, x, y, stem) {
         if (!endpoints || endpoints.length === 0) return;
         
-        // Создаем сетку модулей для получения типа и поворота
+        // Create module grid to get type and rotation
         const grid = [];
         for (let row = 0; row < this.rows; row++) {
             grid[row] = [];
@@ -613,7 +613,7 @@ export class VoidRenderer {
                 const module = grid[ep.row] && grid[ep.row][ep.col];
                 if (!module || module.type === 'E') return;
                 
-                // Получаем координаты точки на кривой относительно начала модуля
+                // Get point coordinates on curve relative to module start
                 const point = this.endpointDetector.getLineEndPointCoordinates(
                     module.type,
                     module.rotation,
@@ -622,9 +622,9 @@ export class VoidRenderer {
                     stem
                 );
                 
-                // Проверяем, что координаты были вычислены (не остались 0,0)
+                // Check that coordinates were calculated (not remained 0,0)
                 if (!point || (point.x === 0 && point.y === 0 && module.type !== 'C')) {
-                    // Fallback: используем координаты на стороне модуля
+                    // Fallback: use coordinates on module side
                     const fallbackPoint = this.endpointDetector.getPointCoordinates(ep.col, ep.row, ep.side, moduleW);
                     const moduleX = x + ep.col * moduleW;
                     const moduleY = y + ep.row * moduleW;
@@ -638,12 +638,12 @@ export class VoidRenderer {
                     return;
                 }
                 
-                // Координаты точки относительно модуля, преобразуем в координаты относительно буквы
+                // Point coordinates relative to module, convert to coordinates relative to letter
                 const moduleX = x + ep.col * moduleW;
                 const moduleY = y + ep.row * moduleW;
                 
-                // Рисуем окружность диаметром = stem / 2 (толщина линии)
-                // В ModuleDrawer lineWidth = stem / 2, поэтому диаметр окружности = stem / 2
+                // Draw circle with diameter = stem / 2 (line width)
+                // In ModuleDrawer lineWidth = stem / 2, so circle diameter = stem / 2
                 const radius = stem / 4;
                 this.ctx.beginPath();
                 this.ctx.arc(moduleX + point.x, moduleY + point.y, radius, 0, Math.PI * 2);
@@ -657,7 +657,7 @@ export class VoidRenderer {
     }
 
     /**
-     * Ресайз canvas
+     * Resize canvas
      */
     resize() {
         this.setupCanvas();
@@ -665,16 +665,16 @@ export class VoidRenderer {
     }
 
     /**
-     * Определить позицию буквы по координатам клика
-     * @param {number} clickX - координата X клика
-     * @param {number} clickY - координата Y клика
-     * @returns {Object|null} - объект с lineIndex, charIndex, char или null если клик не попал в букву
+     * Determine letter position by click coordinates
+     * @param {number} clickX - click X coordinate
+     * @param {number} clickY - click Y coordinate
+     * @returns {Object|null} - object with lineIndex, charIndex, char or null if click didn't hit letter
      */
     getLetterPositionAt(clickX, clickY) {
         const text = this.params.text;
         if (!text) return null;
         
-        // Убеждаемся, что размеры canvas установлены
+        // Ensure canvas dimensions are set
         if (this.canvasWidth === 0 || this.canvasHeight === 0) {
             const rect = this.canvas.getBoundingClientRect();
             this.canvasWidth = rect.width;
@@ -687,7 +687,7 @@ export class VoidRenderer {
         const letterW = this.cols * moduleW;
         const letterH = this.rows * moduleH;
         
-        // Вычислить общие размеры блока текста
+        // Calculate total text block dimensions
         let totalWidth = 0;
         for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
             const line = lines[lineIndex];
@@ -718,7 +718,7 @@ export class VoidRenderer {
         const startY = (this.canvasHeight - totalHeight) / 2;
         const textAlign = this.params.textAlign || 'center';
         
-        // Проверяем каждую строку
+        // Check each line
         for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
             const line = lines[lineIndex];
             let lineWidth = 0;
@@ -753,7 +753,7 @@ export class VoidRenderer {
             
             const lineY = startY + lineIndex * (letterH + this.params.lineHeight);
             
-            // Проверяем каждую букву в строке
+            // Check each letter in line
             let currentX = lineX;
             for (let charIndex = 0; charIndex < line.length; charIndex++) {
                 const char = line[charIndex];
@@ -770,7 +770,7 @@ export class VoidRenderer {
                     charWidth = letterW;
                 }
                 
-                // Проверяем попадание клика в эту букву
+                // Check if click hit this letter
                 if (clickX >= currentX && clickX < currentX + charWidth &&
                     clickY >= lineY && clickY < lineY + letterH) {
                     return { lineIndex, charIndex, char };
@@ -784,10 +784,10 @@ export class VoidRenderer {
     }
 
     /**
-     * Переключить альтернативу для буквы
-     * @param {number} lineIndex - индекс строки
-     * @param {number} charIndex - индекс символа в строке
-     * @returns {boolean} - true если альтернатива была переключена, false если у символа нет альтернатив
+     * Toggle alternative for letter
+     * @param {number} lineIndex - line index
+     * @param {number} charIndex - character index in line
+     * @returns {boolean} - true if alternative was toggled, false if character has no alternatives
      */
     toggleLetterAlternative(lineIndex, charIndex) {
         const text = this.params.text;
@@ -801,28 +801,28 @@ export class VoidRenderer {
         
         const char = line[charIndex].toUpperCase();
         
-        // Проверяем, есть ли альтернативы для этого символа
+        // Check if there are alternatives for this character
         const alternatives = VOID_ALPHABET_ALTERNATIVES[char];
         if (!alternatives || !alternatives.length) return false;
         
         const cacheKey = `${lineIndex}_${charIndex}`;
         
-        // Определяем текущий индекс альтернативы
-        // Если буква не зафиксирована в кэше, значит используется базовый глиф (индекс 0)
+        // Determine current alternative index
+        // If letter not fixed in cache, base glyph is used (index 0)
         const currentIndex = this.alternativeGlyphCache.hasOwnProperty(cacheKey) 
             ? this.alternativeGlyphCache[cacheKey] 
             : 0;
         
-        // Переключаем на следующую альтернативу по порядку (0 -> 1 -> 2 -> ... -> max -> 0)
-        const maxIndex = alternatives.length; // 0 = базовый, 1..max = альтернативы
+        // Switch to next alternative in order (0 -> 1 -> 2 -> ... -> max -> 0)
+        const maxIndex = alternatives.length; // 0 = base, 1..max = alternatives
         const nextIndex = (currentIndex + 1) % (maxIndex + 1);
         
-        // Сохраняем следующий индекс в кэш
+        // Save next index to cache
         if (nextIndex === 0) {
-            // Если возвращаемся к базовому, удаляем из кэша (чтобы использовать базовый глиф напрямую)
+            // If returning to base, remove from cache (to use base glyph directly)
             delete this.alternativeGlyphCache[cacheKey];
         } else {
-            // Сохраняем индекс альтернативы (1, 2, 3, ...)
+            // Save alternative index (1, 2, 3, ...)
             this.alternativeGlyphCache[cacheKey] = nextIndex;
         }
         
@@ -830,8 +830,8 @@ export class VoidRenderer {
     }
 
     /**
-     * Установить букву под курсором (для эффекта прозрачности)
-     * @param {Object|null} position - {lineIndex, charIndex} или null
+     * Set letter under cursor (for transparency effect)
+     * @param {Object|null} position - {lineIndex, charIndex} or null
      */
     setHoveredLetter(position) {
         this.hoveredLetter = position;

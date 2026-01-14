@@ -40,7 +40,7 @@
    ============================================ */
 
 :root {
-    /* Цветовая схема - темная тема */
+    /* Color scheme - dark theme */
     --color-bg: #000;
     --color-bg-panel: #1a1a1a;
     --color-bg-input: #0a0a0a;
@@ -52,7 +52,7 @@
     --color-border: #333;
     --color-grid: #d2d2d2;
     
-    /* Отступы - используйте для консистентности */
+    /* Spacing - use for consistency */
     --spacing-xs: 2px;
     --spacing-sm: 4px;
     --spacing-md: 8px;
@@ -62,29 +62,29 @@
     --spacing-3xl: 20px;
     --spacing-4xl: 30px;
     
-    /* Радиусы скругления */
-    --radius: 12px;           /* Панели */
+    /* Border radius */
+    --radius: 12px;           /* Panels */
     --radius-sm: 12px;
-    --radius-button: 20px;    /* Кнопки */
+    --radius-button: 20px;    /* Buttons */
     --radius-input: 6px;      /* Inputs, dropdowns */
     
-    /* Transitions - базовые */
+    /* Transitions - basic */
     --transition-fast: 0.15s ease;
     --transition-normal: 0.2s ease;
     --transition-slow: 0.3s ease;
     
-    /* Premium Easing Functions - для плавных анимаций */
+    /* Premium Easing Functions - for smooth animations */
     --easing-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
     --easing-decelerate: cubic-bezier(0.0, 0.0, 0.2, 1);
     --easing-accelerate: cubic-bezier(0.4, 0.0, 1, 1);
     --easing-sharp: cubic-bezier(0.4, 0.0, 0.6, 1);
     
-    /* Animation Durations - для сложных анимаций */
+    /* Animation Durations - for complex animations */
     --duration-collapse: 0.35s;
     --duration-expand: 0.35s;
     --duration-fade: 0.25s;
     
-    /* Размеры UI элементов */
+    /* UI element sizes */
     --slider-thumb-size: 8px;
     --checkbox-size: 14px;
     --handle-size: 8px;
@@ -101,7 +101,7 @@
     box-sizing: border-box;
 }
 
-/* Screen reader only - для accessibility */
+/* Screen reader only - for accessibility */
 .sr-only {
     position: absolute;
     width: 1px;
@@ -121,7 +121,7 @@ body {
     padding: 0;
     color: var(--color-text);
     overflow: hidden;
-    /* Защита от двойного тапа зума на мобильных */
+    /* Prevent double-tap zoom on mobile */
     touch-action: pan-x pan-y;
 }
 
@@ -140,10 +140,10 @@ body {
     position: relative;
 }
 
-/* Top Links Container - навигация сверху */
+/* Top Links Container - top navigation */
 .top-links {
     position: absolute;
-    /* Учитываем безопасную область для устройств с вырезом камеры (iPhone) */
+    /* Account for safe area for devices with camera notch (iPhone) */
     top: calc(var(--spacing-3xl) + env(safe-area-inset-top, 0px));
     left: 50%;
     transform: translateX(-50%);
@@ -153,7 +153,7 @@ body {
     align-items: center;
 }
 
-/* Top Link - кнопка возврата */
+/* Top Link - back button */
 .top-link {
     padding: var(--spacing-md) var(--spacing-3xl);
     background: var(--color-text);
@@ -177,7 +177,7 @@ body {
     color: var(--color-text);
 }
 
-/* Кнопки Save и Delete preset */
+/* Save and Delete preset buttons */
 #savePresetBtn,
 #deletePresetBtn {
     background: var(--color-bg-panel);
@@ -210,7 +210,7 @@ body {
     flex: 1;
 }
 
-/* Canvas Container - для инструментов с canvas/SVG */
+/* Canvas Container - for tools with canvas/SVG */
 .canvas-container {
     background: var(--color-bg);
     border-radius: 0;
@@ -250,13 +250,13 @@ body {
     flex-direction: column;
 }
 
-/* Панель слева */
+/* Left panel */
 .controls-panel-left {
     left: var(--spacing-3xl);
     right: auto;
 }
 
-/* Панель текста (снизу слева) */
+/* Text panel (bottom left) */
 .controls-panel-text {
     left: var(--spacing-3xl);
     right: auto;
@@ -264,7 +264,7 @@ body {
     bottom: var(--spacing-3xl);
 }
 
-/* Панель Presets (справа внизу) */
+/* Presets panel (bottom right) */
 .controls-panel-presets {
     right: var(--spacing-3xl);
     left: auto;
@@ -272,7 +272,7 @@ body {
     bottom: var(--spacing-3xl);
 }
 
-/* Paragraph settings panel - модальная панель для настроек объектов */
+/* Paragraph settings panel - modal panel for object settings */
 .paragraph-settings-panel {
     z-index: 1001;
     display: none;
@@ -282,7 +282,7 @@ body {
     display: flex;
 }
 
-/* Panel Header - заголовок с drag & drop */
+/* Panel Header - header with drag & drop */
 .panel-header {
     background: var(--color-bg-panel);
     padding: var(--spacing-2xl) var(--spacing-3xl);
@@ -312,7 +312,7 @@ body {
     color: var(--color-text-secondary);
 }
 
-/* Panel params - дополнительная информация в заголовке */
+/* Panel params - additional information in header */
 .panel-params {
     opacity: 0;
     white-space: nowrap;
@@ -326,7 +326,7 @@ body {
     opacity: 0.4;
 }
 
-/* Collapse Icon - иконка сворачивания панели */
+/* Collapse Icon - panel collapse icon */
 .collapse-icon {
     color: var(--color-text-muted);
     cursor: pointer;
@@ -347,7 +347,7 @@ body {
     transform: rotate(-90deg);
 }
 
-/* Panel Content - контент панели с анимацией сворачивания */
+/* Panel Content - panel content with collapse animation */
 .panel-content {
     padding-left: var(--spacing-3xl);
     padding-right: var(--spacing-3xl);
@@ -375,7 +375,7 @@ body {
                 padding-bottom var(--duration-collapse) var(--easing-standard);
 }
 
-/* Panel Header Actions - кнопки в заголовке (Hide, Duplicate, Delete) */
+/* Panel Header Actions - buttons in header (Hide, Duplicate, Delete) */
 .panel-header-actions {
     display: flex;
     gap: var(--spacing-sm);
@@ -405,7 +405,7 @@ body {
     height: 16px;
 }
 
-/* Control Section - секция контролов внутри панели */
+/* Control Section - control section inside panel */
 .control-section {
     margin-bottom: 20px;
     border-bottom: none;
@@ -419,7 +419,7 @@ body {
     margin-bottom: 0;
 }
 
-/* Разделительные линии между секциями (опционально) */
+/* Separator lines between sections (optional) */
 .controls-panel-text .control-section {
     border-top: 1px solid var(--color-border);
     padding-top: var(--spacing-lg);
@@ -450,7 +450,7 @@ body {
     align-items: center;
 }
 
-/* Collapsible Header - складные секции */
+/* Collapsible Header - collapsible sections */
 .control-section h3.collapsible-header {
     font-size: 0.9rem;
     font-weight: 400;
@@ -505,7 +505,7 @@ body {
     transform: rotate(-90deg);
 }
 
-/* Collapsible Content - контент складной секции */
+/* Collapsible Content - collapsible section content */
 .collapsible-content {
     overflow: hidden;
     max-height: 1000px;
@@ -535,12 +535,12 @@ body {
     margin-bottom: 12px;
 }
 
-/* Убираем нижний margin у блока превью цвета в свернутом состоянии */
+/* Remove bottom margin from color preview block in collapsed state */
 .control-group:has(.color-pickers-compact-row) {
     margin-bottom: 0;
 }
 
-/* Последний элемент в секции без нижнего margin */
+/* Last element in section without bottom margin */
 .control-section > .control-group:last-child {
     margin-bottom: 0;
 }
@@ -589,7 +589,7 @@ body {
    5.1 COMPACT TEXT CONTROLS (Figma-style)
    ============================================ */
 
-/* Screen reader only (скрытые radio для accessibility) */
+/* Screen reader only (hidden radio for accessibility) */
 .sr-only {
     position: absolute;
     width: 1px;
@@ -602,14 +602,14 @@ body {
     border: 0;
 }
 
-/* Строка с компактными контролами */
+/* Row with compact controls */
 .text-controls-row {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-/* Группа иконка + инпут */
+/* Icon + input group */
 .compact-input-group {
     display: flex;
     align-items: center;
@@ -654,7 +654,7 @@ body {
     margin: 0;
 }
 
-/* Иконки выравнивания текста */
+/* Text alignment icons */
 .text-align-icons {
     display: flex;
     align-items: center;
@@ -679,7 +679,7 @@ body {
     color: var(--color-text);
 }
 
-/* Активное состояние выравнивания */
+/* Active alignment state */
 input[name="textAlign"]:checked + .align-icon-btn {
     background: #666666;
     color: var(--color-text);
@@ -697,7 +697,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 .control-group input[type="range"] {
     width: 100%;
-    height: 10px; /* Кликабельная область */
+    height: 10px; /* Clickable area */
     border-radius: var(--radius);
     background: transparent;
     outline: none;
@@ -709,7 +709,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     position: relative;
 }
 
-/* Slider Thumb - ползунок */
+/* Slider Thumb - slider handle */
 .control-group input[type="range"]::-webkit-slider-thumb {
     appearance: none;
     -webkit-appearance: none;
@@ -720,7 +720,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     cursor: pointer;
     border: none;
     transition: all var(--transition-fast);
-    margin-top: calc((1px - var(--slider-thumb-size)) / 2); /* Центрирование относительно track */
+    margin-top: calc((1px - var(--slider-thumb-size)) / 2); /* Center relative to track */
 }
 
 .control-group input[type="range"]::-moz-range-thumb {
@@ -800,16 +800,16 @@ input[name="textAlign"]:checked + .align-icon-btn {
     background: var(--color-text-subtle);
 }
 
-/* Range Slider - слайдер с двумя ручками */
+/* Range Slider - slider with two handles */
 .range-slider-container {
     width: 100%;
-    margin-top: var(--spacing-md); /* +2px от обычного слайдера */
-    margin-bottom: 26px; /* Увеличенный нижний отступ для range-слайдеров */
+    margin-top: var(--spacing-md); /* +2px from regular slider */
+    margin-bottom: 26px; /* Increased bottom margin for range sliders */
     position: relative;
-    height: 10px; /* Кликабельная область */
+    height: 10px; /* Clickable area */
 }
 
-/* Блок отображения диапазона значений (min–max) */
+/* Range value display block (min–max) */
 .range-value-display {
     display: flex;
     align-items: center;
@@ -863,15 +863,15 @@ input[name="textAlign"]:checked + .align-icon-btn {
     outline: none;
 }
 
-/* Min thumb (левый) — треугольник указывает вправо, острие (правый край) на значении */
+/* Min thumb (left) — triangle points right, tip (right edge) at value */
 .range-slider-thumb-min {
-    transform: translate(-100%, -50%); /* Смещаем влево на 100% ширины, чтобы правый край был на позиции */
+    transform: translate(-100%, -50%); /* Shift left by 100% width so right edge is at position */
     clip-path: polygon(100% 50%, 0 0, 0 100%);
 }
 
-/* Max thumb (правый) — треугольник указывает влево, острие (левый край) на значении */
+/* Max thumb (right) — triangle points left, tip (left edge) at value */
 .range-slider-thumb-max {
-    transform: translateY(-50%); /* Левый край на позиции */
+    transform: translateY(-50%); /* Left edge at position */
     clip-path: polygon(0 50%, 100% 0, 100% 100%);
 }
 
@@ -891,7 +891,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
    7. TEXT INPUTS & VALUE DISPLAYS
    ============================================ */
 
-/* Value Display - текстовое поле со значением слайдера */
+/* Value Display - text field with slider value */
 .value-display-wrapper {
     display: flex;
     align-items: center;
@@ -929,13 +929,13 @@ input[name="textAlign"]:checked + .align-icon-btn {
     color: var(--color-text-muted);
 }
 
-/* Визуальное выделение неактивной control-group */
+/* Visual highlight for inactive control-group */
 .control-group:has(input[type="range"]:disabled) label span:first-child {
     opacity: 0.5;
     color: var(--color-text-muted);
 }
 
-/* Unit Buttons - переключатели единиц измерения (mod/mm, mod/pt) */
+/* Unit Buttons - unit switchers (mod/mm, mod/pt) */
 .unit-buttons {
     display: inline-flex;
     gap: 2px;
@@ -967,7 +967,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     background: #333;
 }
 
-/* Lock Button - кнопка блокировки параметра */
+/* Lock Button - parameter lock button */
 .lock-btn {
     background: transparent;
     border: none;
@@ -1037,7 +1037,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     gap: var(--spacing-md);
 }
 
-/* Color Preview Button (встроенный в ColorPicker) */
+/* Color Preview Button (built into ColorPicker) */
 .color-picker-wrapper .color-preview {
     width: 30px;
     height: 30px;
@@ -1060,12 +1060,12 @@ input[name="textAlign"]:checked + .align-icon-btn {
     outline: none;
 }
 
-/* Скрываем стандартное превью-кнопку в унифицированном пикере */
+/* Hide standard preview button in unified picker */
 #unifiedColorPickerContainer .color-preview {
     display: none;
 }
 
-/* HEX input - скрыт по умолчанию, показывается через JS при открытии пикера */
+/* HEX input - hidden by default, shown via JS when picker opens */
 #unifiedColorPickerContainer .color-input-group {
     display: none;
     gap: var(--spacing-md);
@@ -1092,7 +1092,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     border-color: var(--color-text-subtle);
 }
 
-/* HSB Picker - выпадающий HSB пикер */
+/* HSB Picker - dropdown HSB picker */
 .hsb-picker {
     margin-top: var(--spacing-lg);
     animation: slideDown var(--transition-normal) ease-out;
@@ -1159,7 +1159,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     color: var(--color-text);
 }
 
-/* HSB Sliders - такие же стили как у обычных слайдеров */
+/* HSB Sliders - same styles as regular sliders */
 .hsb-control-group input[type="range"] {
     width: 100%;
     height: 10px;
@@ -1234,7 +1234,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-text);
 }
 
-/* Color Gradients для HSB слайдеров - устанавливаются динамически через JS в ColorPicker.updateGradients() */
+/* Color Gradients for HSB sliders - set dynamically via JS in ColorPicker.updateGradients() */
 
 /* Color Preset Button */
 .color-preset {
@@ -1259,7 +1259,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
    9. КНОПКИ
    ============================================ */
 
-/* Base Button Styles - общие стили для всех кнопок */
+/* Base Button Styles - common styles for all buttons */
 .btn-primary,
 .btn-secondary,
 .btn-fixed {
@@ -1275,7 +1275,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    /* Защита от двойного тапа зума на мобильных */
+    /* Prevent double-tap zoom on mobile */
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
 }
@@ -1308,7 +1308,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     cursor: not-allowed;
 }
 
-/* Fixed Buttons - для bottom bar */
+/* Fixed Buttons - for bottom bar */
 .btn-fixed {
     background: var(--color-text);
     color: var(--color-bg);
@@ -1324,7 +1324,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     transform: none;
 }
 
-/* Apply/Close Buttons в модальных панелях */
+/* Apply/Close Buttons in modal panels */
 .btn-apply {
     padding: var(--spacing-sm) var(--spacing-2xl);
     background: var(--color-text);
@@ -1385,7 +1385,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     border-color: #d2d2d2;
 }
 
-/* Button Group - группа кнопок */
+/* Button Group - button group */
 .button-group {
     display: flex;
     gap: var(--spacing-md);
@@ -1416,7 +1416,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     transition: border-color var(--transition-normal), 
                 background var(--transition-normal), 
                 color var(--transition-normal);
-    /* Защита от двойного тапа зума на мобильных */
+    /* Prevent double-tap zoom on mobile */
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
 }
@@ -1440,7 +1440,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     gap: 2px;
 }
 
-/* Toggle Chip Icons - иконки внутри чипов */
+/* Toggle Chip Icons - icons inside chips */
 .toggle-chip-icon-wrapper {
     position: relative;
     width: 14px;
@@ -1462,7 +1462,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     display: block;
 }
 
-/* Неактивные кнопки: перечеркнутая иконка по умолчанию */
+/* Inactive buttons: crossed icon by default */
 .toggle-chip:not(.toggle-chip-checked) .toggle-chip-icon-open {
     opacity: 0;
 }
@@ -1479,7 +1479,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     opacity: 0;
 }
 
-/* Активные кнопки: неперечеркнутая иконка */
+/* Active buttons: uncrossed icon */
 .toggle-chip-checked .toggle-chip-icon-open,
 .toggle-chip input:checked + span .toggle-chip-icon-open {
     opacity: 1;
@@ -1555,7 +1555,7 @@ legend {
     padding: 4px;
     gap: 4px;
     margin-top: var(--spacing-md);
-    /* Защита от двойного тапа зума на мобильных */
+    /* Prevent double-tap zoom on mobile */
     touch-action: manipulation;
 }
 
@@ -1601,17 +1601,17 @@ legend {
     outline-offset: 2px;
 }
 
-/* Compact Segmented Control - меньшая высота */
+/* Compact Segmented Control - smaller height */
 .segmented-control-compact label {
     padding: 6px var(--spacing-lg);
 }
 
-/* Убрать верхний margin у segmented-control-compact на панели Variability */
+/* Remove top margin from segmented-control-compact on Variability panel */
 #variabilityPanel .segmented-control-compact {
     margin-top: 0;
 }
 
-/* Style Buttons Container - кнопки стилей с переносом */
+/* Style Buttons Container - style buttons with wrapping */
 .style-buttons-container {
     display: flex;
     flex-wrap: wrap;
@@ -1626,15 +1626,15 @@ legend {
     line-height: 1;
     font-weight: 400;
     border: none;
-    border-radius: 999px; /* Полностью скругленные */
+    border-radius: 999px; /* Fully rounded */
     cursor: pointer;
     transition: all var(--transition-normal);
     user-select: none;
-    /* Защита от двойного тапа зума на мобильных */
+    /* Prevent double-tap zoom on mobile */
     touch-action: manipulation;
-    /* Ширина зависит от содержимого */
+    /* Width depends on content */
     white-space: nowrap;
-    /* Неактивное состояние: черный фон, белый текст */
+    /* Inactive state: black background, white text */
     background: var(--color-bg);
     color: var(--color-text);
 }
@@ -1644,7 +1644,7 @@ legend {
 }
 
 .style-button.active {
-    /* Активное состояние: белый фон, черный текст */
+    /* Active state: white background, black text */
     background: var(--color-text);
     color: var(--color-bg);
     font-weight: 500;
@@ -1655,19 +1655,19 @@ legend {
     outline-offset: 2px;
 }
 
-/* Увеличить расстояние между переключателем табов и первым слайдером на вкладке Random */
+/* Increase spacing between tab switcher and first slider on Random tab */
 #randomControlGroupStem {
     margin-top: 18px;
 }
 
-/* Контейнер для группы пикеров цветов */
-/* Компактная строка с превью цветов - прямоугольные */
+/* Container for color picker group */
+/* Compact row with color previews - rectangular */
 .color-pickers-compact-row {
     display: flex;
     align-items: stretch;
     gap: 8px;
     margin-bottom: 20px;
-    padding-top: 1px; /* Защита от обрезки при ховере */
+    padding-top: 1px; /* Prevent clipping on hover */
 }
 
 .color-preview-rect {
@@ -1697,7 +1697,7 @@ legend {
 }
 
 .color-preview-rect.active {
-    /* Активное состояние теперь индицируется символом ● в начале текста */
+    /* Active state now indicated by ● symbol at start of text */
 }
 
 .color-label-inside {
@@ -1707,7 +1707,7 @@ legend {
     position: relative;
     z-index: 1;
     pointer-events: none;
-    /* Цвет будет устанавливаться динамически через JS */
+    /* Color will be set dynamically via JS */
 }
 
 .color-pickers-group {
@@ -1735,7 +1735,7 @@ legend {
     padding: 10px 0;
     margin-bottom: 0 !important;
     position: relative;
-    /* Защита от двойного тапа зума на мобильных */
+    /* Prevent double-tap zoom on mobile */
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
 }
@@ -1745,7 +1745,7 @@ legend {
 }
 
 /* Группы тоглов в одну строку (2 или 3 тогла) */
-/* display устанавливается через inline style: flex для видимых, none для скрытых */
+/* display set via inline style: flex for visible, none for hidden */
 .control-group.toggle-group-row {
     gap: 15px;
     flex-wrap: nowrap;
@@ -1938,7 +1938,7 @@ legend {
     color: var(--color-text);
 }
 
-/* Custom Preset Dropdown (в top-links) */
+/* Custom Preset Dropdown (in top-links) */
 .preset-dropdown {
     position: relative;
     display: inline-block;
@@ -2109,7 +2109,7 @@ textarea::placeholder {
     font-weight: normal;
 }
 
-/* Text Input - обычное текстовое поле */
+/* Text Input - regular text field */
 .text-input {
     width: 100%;
     background: var(--color-bg-input);
@@ -2131,7 +2131,7 @@ textarea::placeholder {
     color: var(--color-text-muted);
 }
 
-/* Select Input - выпадающий список */
+/* Select Input - dropdown list */
 .select-input {
     width: 100%;
     background: var(--color-bg-input);
@@ -2160,7 +2160,7 @@ textarea::placeholder {
     border-color: var(--color-text-dim);
 }
 
-/* Button Danger - кнопка удаления */
+/* Button Danger - delete button */
 .btn-danger {
     background: var(--color-bg);
     color: var(--color-text-secondary);
@@ -2300,7 +2300,7 @@ textarea::placeholder {
     z-index: 10000;
 }
 
-/* Toggle Label для "Outline fonts" и подобных */
+/* Toggle Label for "Outline fonts" and similar */
 .toggle-label {
     display: flex;
     align-items: center;
@@ -2396,7 +2396,7 @@ textarea::placeholder {
     background-color: #2a2a2a;
 }
 
-/* Zoom Controls (в bottom-buttons) */
+/* Zoom Controls (in bottom-buttons) */
 .zoom-controls {
     display: flex;
     align-items: center;
@@ -2529,7 +2529,7 @@ textarea::placeholder {
     }
 }
 
-/* Скрыть панели на мобильных устройствах сразу (до загрузки JS) */
+/* Hide panels on mobile devices immediately (before JS loads) */
 .is-mobile .controls-panel,
 .is-mobile #presetDropdown,
 .is-mobile #savePresetBtn,
@@ -2539,7 +2539,7 @@ textarea::placeholder {
     display: none !important;
 }
 
-/* Показать кнопку Update только на мобильных устройствах */
+/* Show Update button only on mobile devices */
 .is-mobile #renewBtn {
     display: inline-flex !important;
     align-items: center;
@@ -2671,14 +2671,14 @@ textarea::placeholder {
     border-color: var(--color-text-dim);
 }
 
-/* Font Size Display (для отображения текущего размера шрифта) */
+/* Font Size Display (for displaying current font size) */
 .font-size-display {
     opacity: 0.4;
     white-space: nowrap;
     margin-left: 6px;
 }
 
-/* Linked Controls Group - визуальное группирование связанных контролов */
+/* Linked Controls Group - visual grouping of linked controls */
 #linkedControlsContainer {
     padding: var(--spacing-lg);
     margin: var(--spacing-3xl) calc(-1 * var(--spacing-lg)) 0;
@@ -2830,7 +2830,7 @@ textarea::placeholder {
     resize: none;
 }
 
-/* Editor Hint - подсказка в правом нижнем углу */
+/* Editor Hint - hint in bottom right corner */
 .editor-hint {
     position: absolute;
     bottom: 20px;
@@ -2846,7 +2846,7 @@ textarea::placeholder {
     backdrop-filter: blur(4px);
 }
 
-/* Editor Alternatives Panel - панель альтернативных начертаний */
+/* Editor Alternatives Panel - alternative glyphs panel */
 .editor-alternatives-panel {
     position: absolute;
     right: 20px;

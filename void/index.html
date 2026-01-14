@@ -6,7 +6,7 @@
     <title>Void Typeface — Misha Ivanov</title>
     <link rel="stylesheet" href="styles.css">
     <script>
-        // Сразу проверить мобильное устройство и скрыть панели до загрузки основного JS
+        // Check mobile device and hide panels before main JS loads
         (function() {
             const width = window.innerWidth;
             const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -36,7 +36,7 @@
                     </svg>
                 </button>
                 <ul class="preset-dropdown-menu" id="presetDropdownMenu" role="listbox">
-                    <!-- Пресеты будут добавлены динамически -->
+                    <!-- Presets will be added dynamically -->
                 </ul>
             </div>
 
@@ -56,7 +56,7 @@
                         <span>Alternatives</span>
                     </div>
                     <div class="editor-alternatives-content" id="editorAlternativesContent">
-                        <!-- Альтернативы будут добавлены динамически -->
+                        <!-- Alternatives will be added dynamically -->
                     </div>
                 </aside>
                 
@@ -65,7 +65,7 @@
                 <div class="editor-hint" id="editorHint" style="display: none;">↑↓ to switch, ←→ to rotate</div>
             </div>
 
-            <!-- General Panel (слева вверху) -->
+            <!-- General Panel -->
             <aside class="controls-panel controls-panel-left" id="controlsPanel">
                 <div class="panel-header" id="controlsPanelHeader">
                     <span>General</span>
@@ -151,7 +151,7 @@ Code</textarea>
                 </div>
             </aside>
 
-            <!-- Style Panel (справа вверху) -->
+            <!-- Style Panel -->
             <aside class="controls-panel" id="variabilityPanel">
                 <div class="panel-header" id="variabilityPanelHeader">
                     <span>Style</span>
@@ -174,7 +174,7 @@ Code</textarea>
                             </div>
                         </div>
 
-                        <!-- Lines Number (только для Stripes mode) -->
+                        <!-- Lines Number (for Stripes mode only) -->
                         <div class="control-group" id="strokesControlGroup" style="display: none; margin-top: 18px;">
                             <label for="strokesSlider">
                                 <span>Lines</span>
@@ -183,7 +183,7 @@ Code</textarea>
                             <input type="range" id="strokesSlider" min="1" max="64" value="2" step="1">
                         </div>
 
-                        <!-- Contrast (только для Stripes mode) -->
+                        <!-- Contrast (for Stripes mode only) -->
                         <div class="control-group" id="strokeGapRatioControlGroup" style="display: none;">
                             <label for="strokeGapRatioSlider">
                                 <span>Contrast</span>
@@ -192,7 +192,7 @@ Code</textarea>
                             <input type="range" id="strokeGapRatioSlider" min="0.1" max="8" value="1.0" step="0.1">
                         </div>
 
-                        <!-- Dash Length (только для Dash mode) -->
+                        <!-- Dash Length (for Dash mode only) -->
                         <div class="control-group" id="dashLengthControlGroup" style="display: none; margin-top: 18px;">
                             <label for="dashLengthSlider">
                                 <span>Dash Length</span>
@@ -201,7 +201,7 @@ Code</textarea>
                             <input type="range" id="dashLengthSlider" min="0.01" max="8" value="0.10" step="0.01">
                         </div>
 
-                        <!-- Gap Length (только для Dash mode) -->
+                        <!-- Gap Length (for Dash mode only) -->
                         <div class="control-group" id="gapLengthControlGroup" style="display: none;">
                             <label for="gapLengthSlider">
                                 <span>Gap Length</span>
@@ -210,7 +210,7 @@ Code</textarea>
                             <input type="range" id="gapLengthSlider" min="0.01" max="8" value="0.30" step="0.01">
                         </div>
 
-                        <!-- Round, Close Ends и Chess -->
+                        <!-- Round, Close Ends and Chess -->
                         <div class="control-group toggle-group-row" id="roundedCapsControlGroup" style="display: none;">
                             <label class="checkbox-label" id="roundedCapsLabel" for="roundedCapsCheckbox">
                                 <input type="checkbox" id="roundedCapsCheckbox">
@@ -323,7 +323,7 @@ Code</textarea>
                 </div>
             </aside>
 
-            <!-- View Panel (снизу слева) -->
+            <!-- View Panel -->
             <aside class="controls-panel controls-panel-text" id="viewColorsPanel">
                 <div class="panel-header" id="viewColorsPanelHeader">
                     <span>View</span>
@@ -376,7 +376,7 @@ Code</textarea>
                 </div>
             </aside>
 
-            <!-- Editor Panel (вместо Text Panel в режиме Editor) -->
+            <!-- Editor Panel (replaces Text Panel in Editor mode) -->
             <aside class="controls-panel controls-panel-editor" id="editorPanel" style="display: none;">
                 <div class="panel-content">
                     <section class="control-section">
@@ -385,7 +385,7 @@ Code</textarea>
                             <label for="editorCharSelector">
                                 <span>Character</span>
                             </label>
-                            <input type="text" id="editorCharSelector" class="editor-char-input" placeholder="A-Z, 0-9, А-Я" maxlength="1" style="width: 100%; padding: 8px 12px; font-size: 24px; text-align: center; font-family: var(--font-mono); border: 1px solid var(--color-border); border-radius: 4px; background: var(--color-canvas-bg); color: var(--color-text);">
+                            <input type="text" id="editorCharSelector" class="editor-char-input" placeholder="A-Z, 0-9" maxlength="1" style="width: 100%; padding: 8px 12px; font-size: 24px; text-align: center; font-family: var(--font-mono); border: 1px solid var(--color-border); border-radius: 4px; background: var(--color-canvas-bg); color: var(--color-text);">
                         </div>
                         
                         <!-- Current Module Info -->
