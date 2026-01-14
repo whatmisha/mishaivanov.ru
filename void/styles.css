@@ -5,6 +5,7 @@
  * Includes all UI components: panels, sliders, buttons, dropdowns, modals, etc.
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
  * 
  * File structure:
  * 1. CSS variables (colors, spacing, animations)
@@ -13,6 +14,8 @@
  * 4. UI components (buttons, sliders, inputs)
  * 5. Modals
  * 6. Responsive design
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -48,7 +51,10 @@
 :root {
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     /* Color scheme - dark theme */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -66,7 +72,10 @@
     
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     /* Spacing - use for consistency */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -82,7 +91,10 @@
     
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     /* Border radius */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -94,7 +106,10 @@
     
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     /* Transitions */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -105,7 +120,10 @@
     
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     /* Easing functions */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -117,7 +135,10 @@
     
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     /* Animation durations */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -128,7 +149,10 @@
     
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     /* UI element sizes */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -151,7 +175,10 @@
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Screen reader only */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -195,7 +222,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Top navigation links */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -213,7 +243,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Top link button */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -243,7 +276,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Save and Delete preset buttons */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -278,7 +314,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Canvas container */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -303,10 +342,13 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /**
  * Base class for control panels
  * Use with modifiers for positioning
  */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -330,7 +372,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Left panel */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -342,7 +387,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Text panel (bottom left) */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -356,7 +404,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Presets panel (bottom right) */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -370,7 +421,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Paragraph settings panel */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -386,7 +440,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Panel header with drag & drop */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -422,7 +479,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Panel params - additional info in header */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -442,7 +502,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Collapse icon */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -469,7 +532,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Panel content with collapse animation */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -503,7 +569,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Panel header actions */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -539,7 +608,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Control section */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -559,7 +631,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Section dividers */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -596,7 +671,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Collapsible header */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -657,7 +735,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Collapsible content */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -745,7 +826,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Screen reader only */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -764,7 +848,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Compact controls row */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -777,7 +864,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Icon + input group */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -828,7 +918,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Text alignment icons */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -859,7 +952,10 @@ body {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Active alignment state */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -889,7 +985,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Slider thumb */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -930,7 +1029,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Slider track */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -953,7 +1055,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Focus state */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -972,7 +1077,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Disabled state */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1004,7 +1112,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Range slider with two handles */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1019,7 +1130,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Range value display (min–max) */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1079,7 +1193,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Min thumb (left) - triangle points right, tip (right edge) at value */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1091,7 +1208,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Max thumb (right) - triangle points left, tip (left edge) at value */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1119,7 +1239,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Value display - text field with slider value */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1163,7 +1286,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Visual indication of disabled control-group */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1175,7 +1301,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Unit buttons - measurement unit toggles */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1213,7 +1342,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Lock button */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1289,7 +1421,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Color preview button */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1318,7 +1453,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Hide default preview button in unified picker */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1329,7 +1467,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* HEX input - hidden by default, shown via JS when picker opens */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1362,7 +1503,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* HSB picker dropdown */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1435,7 +1579,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* HSB sliders - same styles as regular sliders */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1516,7 +1663,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Color gradients for HSB sliders - set dynamically via JS in ColorPicker.updateGradients() */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1547,7 +1697,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Base button styles */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1601,7 +1754,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Fixed buttons for bottom bar */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1623,7 +1779,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Apply/Close buttons in modal panels */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1690,7 +1849,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Button group */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1748,7 +1910,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Toggle chip icons */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1776,7 +1941,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Inactive buttons: crossed icon by default */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1799,7 +1967,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Active buttons: uncrossed icon */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1924,7 +2095,10 @@ legend {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Compact segmented control */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1939,7 +2113,10 @@ legend {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Style buttons container */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -1989,7 +2166,10 @@ legend {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Compact color pickers row */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -2075,7 +2255,10 @@ legend {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Toggle groups in a row */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -2274,7 +2457,10 @@ legend {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Custom preset dropdown */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -2451,7 +2637,10 @@ textarea::placeholder {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Text input */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -2479,7 +2668,10 @@ textarea::placeholder {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Select input */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -2514,7 +2706,10 @@ textarea::placeholder {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Danger button */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -2660,7 +2855,10 @@ textarea::placeholder {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Toggle label */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -2738,7 +2936,10 @@ textarea::placeholder {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Zoom indicator button */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -2768,7 +2969,10 @@ textarea::placeholder {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Zoom controls */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -2907,7 +3111,10 @@ textarea::placeholder {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Hide panels on mobile devices before JS loads */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -2923,7 +3130,10 @@ textarea::placeholder {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Show Update button only on mobile devices */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -3061,7 +3271,10 @@ textarea::placeholder {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Font size display */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -3074,7 +3287,10 @@ textarea::placeholder {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Linked controls group */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -3232,7 +3448,10 @@ textarea::placeholder {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Editor hint */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -3254,7 +3473,10 @@ textarea::placeholder {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* Editor alternatives panel */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
@@ -3356,11 +3578,14 @@ textarea::placeholder {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 /* ============================================
    HIDE PRESET CONTROLS
    ============================================ */
 
 /* Hide preset controls (functionality remains) */
+=======
+>>>>>>> parent of e1a49ee (-)
 =======
 >>>>>>> parent of e1a49ee (-)
 =======
