@@ -1,5 +1,5 @@
 /**
- * GlyphEditor - редактор для создания и редактирования глифов
+ * GlyphEditor - editor for creating and editing glyphs
  */
 import { VOID_ALPHABET, VOID_ALPHABET_ALTERNATIVES } from './VoidAlphabet.js';
 import { getGlyph } from './GlyphLoader.js';
@@ -10,37 +10,37 @@ export default class GlyphEditor {
         this.ctx = canvas.getContext('2d');
         this.moduleDrawer = moduleDrawer;
         
-        // Ключ для сохранения в localStorage (может быть переопределён извне)
+        // Key for saving to localStorage (can be overridden externally)
         this.storageKey = 'voidGlyphEditor_editedGlyphs';
         
-        // Размеры сетки
-        this.gridSize = 5; // 5x5 модулей
-        this.moduleSize = 48; // размер одного модуля
+        // Grid dimensions
+        this.gridSize = 5; // 5x5 modules
+        this.moduleSize = 48; // single module size
         
-        // Массив модулей на сетке [row][col] = {type, rotation}
+        // Array of modules on grid [row][col] = {type, rotation}
         this.grid = this.createEmptyGrid();
         
-        // Доступные типы модулей (без 'E' - пустой модуль)
+        // Available module types (without 'E' - empty module)
         this.moduleTypes = ['S', 'C', 'J', 'L', 'R', 'B'];
-        this.currentModuleIndex = 0; // начинаем с 'S'
+        this.currentModuleIndex = 0; // start with 'S'
         this.currentRotation = 0; // 0, 1, 2, 3 (0°, 90°, 180°, 270°)
         
-        // Флаг активности редактора
+        // Editor active flag
         this.isActive = false;
         
-        // Выбранный символ
+        // Selected character
         this.selectedChar = null;
         
-        // Флаг зажатой мыши
+        // Mouse pressed flag
         this.isMouseDown = false;
-        // Последняя обработанная ячейка при зажатой мыши (чтобы не размещать повторно)
+        // Last processed cell when mouse pressed (to avoid repeated placement)
         this.lastProcessedCell = null;
-        // Первая ячейка при mousedown (для размещения при первом движении)
+        // First cell on mousedown (for placement on first movement)
         this.startCell = null;
-        // Флаг: был ли drag (для различения клика от drag)
+        // Flag: was there drag (to distinguish click from drag)
         this.wasDrag = false;
         
-        // Bind методы
+        // Bind methods
         this.handleClick = this.handleClick.bind(this);
         this.handleMouseDown = this.handleMouseDown.bind(this);
         this.handleMouseUp = this.handleMouseUp.bind(this);
@@ -48,21 +48,21 @@ export default class GlyphEditor {
         this.handleMouseMove = this.handleMouseMove.bind(this);
         this.handleCharSelectorChange = this.handleCharSelectorChange.bind(this);
         
-        // Текущая ячейка под курсором
+        // Current cell under cursor
         this.hoveredCell = null;
         
-        // Флаг для предотвращения бесконечного цикла при программном обновлении поля
+        // Flag to prevent infinite loop during programmatic field update
         this.isUpdatingFromGrid = false;
         
-        // Флаг для предотвращения рекурсии между checkForChanges и updateGlyphString
+        // Flag to prevent recursion between checkForChanges and updateGlyphString
         this.isCheckingChanges = false;
         
-        // Bind метод для обработки изменений текста
+        // Bind method for handling text changes
         this.handleGlyphStringChange = this.handleGlyphStringChange.bind(this);
     }
     
     /**
-     * Создать пустую сетку
+     * Create empty grid
      */
     createEmptyGrid() {
         const grid = [];
@@ -76,46 +76,46 @@ export default class GlyphEditor {
     }
     
     /**
-     * Активировать редактор
+     * Activate editor
      */
     activate() {
         console.log('[GlyphEditor] Activating...');
         this.isActive = true;
         
-        // Обновить размеры canvas
+        // Update canvas dimensions
         this.updateCanvasSize();
         console.log('[GlyphEditor] Canvas size:', this.canvas.width, 'x', this.canvas.height);
         
-        // Инициализировать поле с дефолтной строкой
+        // Initialize field with default string
         this.updateGlyphString();
         
         this.canvas.addEventListener('click', this.handleClick);
         this.canvas.addEventListener('mousedown', this.handleMouseDown);
         this.canvas.addEventListener('mouseup', this.handleMouseUp);
-        this.canvas.addEventListener('mouseleave', this.handleMouseUp); // Отпускаем при выходе за пределы canvas
+        this.canvas.addEventListener('mouseleave', this.handleMouseUp); // Release when leaving canvas
         this.canvas.addEventListener('mousemove', this.handleMouseMove);
         document.addEventListener('keydown', this.handleKeyDown);
         console.log('[GlyphEditor] Event listeners attached');
         
-        // Обработчик изменений текста в поле глифа
+        // Handler for glyph field text changes
         const glyphStringField = document.getElementById('editorGlyphString');
         if (glyphStringField) {
             glyphStringField.addEventListener('input', this.handleGlyphStringChange);
         }
         
-        // Обработчик выбора символа
+        // Character selector handler
         const charSelector = document.getElementById('editorCharSelector');
         if (charSelector) {
             charSelector.addEventListener('input', this.handleCharSelectorChange);
             charSelector.addEventListener('keydown', (e) => {
-                // Разрешить только один символ
+                // Allow only one character
                 if (e.target.value.length >= 1 && e.key !== 'Backspace' && e.key !== 'Delete') {
                     e.preventDefault();
                 }
             });
         }
         
-        // Обработчик кнопки "Save Changes"
+        // "Save Changes" button handler
         const saveChangesBtn = document.getElementById('editorSaveChangesBtn');
         if (saveChangesBtn) {
             saveChangesBtn.addEventListener('click', () => {
@@ -123,14 +123,14 @@ export default class GlyphEditor {
             });
         }
         
-        // Показать панель альтернатив
+        // Show alternatives panel
         const alternativesPanel = document.getElementById('editorAlternativesPanel');
         if (alternativesPanel) {
             alternativesPanel.style.display = 'flex';
         }
         
-        // Обработчики кликов для MOD и ANG в toolbar
-        // Находим родительские секции для MOD и ANG
+        // Click handlers for MOD and ANG in toolbar
+        // Find parent sections for MOD and ANG
         const currentModuleEl = document.getElementById('currentModule');
         const currentAngleEl = document.getElementById('currentAngle');
         
@@ -139,7 +139,7 @@ export default class GlyphEditor {
             if (moduleSection) {
                 moduleSection.style.cursor = 'pointer';
                 moduleSection.addEventListener('click', () => {
-                    // Аналог стрелки вверх - переключение модуля
+                    // Analog of up arrow - switch module
                     this.currentModuleIndex = (this.currentModuleIndex - 1 + this.moduleTypes.length) % this.moduleTypes.length;
                     this.updateModuleInfo();
                     this.render();
@@ -152,7 +152,7 @@ export default class GlyphEditor {
             if (angleSection) {
                 angleSection.style.cursor = 'pointer';
                 angleSection.addEventListener('click', () => {
-                    // Аналог стрелки вправо - поворот модуля
+                    // Analog of right arrow - rotate module
                     this.currentRotation = (this.currentRotation + 1) % 4;
                     this.updateModuleInfo();
                     this.render();
@@ -165,7 +165,7 @@ export default class GlyphEditor {
     }
     
     /**
-     * Деактивировать редактор
+     * Deactivate editor
      */
     deactivate() {
         this.isActive = false;
@@ -176,13 +176,13 @@ export default class GlyphEditor {
         this.canvas.removeEventListener('mousemove', this.handleMouseMove);
         document.removeEventListener('keydown', this.handleKeyDown);
         
-        // Удалить обработчик изменений текста
+        // Remove text change handler
         const glyphStringField = document.getElementById('editorGlyphString');
         if (glyphStringField) {
             glyphStringField.removeEventListener('input', this.handleGlyphStringChange);
         }
         
-        // Удалить обработчик выбора символа
+        // Remove character selector handler
         const charSelector = document.getElementById('editorCharSelector');
         if (charSelector) {
             charSelector.removeEventListener('input', this.handleCharSelectorChange);
@@ -190,33 +190,33 @@ export default class GlyphEditor {
         
         this.hoveredCell = null;
         
-        // Скрыть панель альтернатив
+        // Hide alternatives panel
         const alternativesPanel = document.getElementById('editorAlternativesPanel');
         if (alternativesPanel) {
             alternativesPanel.style.display = 'none';
         }
         
-        // Очистить canvas при деактивации
+        // Clear canvas on deactivation
         const ctx = this.canvas.getContext('2d');
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
     
     /**
-     * Обработка нажатия мыши
+     * Handle mouse down
      */
     handleMouseDown(e) {
         const rect = this.canvas.getBoundingClientRect();
         
-        // В standalone редакторе не используем devicePixelRatio для координат
+        // In standalone editor don't use devicePixelRatio for coordinates
         const isStandalone = window.location.pathname.includes('/editor');
         
         let x, y;
         if (isStandalone) {
-            // Прямые CSS-координаты
+            // Direct CSS coordinates
             x = (e.clientX - rect.left) * (this.canvas.width / rect.width);
             y = (e.clientY - rect.top) * (this.canvas.height / rect.height);
         } else {
-            // С учётом DPR для основного приложения
+            // With DPR for main application
             const dpr = window.devicePixelRatio || 1;
             x = (e.clientX - rect.left) * dpr;
             y = (e.clientY - rect.top) * dpr;
@@ -232,19 +232,19 @@ export default class GlyphEditor {
     }
     
     /**
-     * Обработка отпускания мыши
+     * Handle mouse up
      */
     handleMouseUp(e) {
-        // Если мышь была зажата и был drag, размещаем модуль на последней ячейке
+        // If mouse was pressed and there was drag, place module on last cell
         if (this.isMouseDown && this.wasDrag && this.hoveredCell) {
             const { row, col } = this.hoveredCell;
             
-            // Проверяем, не обрабатывали ли мы уже эту ячейку
+            // Check if we already processed this cell
             if (!this.lastProcessedCell || 
                 this.lastProcessedCell.row !== row || 
                 this.lastProcessedCell.col !== col) {
                 
-                // Размещаем модуль на последней ячейке
+                // Place module on last cell
                 this.grid[row][col] = {
                     type: this.getCurrentModuleType(),
                     rotation: this.currentRotation
@@ -259,14 +259,14 @@ export default class GlyphEditor {
         this.isMouseDown = false;
         this.lastProcessedCell = null;
         this.startCell = null;
-        // wasDrag НЕ сбрасываем здесь - он нужен для handleClick
+        // Don't reset wasDrag here - it's needed for handleClick
     }
     
     /**
-     * Обработка клика мыши (для размещения модуля или очистки ячейки)
+     * Handle mouse click (for placing module or clearing cell)
      */
     handleClick(e) {
-        // Если был drag, игнорируем клик и сбрасываем флаг
+        // If there was drag, ignore click and reset flag
         if (this.wasDrag) {
             this.wasDrag = false;
             return;
@@ -274,16 +274,16 @@ export default class GlyphEditor {
         
         const rect = this.canvas.getBoundingClientRect();
         
-        // В standalone редакторе не используем devicePixelRatio для координат
+        // In standalone editor don't use devicePixelRatio for coordinates
         const isStandalone = window.location.pathname.includes('/editor');
         
         let x, y;
         if (isStandalone) {
-            // Прямые CSS-координаты
+            // Direct CSS coordinates
             x = (e.clientX - rect.left) * (this.canvas.width / rect.width);
             y = (e.clientY - rect.top) * (this.canvas.height / rect.height);
         } else {
-            // С учётом DPR для основного приложения
+            // With DPR for main application
             const dpr = window.devicePixelRatio || 1;
             x = (e.clientX - rect.left) * dpr;
             y = (e.clientY - rect.top) * dpr;
@@ -294,17 +294,17 @@ export default class GlyphEditor {
         
         const { row, col } = cell;
         
-        // Если ячейка занята - удалить модуль (очистить)
+        // If cell is occupied - remove module (clear)
         if (this.grid[row][col]) {
             this.grid[row][col] = null;
             this.render();
             this.updateModuleInfo();
             this.updateGlyphString();
             
-            // Автосохранение после каждого изменения
+            // Auto-save after each change
             this.autoSave();
         }
-        // Если ячейка пустая - разместить модуль
+        // If cell is empty - place module
         else {
             this.grid[row][col] = {
                 type: this.getCurrentModuleType(),
@@ -314,27 +314,27 @@ export default class GlyphEditor {
         this.updateModuleInfo();
         this.updateGlyphString();
         
-        // Автосохранение после каждого изменения
+        // Auto-save after each change
         this.autoSave();
         }
     }
     
     /**
-     * Обработка движения мыши
+     * Handle mouse movement
      */
     handleMouseMove(e) {
         const rect = this.canvas.getBoundingClientRect();
         
-        // В standalone редакторе не используем devicePixelRatio для координат
+        // In standalone editor don't use devicePixelRatio for coordinates
         const isStandalone = window.location.pathname.includes('/editor');
         
         let x, y;
         if (isStandalone) {
-            // Прямые CSS-координаты
+            // Direct CSS coordinates
             x = (e.clientX - rect.left) * (this.canvas.width / rect.width);
             y = (e.clientY - rect.top) * (this.canvas.height / rect.height);
         } else {
-            // С учётом DPR для основного приложения
+            // With DPR for main application
             const dpr = window.devicePixelRatio || 1;
             x = (e.clientX - rect.left) * dpr;
             y = (e.clientY - rect.top) * dpr;
@@ -342,7 +342,7 @@ export default class GlyphEditor {
         
         const cell = this.getCellFromCoords(x, y);
         
-        // Проверяем, изменилась ли ячейка
+        // Check if cell changed
         const cellChanged = !cell || !this.hoveredCell ||
             cell.row !== this.hoveredCell.row ||
             cell.col !== this.hoveredCell.col;
@@ -350,8 +350,8 @@ export default class GlyphEditor {
         if (cellChanged) {
             this.hoveredCell = cell;
             
-            // Синхронизируем currentRotation и currentModuleIndex с модулем в ячейке
-            // (если мышь не зажата и в ячейке есть модуль)
+            // Sync currentRotation and currentModuleIndex with module in cell
+            // (if mouse not pressed and cell has module)
             if (cell && !this.isMouseDown && this.grid[cell.row][cell.col]) {
                 const module = this.grid[cell.row][cell.col];
                 this.currentRotation = module.rotation;
@@ -361,16 +361,16 @@ export default class GlyphEditor {
                 }
             }
             
-            // Если мышь зажата, размещаем модуль на новой ячейке
+            // If mouse pressed, place module on new cell
             if (this.isMouseDown && cell) {
                 const { row, col } = cell;
                 
-                // Если это первое движение после mousedown, устанавливаем флаг drag
-                // и размещаем модуль на первой ячейке (startCell)
+                // If this is first movement after mousedown, set drag flag
+                // and place module on first cell (startCell)
                 if (!this.wasDrag && this.startCell) {
                     this.wasDrag = true;
                     
-                    // Размещаем модуль на первой ячейке
+                    // Place module on first cell
                     this.grid[this.startCell.row][this.startCell.col] = {
                         type: this.getCurrentModuleType(),
                         rotation: this.currentRotation
@@ -380,12 +380,12 @@ export default class GlyphEditor {
                     this.autoSave();
                 }
                 
-                // Проверяем, не обрабатывали ли мы уже эту ячейку
+                // Check if we already processed this cell
                 if (!this.lastProcessedCell || 
                     this.lastProcessedCell.row !== row || 
                     this.lastProcessedCell.col !== col) {
                     
-                    // Размещаем модуль
+                    // Place module
                     this.grid[row][col] = {
                         type: this.getCurrentModuleType(),
                         rotation: this.currentRotation
@@ -403,10 +403,10 @@ export default class GlyphEditor {
     }
     
     /**
-     * Получить ячейку из координат
+     * Get cell from coordinates
      */
     getCellFromCoords(x, y) {
-        // Проверяем, находимся ли мы в standalone редакторе
+        // Check if we're in standalone editor
         const isStandalone = window.location.pathname.includes('/editor');
         
         const canvasWidth = this.canvas.width;
@@ -421,12 +421,12 @@ export default class GlyphEditor {
             modulePixelSize = 48 * dpr;
         }
         
-        // Центрируем сетку
+        // Center grid
         const gridPixelSize = modulePixelSize * this.gridSize;
         const offsetX = (canvasWidth - gridPixelSize) / 2;
         const offsetY = (canvasHeight - gridPixelSize) / 2;
         
-        // Проверяем, попадает ли клик в сетку
+        // Check if click hits grid
         if (x < offsetX || x > offsetX + gridPixelSize ||
             y < offsetY || y > offsetY + gridPixelSize) {
             return null;
@@ -439,10 +439,10 @@ export default class GlyphEditor {
     }
     
     /**
-     * Обработка клавиатуры
+     * Handle keyboard
      */
     handleKeyDown(e) {
-        // Проверяем, не находится ли фокус на текстовых полях
+        // Check if focus is on text fields
         const activeElement = document.activeElement;
         const isTextInputFocused = activeElement && (
             activeElement.id === 'editorGlyphString' ||
@@ -452,12 +452,12 @@ export default class GlyphEditor {
             activeElement.tagName === 'INPUT'
         );
         
-        // Если редактируем текст или поле выбора символа, не обрабатываем стрелки
+        // If editing text or character selector field, don't process arrows
         if (isTextInputFocused) {
             return;
         }
         
-        // Проверяем, есть ли ячейка под курсором
+        // Check if there's a cell under cursor
         if (!this.hoveredCell) {
             return;
         }
@@ -467,7 +467,7 @@ export default class GlyphEditor {
         
         let shouldUpdate = false;
         
-        // Стрелки вверх/вниз или W/S (или Ц/Ы в русской раскладке) - выбор модуля
+        // Arrow up/down or W/S (or Ц/Ы in Russian layout) - select module
         if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === 'ц' || e.key === 'Ц') {
             e.preventDefault();
             this.currentModuleIndex = (this.currentModuleIndex - 1 + this.moduleTypes.length) % this.moduleTypes.length;
@@ -477,7 +477,7 @@ export default class GlyphEditor {
             this.currentModuleIndex = (this.currentModuleIndex + 1) % this.moduleTypes.length;
             shouldUpdate = true;
         }
-        // Стрелки влево/вправо или A/D (или Ф/В в русской раскладке) - поворот
+        // Arrow left/right or A/D (or Ф/В in Russian layout) - rotate
         else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A' || e.key === 'ф' || e.key === 'Ф') {
             e.preventDefault();
             this.currentRotation = (this.currentRotation - 1 + 4) % 4;
@@ -489,7 +489,7 @@ export default class GlyphEditor {
         }
         
         if (shouldUpdate) {
-            // Если ячейка пустая и мышь зажата - размещаем модуль
+            // If cell is empty and mouse pressed - place module
             if (!cellHasModule && this.isMouseDown) {
                 this.grid[row][col] = {
                     type: this.getCurrentModuleType(),
@@ -499,7 +499,7 @@ export default class GlyphEditor {
                 this.updateGlyphString();
                 this.autoSave();
             }
-            // Если ячейка не пустая - обновляем модуль (работает и с зажатой мышью, и без)
+            // If cell is not empty - update module (works with mouse pressed and without)
             else if (cellHasModule) {
                 this.grid[row][col] = {
                     type: this.getCurrentModuleType(),
@@ -508,8 +508,8 @@ export default class GlyphEditor {
                 this.updateGlyphString();
                 this.autoSave();
             }
-            // Если ячейка пустая и мышь не зажата - только обновляем превью (не размещаем модуль)
-            // Это позволяет выбрать модуль и поворот перед кликом
+            // If cell is empty and mouse not pressed - only update preview (don't place module)
+            // This allows selecting module and rotation before click
             
             this.updateModuleInfo();
             this.render();
@@ -517,14 +517,14 @@ export default class GlyphEditor {
     }
     
     /**
-     * Получить текущий тип модуля
+     * Get current module type
      */
     getCurrentModuleType() {
         return this.moduleTypes[this.currentModuleIndex];
     }
     
     /**
-     * Обновить информацию о текущем модуле в UI
+     * Update current module info in UI
      */
     updateModuleInfo() {
         const moduleInfo = document.getElementById('editorCurrentModule') || document.getElementById('currentModule');
@@ -542,57 +542,57 @@ export default class GlyphEditor {
     }
     
     /**
-     * Отрисовать редактор
+     * Render editor
      */
     render() {
         if (!this.isActive) return;
         
-        // Проверяем, находимся ли мы в standalone редакторе
+        // Check if we're in standalone editor
         const isStandalone = window.location.pathname.includes('/editor');
         
         const canvasWidth = this.canvas.width;
         const canvasHeight = this.canvas.height;
         
-        // Очистить canvas
+        // Clear canvas
         this.ctx.clearRect(0, 0, canvasWidth, canvasHeight);
         
-        // Размер модуля: в standalone используем CSS-пиксели, в main app - физические пиксели
+        // Module size: in standalone use CSS pixels, in main app - physical pixels
         let modulePixelSize;
         let lineWidth;
         
         if (isStandalone) {
-            // В standalone canvas 600x600 без DPR масштабирования
-            // Модуль занимает 1/6 ширины (5 модулей + отступы)
-            modulePixelSize = canvasWidth / 6.25;  // ~96px при canvas 600px
-            lineWidth = 0.5; // Тонкая линия (как в основном приложении)
+            // In standalone canvas 600x600 without DPR scaling
+            // Module takes 1/6 width (5 modules + padding)
+            modulePixelSize = canvasWidth / 6.25;  // ~96px at canvas 600px
+            lineWidth = 0.5; // Thin line (as in main app)
         } else {
             const dpr = window.devicePixelRatio || 1;
             modulePixelSize = 48 * dpr;
-            lineWidth = 0.5 * dpr; // Тонкая линия (как в основном приложении)
+            lineWidth = 0.5 * dpr; // Thin line (as in main app)
         }
         
-        // Центрируем сетку
+        // Center grid
         const gridPixelSize = modulePixelSize * this.gridSize;
         const offsetX = (canvasWidth - gridPixelSize) / 2;
         const offsetY = (canvasHeight - gridPixelSize) / 2;
         
-        // Рисуем фон (черный)
+        // Draw background (black)
         this.ctx.fillStyle = '#000000';
         this.ctx.fillRect(0, 0, canvasWidth, canvasHeight);
         
-        // Рисуем сетку (#666666 - более светлая и заметная)
+        // Draw grid (#666666 - lighter and more visible)
         this.ctx.strokeStyle = '#666666';
         this.ctx.lineWidth = lineWidth;
         
         for (let i = 0; i <= this.gridSize; i++) {
-            // Вертикальные линии
+            // Vertical lines
             const x = offsetX + i * modulePixelSize;
             this.ctx.beginPath();
             this.ctx.moveTo(x, offsetY);
             this.ctx.lineTo(x, offsetY + gridPixelSize);
             this.ctx.stroke();
             
-            // Горизонтальные линии
+            // Horizontal lines
             const y = offsetY + i * modulePixelSize;
             this.ctx.beginPath();
             this.ctx.moveTo(offsetX, y);
@@ -600,7 +600,7 @@ export default class GlyphEditor {
             this.ctx.stroke();
         }
         
-        // Подсветка ячейки под курсором
+        // Highlight cell under cursor
         if (this.hoveredCell) {
             const { row, col } = this.hoveredCell;
             const x = offsetX + col * modulePixelSize;
@@ -609,7 +609,7 @@ export default class GlyphEditor {
             this.ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
             this.ctx.fillRect(x, y, modulePixelSize, modulePixelSize);
             
-            // Превью текущего модуля (белый с 50% прозрачностью)
+            // Preview current module (white with 50% transparency)
             if (!this.grid[row][col]) {
                 this.ctx.save();
                 this.ctx.globalAlpha = 0.5;
@@ -624,7 +624,7 @@ export default class GlyphEditor {
             }
         }
         
-        // Рисуем размещенные модули (белые, 100% непрозрачности)
+        // Draw placed modules (white, 100% opacity)
         for (let row = 0; row < this.gridSize; row++) {
             for (let col = 0; col < this.gridSize; col++) {
                 const module = this.grid[row][col];
@@ -638,15 +638,15 @@ export default class GlyphEditor {
     }
     
     /**
-     * Нарисовать модуль
+     * Draw module
      */
     drawModule(centerX, centerY, size, type, rotation) {
         const angle = rotation * Math.PI / 2;
-        // ModuleDrawer делит stem на 2 для lineWidth, поэтому передаём size * 1.0
-        // чтобы получить толщину линии = 0.5 от размера ячейки
+        // ModuleDrawer divides stem by 2 for lineWidth, so pass size * 1.0
+        // to get line width = 0.5 of cell size
         const stem = size * 1.0;
         
-        // Установить белый цвет для модулей
+        // Set white color for modules
         this.ctx.strokeStyle = '#FFFFFF';
         this.ctx.fillStyle = '#FFFFFF';
         
@@ -654,7 +654,7 @@ export default class GlyphEditor {
         
         switch (type) {
             case 'E':
-                // Пустой модуль - ничего не рисуем
+                // Empty module - draw nothing
                 break;
             case 'S':
                 this.moduleDrawer.drawStraight(this.ctx, centerX - size/2, centerY - size/2, size, size, angle, stem);
@@ -680,7 +680,7 @@ export default class GlyphEditor {
     }
     
     /**
-     * Очистить сетку
+     * Clear grid
      */
     clear() {
         this.grid = this.createEmptyGrid();
@@ -689,7 +689,7 @@ export default class GlyphEditor {
     }
     
     /**
-     * Форматировать строку глифа с пробелами каждые 10 символов
+     * Format glyph string with spaces every 10 characters
      */
     formatGlyphString(glyphString) {
         let formatted = '';
@@ -701,14 +701,14 @@ export default class GlyphEditor {
     }
     
     /**
-     * Удалить пробелы из строки глифа
+     * Remove spaces from glyph string
      */
     removeSpaces(glyphString) {
         return glyphString.replace(/\s/g, '');
     }
     
     /**
-     * Обновить строку глифа в UI
+     * Update glyph string in UI
      */
     updateGlyphString() {
         let glyphString = '';
@@ -724,11 +724,11 @@ export default class GlyphEditor {
             }
         }
         
-        // Обновить textarea только если поле не в фокусе (чтобы не мешать редактированию)
+        // Update textarea only if field not in focus (to avoid interfering with editing)
         const outputField = document.getElementById('editorGlyphString');
         if (outputField && document.activeElement !== outputField) {
             this.isUpdatingFromGrid = true;
-            // Форматировать строку с пробелами каждые 10 символов
+            // Format string with spaces every 10 characters
             outputField.value = this.formatGlyphString(glyphString);
             this.isUpdatingFromGrid = false;
         }
@@ -737,29 +737,29 @@ export default class GlyphEditor {
     }
     
     /**
-     * Обработчик изменений текста в поле глифа
+     * Handler for glyph field text changes
      */
     handleGlyphStringChange(e) {
-        // Не обрабатывать, если обновление идет из сетки
+        // Don't process if update is from grid
         if (this.isUpdatingFromGrid) {
             return;
         }
         
-        // Удалить пробелы из строки перед обработкой
+        // Remove spaces from string before processing
         const glyphString = this.removeSpaces(e.target.value);
         
-        // Проверка длины строки (должна быть 25 модулей * 2 символа = 50)
+        // Check string length (should be 25 modules * 2 characters = 50)
         if (glyphString.length !== 50) {
-            // Если длина неправильная, не обновляем сетку
+            // If length incorrect, don't update grid
             return;
         }
         
-        // Импортировать глиф из строки без обновления поля (чтобы избежать цикла)
+        // Import glyph from string without updating field (to avoid loop)
         this.importGlyph(glyphString, false);
     }
     
     /**
-     * Копировать текст из второго поля в буфер обмена
+     * Copy text from second field to clipboard
      */
     copySavedGlyphs() {
         const savedGlyphsField = document.getElementById('editorSavedGlyphs');
@@ -776,17 +776,17 @@ export default class GlyphEditor {
     }
     
     /**
-     * Экспортировать глиф в строку (для копирования)
+     * Export glyph to string (for copying)
      */
     exportGlyph() {
         const glyphString = this.updateGlyphString();
         
-        // Выделить текст для копирования
+        // Select text for copying
         const outputField = document.getElementById('editorGlyphString');
         if (outputField) {
             outputField.select();
             
-            // Копировать в буфер обмена
+            // Copy to clipboard
             try {
                 document.execCommand('copy');
                 console.log('Glyph exported:', glyphString);
@@ -799,7 +799,7 @@ export default class GlyphEditor {
     }
     
     /**
-     * Сохранить глиф в коллекцию
+     * Save glyph to collection
      */
     saveGlyph() {
         const glyphString = this.updateGlyphString();
@@ -807,37 +807,37 @@ export default class GlyphEditor {
         
         if (!savedGlyphsField) return;
         
-        // Генерируем рандомный эмодзи
+        // Generate random emoji
         const emojis = ['😎', '🎨', '✨', '🔥', '💎', '🌟', '⚡', '🎯', '🚀', '💫', '🎭', '🎪', '🎬', '🎮', '🎲', '🎸', '🎺', '🎻', '🎤', '🎧'];
         const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
         
-        // Формат: "😎": "E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0",
-        // Без пробелов в начале, с пустой строкой между записями
+        // Format: "😎": "E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0E0",
+        // Without spaces at start, with empty line between entries
         const currentValue = savedGlyphsField.value.trim();
         const newEntry = `"${randomEmoji}": "${glyphString}",\n`;
         const separator = currentValue ? '\n\n' : '';
         
         savedGlyphsField.value = currentValue + separator + newEntry;
         
-        // Прокручиваем вниз
+        // Scroll down
         savedGlyphsField.scrollTop = savedGlyphsField.scrollHeight;
         
-        // Сбросить сетку и первое поле до дефолтного состояния
+        // Reset grid and first field to default state
         this.grid = this.createEmptyGrid();
         this.render();
         this.updateGlyphString();
     }
     
     /**
-     * Импортировать глиф из строки
-     * @param {string} glyphString - строка глифа
-     * @param {boolean} updateField - обновлять ли поле текста (по умолчанию true)
+     * Import glyph from string
+     * @param {string} glyphString - glyph string
+     * @param {boolean} updateField - whether to update text field (default true)
      */
     importGlyph(glyphString, updateField = true) {
-        // Удалить пробелы из строки перед обработкой
+        // Remove spaces from string before processing
         glyphString = this.removeSpaces(glyphString);
         
-        // Проверка длины строки (должна быть 25 модулей * 2 символа = 50)
+        // Check string length (should be 25 modules * 2 characters = 50)
         if (glyphString.length !== 50) {
             console.error('Invalid glyph string length:', glyphString.length);
             return;
@@ -861,34 +861,34 @@ export default class GlyphEditor {
         
         this.render();
         
-        // Обновлять поле только если указано явно (чтобы избежать цикла при редактировании)
+        // Update field only if explicitly specified (to avoid loop during editing)
         if (updateField) {
             this.updateGlyphString();
         }
     }
     
     /**
-     * Обновить размеры canvas
+     * Update canvas dimensions
      */
     updateCanvasSize() {
         const container = this.canvas.parentElement;
         if (!container) return;
         
-        // Проверяем, находимся ли мы в standalone редакторе
+        // Check if we're in standalone editor
         const isStandalone = window.location.pathname.includes('/editor');
         
         if (isStandalone) {
-            // В standalone редакторе используем фиксированный размер
+            // In standalone editor use fixed size
             const size = 600;
             this.canvas.width = size;
             this.canvas.height = size;
             console.log('[GlyphEditor.updateCanvasSize] Standalone mode: fixed size', size);
         } else {
-            // В основном приложении используем размер окна
+            // In main app use window size
             const dpr = window.devicePixelRatio || 1;
             const rect = container.getBoundingClientRect();
             
-            // Устанавливаем размеры canvas
+            // Set canvas dimensions
             this.canvas.width = rect.width * dpr;
             this.canvas.height = rect.height * dpr;
             console.log('[GlyphEditor.updateCanvasSize] Main app mode: responsive size');
@@ -900,19 +900,19 @@ export default class GlyphEditor {
     }
     
     /**
-     * Обработчик изменения селектора символов
+     * Character selector change handler
      */
     handleCharSelectorChange(e) {
         const char = e.target.value.toUpperCase();
         
-        // Проверяем, есть ли глиф для этого символа
+        // Check if there's a glyph for this character
         if (char && VOID_ALPHABET[char]) {
             this.selectedChar = char;
-            this.selectedAlternativeIndex = null; // Сбрасываем выбор альтернативы
+            this.selectedAlternativeIndex = null; // Reset alternative selection
             this.loadBaseGlyph(char);
             this.updateAlternativesPanel();
         } else if (char === '') {
-            // Если поле очищено, очищаем сетку
+            // If field cleared, clear grid
             this.selectedChar = null;
             this.selectedAlternativeIndex = null;
             this.grid = this.createEmptyGrid();
@@ -923,15 +923,15 @@ export default class GlyphEditor {
     }
     
     /**
-     * Загрузить базовый глиф символа
-     * @param {string} char - символ
+     * Load base glyph for character
+     * @param {string} char - character
      */
     loadBaseGlyph(char) {
         this.loadGlyphWithEdits(char, null);
     }
     
     /**
-     * Обновить панель альтернативных начертаний
+     * Update alternatives panel
      */
     updateAlternativesPanel() {
         const content = document.getElementById('editorAlternativesContent');
@@ -940,59 +940,59 @@ export default class GlyphEditor {
             return;
         }
         
-        // Убедиться, что панель видна
+        // Ensure panel is visible
         if (panel.style.display === 'none') {
             panel.style.display = 'flex';
         }
         
-        // Очистить панель
+        // Clear panel
         content.innerHTML = '';
         
-        // Добавить превью базового глифа (индекс null)
+        // Add base glyph preview (index null)
         this.addAlternativePreview(content, null, 'Base');
         
-        // Получить альтернативы для выбранного символа
+        // Get alternatives for selected character
         const alternatives = VOID_ALPHABET_ALTERNATIVES[this.selectedChar];
         
         if (alternatives && alternatives.length > 0) {
-            // Создать миниатюры для каждой альтернативы
+            // Create thumbnails for each alternative
             alternatives.forEach((altGlyphString, index) => {
-                const altIndex = index + 1; // Индекс 1+ для альтернатив
+                const altIndex = index + 1; // Index 1+ for alternatives
                 this.addAlternativePreview(content, altIndex, `Alt ${altIndex}`);
             });
         }
     }
     
     /**
-     * Добавить превью альтернативы в панель
+     * Add alternative preview to panel
      */
     addAlternativePreview(container, alternativeIndex, label) {
-        // Проверить, есть ли сохранённая версия (ТОЛЬКО из localStorage редактора)
+        // Check if there's saved version (ONLY from editor localStorage)
         const editedGlyph = this.getEditedGlyph(this.selectedChar, alternativeIndex);
         
-        // НЕ загружаем из VoidAlphabet.js - редактор изолирован!
+        // DON'T load from VoidAlphabet.js - editor is isolated!
         const glyphStringToShow = editedGlyph || 'E0'.repeat(25);
         
         const item = document.createElement('div');
         item.className = 'editor-alternative-item';
         item.dataset.index = alternativeIndex === null ? 'base' : String(alternativeIndex);
         
-        // Добавить класс "edited" если есть сохранённые изменения
+        // Add "edited" class if there are saved changes
         if (editedGlyph) {
             item.classList.add('edited');
         }
         
-        // Добавить обработчик клика
+        // Add click handler
         item.addEventListener('click', () => {
             console.log(`[addAlternativePreview] Clicked on alternative: ${alternativeIndex}`);
             this.selectAlternative(alternativeIndex);
         });
         
-        // Контейнер для превью
+        // Container for preview
         const preview = document.createElement('div');
         preview.className = 'editor-alternative-preview';
         
-        // Canvas для миниатюры
+        // Canvas for thumbnail
         const previewCanvas = document.createElement('canvas');
         previewCanvas.width = 120;
         previewCanvas.height = 80;
@@ -1000,7 +1000,7 @@ export default class GlyphEditor {
         
         preview.appendChild(previewCanvas);
         
-        // Метка
+        // Label
         const labelDiv = document.createElement('div');
         labelDiv.className = 'editor-alternative-label';
         labelDiv.textContent = label;
@@ -1012,7 +1012,7 @@ export default class GlyphEditor {
     }
     
     /**
-     * Очистить панель альтернатив
+     * Clear alternatives panel
      */
     clearAlternativesPanel() {
         const content = document.getElementById('editorAlternativesContent');
@@ -1022,8 +1022,8 @@ export default class GlyphEditor {
     }
     
     /**
-     * Выбрать альтернативу
-     * @param {number} index - индекс альтернативы (1+ для альтернатив, null для базового)
+     * Select alternative
+     * @param {number} index - alternative index (1+ for alternatives, null for base)
      */
     selectAlternative(index) {
         if (!this.selectedChar) return;
@@ -1032,15 +1032,15 @@ export default class GlyphEditor {
         
         this.selectedAlternativeIndex = index;
         
-        // Загрузить выбранную альтернативу с учётом сохранённых изменений
+        // Load selected alternative considering saved changes
         this.loadGlyphWithEdits(this.selectedChar, index);
         
-        // Обновить визуальное выделение
+        // Update visual selection
         this.updateAlternativesSelection();
     }
     
     /**
-     * Обновить визуальное выделение выбранной альтернативы
+     * Update visual selection of selected alternative
      */
     updateAlternativesSelection() {
         const items = document.querySelectorAll('.editor-alternative-item');
@@ -1056,27 +1056,27 @@ export default class GlyphEditor {
     }
     
     /**
-     * Отрисовать превью глифа на canvas
-     * @param {HTMLCanvasElement} canvas - canvas для превью
-     * @param {string} glyphString - строка глифа
+     * Render glyph preview on canvas
+     * @param {HTMLCanvasElement} canvas - canvas for preview
+     * @param {string} glyphString - glyph string
      */
     renderGlyphPreview(canvas, glyphString) {
         const ctx = canvas.getContext('2d');
         
-        // Используем размеры canvas как есть (CSS-пиксели)
+        // Use canvas dimensions as is (CSS pixels)
         const width = canvas.width;
         const height = canvas.height;
         
-        // Очистить canvas (прозрачный фон, чтобы был виден фон ячейки)
+        // Clear canvas (transparent background so cell background is visible)
         ctx.clearRect(0, 0, width, height);
         
-        // Размер модуля для превью (меньше, чем на основном канвасе)
+        // Module size for preview (smaller than on main canvas)
         const moduleSize = Math.min(width, height) / (this.gridSize + 1);
         const gridSize = moduleSize * this.gridSize;
         const offsetX = (width - gridSize) / 2;
         const offsetY = (height - gridSize) / 2;
         
-        // Парсим строку глифа
+        // Parse glyph string
         const grid = this.createEmptyGrid();
         let index = 0;
         for (let row = 0; row < this.gridSize; row++) {
@@ -1092,7 +1092,7 @@ export default class GlyphEditor {
             }
         }
         
-        // Рисуем модули
+        // Draw modules
         for (let row = 0; row < this.gridSize; row++) {
             for (let col = 0; col < this.gridSize; col++) {
                 const module = grid[row][col];
@@ -1102,7 +1102,7 @@ export default class GlyphEditor {
                     const angle = module.rotation * Math.PI / 2;
                     const stem = moduleSize * 1.0;
                     
-                    // Белый цвет для превью на темном фоне
+                    // White color for preview on dark background
                     ctx.strokeStyle = '#FFFFFF';
                     ctx.fillStyle = '#FFFFFF';
                     
@@ -1134,7 +1134,7 @@ export default class GlyphEditor {
     }
     
     /**
-     * Получить сохранённые отредактированные глифы из localStorage
+     * Get saved edited glyphs from localStorage
      */
     getEditedGlyphs() {
         try {
@@ -1147,7 +1147,7 @@ export default class GlyphEditor {
     }
     
     /**
-     * Сохранить отредактированные глифы в localStorage
+     * Save edited glyphs to localStorage
      */
     saveEditedGlyphs(editedGlyphs) {
         try {
@@ -1167,17 +1167,17 @@ export default class GlyphEditor {
     getOriginalGlyph(char, alternativeIndex) {
         console.warn('[getOriginalGlyph] DEPRECATED: This method should not be used in the standalone editor!');
         
-        // Сначала проверяем, есть ли в VoidAlphabet
+        // First check if exists in VoidAlphabet
         const glyph = getGlyph(char, { alternativeIndex: alternativeIndex || null });
         
-        // Если глиф не найден (вернулся пробел), проверяем, может это новый символ из localStorage
+        // If glyph not found (returned space), check if this is new character from localStorage
         if (glyph === VOID_ALPHABET[" "]) {
-            // Проверить localStorage
+            // Check localStorage
             const editedGlyph = this.getEditedGlyph(char, alternativeIndex);
             if (editedGlyph) {
                 return editedGlyph;
             }
-            // Вернуть пустой глиф для новых символов
+            // Return empty glyph for new characters
             return 'E0'.repeat(25);
         }
         
@@ -1185,7 +1185,7 @@ export default class GlyphEditor {
     }
     
     /**
-     * Получить сохранённый отредактированный глиф
+     * Get saved edited glyph
      */
     getEditedGlyph(char, alternativeIndex) {
         const editedGlyphs = this.getEditedGlyphs();
@@ -1194,7 +1194,7 @@ export default class GlyphEditor {
     }
     
     /**
-     * Проверить, есть ли изменения в текущем глифе
+     * Check if there are changes in current glyph
      */
     checkForChanges() {
         if (!this.selectedChar || this.isCheckingChanges) {
@@ -1203,7 +1203,7 @@ export default class GlyphEditor {
         
         this.isCheckingChanges = true;
         
-        // Получить текущую строку глифа без вызова updateGlyphString (чтобы избежать рекурсии)
+        // Get current glyph string without calling updateGlyphString (to avoid recursion)
         let currentGlyphString = '';
         for (let row = 0; row < this.gridSize; row++) {
             for (let col = 0; col < this.gridSize; col++) {
@@ -1218,7 +1218,7 @@ export default class GlyphEditor {
         
         const editedGlyphString = this.getEditedGlyph(this.selectedChar, this.selectedAlternativeIndex);
         
-        // Используем ТОЛЬКО сохранённую версию или пустой глиф (НЕ из VoidAlphabet.js)
+        // Use ONLY saved version or empty glyph (NOT from VoidAlphabet.js)
         const referenceGlyphString = editedGlyphString || 'E0'.repeat(25);
         
         const hasChanges = currentGlyphString !== referenceGlyphString;
@@ -1228,7 +1228,7 @@ export default class GlyphEditor {
     }
     
     /**
-     * Обновить видимость кнопки "Save Changes"
+     * Update "Save Changes" button visibility
      */
     updateSaveChangesButton(show) {
         const saveChangesBtn = document.getElementById('editorSaveChangesBtn');
@@ -1236,7 +1236,7 @@ export default class GlyphEditor {
             saveChangesBtn.style.display = show ? 'block' : 'none';
         }
         
-        // Также обновить кнопку "Save" в standalone редакторе
+        // Also update "Save" button in standalone editor
         const saveBtn = document.getElementById('saveBtn');
         if (saveBtn) {
             saveBtn.disabled = !show;
@@ -1244,17 +1244,17 @@ export default class GlyphEditor {
     }
     
     /**
-     * Проверить, является ли глиф пустым (только E0)
+     * Check if glyph is empty (only E0)
      */
     isEmptyGlyph(glyphString) {
         if (!glyphString) return true;
-        // Проверяем, состоит ли глиф только из модулей E0
+        // Check if glyph consists only of E0 modules
         const emptyGlyph = 'E0'.repeat(25);
         return glyphString === emptyGlyph;
     }
     
     /**
-     * Сохранить изменения текущего глифа
+     * Save changes to current glyph
      */
     saveChanges() {
         if (!this.selectedChar) {
@@ -1265,21 +1265,21 @@ export default class GlyphEditor {
         const glyphString = this.updateGlyphString();
         const editedGlyphs = this.getEditedGlyphs();
         
-        // Инициализировать объект для символа, если его нет
+        // Initialize object for character if it doesn't exist
         if (!editedGlyphs[this.selectedChar]) {
             editedGlyphs[this.selectedChar] = {};
         }
         
-        // Сохранить глиф с ключом 'base' для базового или индексом для альтернативы
+        // Save glyph with key 'base' for base or index for alternative
         const key = this.selectedAlternativeIndex === null ? 'base' : String(this.selectedAlternativeIndex);
         
         console.log(`[saveChanges] Saving glyph for char: ${this.selectedChar}, selectedAlternativeIndex: ${this.selectedAlternativeIndex}, key: ${key}`);
         console.log(`[saveChanges] Glyph string length: ${glyphString.length}`);
         
-        // Если глиф пустой, удаляем его из localStorage
+        // If glyph is empty, remove it from localStorage
         if (this.isEmptyGlyph(glyphString)) {
             delete editedGlyphs[this.selectedChar][key];
-            // Если у символа больше нет глифов, удаляем весь объект
+            // If character has no more glyphs, remove entire object
             if (Object.keys(editedGlyphs[this.selectedChar]).length === 0) {
                 delete editedGlyphs[this.selectedChar];
             }
@@ -1287,26 +1287,26 @@ export default class GlyphEditor {
             editedGlyphs[this.selectedChar][key] = glyphString;
         }
         
-        // Сохранить в localStorage
+        // Save to localStorage
         this.saveEditedGlyphs(editedGlyphs);
         
         console.log(`[saveChanges] ✓ Saved. Current storage for ${this.selectedChar}:`, editedGlyphs[this.selectedChar] ? Object.keys(editedGlyphs[this.selectedChar]) : 'deleted');
         
-        // Обновить превью в панели альтернатив, если это альтернатива
+        // Update preview in alternatives panel if this is alternative
         if (this.selectedAlternativeIndex !== null) {
             this.updateAlternativesPanel();
         }
     }
     
     /**
-     * Автосохранение (вызывается при каждом изменении)
+     * Auto-save (called on each change)
      */
     autoSave() {
         if (!this.selectedChar) {
             return;
         }
         
-        // Используем debounce чтобы не сохранять слишком часто
+        // Use debounce to avoid saving too frequently
         if (this.autoSaveTimeout) {
             clearTimeout(this.autoSaveTimeout);
         }
@@ -1315,18 +1315,18 @@ export default class GlyphEditor {
             const glyphString = this.updateGlyphString();
             const editedGlyphs = this.getEditedGlyphs();
             
-            // Инициализировать объект для символа, если его нет
+            // Initialize object for character if it doesn't exist
             if (!editedGlyphs[this.selectedChar]) {
                 editedGlyphs[this.selectedChar] = {};
             }
             
-            // Сохранить глиф с ключом 'base' для базового или индексом для альтернативы
+            // Save glyph with key 'base' for base or index for alternative
             const key = this.selectedAlternativeIndex === null ? 'base' : String(this.selectedAlternativeIndex);
             
-            // Если глиф пустой, удаляем его из localStorage
+            // If glyph is empty, remove it from localStorage
             if (this.isEmptyGlyph(glyphString)) {
                 delete editedGlyphs[this.selectedChar][key];
-                // Если у символа больше нет глифов, удаляем весь объект
+                // If character has no more glyphs, remove entire object
                 if (Object.keys(editedGlyphs[this.selectedChar]).length === 0) {
                     delete editedGlyphs[this.selectedChar];
                 }
@@ -1334,10 +1334,10 @@ export default class GlyphEditor {
                 editedGlyphs[this.selectedChar][key] = glyphString;
             }
             
-            // Сохранить в localStorage
+            // Save to localStorage
             this.saveEditedGlyphs(editedGlyphs);
             
-            // Вызвать событие для обновления UI в editor.js
+            // Dispatch event for UI update in editor.js
             const event = new CustomEvent('glyphAutoSaved', {
                 detail: {
                     char: this.selectedChar,
@@ -1345,28 +1345,28 @@ export default class GlyphEditor {
                 }
             });
             document.dispatchEvent(event);
-        }, 300); // Задержка 300ms
+        }, 300); // 300ms delay
     }
     
     /**
-     * Загрузить глиф с учётом сохранённых изменений
+     * Load glyph considering saved changes
      */
     loadGlyphWithEdits(char, alternativeIndex) {
-        // Установить выбранный символ и индекс альтернативы
+        // Set selected character and alternative index
         this.selectedChar = char;
         this.selectedAlternativeIndex = alternativeIndex;
         
         console.log(`[loadGlyphWithEdits] Loading glyph for char: ${char}, alternativeIndex: ${alternativeIndex} (type: ${typeof alternativeIndex})`);
         
-        // Проверяем ТОЛЬКО сохранённые изменения из localStorage редактора
+        // Check ONLY saved changes from editor localStorage
         const editedGlyph = this.getEditedGlyph(char, alternativeIndex);
         if (editedGlyph && !this.isEmptyGlyph(editedGlyph)) {
             console.log(`[loadGlyphWithEdits] ✓ Found edited glyph, loading it`);
             this.importGlyph(editedGlyph, true);
         } else {
             console.log(`[loadGlyphWithEdits] No edited glyph found, clearing canvas`);
-            // НЕ загружаем из VoidAlphabet.js - редактор изолирован!
-            // Очищаем канвас для нового пустого глифа
+            // DON'T load from VoidAlphabet.js - editor is isolated!
+            // Clear canvas for new empty glyph
             this.clear();
         }
         

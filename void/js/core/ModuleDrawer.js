@@ -1,40 +1,40 @@
 /**
- * ModuleDrawer - отрисовка базовых модулей шрифта Void
+ * ModuleDrawer - rendering base modules of Void typeface
  * 
- * Поддерживает режимы:
- * - fill (Solid): одна линия
- * - stripes: несколько линий с промежутками
- * - dash: пунктирная линия
- * - sd: stripes + dash (несколько пунктирных линий)
+ * Supports modes:
+ * - fill (Solid): single line
+ * - stripes: multiple lines with gaps
+ * - dash: dashed line
+ * - sd: stripes + dash (multiple dashed lines)
  * 
- * Все модули рисуются методом Stroke (линии с обводкой)
+ * All modules are drawn using Stroke method (outlined lines)
  */
 
 import { MathUtils } from '../utils/MathUtils.js';
 
 export class ModuleDrawer {
     constructor(mode = 'fill') {
-        this.mode = mode; // 'fill', 'stripes' или 'dash'
-        this.strokesNum = 2; // количество полосок для stripes mode
-        this.strokeGapRatio = 1.0; // отношение толщины штриха к промежутку
-        this.cornerRadius = 0; // радиус скругления углов (в пикселях)
-        this.roundedCaps = false; // скругления на концах линий (Rounded)
-        this.dashLength = 0.10; // длина штриха для dash mode (множитель от stem)
-        this.gapLength = 0.30; // длина промежутка для dash mode (множитель от stem)
-        this.dashChess = false; // шахматный порядок для dash mode (чередование начала штрихов)
-        this.endpointSides = null; // объект {top, right, bottom, left} - стороны с endpoints
-        this.closeEnds = false; // закрывающие линии на концах в режиме Stripes
+        this.mode = mode; // 'fill', 'stripes' or 'dash'
+        this.strokesNum = 2; // number of stripes for stripes mode
+        this.strokeGapRatio = 1.0; // stroke to gap ratio
+        this.cornerRadius = 0; // corner radius (in pixels)
+        this.roundedCaps = false; // rounded line caps (Rounded)
+        this.dashLength = 0.10; // dash length for dash mode (multiplier of stem)
+        this.gapLength = 0.30; // gap length for dash mode (multiplier of stem)
+        this.dashChess = false; // chessboard pattern for dash mode (alternating dash start)
+        this.endpointSides = null; // object {top, right, bottom, left} - sides with endpoints
+        this.closeEnds = false; // closing lines at ends in Stripes mode
     }
 
     /**
-     * Установить режим отрисовки
+     * Set rendering mode
      */
     setMode(mode) {
         this.mode = mode;
     }
 
     /**
-     * Установить параметры для stripes mode
+     * Set parameters for stripes mode
      */
     setStripesParams(strokesNum, strokeGapRatio) {
         this.strokesNum = strokesNum;
@@ -42,21 +42,21 @@ export class ModuleDrawer {
     }
 
     /**
-     * Установить радиус скругления углов
+     * Set corner radius
      */
     setCornerRadius(radius) {
         this.cornerRadius = radius;
     }
 
     /**
-     * Установить скругления на концах линий
+     * Set rounded line caps
      */
     setRoundedCaps(enabled) {
         this.roundedCaps = enabled || false;
     }
 
     /**
-     * Установить параметры для dash mode
+     * Set parameters for dash mode
      */
     setDashParams(dashLength, gapLength, dashChess = false) {
         this.dashLength = dashLength;
@@ -65,27 +65,27 @@ export class ModuleDrawer {
     }
 
     /**
-     * Установить закрывающие линии на концах (для режима Stripes)
+     * Set closing lines at ends (for Stripes mode)
      */
     setCloseEnds(enabled) {
         this.closeEnds = enabled || false;
     }
 
     /**
-     * Вычислить адаптивный Gap для режима Dash
-     * Линия начинается и заканчивается штрихом длиной dashLength
-     * @param {number} lineLength - длина линии в пикселях
-     * @param {number} dashLength - длина штриха в пикселях
-     * @param {number} gapLength - начальная длина промежутка (используется для оценки)
-     * @returns {Object} {dashLength, gapLength, numDashes} - адаптивные параметры
+     * Calculate adaptive Gap for Dash mode
+     * Line starts and ends with dash of dashLength
+     * @param {number} lineLength - line length in pixels
+     * @param {number} dashLength - dash length in pixels
+     * @param {number} gapLength - initial gap length (used for estimation)
+     * @returns {Object} {dashLength, gapLength, numDashes} - adaptive parameters
      */
     calculateAdaptiveDash(lineLength, dashLength, gapLength) {
         return MathUtils.calculateAdaptiveDash(lineLength, dashLength, gapLength);
     }
 
     /**
-     * Вычислить gap и strokeWidth на основе общей ширины
-     * @param {number} totalWidth - общая ширина для размещения штрихов
+     * Calculate gap and strokeWidth based on total width
+     * @param {number} totalWidth - total width for placing strokes
      * @returns {Object} {gap, strokeWidth}
      */
     calculateGapAndStrokeWidth(totalWidth) {
@@ -96,13 +96,13 @@ export class ModuleDrawer {
     }
 
     /**
-     * Отрисовать модуль по коду
-     * @param {number} customStrokesNum - кастомное количество полосок (для random mode)
+     * Render module by code
+     * @param {number} customStrokesNum - custom number of stripes (for random mode)
      */
     drawModule(ctx, type, rotation, x, y, w, h, stem, color, customStrokesNum = null) {
         const angle = rotation * Math.PI / 2;
         
-        // Для random mode обновляем только strokesNum, сохраняя текущий mode (sd для пунктира)
+        // For random mode update only strokesNum, keeping current mode (sd for dash)
         const originalStrokesNum = this.strokesNum;
         
         if (customStrokesNum !== null) {
@@ -133,11 +133,11 @@ export class ModuleDrawer {
                 this.drawBend(ctx, x, y, w, h, angle, stem);
                 break;
             case 'E':
-                // Empty - ничего не рисуем
+                // Empty - don't draw anything
                 break;
         }
         
-        // Восстанавливаем оригинальные значения
+        // Restore original values
         if (customStrokesNum !== null) {
             this.strokesNum = originalStrokesNum;
         }
@@ -146,14 +146,14 @@ export class ModuleDrawer {
     }
 
     /**
-     * Вспомогательный метод: получить локальные стороны endpoints с учетом поворота
-     * @param {number} rotation - поворот модуля (0-3)
-     * @returns {Object} {top, right, bottom, left} - локальные стороны с endpoints
+     * Helper method: get local endpoint sides considering rotation
+     * @param {number} rotation - module rotation (0-3)
+     * @returns {Object} {top, right, bottom, left} - local sides with endpoints
      */
     getLocalEndpointSides(rotation) {
         if (!this.endpointSides) return null;
         
-        // Преобразуем глобальные стороны в локальные с учетом поворота
+        // Convert global sides to local considering rotation
         const sides = ['top', 'right', 'bottom', 'left'];
         const local = { top: false, right: false, bottom: false, left: false };
         
@@ -170,24 +170,24 @@ export class ModuleDrawer {
     }
 
     /**
-     * S — Straight: вертикальная линия слева
+     * S — Straight: vertical line on the left
      */
     drawStraight(ctx, x, y, w, h, angle, stem) {
         ctx.save();
         ctx.translate(x + w / 2, y + h / 2);
         ctx.rotate(angle);
         
-        // Получаем локальные endpoints с учетом поворота
+        // Get local endpoints considering rotation
         const rotation = Math.round(angle / (Math.PI / 2)) % 4;
         const localEndpoints = this.getLocalEndpointSides(rotation);
         
-        // Укорачивание на 0.5 * stem weight (если включен roundedCaps или closeEnds, и есть endpoints)
+        // Shortening by 0.5 * stem weight (if roundedCaps or closeEnds enabled, and there are endpoints)
         const shouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
         const shortenTop = shouldShorten && localEndpoints.top ? stem * 0.25 : 0;
         const shortenBottom = shouldShorten && localEndpoints.bottom ? stem * 0.25 : 0;
         
         if (this.mode === 'fill') {
-            // Solid mode: одна вертикальная линия
+            // Solid mode: single vertical line
             const lineX = -w / 2 + stem / 4;
             const lineWidth = stem / 2;
             
@@ -200,12 +200,12 @@ export class ModuleDrawer {
             ctx.lineTo(lineX, h / 2 - shortenBottom);
             ctx.stroke();
         } else if (this.mode === 'stripes') {
-            // Stripes mode: несколько параллельных линий
+            // Stripes mode: multiple parallel lines
             const totalWidth = stem / 2;
             const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
             const startX = -w / 2 + strokeWidth / 2;
             
-            // Для stripes mode укорачиваем на половину толщины линии (если Round или Close Ends)
+            // For stripes mode shorten by half line width (if Round or Close Ends)
             const shouldShortenStripes = (this.roundedCaps || this.closeEnds) && localEndpoints;
             const shortenTopStripes = shouldShortenStripes && localEndpoints.top ? strokeWidth / 2 : 0;
             const shortenBottomStripes = shouldShortenStripes && localEndpoints.bottom ? strokeWidth / 2 : 0;
@@ -222,8 +222,8 @@ export class ModuleDrawer {
                 ctx.stroke();
             }
             
-            // Закрывающие линии на концах (если включен closeEnds и есть endpoints)
-            // Close Ends: square cap когда Round выключен, round cap когда Round включен
+            // Closing lines at ends (if closeEnds enabled and there are endpoints)
+            // Close Ends: square cap when Round disabled, round cap when Round enabled
             if (this.closeEnds && localEndpoints) {
                 const firstLineX = startX;
                 const lastLineX = startX + (this.strokesNum - 1) * (strokeWidth + gap);
@@ -247,7 +247,7 @@ export class ModuleDrawer {
                 }
             }
         } else if (this.mode === 'dash') {
-            // Dash mode: одна пунктирная линия с адаптивным gap
+            // Dash mode: single dashed line with adaptive gap
             const lineX = -w / 2 + stem / 4;
             const lineWidth = stem / 2;
             
@@ -270,12 +270,12 @@ export class ModuleDrawer {
             ctx.setLineDash([]);
             ctx.lineDashOffset = 0;
         } else if (this.mode === 'sd') {
-            // SD mode: несколько параллельных пунктирных линий
+            // SD mode: multiple parallel dashed lines
             const totalWidth = stem / 2;
             const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
             const startX = -w / 2 + strokeWidth / 2;
             
-            // Для SD mode укорачиваем на половину толщины линии (если Round или Close Ends)
+            // For SD mode shorten by half line width (if Round or Close Ends)
             const shouldShortenSD = (this.roundedCaps || this.closeEnds) && localEndpoints;
             const shortenTopSD = shouldShortenSD && localEndpoints.top ? strokeWidth / 2 : 0;
             const shortenBottomSD = shouldShortenSD && localEndpoints.bottom ? strokeWidth / 2 : 0;
@@ -284,7 +284,7 @@ export class ModuleDrawer {
             ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
             
             const lineLength = h - shortenTopSD - shortenBottomSD;
-            // В SD mode dash/gap рассчитываются относительно strokeWidth (толщины одной линии)
+            // In SD mode dash/gap calculated relative to strokeWidth (single line width)
             const dashPx = strokeWidth * this.dashLength;
             const gapPx = strokeWidth * this.gapLength;
             const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
@@ -292,9 +292,9 @@ export class ModuleDrawer {
             ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
             
             for (let i = 0; i < this.strokesNum; i++) {
-                // Если включен шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
-                // четные линии (i % 2 === 1) начинаются с целого штриха
-                // Если выключен: все линии начинаются с половины штриха
+                // If chessboard pattern enabled: odd lines (i % 2 === 0) start with half dash,
+                // even lines (i % 2 === 1) start with full dash
+                // If disabled: all lines start with half dash
                 ctx.lineDashOffset = this.dashChess ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
                 
                 const lineX = startX + i * (strokeWidth + gap);
@@ -307,8 +307,8 @@ export class ModuleDrawer {
             ctx.setLineDash([]);
             ctx.lineDashOffset = 0;
             
-            // Закрывающие линии на концах (если включен closeEnds и есть endpoints)
-            // Close Ends: square cap когда Round выключен, round cap когда Round включен
+            // Closing lines at ends (if closeEnds enabled and there are endpoints)
+            // Close Ends: square cap when Round disabled, round cap when Round enabled
             if (this.closeEnds && localEndpoints) {
                 const firstLineX = startX;
                 const lastLineX = startX + (this.strokesNum - 1) * (strokeWidth + gap);
@@ -316,7 +316,7 @@ export class ModuleDrawer {
                 
                 ctx.lineCap = this.roundedCaps ? 'round' : 'square';
                 
-                // Закрывающие линии тоже пунктирные в режиме SD
+                // Closing lines are also dashed in SD mode
                 const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
                 ctx.setLineDash([closeAdaptive.dashLength, closeAdaptive.gapLength]);
                 ctx.lineDashOffset = closeAdaptive.dashLength / 2;
@@ -353,17 +353,17 @@ export class ModuleDrawer {
         ctx.translate(x + w / 2, y + h / 2);
         ctx.rotate(angle);
         
-        // Получаем локальные endpoints с учетом поворота
+        // Get local endpoints considering rotation
         const rotation = Math.round(angle / (Math.PI / 2)) % 4;
         const localEndpoints = this.getLocalEndpointSides(rotation);
         
-        // Укорачивание на 0.5 * stem weight (если включен roundedCaps или closeEnds, и есть endpoints)
+        // Shortening by 0.5 * stem weight (if roundedCaps or closeEnds enabled, and there are endpoints)
         const shouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
         const shortenTop = shouldShorten && localEndpoints.top ? stem * 0.25 : 0;
         const shortenBottom = shouldShorten && localEndpoints.bottom ? stem * 0.25 : 0;
         
         if (this.mode === 'fill') {
-            // Solid mode: одна вертикальная линия по центру
+            // Solid mode: single vertical line in center
             const lineX = 0;
             const lineWidth = stem / 2;
             
@@ -376,13 +376,13 @@ export class ModuleDrawer {
             ctx.lineTo(lineX, h / 2 - shortenBottom);
             ctx.stroke();
         } else if (this.mode === 'stripes') {
-            // Stripes mode: несколько параллельных линий, центрированных
+            // Stripes mode: multiple parallel lines, centered
             const totalWidth = stem / 2;
             const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
             const totalLineWidth = (this.strokesNum * strokeWidth) + ((this.strokesNum - 1) * gap);
             const startX = -totalLineWidth / 2 + strokeWidth / 2;
             
-            // Укорачиваем на половину толщины линии (если Round или Close Ends)
+            // Shorten by half line width (if Round or Close Ends)
             const shouldShortenStripes = (this.roundedCaps || this.closeEnds) && localEndpoints;
             const shortenTopStripes = shouldShortenStripes && localEndpoints.top ? strokeWidth / 2 : 0;
             const shortenBottomStripes = shouldShortenStripes && localEndpoints.bottom ? strokeWidth / 2 : 0;
@@ -422,7 +422,7 @@ export class ModuleDrawer {
                 }
             }
         } else if (this.mode === 'dash') {
-            // Dash mode: одна пунктирная линия по центру
+            // Dash mode: single dashed line in center
             const lineX = 0;
             const lineWidth = stem / 2;
             
@@ -445,7 +445,7 @@ export class ModuleDrawer {
             ctx.setLineDash([]);
             ctx.lineDashOffset = 0;
         } else if (this.mode === 'sd') {
-            // SD mode: несколько параллельных пунктирных линий, центрированных
+            // SD mode: multiple parallel dashed lines, centered
             const totalWidth = stem / 2;
             const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
             const totalLineWidth = (this.strokesNum * strokeWidth) + ((this.strokesNum - 1) * gap);
@@ -465,9 +465,9 @@ export class ModuleDrawer {
             ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
             
             for (let i = 0; i < this.strokesNum; i++) {
-                // Если включен шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
-                // четные линии (i % 2 === 1) начинаются с целого штриха
-                // Если выключен: все линии начинаются с половины штриха
+                // If chessboard pattern enabled: odd lines (i % 2 === 0) start with half dash,
+                // even lines (i % 2 === 1) start with full dash
+                // If disabled: all lines start with half dash
                 ctx.lineDashOffset = this.dashChess ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
                 
                 const lineX = startX + i * (strokeWidth + gap);
@@ -480,7 +480,7 @@ export class ModuleDrawer {
             ctx.setLineDash([]);
             ctx.lineDashOffset = 0;
             
-            // Close Ends: square cap когда Round выключен, round cap когда Round включен
+            // Close Ends: square cap when Round disabled, round cap when Round enabled
             if (this.closeEnds && localEndpoints) {
                 const firstLineX = startX;
                 const lastLineX = startX + (this.strokesNum - 1) * (strokeWidth + gap);
@@ -488,7 +488,7 @@ export class ModuleDrawer {
                 
                 ctx.lineCap = this.roundedCaps ? 'round' : 'square';
                 
-                // Закрывающие линии тоже пунктирные в режиме SD
+                // Closing lines are also dashed in SD mode
                 const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
                 ctx.setLineDash([closeAdaptive.dashLength, closeAdaptive.gapLength]);
                 ctx.lineDashOffset = closeAdaptive.dashLength / 2;
@@ -525,7 +525,7 @@ export class ModuleDrawer {
         ctx.translate(x + w / 2, y + h / 2);
         ctx.rotate(angle);
         
-        // Получаем локальные endpoints с учетом поворота
+        // Get local endpoints considering rotation
         const rotation = Math.round(angle / (Math.PI / 2)) % 4;
         const localEndpoints = this.getLocalEndpointSides(rotation);
         
@@ -535,7 +535,7 @@ export class ModuleDrawer {
         ctx.lineJoin = this.roundedCaps ? 'round' : 'miter';
         
         if (this.mode === 'fill') {
-            // Solid mode: T-образное соединение
+            // Solid mode: T-shaped connection
             const vertLineX = -w / 2 + stem / 4;
             const horizLineY = 0;
             
@@ -616,7 +616,7 @@ export class ModuleDrawer {
             ctx.setLineDash([]);
             ctx.lineDashOffset = 0;
         } else if (this.mode === 'sd') {
-            // SD mode: stripes + dash для Joint
+            // SD mode: stripes + dash for Joint
             const totalWidth = stem / 2;
             const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
             
@@ -631,13 +631,13 @@ export class ModuleDrawer {
             const dashPx = strokeWidth * this.dashLength;
             const gapPx = strokeWidth * this.gapLength;
             
-            // Вертикальные линии
+            // Vertical lines
             const vertAdaptive = this.calculateAdaptiveDash(h, dashPx, gapPx);
             ctx.setLineDash([vertAdaptive.dashLength, vertAdaptive.gapLength]);
             
             for (let i = 0; i < this.strokesNum; i++) {
-                // Шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
-                // четные линии (i % 2 === 1) начинаются с целого штриха
+                // Chessboard pattern: odd lines (i % 2 === 0) start with half dash,
+                // even lines (i % 2 === 1) start with full dash
                 ctx.lineDashOffset = this.dashChess ? ((i % 2 === 0) ? vertAdaptive.dashLength / 2 : 0) : vertAdaptive.dashLength / 2;
                 
                 const lineX = vertStartX + i * (strokeWidth + gap);
@@ -647,14 +647,14 @@ export class ModuleDrawer {
                 ctx.stroke();
             }
             
-            // Горизонтальные линии
+            // Horizontal lines
             const horizLength = w / 2 - lastVertX;
             const horizAdaptive = this.calculateAdaptiveDash(horizLength, dashPx, gapPx);
             ctx.setLineDash([horizAdaptive.dashLength, horizAdaptive.gapLength]);
             
             for (let i = 0; i < this.strokesNum; i++) {
-                // Шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
-                // четные линии (i % 2 === 1) начинаются с целого штриха
+                // Chessboard pattern: odd lines (i % 2 === 0) start with half dash,
+                // even lines (i % 2 === 1) start with full dash
                 ctx.lineDashOffset = this.dashChess ? ((i % 2 === 0) ? horizAdaptive.dashLength / 2 : 0) : horizAdaptive.dashLength / 2;
                 
                 const lineY = horizStartY + i * (strokeWidth + gap);
@@ -679,7 +679,7 @@ export class ModuleDrawer {
         ctx.translate(x + w / 2, y + h / 2);
         ctx.rotate(angle);
         
-        // Получаем локальные endpoints с учетом поворота
+        // Get local endpoints considering rotation
         const rotation = Math.round(angle / (Math.PI / 2)) % 4;
         const localEndpoints = this.getLocalEndpointSides(rotation);
         
@@ -689,7 +689,7 @@ export class ModuleDrawer {
         ctx.lineJoin = this.roundedCaps ? 'round' : 'miter';
         
         if (this.mode === 'fill') {
-            // Solid mode: L-образное соединение
+            // Solid mode: L-shaped connection
             const vertLineX = -w / 2 + stem / 4;
             const horizLineY = h / 2 - stem / 4;
             
@@ -758,7 +758,7 @@ export class ModuleDrawer {
             ctx.setLineDash([]);
             ctx.lineDashOffset = 0;
         } else if (this.mode === 'sd') {
-            // SD mode: stripes + dash для Link (L-образное)
+            // SD mode: stripes + dash for Link (L-shaped)
             const totalWidth = stem / 2;
             const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
             
@@ -784,9 +784,9 @@ export class ModuleDrawer {
                 const adaptive = this.calculateAdaptiveDash(totalLength, dashPx, gapPx);
                 
                 ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-                // Если включен шахматный порядок: нечетные линии (i % 2 === 0) начинаются с половины штриха,
-                // четные линии (i % 2 === 1) начинаются с целого штриха
-                // Если выключен: все линии начинаются с половины штриха
+                // If chessboard pattern enabled: odd lines (i % 2 === 0) start with half dash,
+                // even lines (i % 2 === 1) start with full dash
+                // If disabled: all lines start with half dash
                 ctx.lineDashOffset = this.dashChess ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
                 
                 ctx.beginPath();
@@ -814,7 +814,7 @@ export class ModuleDrawer {
         ctx.translate(x + w / 2, y + h / 2);
         ctx.rotate(angle);
         
-        // Получаем локальные endpoints с учетом поворота
+        // Get local endpoints considering rotation
         const rotation = Math.round(angle / (Math.PI / 2)) % 4;
         const localEndpoints = this.getLocalEndpointSides(rotation);
         
@@ -823,7 +823,7 @@ export class ModuleDrawer {
         ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
         
         if (this.mode === 'fill') {
-            // Solid mode: одна дуга
+            // Solid mode: single arc
             let arcRadius = w - stem / 4;
             const minRadius = Math.max(lineWidth / 2, 0.1);
             if (arcRadius < minRadius) {
@@ -860,7 +860,7 @@ export class ModuleDrawer {
                     arcRadius = minRadius;
                 }
                 if (arcRadius > 0) {
-                    // Укорачиваем дуги если Round или Close Ends
+                    // Shorten arcs if Round or Close Ends
                     const shouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
                     const deltaAngleRight = shouldShorten && localEndpoints.right ? shortenAmount / arcRadius : 0;
                     const deltaAngleTop = shouldShorten && localEndpoints.top ? shortenAmount / arcRadius : 0;
@@ -874,7 +874,7 @@ export class ModuleDrawer {
                 }
             }
             
-            // Close Ends: square cap когда Round выключен, round cap когда Round включен
+            // Close Ends: square cap when Round disabled, round cap when Round enabled
             if (this.closeEnds && localEndpoints && this.strokesNum > 0) {
                 const centerX = w / 2;
                 const centerY = -h / 2;
@@ -955,7 +955,7 @@ export class ModuleDrawer {
             ctx.setLineDash([]);
             ctx.lineDashOffset = 0;
         } else if (this.mode === 'sd') {
-            // SD mode: stripes + dash для Round
+            // SD mode: stripes + dash for Round
             const totalWidth = stem / 2;
             const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
             
@@ -978,7 +978,7 @@ export class ModuleDrawer {
                     arcRadius = minRadius;
                 }
                 if (arcRadius > 0) {
-                    // Укорачиваем дуги если Round или Close Ends
+                    // Shorten arcs if Round or Close Ends
                     const shouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
                     const deltaAngleRight = shouldShorten && localEndpoints.right ? shortenAmount / arcRadius : 0;
                     const deltaAngleTop = shouldShorten && localEndpoints.top ? shortenAmount / arcRadius : 0;
@@ -991,8 +991,8 @@ export class ModuleDrawer {
                     const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
                     
                     ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-                    // Шахматный порядок: нечетные линии (j % 2 === 0) начинаются с половины штриха,
-                    // четные линии (j % 2 === 1) начинаются с целого штриха
+                    // Chessboard pattern: odd lines (j % 2 === 0) start with half dash,
+                    // even lines (j % 2 === 1) start with full dash
                     ctx.lineDashOffset = this.dashChess ? ((j % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
                     
                     ctx.beginPath();
@@ -1004,7 +1004,7 @@ export class ModuleDrawer {
             ctx.setLineDash([]);
             ctx.lineDashOffset = 0;
             
-            // Close Ends: square cap когда Round выключен, round cap когда Round включен
+            // Close Ends: square cap when Round disabled, round cap when Round enabled
             if (this.closeEnds && localEndpoints && this.strokesNum > 0) {
                 const firstRadius = outerRadius;
                 let lastRadius = outerRadius - (this.strokesNum - 1) * (strokeWidth + gap);
@@ -1014,7 +1014,7 @@ export class ModuleDrawer {
                 
                 ctx.lineCap = this.roundedCaps ? 'round' : 'square';
                 
-                // Закрывающие линии тоже пунктирные в режиме SD
+                // Closing lines are also dashed in SD mode
                 const closeLineLength = firstRadius - lastRadius;
                 const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
                 ctx.setLineDash([closeAdaptive.dashLength, closeAdaptive.gapLength]);
@@ -1071,7 +1071,7 @@ export class ModuleDrawer {
         ctx.translate(x + w / 2, y + h / 2);
         ctx.rotate(angle);
         
-        // Получаем локальные endpoints с учетом поворота
+        // Get local endpoints considering rotation
         const rotation = Math.round(angle / (Math.PI / 2)) % 4;
         const localEndpoints = this.getLocalEndpointSides(rotation);
         
@@ -1080,7 +1080,7 @@ export class ModuleDrawer {
         ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
         
         if (this.mode === 'fill') {
-            // Solid mode: одна маленькая дуга
+            // Solid mode: single small arc
             let arcRadius = stem / 4;
             const minRadius = Math.max(lineWidth / 2, 0.1);
             if (arcRadius < minRadius) {
@@ -1117,7 +1117,7 @@ export class ModuleDrawer {
                     arcRadius = minRadius;
                 }
                 if (arcRadius > 0) {
-                    // Укорачиваем дуги если Round или Close Ends
+                    // Shorten arcs if Round or Close Ends
                     const shouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
                     const deltaAngleRight = shouldShorten && localEndpoints.right ? shortenAmount / arcRadius : 0;
                     const deltaAngleTop = shouldShorten && localEndpoints.top ? shortenAmount / arcRadius : 0;
@@ -1131,7 +1131,7 @@ export class ModuleDrawer {
                 }
             }
             
-            // Close Ends: square cap когда Round выключен, round cap когда Round включен
+            // Close Ends: square cap when Round disabled, round cap when Round enabled
             if (this.closeEnds && localEndpoints && this.strokesNum > 0) {
                 const centerX = w / 2;
                 const centerY = -h / 2;
@@ -1212,7 +1212,7 @@ export class ModuleDrawer {
             ctx.setLineDash([]);
             ctx.lineDashOffset = 0;
         } else if (this.mode === 'sd') {
-            // SD mode: stripes + dash для Bend
+            // SD mode: stripes + dash for Bend
             const totalWidth = stem / 2;
             const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
             
@@ -1235,7 +1235,7 @@ export class ModuleDrawer {
                     arcRadius = minRadius;
                 }
                 if (arcRadius > 0) {
-                    // Укорачиваем дуги если Round или Close Ends
+                    // Shorten arcs if Round or Close Ends
                     const shouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
                     const deltaAngleRight = shouldShorten && localEndpoints.right ? shortenAmount / arcRadius : 0;
                     const deltaAngleTop = shouldShorten && localEndpoints.top ? shortenAmount / arcRadius : 0;
@@ -1248,8 +1248,8 @@ export class ModuleDrawer {
                     const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
                     
                     ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-                    // Шахматный порядок: нечетные линии (j % 2 === 0) начинаются с половины штриха,
-                    // четные линии (j % 2 === 1) начинаются с целого штриха
+                    // Chessboard pattern: odd lines (j % 2 === 0) start with half dash,
+                    // even lines (j % 2 === 1) start with full dash
                     ctx.lineDashOffset = this.dashChess ? ((j % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
                     
                     ctx.beginPath();
@@ -1261,7 +1261,7 @@ export class ModuleDrawer {
             ctx.setLineDash([]);
             ctx.lineDashOffset = 0;
             
-            // Close Ends: square cap когда Round выключен, round cap когда Round включен
+            // Close Ends: square cap when Round disabled, round cap when Round enabled
             if (this.closeEnds && localEndpoints && this.strokesNum > 0) {
                 const firstRadius = outerRadius;
                 let lastRadius = outerRadius - (this.strokesNum - 1) * (strokeWidth + gap);
@@ -1271,7 +1271,7 @@ export class ModuleDrawer {
                 
                 ctx.lineCap = this.roundedCaps ? 'round' : 'square';
                 
-                // Закрывающие линии тоже пунктирные в режиме SD
+                // Closing lines are also dashed in SD mode
                 const closeLineLength = firstRadius - lastRadius;
                 const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
                 ctx.setLineDash([closeAdaptive.dashLength, closeAdaptive.gapLength]);

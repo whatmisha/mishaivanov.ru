@@ -1,11 +1,11 @@
 /**
- * Утилиты для работы с цветами
- * Конвертация между форматами: HEX, RGB, HSB
+ * Color utilities
+ * Conversion between formats: HEX, RGB, HSB
  */
 export class ColorUtils {
     /**
-     * Конвертация HEX в RGB
-     * @param {string} hex - цвет в формате #RRGGBB
+     * Convert HEX to RGB
+     * @param {string} hex - color in #RRGGBB format
      * @returns {{r: number, g: number, b: number}|null}
      */
     static hexToRgb(hex) {
@@ -18,11 +18,11 @@ export class ColorUtils {
     }
 
     /**
-     * Конвертация RGB в HEX
-     * @param {number} r - красный (0-255)
-     * @param {number} g - зеленый (0-255)
-     * @param {number} b - синий (0-255)
-     * @returns {string} - цвет в формате #RRGGBB
+     * Convert RGB to HEX
+     * @param {number} r - red (0-255)
+     * @param {number} g - green (0-255)
+     * @param {number} b - blue (0-255)
+     * @returns {string} - color in #RRGGBB format
      */
     static rgbToHex(r, g, b) {
         return '#' + [r, g, b].map(x => {
@@ -32,10 +32,10 @@ export class ColorUtils {
     }
 
     /**
-     * Конвертация RGB в HSB (Hue, Saturation, Brightness)
-     * @param {number} r - красный (0-255)
-     * @param {number} g - зеленый (0-255)
-     * @param {number} b - синий (0-255)
+     * Convert RGB to HSB (Hue, Saturation, Brightness)
+     * @param {number} r - red (0-255)
+     * @param {number} g - green (0-255)
+     * @param {number} b - blue (0-255)
      * @returns {{h: number, s: number, b: number}} - HSB (h: 0-360, s: 0-100, b: 0-100)
      */
     static rgbToHsb(r, g, b) {
@@ -69,10 +69,10 @@ export class ColorUtils {
     }
 
     /**
-     * Конвертация HSB в RGB
-     * @param {number} h - оттенок (0-360)
-     * @param {number} s - насыщенность (0-100)
-     * @param {number} b - яркость (0-100)
+     * Convert HSB to RGB
+     * @param {number} h - hue (0-360)
+     * @param {number} s - saturation (0-100)
+     * @param {number} b - brightness (0-100)
      * @returns {{r: number, g: number, b: number}} - RGB (0-255)
      */
     static hsbToRgb(h, s, b) {
@@ -109,9 +109,9 @@ export class ColorUtils {
     }
 
     /**
-     * Рассчитать относительную светимость цвета (WCAG)
-     * @param {string} hex - цвет в формате #RRGGBB
-     * @returns {number} - светимость (0-1)
+     * Calculate relative color luminance (WCAG)
+     * @param {string} hex - color in #RRGGBB format
+     * @returns {number} - luminance (0-1)
      */
     static getLuminance(hex) {
         const rgb = this.hexToRgb(hex.replace('#', ''));
@@ -121,20 +121,20 @@ export class ColorUtils {
         const g = rgb.g / 255;
         const b = rgb.b / 255;
         
-        // Конвертация в линейный RGB
+        // Convert to linear RGB
         const toLinear = (c) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
         const rLinear = toLinear(r);
         const gLinear = toLinear(g);
         const bLinear = toLinear(b);
         
-        // Относительная светимость
+        // Relative luminance
         return 0.2126 * rLinear + 0.7152 * gLinear + 0.0722 * bLinear;
     }
 
     /**
-     * Получить контрастный цвет для сетки
-     * @param {string} bgColor - цвет фона в формате #RRGGBB
-     * @returns {string} - черный или белый цвет для максимального контраста
+     * Get contrasting color for grid
+     * @param {string} bgColor - background color in #RRGGBB format
+     * @returns {string} - black or white color for maximum contrast
      */
     static getContrastColor(bgColor) {
         const luminance = this.getLuminance(bgColor);
@@ -151,10 +151,10 @@ export class ColorUtils {
     }
 
     /**
-     * Вычислить прозрачность для сетки
-     * @param {number} luminance - светимость фона (0-1) - не используется, оставлен для совместимости
-     * @param {number} baseOpacity - базовая прозрачность
-     * @returns {number} - всегда возвращает базовую прозрачность
+     * Calculate opacity for grid
+     * @param {number} luminance - background luminance (0-1) - not used, kept for compatibility
+     * @param {number} baseOpacity - base opacity
+     * @returns {number} - always returns base opacity
      */
     static getGridOpacity(luminance, baseOpacity) {
         // Always use the same opacity regardless of background brightness

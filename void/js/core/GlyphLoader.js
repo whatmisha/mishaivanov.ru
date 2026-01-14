@@ -1,15 +1,15 @@
 /**
- * GlyphLoader - функции для работы с глифами
- * Загружает данные из VoidAlphabet.js и обрабатывает отредактированные версии из localStorage
+ * GlyphLoader - functions for working with glyphs
+ * Loads data from VoidAlphabet.js and processes edited versions from localStorage
  */
 
 import { VOID_ALPHABET, VOID_ALPHABET_ALTERNATIVES } from './VoidAlphabet.js';
 
 /**
- * Получить отредактированный глиф из localStorage
- * @param {string} char - символ
- * @param {number|null} alternativeIndex - индекс альтернативы (null = базовый, 1+ = альтернативы)
- * @returns {string|null} - код глифа или null если не найден
+ * Get edited glyph from localStorage
+ * @param {string} char - character
+ * @param {number|null} alternativeIndex - alternative index (null = base, 1+ = alternatives)
+ * @returns {string|null} - glyph code or null if not found
  */
 function getEditedGlyphFromStorage(char, alternativeIndex) {
     try {
@@ -20,7 +20,7 @@ function getEditedGlyphFromStorage(char, alternativeIndex) {
         const editedGlyphs = JSON.parse(stored);
         const key = alternativeIndex === null ? 'base' : String(alternativeIndex);
         
-        // Проверяем наличие глифа для символа и ключа
+        // Check if glyph exists for character and key
         if (editedGlyphs[char] && editedGlyphs[char][key]) {
             return editedGlyphs[char][key];
         }
@@ -31,19 +31,19 @@ function getEditedGlyphFromStorage(char, alternativeIndex) {
 }
 
 /**
- * Получить код глифа для символа
+ * Get glyph code for character
  */
 export function getGlyph(char, options = {}) {
     const upperChar = char.toUpperCase();
     const alternativeIndex = options.alternativeIndex;
     
-    // Получаем оригинальные данные
+    // Get original data
     const baseGlyph = VOID_ALPHABET[upperChar] || VOID_ALPHABET[" "];
     const alternatives = VOID_ALPHABET_ALTERNATIVES[upperChar];
     
-    // Если индекс не указан (null или undefined) - возвращаем базовый глиф
+    // If index not specified (null or undefined) - return base glyph
     if (alternativeIndex === null || alternativeIndex === undefined) {
-        // Сначала проверяем, есть ли отредактированная версия базового глифа
+        // First check if there's edited version of base glyph
         const editedGlyph = getEditedGlyphFromStorage(upperChar, null);
         if (editedGlyph) {
             return editedGlyph;
@@ -51,13 +51,13 @@ export function getGlyph(char, options = {}) {
         return baseGlyph;
     }
     
-    // Режим random: выбираем случайную альтернативу
+    // Random mode: select random alternative
     if (alternativeIndex === 'random') {
-        // Включаем базовый глиф в выбор (индекс 0 = базовый, 1+ = альтернативы)
+        // Include base glyph in selection (index 0 = base, 1+ = alternatives)
         const allGlyphs = [baseGlyph, ...(alternatives || [])];
         const randomIndex = Math.floor(Math.random() * allGlyphs.length);
         
-        // Проверяем, есть ли отредактированная версия для выбранного индекса
+        // Check if there's edited version for selected index
         const selectedIndex = randomIndex === 0 ? null : randomIndex;
         const editedGlyph = getEditedGlyphFromStorage(upperChar, selectedIndex);
         if (editedGlyph) {
@@ -67,9 +67,9 @@ export function getGlyph(char, options = {}) {
         return allGlyphs[randomIndex];
     }
     
-    // Конкретный индекс (число)
+    // Specific index (number)
     if (typeof alternativeIndex === 'number') {
-        // Индекс 0 = базовый глиф
+        // Index 0 = base glyph
         if (alternativeIndex === 0) {
             const editedGlyph = getEditedGlyphFromStorage(upperChar, null);
             if (editedGlyph) {
@@ -78,14 +78,14 @@ export function getGlyph(char, options = {}) {
             return baseGlyph;
         }
         
-        // Индекс 1+ = альтернативы
+        // Index 1+ = alternatives
         if (!alternatives || !alternatives.length) {
             return baseGlyph;
         }
         
         const altIndex = alternativeIndex - 1;
         if (altIndex >= 0 && altIndex < alternatives.length) {
-            // Проверяем, есть ли отредактированная версия
+            // Check if there's edited version
             const editedGlyph = getEditedGlyphFromStorage(upperChar, alternativeIndex);
             if (editedGlyph) {
                 return editedGlyph;
@@ -98,8 +98,8 @@ export function getGlyph(char, options = {}) {
 }
 
 /**
- * Проверить, есть ли глиф для символа
- * @param {string} char - символ
+ * Check if glyph exists for character
+ * @param {string} char - character
  * @returns {boolean}
  */
 export function hasGlyph(char) {
@@ -107,7 +107,7 @@ export function hasGlyph(char) {
 }
 
 /**
- * Получить список всех доступных символов
+ * Get list of all available characters
  * @returns {string[]}
  */
 export function getAvailableChars() {

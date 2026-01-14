@@ -1,6 +1,6 @@
 /**
- * DualSense Controller Support для Glyph Editor
- * Управление редактором глифов с помощью контроллера PlayStation 5
+ * DualSense Controller Support for Glyph Editor
+ * Glyph editor control via PlayStation 5 controller
  */
 
 export default class DualSenseController {
@@ -8,64 +8,64 @@ export default class DualSenseController {
         this.editorApp = editorApp;
         this.glyphEditor = glyphEditor;
         
-        // Индекс подключенного контроллера
+        // Connected controller index
         this.gamepadIndex = null;
         
-        // Состояние кнопок (для предотвращения повторных нажатий)
+        // Button states (to prevent repeated presses)
         this.buttonStates = {};
         
-        // Позиция курсора на канвасе (управляется правым стиком)
-        this.cursorRow = 2; // Центр сетки 5x5
+        // Cursor position on canvas (controlled by right stick)
+        this.cursorRow = 2; // Center of 5x5 grid
         this.cursorCol = 2;
         
-        // Скорость движения курсора
+        // Cursor movement speed
         this.cursorSpeed = 0.12;
         this.cursorAccumulator = { x: 0, y: 0 };
         
-        // Порог для активации движения стика
+        // Threshold for stick movement activation
         this.stickDeadZone = 0.15;
         
-        // Флаг активности
+        // Active flag
         this.isActive = false;
         
-        // Флаг зажатой кнопки X (для непрерывного рисования)
+        // X button held flag (for continuous drawing)
         this.isButtonDown = false;
         this.startCell = null;
         this.lastProcessedCell = null;
         this.wasDrag = false;
         
-        // Интервал для обновления состояния
+        // Update interval
         this.updateInterval = null;
         
-        // Привязка методов
+        // Bind methods
         this.handleGamepadConnected = this.handleGamepadConnected.bind(this);
         this.handleGamepadDisconnected = this.handleGamepadDisconnected.bind(this);
         this.update = this.update.bind(this);
     }
     
     /**
-     * Активировать контроллер
+     * Activate controller
      */
     activate() {
         if (this.isActive) return;
         
         this.isActive = true;
         
-        // Слушать события подключения/отключения
+        // Listen for connect/disconnect events
         window.addEventListener('gamepadconnected', this.handleGamepadConnected);
         window.addEventListener('gamepaddisconnected', this.handleGamepadDisconnected);
         
-        // Проверить уже подключенные контроллеры
+        // Check already connected controllers
         this.checkConnectedGamepads();
         
-        // Запустить цикл обновления
+        // Start update loop
         this.startUpdateLoop();
         
         console.log('[DualSenseController] Activated');
     }
     
     /**
-     * Деактивировать контроллер
+     * Deactivate controller
      */
     deactivate() {
         if (!this.isActive) return;
@@ -83,7 +83,7 @@ export default class DualSenseController {
     }
     
     /**
-     * Проверить уже подключенные контроллеры
+     * Check already connected controllers
      */
     checkConnectedGamepads() {
         const gamepads = navigator.getGamepads();
@@ -98,18 +98,18 @@ export default class DualSenseController {
     }
     
     /**
-     * Проверить, является ли контроллер DualSense
+     * Check if controller is DualSense
      */
     isDualSense(gamepad) {
-        // DualSense обычно имеет в названии "DualSense" или "Wireless Controller"
+        // DualSense usually has "DualSense" or "Wireless Controller" in name
         const id = gamepad.id.toLowerCase();
         return id.includes('dualsense') || 
                id.includes('wireless controller') ||
-               id.includes('054c:0ce6'); // Vendor ID для DualSense
+               id.includes('054c:0ce6'); // Vendor ID for DualSense
     }
     
     /**
-     * Обработчик подключения контроллера
+     * Controller connection handler
      */
     handleGamepadConnected(e) {
         if (this.isDualSense(e.gamepad)) {
@@ -119,7 +119,7 @@ export default class DualSenseController {
     }
     
     /**
-     * Обработчик отключения контроллера
+     * Controller disconnection handler
      */
     handleGamepadDisconnected(e) {
         if (e.gamepad.index === this.gamepadIndex) {
@@ -129,12 +129,12 @@ export default class DualSenseController {
     }
     
     /**
-     * Запустить цикл обновления
+     * Start update loop
      */
     startUpdateLoop() {
         if (this.updateInterval) return;
         
-        // Обновление с частотой ~60 FPS
+        // Update at ~60 FPS
         this.updateInterval = setInterval(() => {
             if (this.isActive) {
                 this.update();
@@ -143,7 +143,7 @@ export default class DualSenseController {
     }
     
     /**
-     * Остановить цикл обновления
+     * Stop update loop
      */
     stopUpdateLoop() {
         if (this.updateInterval) {
@@ -153,7 +153,7 @@ export default class DualSenseController {
     }
     
     /**
-     * Основной цикл обновления
+     * Main update loop
      */
     update() {
         if (this.gamepadIndex === null) return;
@@ -164,32 +164,32 @@ export default class DualSenseController {
             return;
         }
         
-        // Обработка D-Pad и левого стика для управления курсором на канвасе
+        // Handle D-Pad and left stick for cursor control on canvas
         this.handleCursorMovement(gamepad);
         
-        // Обработка кнопок
+        // Handle buttons
         this.handleButtons(gamepad);
         
-        // Обработка триггеров
+        // Handle triggers
         this.handleTriggers(gamepad);
     }
     
     /**
-     * Обработка D-Pad и левого стика для управления курсором на канвасе
+     * Handle D-Pad and left stick for cursor control on canvas
      */
     handleCursorMovement(gamepad) {
-        // D-Pad на DualSense: кнопки 12-15
-        // 12 = вверх, 13 = вниз, 14 = влево, 15 = вправо
+        // D-Pad on DualSense: buttons 12-15
+        // 12 = up, 13 = down, 14 = left, 15 = right
         const dpadUp = gamepad.buttons[12]?.pressed || false;
         const dpadDown = gamepad.buttons[13]?.pressed || false;
         const dpadLeft = gamepad.buttons[14]?.pressed || false;
         const dpadRight = gamepad.buttons[15]?.pressed || false;
         
-        // Левый стик: axes[0] (X), axes[1] (Y)
+        // Left stick: axes[0] (X), axes[1] (Y)
         const leftStickX = gamepad.axes[0] || 0;
         const leftStickY = gamepad.axes[1] || 0;
         
-        // Обработка D-Pad (дискретные движения)
+        // Handle D-Pad (discrete movements)
         if (dpadUp && !this.buttonStates['dpad_up']) {
             this.buttonStates['dpad_up'] = true;
             this.cursorRow = Math.max(0, this.cursorRow - 1);
@@ -222,7 +222,7 @@ export default class DualSenseController {
             this.buttonStates['dpad_right'] = false;
         }
         
-        // Обработка левого стика (плавные движения)
+        // Handle left stick (smooth movements)
         const absX = Math.abs(leftStickX);
         const absY = Math.abs(leftStickY);
         
@@ -232,11 +232,11 @@ export default class DualSenseController {
             return;
         }
         
-        // Накопить движение
+        // Accumulate movement
         this.cursorAccumulator.x += leftStickX * this.cursorSpeed;
         this.cursorAccumulator.y += leftStickY * this.cursorSpeed;
         
-        // Переместить курсор, если накопилось достаточно движения
+        // Move cursor if enough movement accumulated
         if (Math.abs(this.cursorAccumulator.x) >= 1) {
             const delta = Math.floor(this.cursorAccumulator.x);
             this.cursorCol = Math.max(0, Math.min(4, this.cursorCol + delta));
@@ -253,19 +253,19 @@ export default class DualSenseController {
     }
     
     /**
-     * Обновить визуальное отображение курсора
+     * Update cursor visual display
      */
     updateCursorVisual() {
-        // Обновляем hoveredCell в редакторе для визуальной индикации
+        // Update hoveredCell in editor for visual indication
         if (this.glyphEditor) {
-            // Убедиться, что курсор в пределах сетки
+            // Ensure cursor is within grid bounds
             this.cursorRow = Math.max(0, Math.min(4, this.cursorRow));
             this.cursorCol = Math.max(0, Math.min(4, this.cursorCol));
             
             const row = this.cursorRow;
             const col = this.cursorCol;
             
-            // Проверяем, изменилась ли ячейка
+            // Check if cell changed
             const cellChanged = !this.glyphEditor.hoveredCell ||
                 this.glyphEditor.hoveredCell.row !== row ||
                 this.glyphEditor.hoveredCell.col !== col;
@@ -275,14 +275,14 @@ export default class DualSenseController {
                 col: col
             };
             
-            // Если кнопка зажата и ячейка изменилась, размещаем модуль
+            // If button held and cell changed, place module
             if (this.isButtonDown && cellChanged) {
-                // Если это первое движение после нажатия, устанавливаем флаг drag
-                // и размещаем модуль на первой ячейке (startCell)
+                // If this is first movement after press, set drag flag
+                // and place module on first cell (startCell)
                 if (!this.wasDrag && this.startCell) {
                     this.wasDrag = true;
                     
-                    // Размещаем модуль на первой ячейке
+                    // Place module on first cell
                     this.glyphEditor.grid[this.startCell.row][this.startCell.col] = {
                         type: this.glyphEditor.getCurrentModuleType(),
                         rotation: this.glyphEditor.currentRotation
@@ -292,12 +292,12 @@ export default class DualSenseController {
                     this.glyphEditor.autoSave();
                 }
                 
-                // Проверяем, не обрабатывали ли мы уже эту ячейку
+                // Check if we already processed this cell
                 if (!this.lastProcessedCell || 
                     this.lastProcessedCell.row !== row || 
                     this.lastProcessedCell.col !== col) {
                     
-                    // Размещаем модуль
+                    // Place module
                     this.glyphEditor.grid[row][col] = {
                         type: this.glyphEditor.getCurrentModuleType(),
                         rotation: this.glyphEditor.currentRotation
@@ -310,8 +310,8 @@ export default class DualSenseController {
                 }
             }
             
-            // Синхронизируем currentRotation и currentModuleIndex с модулем в ячейке
-            // (если кнопка не зажата и в ячейке есть модуль)
+            // Synchronize currentRotation and currentModuleIndex with module in cell
+            // (if button not held and cell has module)
             if (!this.isButtonDown && this.glyphEditor.grid[row][col]) {
                 const module = this.glyphEditor.grid[row][col];
                 this.glyphEditor.currentRotation = module.rotation;
@@ -326,22 +326,22 @@ export default class DualSenseController {
     }
     
     /**
-     * Обработка кнопок
+     * Handle buttons
      */
     handleButtons(gamepad) {
-        // DualSense кнопки:
-        // 0 = X (крестик) - разместить/очистить модуль
-        // 1 = Circle (круг) - переключить модуль
-        // 2 = Triangle (треугольник) - повернуть модуль вправо
-        // 3 = Square (квадрат) - переключить модуль (вверх по списку)
-        // 4 = L1 - повернуть модуль влево
-        // 5 = R1 - повернуть модуль вправо
-        // 6 = L2 - изменить тип модуля (вверх по списку)
-        // 7 = R2 - изменить тип модуля (вниз по списку)
+        // DualSense buttons:
+        // 0 = X (cross) - place/clear module
+        // 1 = Circle - switch module
+        // 2 = Triangle - rotate module right
+        // 3 = Square - switch module (up list)
+        // 4 = L1 - rotate module left
+        // 5 = R1 - rotate module right
+        // 6 = L2 - change module type (up list)
+        // 7 = R2 - change module type (down list)
         // 8 = Share
         // 9 = Options
-        // 10 = L3 (нажатие левого стика)
-        // 11 = R3 (нажатие правого стика)
+        // 10 = L3 (left stick press)
+        // 11 = R3 (right stick press)
         
         const x = gamepad.buttons[0]?.pressed || false;
         const circle = gamepad.buttons[1]?.pressed || false;
@@ -350,7 +350,7 @@ export default class DualSenseController {
         const l1 = gamepad.buttons[4]?.pressed || false;
         const r1 = gamepad.buttons[5]?.pressed || false;
         
-        // X - зажать для непрерывного рисования или клик для размещения/очистки
+        // X - hold for continuous drawing or click to place/clear
         if (x && !this.buttonStates['x']) {
             this.buttonStates['x'] = true;
             this.handleButtonDown();
@@ -359,7 +359,7 @@ export default class DualSenseController {
             this.handleButtonUp();
         }
         
-        // Circle - переключить модуль (вверх по списку)
+        // Circle - switch module (up list)
         if (circle && !this.buttonStates['circle']) {
             this.buttonStates['circle'] = true;
             this.changeModuleUp();
@@ -367,7 +367,7 @@ export default class DualSenseController {
             this.buttonStates['circle'] = false;
         }
         
-        // Triangle - повернуть модуль вправо
+        // Triangle - rotate module right
         if (triangle && !this.buttonStates['triangle']) {
             this.buttonStates['triangle'] = true;
             this.rotateModuleRight();
@@ -375,7 +375,7 @@ export default class DualSenseController {
             this.buttonStates['triangle'] = false;
         }
         
-        // Square - переключить модуль (вверх по списку)
+        // Square - switch module (up list)
         if (square && !this.buttonStates['square']) {
             this.buttonStates['square'] = true;
             this.changeModuleUp();
@@ -383,7 +383,7 @@ export default class DualSenseController {
             this.buttonStates['square'] = false;
         }
         
-        // L1 - повернуть модуль влево
+        // L1 - rotate module left
         if (l1 && !this.buttonStates['l1']) {
             this.buttonStates['l1'] = true;
             this.rotateModuleLeft();
@@ -391,7 +391,7 @@ export default class DualSenseController {
             this.buttonStates['l1'] = false;
         }
         
-        // R1 - повернуть модуль вправо
+        // R1 - rotate module right
         if (r1 && !this.buttonStates['r1']) {
             this.buttonStates['r1'] = true;
             this.rotateModuleRight();
@@ -401,12 +401,12 @@ export default class DualSenseController {
     }
     
     /**
-     * Обработка нажатия кнопки X
+     * Handle X button press
      */
     handleButtonDown() {
         if (!this.glyphEditor) return;
         
-        // Убедиться, что курсор в пределах сетки
+        // Ensure cursor is within grid bounds
         const row = Math.max(0, Math.min(4, this.cursorRow));
         const col = Math.max(0, Math.min(4, this.cursorCol));
         
@@ -415,7 +415,7 @@ export default class DualSenseController {
         this.startCell = { row, col };
         this.lastProcessedCell = null;
         
-        // Если ячейка уже заполнена, сразу размещаем модуль (обновляем его)
+        // If cell already filled, immediately place module (update it)
         if (this.glyphEditor.grid[row][col]) {
             this.glyphEditor.grid[row][col] = {
                 type: this.glyphEditor.getCurrentModuleType(),
@@ -429,22 +429,22 @@ export default class DualSenseController {
     }
     
     /**
-     * Обработка отпускания кнопки X
+     * Handle X button release
      */
     handleButtonUp() {
         if (!this.glyphEditor) return;
         
-        // Если была зажата кнопка и был drag, размещаем модуль на последней ячейке
+        // If button was held and there was drag, place module on last cell
         if (this.isButtonDown && this.wasDrag) {
             const row = Math.max(0, Math.min(4, this.cursorRow));
             const col = Math.max(0, Math.min(4, this.cursorCol));
             
-            // Проверяем, не обрабатывали ли мы уже эту ячейку
+            // Check if we already processed this cell
             if (!this.lastProcessedCell || 
                 this.lastProcessedCell.row !== row || 
                 this.lastProcessedCell.col !== col) {
                 
-                // Размещаем модуль на последней ячейке
+                // Place module on last cell
                 this.glyphEditor.grid[row][col] = {
                     type: this.glyphEditor.getCurrentModuleType(),
                     rotation: this.glyphEditor.currentRotation
@@ -455,16 +455,16 @@ export default class DualSenseController {
                 this.glyphEditor.render();
             }
         }
-        // Если не было drag (просто клик), обрабатываем как клик
+        // If no drag (just click), handle as click
         else if (this.isButtonDown && !this.wasDrag) {
             const row = Math.max(0, Math.min(4, this.cursorRow));
             const col = Math.max(0, Math.min(4, this.cursorCol));
             
-            // Если ячейка занята - удалить модуль (очистить)
+            // If cell occupied - remove module (clear)
             if (this.glyphEditor.grid[row][col]) {
                 this.glyphEditor.grid[row][col] = null;
             }
-            // Если ячейка пустая - разместить модуль
+            // If cell empty - place module
             else {
                 this.glyphEditor.grid[row][col] = {
                     type: this.glyphEditor.getCurrentModuleType(),
@@ -485,16 +485,16 @@ export default class DualSenseController {
     }
     
     /**
-     * Разместить или удалить модуль на текущей позиции курсора
+     * Place or remove module at current cursor position
      */
     placeOrRemoveModule() {
         if (!this.glyphEditor) return;
         
-        // Убедиться, что курсор в пределах сетки
+        // Ensure cursor is within grid bounds
         const row = Math.max(0, Math.min(4, this.cursorRow));
         const col = Math.max(0, Math.min(4, this.cursorCol));
         
-        // Если ячейка пустая - добавить модуль, если занята - удалить
+        // If cell empty - add module, if occupied - remove
         if (this.glyphEditor.grid[row][col]) {
             this.glyphEditor.grid[row][col] = null;
         } else {
@@ -504,7 +504,7 @@ export default class DualSenseController {
             };
         }
         
-        // Обновить hoveredCell для визуальной индикации
+        // Update hoveredCell for visual indication
         this.glyphEditor.hoveredCell = { row, col };
         
         this.glyphEditor.render();
@@ -514,19 +514,19 @@ export default class DualSenseController {
     }
     
     /**
-     * Удалить модуль на текущей позиции курсора
+     * Remove module at current cursor position
      */
     removeModule() {
         if (!this.glyphEditor) return;
         
-        // Убедиться, что курсор в пределах сетки
+        // Ensure cursor is within grid bounds
         const row = Math.max(0, Math.min(4, this.cursorRow));
         const col = Math.max(0, Math.min(4, this.cursorCol));
         
         if (this.glyphEditor.grid[row][col]) {
             this.glyphEditor.grid[row][col] = null;
             
-            // Обновить hoveredCell для визуальной индикации
+            // Update hoveredCell for visual indication
             this.glyphEditor.hoveredCell = { row, col };
             
             this.glyphEditor.render();
@@ -537,19 +537,19 @@ export default class DualSenseController {
     }
     
     /**
-     * Повернуть модуль вправо
+     * Rotate module right
      */
     rotateModuleRight() {
         if (!this.glyphEditor) return;
         
-        // Убедиться, что курсор в пределах сетки
+        // Ensure cursor is within grid bounds
         const row = Math.max(0, Math.min(4, this.cursorRow));
         const col = Math.max(0, Math.min(4, this.cursorCol));
         
         this.glyphEditor.currentRotation = (this.glyphEditor.currentRotation + 1) % 4;
         
-        // Если ячейка уже заполнена - обновить модуль на канвасе
-        // (работает и при зажатой кнопке, и без нее)
+        // If cell already filled - update module on canvas
+        // (works both with button held and without)
         if (this.glyphEditor.grid[row][col]) {
             this.glyphEditor.grid[row][col] = {
                 type: this.glyphEditor.getCurrentModuleType(),
@@ -558,7 +558,7 @@ export default class DualSenseController {
             this.glyphEditor.updateGlyphString();
             this.glyphEditor.autoSave();
         }
-        // Если ячейка пустая и кнопка зажата - разместить модуль
+        // If cell empty and button held - place module
         else if (this.isButtonDown) {
             this.glyphEditor.grid[row][col] = {
                 type: this.glyphEditor.getCurrentModuleType(),
@@ -574,19 +574,19 @@ export default class DualSenseController {
     }
     
     /**
-     * Изменить модуль (вверх по списку)
+     * Change module (up list)
      */
     changeModuleUp() {
         if (!this.glyphEditor) return;
         
-        // Убедиться, что курсор в пределах сетки
+        // Ensure cursor is within grid bounds
         const row = Math.max(0, Math.min(4, this.cursorRow));
         const col = Math.max(0, Math.min(4, this.cursorCol));
         
         this.glyphEditor.currentModuleIndex = (this.glyphEditor.currentModuleIndex - 1 + this.glyphEditor.moduleTypes.length) % this.glyphEditor.moduleTypes.length;
         
-        // Если ячейка уже заполнена - обновить модуль на канвасе
-        // (работает и при зажатой кнопке, и без нее)
+        // If cell already filled - update module on canvas
+        // (works both with button held and without)
         if (this.glyphEditor.grid[row][col]) {
             this.glyphEditor.grid[row][col] = {
                 type: this.glyphEditor.getCurrentModuleType(),
@@ -595,7 +595,7 @@ export default class DualSenseController {
             this.glyphEditor.updateGlyphString();
             this.glyphEditor.autoSave();
         }
-        // Если ячейка пустая и кнопка зажата - разместить модуль
+        // If cell empty and button held - place module
         else if (this.isButtonDown) {
             this.glyphEditor.grid[row][col] = {
                 type: this.glyphEditor.getCurrentModuleType(),
@@ -611,7 +611,7 @@ export default class DualSenseController {
     }
     
     /**
-     * Выбрать предыдущую альтернативу
+     * Select previous alternative
      */
     selectPreviousAlternative() {
         if (!this.editorApp || !this.editorApp.selectedChar) return;
@@ -628,7 +628,7 @@ export default class DualSenseController {
     }
     
     /**
-     * Выбрать следующую альтернативу
+     * Select next alternative
      */
     selectNextAlternative() {
         if (!this.editorApp || !this.editorApp.selectedChar) return;
@@ -645,16 +645,16 @@ export default class DualSenseController {
     }
     
     /**
-     * Обработка триггеров
+     * Handle triggers
      */
     handleTriggers(gamepad) {
-        // L2 (кнопка 6) - изменить модуль (вверх по списку)
-        // R2 (кнопка 7) - изменить модуль (вниз по списку)
+        // L2 (button 6) - change module (up list)
+        // R2 (button 7) - change module (down list)
         
         const l2 = gamepad.buttons[6]?.pressed || false;
         const r2 = gamepad.buttons[7]?.pressed || false;
         
-        // L2 - изменить модуль (вверх по списку)
+        // L2 - change module (up list)
         if (l2 && !this.buttonStates['l2']) {
             this.buttonStates['l2'] = true;
             this.changeModuleUp();
@@ -662,7 +662,7 @@ export default class DualSenseController {
             this.buttonStates['l2'] = false;
         }
         
-        // R2 - изменить модуль (вниз по списку)
+        // R2 - change module (down list)
         if (r2 && !this.buttonStates['r2']) {
             this.buttonStates['r2'] = true;
             this.changeModuleDown();
@@ -672,19 +672,19 @@ export default class DualSenseController {
     }
     
     /**
-     * Повернуть модуль влево
+     * Rotate module left
      */
     rotateModuleLeft() {
         if (!this.glyphEditor) return;
         
-        // Убедиться, что курсор в пределах сетки
+        // Ensure cursor is within grid bounds
         const row = Math.max(0, Math.min(4, this.cursorRow));
         const col = Math.max(0, Math.min(4, this.cursorCol));
         
         this.glyphEditor.currentRotation = (this.glyphEditor.currentRotation - 1 + 4) % 4;
         
-        // Если ячейка уже заполнена - обновить модуль на канвасе
-        // (работает и при зажатой кнопке, и без нее)
+        // If cell already filled - update module on canvas
+        // (works both with button held and without)
         if (this.glyphEditor.grid[row][col]) {
             this.glyphEditor.grid[row][col] = {
                 type: this.glyphEditor.getCurrentModuleType(),
@@ -693,7 +693,7 @@ export default class DualSenseController {
             this.glyphEditor.updateGlyphString();
             this.glyphEditor.autoSave();
         }
-        // Если ячейка пустая и кнопка зажата - разместить модуль
+        // If cell empty and button held - place module
         else if (this.isButtonDown) {
             this.glyphEditor.grid[row][col] = {
                 type: this.glyphEditor.getCurrentModuleType(),
@@ -709,19 +709,19 @@ export default class DualSenseController {
     }
     
     /**
-     * Изменить модуль (вниз по списку)
+     * Change module (down list)
      */
     changeModuleDown() {
         if (!this.glyphEditor) return;
         
-        // Убедиться, что курсор в пределах сетки
+        // Ensure cursor is within grid bounds
         const row = Math.max(0, Math.min(4, this.cursorRow));
         const col = Math.max(0, Math.min(4, this.cursorCol));
         
         this.glyphEditor.currentModuleIndex = (this.glyphEditor.currentModuleIndex + 1) % this.glyphEditor.moduleTypes.length;
         
-        // Если ячейка уже заполнена - обновить модуль на канвасе
-        // (работает и при зажатой кнопке, и без нее)
+        // If cell already filled - update module on canvas
+        // (works both with button held and without)
         if (this.glyphEditor.grid[row][col]) {
             this.glyphEditor.grid[row][col] = {
                 type: this.glyphEditor.getCurrentModuleType(),
@@ -730,7 +730,7 @@ export default class DualSenseController {
             this.glyphEditor.updateGlyphString();
             this.glyphEditor.autoSave();
         }
-        // Если ячейка пустая и кнопка зажата - разместить модуль
+        // If cell empty and button held - place module
         else if (this.isButtonDown) {
             this.glyphEditor.grid[row][col] = {
                 type: this.glyphEditor.getCurrentModuleType(),

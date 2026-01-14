@@ -1,6 +1,6 @@
 /**
- * RangeSliderController - Контроллер для range-слайдеров с двумя ручками
- * Управляет диапазоном значений (min и max) на одном визуальном слайдере
+ * RangeSliderController - Controller for range sliders with two handles
+ * Manages value range (min and max) on single visual slider
  */
 export class RangeSliderController {
     constructor(settings) {
@@ -9,17 +9,17 @@ export class RangeSliderController {
     }
 
     /**
-     * Инициализация range-слайдера
-     * @param {string} containerId - ID контейнера для range-слайдера
-     * @param {Object} config - Конфигурация
-     * @param {string} config.minSetting - Название настройки для минимального значения
-     * @param {string} config.maxSetting - Название настройки для максимального значения
-     * @param {number} config.min - Минимальное значение диапазона
-     * @param {number} config.max - Максимальное значение диапазона
-     * @param {number} config.decimals - Количество знаков после запятой
-     * @param {number} config.baseStep - Базовый шаг
-     * @param {number} config.shiftStep - Шаг при зажатом Shift
-     * @param {Function} config.onUpdate - Коллбэк при изменении значений
+     * Initialize range slider
+     * @param {string} containerId - Container ID for range slider
+     * @param {Object} config - Configuration
+     * @param {string} config.minSetting - Setting name for minimum value
+     * @param {string} config.maxSetting - Setting name for maximum value
+     * @param {number} config.min - Minimum range value
+     * @param {number} config.max - Maximum range value
+     * @param {number} config.decimals - Number of decimal places
+     * @param {number} config.baseStep - Base step
+     * @param {number} config.shiftStep - Step when Shift pressed
+     * @param {Function} config.onUpdate - Callback on value change
      */
     initRangeSlider(containerId, config) {
         const container = document.getElementById(containerId);
@@ -28,7 +28,7 @@ export class RangeSliderController {
             return;
         }
 
-        // Создаем структуру HTML для range-слайдера
+        // Create HTML structure for range slider
         const track = document.createElement('div');
         track.className = 'range-slider-track';
         
@@ -49,18 +49,18 @@ export class RangeSliderController {
         const activeRange = document.createElement('div');
         activeRange.className = 'range-slider-active';
         
-        // Структура: container содержит track, activeRange и thumbs
-        // Все позиционируются относительно container
+        // Structure: container contains track, activeRange and thumbs
+        // All positioned relative to container
         container.appendChild(track);
         container.appendChild(activeRange);
         container.appendChild(minThumb);
         container.appendChild(maxThumb);
 
-        // Получаем начальные значения
+        // Get initial values
         let minValue = this.settings.get(config.minSetting);
         let maxValue = this.settings.get(config.maxSetting);
         
-        // Валидация и нормализация
+        // Validation and normalization
         minValue = this.clamp(minValue, config.min, config.max);
         maxValue = this.clamp(maxValue, config.min, config.max);
         if (minValue > maxValue) {
@@ -80,10 +80,10 @@ export class RangeSliderController {
             dragTarget: null
         });
 
-        // Инициализация позиций
+        // Initialize positions
         this.updatePositions(containerId);
         
-        // Обновление текстовых полей при инициализации
+        // Update text fields on initialization
         const minValueDisplay = document.getElementById(config.minValueId);
         const maxValueDisplay = document.getElementById(config.maxValueId);
         
@@ -94,23 +94,23 @@ export class RangeSliderController {
             maxValueDisplay.value = maxValue.toFixed(config.decimals);
         }
 
-        // Обработчики событий для min thumb
+        // Event handlers for min thumb
         this.setupThumbEvents(containerId, 'min');
         
-        // Обработчики событий для max thumb
+        // Event handlers for max thumb
         this.setupThumbEvents(containerId, 'max');
 
-        // Обработчики для клавиатуры на thumb'ах
+        // Keyboard handlers on thumbs
         this.setupKeyboardEvents(containerId, 'min');
         this.setupKeyboardEvents(containerId, 'max');
         
-        // Обработчики для текстовых полей ввода
+        // Handlers for text input fields
         this.setupInputEvents(containerId, 'min');
         this.setupInputEvents(containerId, 'max');
     }
 
     /**
-     * Настройка событий для текстовых полей ввода
+     * Setup events for text input fields
      */
     setupInputEvents(containerId, type) {
         const rangeData = this.ranges.get(containerId);
@@ -120,24 +120,24 @@ export class RangeSliderController {
         const input = document.getElementById(inputId);
         if (!input) return;
 
-        // Выделение текста при фокусе
+        // Select text on focus
         input.addEventListener('focus', (e) => {
             e.target.select();
         });
 
-        // Применение значения при потере фокуса
+        // Apply value on blur
         input.addEventListener('blur', (e) => {
             this.handleInputBlur(containerId, type, e.target);
         });
 
-        // Обработка клавиш (стрелки, Enter, Escape)
+        // Handle keys (arrows, Enter, Escape)
         input.addEventListener('keydown', (e) => {
             this.handleInputKeyDown(containerId, type, e);
         });
     }
 
     /**
-     * Обработка потери фокуса текстового поля
+     * Handle text field blur
      */
     handleInputBlur(containerId, type, input) {
         const rangeData = this.ranges.get(containerId);
@@ -146,11 +146,11 @@ export class RangeSliderController {
         let value = parseFloat(input.value);
         
         if (isNaN(value)) {
-            // Восстановить предыдущее значение
+            // Restore previous value
             value = type === 'min' ? rangeData.minValue : rangeData.maxValue;
         }
 
-        // Валидация с учетом другого значения
+        // Validation considering other value
         if (type === 'min') {
             value = this.clamp(value, rangeData.config.min, rangeData.maxValue);
             rangeData.minValue = this.roundToStep(value, rangeData.config.baseStep);
@@ -164,7 +164,7 @@ export class RangeSliderController {
     }
 
     /**
-     * Определяет количество знаков после запятой на основе шага
+     * Determine number of decimal places based on step
      */
     getDecimalsFromStep(step) {
         if (step >= 1) return 0;
@@ -181,7 +181,7 @@ export class RangeSliderController {
     }
 
     /**
-     * Обработка нажатий клавиш в текстовом поле
+     * Handle key presses in text field
      */
     handleInputKeyDown(containerId, type, event) {
         const rangeData = this.ranges.get(containerId);
@@ -204,7 +204,7 @@ export class RangeSliderController {
         switch (event.key) {
             case 'ArrowUp':
                 if (event.shiftKey && shiftStep > 0) {
-                    // С Shift: прилипание к ближайшему большому шагу вверх
+                    // With Shift: snap to nearest larger step up
                     const roundedCurrent = stepDecimals > 0 
                         ? parseFloat(currentValue.toFixed(stepDecimals))
                         : Math.round(currentValue);
@@ -226,7 +226,7 @@ export class RangeSliderController {
                 break;
             case 'ArrowDown':
                 if (event.shiftKey && shiftStep > 0) {
-                    // С Shift: прилипание к ближайшему большому шагу вниз
+                    // With Shift: snap to nearest larger step down
                     const roundedCurrent = stepDecimals > 0 
                         ? parseFloat(currentValue.toFixed(stepDecimals))
                         : Math.round(currentValue);
@@ -251,7 +251,7 @@ export class RangeSliderController {
                 handled = true;
                 break;
             case 'Escape':
-                // Восстановить предыдущее значение
+                // Restore previous value
                 newValue = type === 'min' ? rangeData.minValue : rangeData.maxValue;
                 input.value = newValue.toFixed(rangeData.config.decimals);
                 input.blur();
@@ -262,14 +262,14 @@ export class RangeSliderController {
         if (handled && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
             event.preventDefault();
             
-            // Округляем результат
+            // Round result
             if (step > 0 && stepDecimals > 0) {
                 newValue = parseFloat(newValue.toFixed(stepDecimals));
             } else if (typeof rangeData.config.decimals === 'number') {
                 newValue = parseFloat(newValue.toFixed(rangeData.config.decimals));
             }
 
-            // Валидация с учетом другого значения
+            // Validation considering other value
             if (type === 'min') {
                 newValue = this.clamp(newValue, rangeData.config.min, rangeData.maxValue);
                 rangeData.minValue = newValue;
@@ -286,7 +286,7 @@ export class RangeSliderController {
     }
 
     /**
-     * Настройка событий для thumb
+     * Setup events for thumb
      */
     setupThumbEvents(containerId, type) {
         const rangeData = this.ranges.get(containerId);
@@ -346,7 +346,7 @@ export class RangeSliderController {
     }
 
     /**
-     * Настройка клавиатурных событий
+     * Setup keyboard events
      */
     setupKeyboardEvents(containerId, type) {
         const rangeData = this.ranges.get(containerId);
@@ -382,7 +382,7 @@ export class RangeSliderController {
 
             e.preventDefault();
 
-            // Валидация
+            // Validation
             if (type === 'min') {
                 newValue = this.clamp(newValue, rangeData.config.min, rangeData.maxValue);
             } else {
@@ -403,7 +403,7 @@ export class RangeSliderController {
     }
 
     /**
-     * Обновление позиций thumb'ов и активной области
+     * Update thumb positions and active range
      */
     updatePositions(containerId) {
         const rangeData = this.ranges.get(containerId);
@@ -415,31 +415,31 @@ export class RangeSliderController {
         const minPercent = ((minValue - config.min) / range) * 100;
         const maxPercent = ((maxValue - config.min) / range) * 100;
 
-        // Размер thumb для ограничения позиции (чтобы не выходил за границы контейнера)
+        // Thumb size for position constraint (so it doesn't go outside container)
         const thumbWidth = 8; // px
         
-        // Min thumb: острие справа, ограничиваем чтобы левый край не выходил влево
-        // transform: translate(-100%, -50%) смещает элемент влево на его ширину
-        // Минимальная позиция = thumbWidth px, чтобы левый край был на 0
+        // Min thumb: tip on right, constrain so left edge doesn't go left
+        // transform: translate(-100%, -50%) shifts element left by its width
+        // Minimum position = thumbWidth px, so left edge is at 0
         minThumb.style.left = `clamp(${thumbWidth}px, ${minPercent}%, calc(100% - ${thumbWidth}px))`;
         
-        // Max thumb: острие слева, ограничиваем чтобы правый край не выходил вправо
-        // Максимальная позиция = 100% - thumbWidth px
+        // Max thumb: tip on left, constrain so right edge doesn't go right
+        // Maximum position = 100% - thumbWidth px
         maxThumb.style.left = `clamp(${thumbWidth}px, ${maxPercent}%, calc(100% - ${thumbWidth}px))`;
         
-        // Active range между острием min и острием max
-        // Используем left и right для корректного ограничения
+        // Active range between min tip and max tip
+        // Use left and right for correct constraint
         activeRange.style.left = `clamp(${thumbWidth}px, ${minPercent}%, calc(100% - ${thumbWidth}px))`;
         activeRange.style.right = `clamp(${thumbWidth}px, ${100 - maxPercent}%, calc(100% - ${thumbWidth}px))`;
         activeRange.style.width = 'auto';
 
-        // Обновление aria-атрибутов
+        // Update aria attributes
         minThumb.setAttribute('aria-valuenow', minValue.toFixed(config.decimals));
         maxThumb.setAttribute('aria-valuenow', maxValue.toFixed(config.decimals));
     }
 
     /**
-     * Обновление настроек и вызов коллбэка
+     * Update settings and call callback
      */
     updateSettings(containerId) {
         const rangeData = this.ranges.get(containerId);
@@ -448,7 +448,7 @@ export class RangeSliderController {
         this.settings.set(rangeData.config.minSetting, rangeData.minValue);
         this.settings.set(rangeData.config.maxSetting, rangeData.maxValue);
 
-        // Обновление отображаемых значений
+        // Update displayed values
         const minValueDisplay = document.getElementById(rangeData.config.minValueId);
         const maxValueDisplay = document.getElementById(rangeData.config.maxValueId);
         
@@ -459,20 +459,20 @@ export class RangeSliderController {
             maxValueDisplay.value = rangeData.maxValue.toFixed(rangeData.config.decimals);
         }
 
-        // Вызов коллбэка
+        // Call callback
         if (rangeData.config.onUpdate) {
             rangeData.config.onUpdate(rangeData.minValue, rangeData.maxValue);
         }
     }
 
     /**
-     * Установка значений программно
+     * Set values programmatically
      */
     setValues(containerId, minValue, maxValue, triggerCallback = true) {
         const rangeData = this.ranges.get(containerId);
         if (!rangeData) return;
 
-        // Валидация
+        // Validation
         minValue = this.clamp(minValue, rangeData.config.min, rangeData.config.max);
         maxValue = this.clamp(maxValue, rangeData.config.min, rangeData.config.max);
         
@@ -488,7 +488,7 @@ export class RangeSliderController {
         if (triggerCallback) {
             this.updateSettings(containerId);
         } else {
-            // Обновляем только настройки без вызова коллбэка
+            // Update only settings without calling callback
             this.settings.set(rangeData.config.minSetting, minValue);
             this.settings.set(rangeData.config.maxSetting, maxValue);
             
@@ -505,7 +505,7 @@ export class RangeSliderController {
     }
 
     /**
-     * Получение значений
+     * Get values
      */
     getValues(containerId) {
         const rangeData = this.ranges.get(containerId);
@@ -518,7 +518,7 @@ export class RangeSliderController {
     }
 
     /**
-     * Вспомогательные функции
+     * Helper functions
      */
     clamp(value, min, max) {
         return Math.max(min, Math.min(max, value));

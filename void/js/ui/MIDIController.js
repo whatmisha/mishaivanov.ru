@@ -1,37 +1,37 @@
 /**
- * MIDI Controller Support для Void Typeface
- * Управление интерфейсом с помощью MIDI-контроллера (например, Teenage Engineering EP-133)
+ * MIDI Controller Support for Void Typeface
+ * Interface control via MIDI controller (e.g., Teenage Engineering EP-133)
  */
 
 export default class MIDIController {
     constructor(voidApp) {
         this.voidApp = voidApp;
         
-        // MIDI доступ
+        // MIDI access
         this.midiAccess = null;
         this.midiInput = null;
         this.midiOutput = null;
         
-        // Состояние подключения
+        // Connection state
         this.isConnected = false;
         this.deviceName = null;
         
-        // Маппинг MIDI CC на слайдеры
-        // EP-133 обычно использует CC для кнопок и энкодеров
+        // MIDI CC to sliders mapping
+        // EP-133 usually uses CC for buttons and encoders
         this.ccMapping = {
-            // Основные параметры
+            // Main parameters
             1: 'moduleSize',        // CC1 - Module Size
             2: 'stemMultiplier',    // CC2 - Stem Weight
             3: 'letterSpacingMultiplier', // CC3 - Letter Spacing
             4: 'lineHeightMultiplier',    // CC4 - Line Height
             
-            // Stripes/Dash параметры
+            // Stripes/Dash parameters
             5: 'strokesNum',        // CC5 - Lines
             6: 'strokeGapRatio',   // CC6 - Contrast
             7: 'dashLength',        // CC7 - Dash Length
             8: 'gapLength',         // CC8 - Gap Length
             
-            // Random параметры
+            // Random parameters
             9: 'randomStemMin',    // CC9 - Random Stem Min
             10: 'randomStemMax',   // CC10 - Random Stem Max
             11: 'randomStrokesMin', // CC11 - Random Lines Min
@@ -40,61 +40,61 @@ export default class MIDIController {
             14: 'randomContrastMax', // CC14 - Random Contrast Max
         };
         
-        // Маппинг MIDI нот на кнопки/тоглы
+        // MIDI note to buttons/toggles mapping
         this.noteMapping = {
-            // Режимы рендеринга (C1-C5)
+            // Rendering modes (C1-C5)
             36: { type: 'mode', value: 'fill' },      // C1 - Mono
             37: { type: 'mode', value: 'stripes' },   // C#1 - Poly
             38: { type: 'mode', value: 'dash' },      // D1 - Dash
             39: { type: 'mode', value: 'sd' },        // D#1 - PD
             40: { type: 'mode', value: 'random' },    // E1 - Rnd
             
-            // Тоглы (D1-D5)
+            // Toggles (D1-D5)
             50: { type: 'toggle', setting: 'roundedCaps' },      // D2 - Round
             51: { type: 'toggle', setting: 'closeEnds' },         // D#2 - Close
             52: { type: 'toggle', setting: 'showGrid' },           // E2 - Grid
             53: { type: 'toggle', setting: 'showEndpoints' },      // F2 - Ends
             54: { type: 'toggle', setting: 'showTest' },            // F#2 - Pointer
             
-            // Random тоглы (E2-E5)
+            // Random toggles (E2-E5)
             64: { type: 'toggle', setting: 'randomFullRandom' },   // E3 - Chaos
             65: { type: 'toggle', setting: 'useAlternativesInRandom' }, // F3 - Alternates
             66: { type: 'toggle', setting: 'randomRounded' },       // F#3 - Random Round
             67: { type: 'toggle', setting: 'randomCloseEnds' },    // G3 - Random Close
             68: { type: 'toggle', setting: 'randomDash' },          // G#3 - Random Dash
             
-            // Действия (F1-F5)
+            // Actions (F1-F5)
             41: { type: 'action', action: 'renew' },              // F1 - Update
             42: { type: 'action', action: 'export' },             // F#1 - Export
             43: { type: 'action', action: 'copy' },                 // G1 - Copy
         };
         
-        // Состояние для управления параметрами через пады (удержание + повторные нажатия)
+        // State for parameter control via pads (hold + repeated presses)
         this.padParameterControl = {
-            active: null,  // Какой параметр сейчас управляется
+            active: null,  // Which parameter is currently controlled
             lastNote: null,
             lastTime: 0,
-            increment: 0.1  // Шаг изменения при удержании
+            increment: 0.1  // Change step when held
         };
         
-        // Состояние для крутилок/фейдеров (отслеживание направления поворота)
+        // State for knobs/faders (tracking rotation direction)
         this.knobState = {
             lastNote: null,
             lastTime: 0,
-            direction: null,  // 'up' или 'down'
+            direction: null,  // 'up' or 'down'
             repeatCount: 0
         };
         
-        // Маппинг MIDI нот на параметры (для крутилок/фейдеров EP-133)
-        // EP-133 отправляет Note On с velocity как значением параметра
+        // MIDI note to parameters mapping (for EP-133 knobs/faders)
+        // EP-133 sends Note On with velocity as parameter value
         this.noteParameterMapping = {
-            // Пады EP-133 для управления параметрами (ноты 44-47)
+            // EP-133 pads for parameter control (notes 44-47)
             44: 'moduleSize',              // A#2 - Module Size
             45: 'stemMultiplier',          // B2 - Stem Weight
             46: 'letterSpacingMultiplier', // C3 - Letter Spacing
-            47: 'strokesNum',              // C#3 - Lines (основной параметр!)
+            47: 'strokesNum',              // C#3 - Lines (main parameter!)
             
-            // Дополнительные ноты (если нужны)
+            // Additional notes (if needed)
             60: 'moduleSize',              // C4 - Module Size
             61: 'stemMultiplier',          // C#4 - Stem Weight
             62: 'letterSpacingMultiplier', // D4 - Letter Spacing
@@ -105,13 +105,13 @@ export default class MIDIController {
             67: 'gapLength',               // G4 - Gap Length
         };
         
-        // Диапазоны значений для CC
+        // Value ranges for CC
         this.ccRanges = {
             moduleSize: { min: 4, max: 64 },
             stemMultiplier: { min: 0.1, max: 3.0 },
             letterSpacingMultiplier: { min: 0, max: 16 },
             lineHeightMultiplier: { min: 0, max: 16 },
-            strokesNum: { min: 1, max: 64 }, // Lines - диапазон 1-64
+            strokesNum: { min: 1, max: 64 }, // Lines - range 1-64
             strokeGapRatio: { min: 0.1, max: 8.0 },
             dashLength: { min: 0.01, max: 8.0 },
             gapLength: { min: 0.01, max: 8.0 },
@@ -123,13 +123,13 @@ export default class MIDIController {
             randomContrastMax: { min: 0.1, max: 8.0 },
         };
         
-        // Привязка методов
+        // Bind methods
         this.handleMIDIMessage = this.handleMIDIMessage.bind(this);
         this.handleStateChange = this.handleStateChange.bind(this);
     }
     
     /**
-     * Инициализировать MIDI доступ
+     * Initialize MIDI access
      */
     async init() {
         if (!navigator.requestMIDIAccess) {
@@ -141,10 +141,10 @@ export default class MIDIController {
             this.midiAccess = await navigator.requestMIDIAccess({ sysex: false });
             console.log('[MIDIController] MIDI access granted');
             
-            // Слушать изменения подключенных устройств
+            // Listen for connected device changes
             this.midiAccess.onstatechange = this.handleStateChange;
             
-            // Найти и подключить EP-133
+            // Find and connect EP-133
             this.findAndConnectDevice();
             
             return true;
@@ -155,29 +155,29 @@ export default class MIDIController {
     }
     
     /**
-     * Найти и подключить EP-133
+     * Find and connect EP-133
      */
     findAndConnectDevice() {
         const inputs = this.midiAccess.inputs.values();
         const outputs = this.midiAccess.outputs.values();
         
-        // Подключить ВСЕ доступные MIDI входы
+        // Connect ALL available MIDI inputs
         const allInputs = Array.from(inputs);
         console.log(`[MIDIController] Found ${allInputs.length} MIDI input(s)`);
         
-        // Подключить ВСЕ входы для тестирования (EP-133 может использовать несколько портов)
+        // Connect ALL inputs for testing (EP-133 may use multiple ports)
         for (const input of allInputs) {
             if (input.state === 'connected') {
                 const name = input.name.toLowerCase();
                 console.log(`[MIDIController] Setting up listener for: ${input.name} (state: ${input.state})`);
                 
-                // Установить обработчик для каждого входа
+                // Set handler for each input
                 input.onmidimessage = (event) => {
                     console.log(`[MIDIController] ⚡ MIDI message received from ${input.name}:`, Array.from(event.data));
                     this.handleMIDIMessage(event);
                 };
                 
-                // Если это EP-133, использовать как основной
+                // If this is EP-133, use as primary
                 if (name.includes('ep-133') || name.includes('teenage') || name.includes('ko ii')) {
                     this.midiInput = input;
                     this.isConnected = true;
@@ -187,7 +187,7 @@ export default class MIDIController {
             }
         }
         
-        // Если основной вход не установлен, использовать первый доступный
+        // If primary input not set, use first available
         if (!this.midiInput && allInputs.length > 0) {
             this.midiInput = allInputs[0];
             this.isConnected = true;
@@ -195,7 +195,7 @@ export default class MIDIController {
             console.log('[MIDIController] Using first available input as primary:', allInputs[0].name);
         }
         
-        // Искать EP-133 среди выходов
+        // Search for EP-133 among outputs
         for (const output of outputs) {
             const name = output.name.toLowerCase();
             if (name.includes('ep-133') || name.includes('teenage') || name.includes('ko ii')) {
@@ -206,23 +206,23 @@ export default class MIDIController {
     }
     
     /**
-     * Подключить MIDI вход (устаревший метод, теперь используется findAndConnectDevice)
+     * Connect MIDI input (deprecated method, now uses findAndConnectDevice)
      */
     connectInput(input) {
-        // Этот метод больше не используется напрямую
-        // Все подключения делаются в findAndConnectDevice
+        // This method is no longer used directly
+        // All connections are made in findAndConnectDevice
         console.log('[MIDIController] connectInput called for:', input.name);
     }
     
     /**
-     * Обработка MIDI сообщений
+     * Handle MIDI messages
      */
     handleMIDIMessage(event) {
         const [status, data1, data2] = event.data;
         const messageType = status & 0xF0;
         const channel = status & 0x0F;
         
-        // Логировать все MIDI сообщения для отладки
+        // Log all MIDI messages for debugging
         const messageTypeName = this.getMIDIMessageTypeName(messageType);
         console.log(`[MIDIController] MIDI: ${messageTypeName} (0x${messageType.toString(16)}), data1=${data1}, data2=${data2}, channel=${channel}`);
         
@@ -233,7 +233,7 @@ export default class MIDIController {
             if (velocity > 0) {
                 this.handleNoteOn(note, velocity);
             } else {
-                // Note Off как Note On с velocity=0
+                // Note Off as Note On with velocity=0
                 console.log(`[MIDIController] Note Off: ${note}`);
             }
         }
@@ -281,7 +281,7 @@ export default class MIDIController {
     }
     
     /**
-     * Получить название типа MIDI сообщения
+     * Get MIDI message type name
      */
     getMIDIMessageTypeName(messageType) {
         const types = {
@@ -298,15 +298,15 @@ export default class MIDIController {
     }
     
     /**
-     * Обработка Note On
+     * Handle Note On
      */
     handleNoteOn(note, velocity) {
-        // Игнорировать Note Off (velocity = 0)
+        // Ignore Note Off (velocity = 0)
         if (velocity === 0) {
             return;
         }
         
-        // Сначала проверяем, не является ли это параметром (крутилка/фейдер)
+        // First check if this is a parameter (knob/fader)
         const parameterSetting = this.noteParameterMapping[note];
         if (parameterSetting) {
             const range = this.ccRanges[parameterSetting];
@@ -319,40 +319,40 @@ export default class MIDIController {
             const now = Date.now();
             const timeSinceLastNote = now - this.knobState.lastTime;
             
-            // Определить направление поворота на основе интервала между нажатиями
-            // Быстрые повторяющиеся нажатия = поворот в одну сторону
-            // Медленные или с паузами = изменение направления
+            // Determine rotation direction based on interval between presses
+            // Fast repeated presses = rotation in one direction
+            // Slow or with pauses = direction change
             
-            let direction = 'up'; // По умолчанию увеличиваем
-            let step = (range.max - range.min) / 20; // Базовый шаг
+            let direction = 'up'; // By default increase
+            let step = (range.max - range.min) / 20; // Base step
             
             if (this.knobState.lastNote === note) {
-                // Та же нота - продолжаем в том же направлении
+                // Same note - continue in same direction
                 if (timeSinceLastNote < 100) {
-                    // Очень быстрое повторение - ускоряем
+                    // Very fast repetition - accelerate
                     direction = this.knobState.direction || 'up';
                     this.knobState.repeatCount++;
                     step = step * (1 + this.knobState.repeatCount * 0.5);
                 } else if (timeSinceLastNote < 300) {
-                    // Средняя скорость - продолжаем
+                    // Medium speed - continue
                     direction = this.knobState.direction || 'up';
                     this.knobState.repeatCount = 0;
                 } else {
-                    // Пауза - сбрасываем счетчик
+                    // Pause - reset counter
                     this.knobState.repeatCount = 0;
                     direction = 'up';
                 }
             } else {
-                // Новая нота - начинаем заново
+                // New note - start over
                 this.knobState.repeatCount = 0;
                 direction = 'up';
             }
             
-            // Если достигли максимума, меняем направление на уменьшение
+            // If reached maximum, change direction to decrease
             if (currentValue >= range.max && direction === 'up') {
                 direction = 'down';
             }
-            // Если достигли минимума, меняем направление на увеличение
+            // If reached minimum, change direction to increase
             if (currentValue <= range.min && direction === 'down') {
                 direction = 'up';
             }
@@ -364,7 +364,7 @@ export default class MIDIController {
                 newValue = Math.max(range.min, currentValue - step);
             }
             
-            // Обновить состояние
+            // Update state
             this.knobState.lastNote = note;
             this.knobState.lastTime = now;
             this.knobState.direction = direction;
@@ -374,8 +374,8 @@ export default class MIDIController {
             return;
         }
         
-        // Проверяем, не является ли это управлением параметром через пады
-        // Пады 48-55 (C3-G3) для управления параметрами при удержании
+        // Check if this is parameter control via pads
+        // Pads 48-55 (C3-G3) for parameter control when held
         if (note >= 48 && note <= 55) {
             const paramMap = {
                 48: 'moduleSize',              // C3
@@ -393,13 +393,13 @@ export default class MIDIController {
                 const now = Date.now();
                 const timeSinceLastNote = now - this.padParameterControl.lastTime;
                 
-                // Если та же нота и прошло меньше 200мс - увеличить параметр
+                // If same note and less than 200ms passed - increase parameter
                 if (this.padParameterControl.active === param && 
                     this.padParameterControl.lastNote === note && 
                     timeSinceLastNote < 200) {
                     this.incrementParameter(param, this.padParameterControl.increment);
                 } else {
-                    // Новая нота - начать управление параметром
+                    // New note - start parameter control
                     this.padParameterControl.active = param;
                     this.padParameterControl.lastNote = note;
                     this.padParameterControl.lastTime = now;
@@ -409,10 +409,10 @@ export default class MIDIController {
             }
         }
         
-        // Иначе проверяем обычный маппинг (кнопки/тоглы)
+        // Otherwise check normal mapping (buttons/toggles)
         const mapping = this.noteMapping[note];
         if (!mapping) {
-            // Логируем неизвестные ноты для отладки
+            // Log unknown notes for debugging
             console.log(`[MIDIController] Unknown note: ${note} (velocity: ${velocity})`);
             return;
         }
@@ -431,7 +431,7 @@ export default class MIDIController {
     }
     
     /**
-     * Увеличить параметр на заданное значение
+     * Increment parameter by given value
      */
     incrementParameter(setting, increment) {
         const currentValue = this.voidApp?.settings?.get(setting);
@@ -446,7 +446,7 @@ export default class MIDIController {
     }
     
     /**
-     * Обработка Control Change
+     * Handle Control Change
      */
     handleControlChange(cc, value) {
         const setting = this.ccMapping[cc];
@@ -458,23 +458,23 @@ export default class MIDIController {
             return;
         }
         
-        // Преобразовать MIDI значение (0-127) в диапазон параметра
+        // Convert MIDI value (0-127) to parameter range
         const normalized = value / 127;
         const paramValue = range.min + (range.max - range.min) * normalized;
         
         console.log(`[MIDIController] CC${cc} -> ${setting}: ${paramValue.toFixed(2)} (MIDI: ${value})`);
         
-        // Установить значение
+        // Set value
         this.setParameter(setting, paramValue);
     }
     
     /**
-     * Установить режим рендеринга
+     * Set rendering mode
      */
     setMode(mode) {
         if (!this.voidApp) return;
         
-        // Найти радио-кнопку для режима
+        // Find radio button for mode
         const radio = document.getElementById(`mode${mode.charAt(0).toUpperCase() + mode.slice(1)}`) || 
                      document.getElementById(`mode${mode.toUpperCase()}`);
         
@@ -482,7 +482,7 @@ export default class MIDIController {
             radio.checked = true;
             radio.dispatchEvent(new Event('change', { bubbles: true }));
         } else {
-            // Если не нашли по ID, попробовать по value
+            // If not found by ID, try by value
             const radios = document.querySelectorAll(`input[name="renderMode"][value="${mode}"]`);
             if (radios.length > 0) {
                 radios[0].checked = true;
@@ -492,12 +492,12 @@ export default class MIDIController {
     }
     
     /**
-     * Переключить настройку
+     * Toggle setting
      */
     toggleSetting(setting) {
         if (!this.voidApp) return;
         
-        // Найти чекбокс
+        // Find checkbox
         let checkbox = null;
         
         switch (setting) {
@@ -540,7 +540,7 @@ export default class MIDIController {
     }
     
     /**
-     * Выполнить действие
+     * Execute action
      */
     executeAction(action) {
         if (!this.voidApp) return;
@@ -565,12 +565,12 @@ export default class MIDIController {
     }
     
     /**
-     * Установить параметр
+     * Set parameter
      */
     setParameter(setting, value) {
         if (!this.voidApp) return;
         
-        // Определить ID слайдера и форматирование значения
+        // Determine slider ID and value formatting
         let sliderId = null;
         
         switch (setting) {
@@ -606,7 +606,7 @@ export default class MIDIController {
                 sliderId = 'gapLengthSlider';
                 value = Math.round(value * 100) / 100;
                 break;
-            // Random параметры обрабатываются через range sliders
+            // Random parameters handled via range sliders
             case 'randomStemMin':
             case 'randomStemMax':
             case 'randomStrokesMin':
@@ -617,14 +617,14 @@ export default class MIDIController {
             case 'randomDashLengthMax':
             case 'randomGapLengthMin':
             case 'randomGapLengthMax':
-                // Для range sliders нужно обновить через RangeSliderController
+                // For range sliders need to update via RangeSliderController
                 if (this.voidApp.rangeSliderController) {
                     this.updateRangeSlider(setting, value);
                 }
                 return;
         }
         
-        // Использовать sliderController для правильного обновления
+        // Use sliderController for proper update
         if (sliderId && this.voidApp.sliderController) {
             console.log(`[MIDIController] Setting ${setting} via ${sliderId} to ${value}`);
             this.voidApp.sliderController.setValue(sliderId, value, true);
@@ -634,19 +634,19 @@ export default class MIDIController {
     }
     
     /**
-     * Обновить range slider
+     * Update range slider
      */
     updateRangeSlider(setting, value) {
         if (!this.voidApp || !this.voidApp.rangeSliderController) return;
         
-        // Округлить значение в зависимости от типа параметра
+        // Round value depending on parameter type
         if (setting.includes('Stem') || setting.includes('Contrast') || setting.includes('DashLength') || setting.includes('GapLength')) {
             value = Math.round(value * 100) / 100;
         } else if (setting.includes('Strokes')) {
             value = Math.round(value);
         }
         
-        // Определить, какой range slider обновлять и получить текущие значения
+        // Determine which range slider to update and get current values
         let sliderId = null;
         let isMin = false;
         
@@ -695,28 +695,28 @@ export default class MIDIController {
         
         if (!sliderId) return;
         
-        // Получить текущие значения слайдера
+        // Get current slider values
         const currentValues = this.voidApp.rangeSliderController.getValues(sliderId);
         if (!currentValues) return;
         
-        // Обновить соответствующее значение
+        // Update corresponding value
         if (isMin) {
             this.voidApp.rangeSliderController.setValues(sliderId, value, currentValues.max, true);
         } else {
             this.voidApp.rangeSliderController.setValues(sliderId, currentValues.min, value, true);
         }
         
-        // Обновить настройки
+        // Update settings
         this.voidApp.settings.set(setting, value);
         
-        // Обновить рендерер
+        // Update renderer
         if (this.voidApp.updateRenderer) {
             this.voidApp.updateRenderer();
         }
     }
     
     /**
-     * Обработка изменений состояния MIDI устройств
+     * Handle MIDI device state changes
      */
     handleStateChange(event) {
         if (event.port.state === 'connected' && event.port.type === 'input') {
@@ -732,7 +732,7 @@ export default class MIDIController {
     }
     
     /**
-     * Отключить MIDI
+     * Disconnect MIDI
      */
     disconnect() {
         if (this.midiInput) {
