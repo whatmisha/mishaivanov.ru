@@ -16,7 +16,7 @@
             height: 100vh;
         }
         
-        /* Left panel - Glyphs */
+        /* Левая панель - Glyphs */
         .editor-nav-panel {
             position: fixed;
             top: var(--spacing-3xl);
@@ -80,7 +80,7 @@
             background: rgba(255, 255, 255, 0.02);
         }
         
-        /* State 1: Inactive (no glyph) */
+        /* Состояние 1: Неактивное (глифа нет) */
         .char-cell.inactive {
             opacity: 0.3;
         }
@@ -89,12 +89,12 @@
             opacity: 0.5;
         }
         
-        /* State 2: Hover */
+        /* Состояние 2: Ховер */
         .char-cell:hover {
             background: rgba(255, 255, 255, 0.08);
         }
         
-        /* State 3: Clicked but not drawn */
+        /* Состояние 3: Кликнули, но не нарисовали */
         .char-cell.empty {
             background: rgba(255, 255, 255, 0.05);
             opacity: 1;
@@ -104,12 +104,12 @@
             opacity: 0.8;
         }
         
-        /* State 4: Glyph drawn */
+        /* Состояние 4: Глиф нарисован */
         .char-cell.has-glyph {
             opacity: 1;
         }
         
-        /* State 5: Selected */
+        /* Состояние 5: Выбрана */
         .char-cell.selected {
             background: rgba(255, 255, 255, 0.15);
         }
@@ -185,7 +185,7 @@
             margin-top: 0;
         }
         
-        /* Central area - canvas */
+        /* Центральная область - канвас */
         .canvas-area {
             position: absolute;
             top: 0;
@@ -219,7 +219,7 @@
             text-align: center;
         }
         
-        /* Right panel - Alternates */
+        /* Правая панель - Alternates */
         .editor-alternatives-panel {
             position: fixed;
             top: var(--spacing-3xl);
@@ -274,7 +274,7 @@
             background: rgba(255, 255, 255, 0.02);
         }
         
-        /* State: empty cell */
+        /* Состояние: пустая ячейка */
         .alternative-item.empty {
             opacity: 0.3;
         }
@@ -283,7 +283,7 @@
             opacity: 0.5;
         }
         
-        /* State: cell with glyph */
+        /* Состояние: ячейка с глифом */
         .alternative-item.has-glyph {
             opacity: 1;
         }
@@ -300,7 +300,7 @@
             background: rgba(255, 255, 255, 0.15);
         }
         
-        /* Add new alternative button */
+        /* Кнопка добавления новой альтернативы */
         .alternative-item.add-alternative-button {
             background: rgba(255, 255, 255, 0.02);
             border: 1px dashed rgba(255, 255, 255, 0.2);
@@ -317,7 +317,7 @@
             color: var(--color-text);
         }
         
-        /* Drag-and-drop styles */
+        /* Drag-and-drop стили */
         .alternative-item.draggable {
             cursor: grab;
         }
@@ -387,7 +387,7 @@
             right: 0;
         }
         
-        /* New glyph */
+        /* Новый глиф */
         .new-glyph-section {
             padding: var(--spacing-lg);
             border-bottom: 1px solid var(--color-border);
@@ -411,7 +411,7 @@
             font-size: 0.75rem;
         }
         
-        /* Top navigation */
+        /* Верхняя навигация */
         .editor-top-nav {
             position: fixed;
             top: var(--spacing-3xl);
@@ -452,7 +452,7 @@
             display: none;
         }
         
-        /* Bottom buttons */
+        /* Кнопки внизу */
         .editor-bottom-buttons {
             position: fixed;
             bottom: var(--spacing-3xl);
@@ -464,7 +464,7 @@
             z-index: 10000;
         }
         
-        /* Toolbar panel - styles for toolbar inside canvas-wrapper */
+        /* Панель инструментов - стили для toolbar внутри canvas-wrapper */
         .canvas-wrapper .toolbar {
             position: static;
             transform: none;
@@ -494,16 +494,17 @@
         .toolbar-value {
             font-size: 0.9rem;
             font-weight: 600;
-            min-height: 1.2em;
+            min-height: 1.2em; /* Фиксированная высота для стабильности */
             display: flex;
             align-items: center;
         }
         
-        /* Clickable sections in toolbar */
+        /* Кликабельные секции в toolbar */
         .toolbar-section:has(#currentModule),
         .toolbar-section:has(#currentAngle) {
             cursor: pointer;
             transition: opacity var(--transition-fast);
+            /* Защита от двойного тапа зума на мобильных */
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
         }
@@ -513,7 +514,7 @@
             opacity: 0.7;
         }
         
-        /* Placeholder styles */
+        /* Стили для placeholder */
         #newGlyphInput::placeholder {
             color: rgba(255, 255, 255, 0.25);
         }
@@ -522,12 +523,14 @@
     </style>
 </head>
 <body>
+    <!-- Верхняя навигация -->
     <div class="editor-top-nav">
         <a href="../index.html" class="top-link">← Void Typeface</a>
         <button class="editor-clear-all-btn" id="clearAllBtn">Clear All</button>
     </div>
     
     <div class="editor-container">
+        <!-- Левая панель - Glyphs -->
         <aside class="editor-nav-panel">
             <div class="editor-nav-header">
                 <h2>Glyphs</h2>
@@ -535,6 +538,7 @@
             
             <div class="char-list" id="charList">
                 <div class="char-grid" id="charGrid">
+                    <!-- Заполняется JS -->
                 </div>
             </div>
             <div style="padding: 20px var(--spacing-lg); border-top: 1px solid var(--color-border); flex: 0 0 auto;">
@@ -545,6 +549,7 @@
             </div>
         </aside>
         
+        <!-- Центральная область - канвас -->
         <div class="canvas-area">
             <div class="canvas-wrapper">
                 <canvas id="editorCanvas" width="600" height="600"></canvas>
@@ -574,15 +579,18 @@
             </div>
         </div>
         
+        <!-- Правая панель - Alternates -->
         <aside class="editor-alternatives-panel">
             <div class="editor-alternatives-header">
                 <h2>Alternates</h2>
             </div>
             <div class="alternatives-content" id="alternativesContent">
+                <!-- Заполняется JS -->
             </div>
         </aside>
     </div>
     
+    <!-- Кнопки внизу -->
     <nav class="editor-bottom-buttons">
         <input type="file" id="importFileInput" accept=".js" style="display: none;">
         <button class="btn-fixed" id="importBtn">Import</button>

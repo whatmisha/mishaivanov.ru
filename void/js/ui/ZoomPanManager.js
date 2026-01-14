@@ -1,30 +1,33 @@
 /**
- * ZoomPanManager - Zoom and pan canvas like in Figma
+ * ZoomPanManager - Управление зумом и панорамированием canvas как в Figma
  * 
- * Features:
- * - Zoom: mouse wheel centered on cursor (vector via viewBox)
- * - Pan: space + drag or middle mouse button
- * - Pinch-to-zoom on trackpads
+ * Функции:
+ * - Zoom: колесо мыши с центром на курсоре (векторное через viewBox)
+ * - Pan: пробел + drag или средняя кнопка мыши
+ * - Pinch-to-zoom на тачпадах
  * - Fit to screen
  * - Reset zoom (100%)
  * 
- * IMPORTANT: Uses SVG viewBox for true vector scaling
+ * ВАЖНО: Использует SVG viewBox для настоящего векторного масштабирования
  */
 export class ZoomPanManager {
     constructor(containerElement, svgElement) {
         this.container = containerElement;
         this.svg = svgElement;
         
+        // Состояние трансформации
         this.zoom = 1;
-        this.baseZoom = 1;
-        this.minZoom = 1.0;
+        this.baseZoom = 1; // Базовый зум (fit to screen), считается за 100%
+        this.minZoom = 1.0; // Минимальный зум 100% (не позволяем зумить меньше)
         this.maxZoom = 10;
         this.panX = 0;
         this.panY = 0;
         
+        // Исходные размеры SVG
         this.originalWidth = 0;
         this.originalHeight = 0;
         
+        // Состояние перетаскивания
         this.isPanning = false;
         this.isSpacePressed = false;
         this.startX = 0;
@@ -32,8 +35,10 @@ export class ZoomPanManager {
         this.lastX = 0;
         this.lastY = 0;
         
+        // Инициализируем SVG для векторного зума
         this.initializeSVG();
         
+        // Инициализируем обработчики
         this.initEventListeners();
     }
     
@@ -44,18 +49,22 @@ export class ZoomPanManager {
         // Ждем следующий фрейм, чтобы SVG был отрисован
         requestAnimationFrame(() => {
             try {
+                // Получаем размеры из атрибутов SVG, если они установлены
                 const width = parseFloat(this.svg.getAttribute('width')) || 0;
                 const height = parseFloat(this.svg.getAttribute('height')) || 0;
                 
                 if (width > 0 && height > 0) {
+                    // Используем размеры из атрибутов
                     this.originalWidth = width;
                     this.originalHeight = height;
                 } else {
+                    // Fallback: используем getBBox
                     const bbox = this.svg.getBBox();
                     this.originalWidth = bbox.width || 1000;
                     this.originalHeight = bbox.height || 1000;
                 }
                 
+                // Устанавливаем начальный viewBox (полный размер, зум 100%)
                 const viewBoxWidth = this.originalWidth / this.zoom;
                 const viewBoxHeight = this.originalHeight / this.zoom;
                 this.panX = 0;
@@ -63,6 +72,7 @@ export class ZoomPanManager {
                 
                 this.svg.setAttribute('viewBox', `${this.panX} ${this.panY} ${viewBoxWidth} ${viewBoxHeight}`);
             } catch (e) {
+                // Fallback если getBBox не работает
                 console.warn('Could not get SVG dimensions, using fallback');
                 this.originalWidth = 1000;
                 this.originalHeight = 1000;
@@ -70,12 +80,15 @@ export class ZoomPanManager {
             }
         });
         
+        // Убираем фиксированные размеры, чтобы SVG масштабировался
         this.svg.style.width = '100%';
         this.svg.style.height = '100%';
         
+        // Улучшаем качество рендеринга для четкости векторной графики
         this.svg.style.shapeRendering = 'geometricPrecision';
         this.svg.style.textRendering = 'geometricPrecision';
         
+        // Делаем container позиционированным для правильной работы
         this.container.style.position = 'relative';
         this.container.style.overflow = 'hidden';
         this.container.style.cursor = 'default';
@@ -88,9 +101,11 @@ export class ZoomPanManager {
         // Zoom: колесо мыши
         this.container.addEventListener('wheel', this.handleWheel.bind(this), { passive: false });
         
+        // Pan: клавиша пробел
         document.addEventListener('keydown', this.handleKeyDown.bind(this));
         document.addEventListener('keyup', this.handleKeyUp.bind(this));
         
+        // Pan: мышь
         this.container.addEventListener('mousedown', this.handleMouseDown.bind(this));
         document.addEventListener('mousemove', this.handleMouseMove.bind(this));
         document.addEventListener('mouseup', this.handleMouseUp.bind(this));

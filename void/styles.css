@@ -1,70 +1,24 @@
 /**
- * UI Framework - Styles
+ * UI Framework - Стили
  * 
- * Universal style library for web tools.
- * Includes all UI components: panels, sliders, buttons, dropdowns, modals, etc.
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
+ * Универсальная библиотека стилей для создания веб-инструментов.
+ * Включает все UI компоненты: панели, слайдеры, кнопки, дропдауны, модалки и т.д.
  * 
- * File structure:
- * 1. CSS variables (colors, spacing, animations)
- * 2. Base styles (reset, typography)
+ * Структура файла:
+ * 1. CSS переменные (цвета, отступы, анимации)
+ * 2. Базовые стили (reset, typography)
  * 3. Layout (container, top-links, panels)
- * 4. UI components (buttons, sliders, inputs)
- * 5. Modals
- * 6. Responsive design
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+ * 4. UI компоненты (buttons, sliders, inputs)
+ * 5. Модальные окна
+ * 6. Адаптивность
  */
 
 /* ============================================
-   0. FONTS
-   ============================================ */
-
-@font-face {
-    font-family: 'CoFo Sans';
-    src: url('https://mishaivanov.ru/fonts/CoFoSans-Regular.woff2') format('woff2'),
-         url('https://mishaivanov.ru/fonts/CoFoSans-Regular.woff') format('woff');
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-}
-
-@font-face {
-    font-family: 'CoFo Sans';
-    src: url('https://mishaivanov.ru/fonts/CoFoSans-Medium.woff2') format('woff2'),
-         url('https://mishaivanov.ru/fonts/CoFoSans-Medium.woff') format('woff');
-    font-weight: 500;
-    font-style: normal;
-    font-display: swap;
-}
-
-/* ============================================
-   1. CSS VARIABLES
+   1. CSS ПЕРЕМЕННЫЕ
    ============================================ */
 
 :root {
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    /* Color scheme - dark theme */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+    /* Цветовая схема - темная тема */
     --color-bg: #000;
     --color-bg-panel: #1a1a1a;
     --color-bg-input: #0a0a0a;
@@ -76,19 +30,7 @@
     --color-border: #333;
     --color-grid: #d2d2d2;
     
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    /* Spacing - use for consistency */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+    /* Отступы - используйте для консистентности */
     --spacing-xs: 2px;
     --spacing-sm: 4px;
     --spacing-md: 8px;
@@ -98,89 +40,29 @@
     --spacing-3xl: 20px;
     --spacing-4xl: 30px;
     
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    /* Border radius */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-    --radius: 12px;
+    /* Радиусы скругления */
+    --radius: 12px;           /* Панели */
     --radius-sm: 12px;
-    --radius-button: 20px;
-    --radius-input: 6px;
+    --radius-button: 20px;    /* Кнопки */
+    --radius-input: 6px;      /* Inputs, dropdowns */
     
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    /* Transitions */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+    /* Transitions - базовые */
     --transition-fast: 0.15s ease;
     --transition-normal: 0.2s ease;
     --transition-slow: 0.3s ease;
     
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    /* Easing functions */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+    /* Premium Easing Functions - для плавных анимаций */
     --easing-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
     --easing-decelerate: cubic-bezier(0.0, 0.0, 0.2, 1);
     --easing-accelerate: cubic-bezier(0.4, 0.0, 1, 1);
     --easing-sharp: cubic-bezier(0.4, 0.0, 0.6, 1);
     
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    /* Animation durations */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+    /* Animation Durations - для сложных анимаций */
     --duration-collapse: 0.35s;
     --duration-expand: 0.35s;
     --duration-fade: 0.25s;
     
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    /* UI element sizes */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+    /* Размеры UI элементов */
     --slider-thumb-size: 8px;
     --checkbox-size: 14px;
     --handle-size: 8px;
@@ -188,7 +70,7 @@
 }
 
 /* ============================================
-   2. BASE STYLES
+   2. БАЗОВЫЕ СТИЛИ
    ============================================ */
 
 * {
@@ -197,19 +79,7 @@
     box-sizing: border-box;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Screen reader only */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Screen reader only - для accessibility */
 .sr-only {
     position: absolute;
     width: 1px;
@@ -223,12 +93,13 @@
 }
 
 body {
-    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     background: var(--color-bg);
     height: 100vh;
     padding: 0;
     color: var(--color-text);
     overflow: hidden;
+    /* Защита от двойного тапа зума на мобильных */
     touch-action: pan-x pan-y;
 }
 
@@ -247,21 +118,10 @@ body {
     position: relative;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Top navigation links */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Top Links Container - навигация сверху */
 .top-links {
     position: absolute;
+    /* Учитываем безопасную область для устройств с вырезом камеры (iPhone) */
     top: calc(var(--spacing-3xl) + env(safe-area-inset-top, 0px));
     left: 50%;
     transform: translateX(-50%);
@@ -271,19 +131,7 @@ body {
     align-items: center;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Top link button */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Top Link - кнопка возврата */
 .top-link {
     padding: var(--spacing-md) var(--spacing-2xl);
     background: var(--color-text);
@@ -291,8 +139,7 @@ body {
     border: none;
     border-radius: var(--radius-button);
     font-size: 0.9rem;
-    font-weight: 500;
-    letter-spacing: 0;
+    font-weight: 600;
     text-decoration: none;
     cursor: pointer;
     transition: all var(--transition-slow);
@@ -307,19 +154,7 @@ body {
     color: var(--color-text);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Save and Delete preset buttons */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Кнопки Save и Delete preset */
 #savePresetBtn,
 #deletePresetBtn {
     background: var(--color-bg-panel);
@@ -348,19 +183,7 @@ body {
     flex: 1;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Canvas container */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Canvas Container - для инструментов с canvas/SVG */
 .canvas-container {
     background: var(--color-bg);
     border-radius: 0;
@@ -376,25 +199,13 @@ body {
 }
 
 /* ============================================
-   4. PANELS
+   4. ПАНЕЛИ (Controls Panels)
    ============================================ */
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 /**
- * Base class for control panels
- * Use with modifiers for positioning
+ * Базовый класс для боковых панелей управления
+ * Используйте в сочетании с модификаторами для позиционирования
  */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
 .controls-panel {
     position: fixed;
     top: var(--spacing-3xl);
@@ -412,37 +223,13 @@ body {
     flex-direction: column;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Left panel */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Панель слева */
 .controls-panel-left {
     left: var(--spacing-3xl);
     right: auto;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Text panel (bottom left) */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Панель текста (снизу слева) */
 .controls-panel-text {
     left: var(--spacing-3xl);
     right: auto;
@@ -450,19 +237,7 @@ body {
     bottom: var(--spacing-3xl);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Presets panel (bottom right) */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Панель Presets (справа внизу) */
 .controls-panel-presets {
     right: var(--spacing-3xl);
     left: auto;
@@ -470,19 +245,7 @@ body {
     bottom: var(--spacing-3xl);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Paragraph settings panel */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Paragraph settings panel - модальная панель для настроек объектов */
 .paragraph-settings-panel {
     z-index: 1001;
     display: none;
@@ -492,19 +255,7 @@ body {
     display: flex;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Panel header with drag & drop */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Panel Header - заголовок с drag & drop */
 .panel-header {
     background: var(--color-bg-panel);
     padding: var(--spacing-2xl) var(--spacing-3xl);
@@ -534,19 +285,7 @@ body {
     color: var(--color-text-secondary);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Panel params - additional info in header */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Panel params - дополнительная информация в заголовке */
 .panel-params {
     opacity: 0;
     white-space: nowrap;
@@ -560,19 +299,7 @@ body {
     opacity: 0.4;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Collapse icon */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Collapse Icon - иконка сворачивания панели */
 .collapse-icon {
     color: var(--color-text-muted);
     cursor: pointer;
@@ -593,19 +320,7 @@ body {
     transform: rotate(-90deg);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Panel content with collapse animation */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Panel Content - контент панели с анимацией сворачивания */
 .panel-content {
     padding-left: var(--spacing-3xl);
     padding-right: var(--spacing-3xl);
@@ -633,19 +348,7 @@ body {
                 padding-bottom var(--duration-collapse) var(--easing-standard);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Panel header actions */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Panel Header Actions - кнопки в заголовке (Hide, Duplicate, Delete) */
 .panel-header-actions {
     display: flex;
     gap: var(--spacing-sm);
@@ -675,19 +378,7 @@ body {
     height: 16px;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Control section */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Control Section - секция контролов внутри панели */
 .control-section {
     margin-bottom: 20px;
     border-bottom: none;
@@ -701,19 +392,7 @@ body {
     margin-bottom: 0;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Section dividers */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Разделительные линии между секциями (опционально) */
 .controls-panel-text .control-section {
     border-top: 1px solid var(--color-border);
     padding-top: var(--spacing-lg);
@@ -737,26 +416,14 @@ body {
     font-size: 0.85rem;
     margin-bottom: var(--spacing-md);
     color: var(--color-text);
-    font-weight: 500;
+    font-weight: 600;
     letter-spacing: 0.5px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Collapsible header */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Collapsible Header - складные секции */
 .control-section h3.collapsible-header {
     font-size: 0.85rem;
     font-weight: 400;
@@ -811,19 +478,7 @@ body {
     transform: rotate(-90deg);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Collapsible content */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Collapsible Content - контент складной секции */
 .collapsible-content {
     overflow: hidden;
     max-height: 1000px;
@@ -846,17 +501,19 @@ body {
 }
 
 /* ============================================
-   5. CONTROL GROUP
+   5. CONTROL GROUP - базовый контейнер для контролов
    ============================================ */
 
 .control-group {
     margin-bottom: 12px;
 }
 
+/* Убираем нижний margin у блока превью цвета в свернутом состоянии */
 .control-group:has(.color-pickers-compact-row) {
     margin-bottom: 0;
 }
 
+/* Последний элемент в секции без нижнего margin */
 .control-section > .control-group:last-child {
     margin-bottom: 0;
 }
@@ -905,19 +562,7 @@ body {
    5.1 COMPACT TEXT CONTROLS (Figma-style)
    ============================================ */
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Screen reader only */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Screen reader only (скрытые radio для accessibility) */
 .sr-only {
     position: absolute;
     width: 1px;
@@ -930,38 +575,14 @@ body {
     border: 0;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Compact controls row */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Строка с компактными контролами */
 .text-controls-row {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Icon + input group */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Группа иконка + инпут */
 .compact-input-group {
     display: flex;
     align-items: center;
@@ -1006,19 +627,7 @@ body {
     margin: 0;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Text alignment icons */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Иконки выравнивания текста */
 .text-align-icons {
     display: flex;
     align-items: center;
@@ -1043,31 +652,25 @@ body {
     color: var(--color-text);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Active alignment state */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Активное состояние выравнивания */
 input[name="textAlign"]:checked + .align-icon-btn {
     background: #666666;
     color: var(--color-text);
 }
 
 /* ============================================
-   6. SLIDERS
+   6. СЛАЙДЕРЫ (Range Sliders)
+   ============================================
+   
+   Особенности:
+   - Тонкий трек (1px)
+   - Круглый thumb (8px), увеличивается до 10px при hover
+   - Клавиатурное управление (↑↓, Shift+↑↓)
    ============================================ */
 
 .control-group input[type="range"] {
     width: 100%;
-    height: 10px;
+    height: 10px; /* Кликабельная область */
     border-radius: var(--radius);
     background: transparent;
     outline: none;
@@ -1079,19 +682,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     position: relative;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Slider thumb */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Slider Thumb - ползунок */
 .control-group input[type="range"]::-webkit-slider-thumb {
     appearance: none;
     -webkit-appearance: none;
@@ -1102,7 +693,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     cursor: pointer;
     border: none;
     transition: all var(--transition-fast);
-    margin-top: calc((1px - var(--slider-thumb-size)) / 2);
+    margin-top: calc((1px - var(--slider-thumb-size)) / 2); /* Центрирование относительно track */
 }
 
 .control-group input[type="range"]::-moz-range-thumb {
@@ -1117,7 +708,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
 }
 
 .control-group input[type="range"]::-webkit-slider-thumb:hover {
-    transform: scale(1.25);
+    transform: scale(1.25); /* 8px × 1.25 = 10px */
     background: var(--color-text);
 }
 
@@ -1126,19 +717,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     background: var(--color-text);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Slider track */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Slider Track - дорожка */
 .control-group input[type="range"]::-webkit-slider-runnable-track {
     width: 100%;
     height: 1px;
@@ -1155,19 +734,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     border-radius: var(--radius);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Focus state */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Focus State - фокус для accessibility */
 .control-group input[type="range"]:focus {
     outline: none;
 }
@@ -1180,19 +747,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-text);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Disabled state */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Disabled State для слайдеров */
 .control-group input[type="range"]:disabled {
     opacity: 0.4;
     cursor: not-allowed;
@@ -1218,40 +773,16 @@ input[name="textAlign"]:checked + .align-icon-btn {
     background: var(--color-text-subtle);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Range slider with two handles */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Range Slider - слайдер с двумя ручками */
 .range-slider-container {
     width: 100%;
-    margin-top: var(--spacing-md);
-    margin-bottom: 26px;
+    margin-top: var(--spacing-md); /* +2px от обычного слайдера */
+    margin-bottom: 26px; /* Увеличенный нижний отступ для range-слайдеров */
     position: relative;
-    height: 10px;
+    height: 10px; /* Кликабельная область */
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Range value display (min–max) */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Блок отображения диапазона значений (min–max) */
 .range-value-display {
     display: flex;
     align-items: center;
@@ -1305,39 +836,15 @@ input[name="textAlign"]:checked + .align-icon-btn {
     outline: none;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Min thumb (left) - triangle points right, tip (right edge) at value */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Min thumb (левый) — треугольник указывает вправо, острие (правый край) на значении */
 .range-slider-thumb-min {
-    transform: translate(-100%, -50%);
+    transform: translate(-100%, -50%); /* Смещаем влево на 100% ширины, чтобы правый край был на позиции */
     clip-path: polygon(100% 50%, 0 0, 0 100%);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Max thumb (right) - triangle points left, tip (left edge) at value */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Max thumb (правый) — треугольник указывает влево, острие (левый край) на значении */
 .range-slider-thumb-max {
-    transform: translateY(-50%);
+    transform: translateY(-50%); /* Левый край на позиции */
     clip-path: polygon(0 50%, 100% 0, 100% 100%);
 }
 
@@ -1357,19 +864,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
    7. TEXT INPUTS & VALUE DISPLAYS
    ============================================ */
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Value display - text field with slider value */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Value Display - текстовое поле со значением слайдера */
 .value-display-wrapper {
     display: flex;
     align-items: center;
@@ -1407,37 +902,13 @@ input[name="textAlign"]:checked + .align-icon-btn {
     color: var(--color-text-muted);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Visual indication of disabled control-group */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Визуальное выделение неактивной control-group */
 .control-group:has(input[type="range"]:disabled) label span:first-child {
     opacity: 0.5;
     color: var(--color-text-muted);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Unit buttons - measurement unit toggles */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Unit Buttons - переключатели единиц измерения (mod/mm, mod/pt) */
 .unit-buttons {
     display: inline-flex;
     gap: 2px;
@@ -1454,7 +925,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     opacity: 0.4;
     border-radius: 2px;
     transition: all var(--transition-fast);
-    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     font-weight: 400;
     line-height: 1;
 }
@@ -1469,19 +940,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     background: #333;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Lock button */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Lock Button - кнопка блокировки параметра */
 .lock-btn {
     background: transparent;
     border: none;
@@ -1551,19 +1010,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     gap: var(--spacing-md);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Color preview button */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Color Preview Button (встроенный в ColorPicker) */
 .color-picker-wrapper .color-preview {
     width: 30px;
     height: 30px;
@@ -1586,36 +1033,12 @@ input[name="textAlign"]:checked + .align-icon-btn {
     outline: none;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Hide default preview button in unified picker */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Скрываем стандартное превью-кнопку в унифицированном пикере */
 #unifiedColorPickerContainer .color-preview {
     display: none;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* HEX input - hidden by default, shown via JS when picker opens */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* HEX input - скрыт по умолчанию, показывается через JS при открытии пикера */
 #unifiedColorPickerContainer .color-input-group {
     display: none;
     gap: var(--spacing-md);
@@ -1642,19 +1065,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     border-color: var(--color-text-subtle);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* HSB picker dropdown */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* HSB Picker - выпадающий HSB пикер */
 .hsb-picker {
     margin-top: var(--spacing-lg);
     animation: slideDown var(--transition-normal) ease-out;
@@ -1721,19 +1132,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     color: var(--color-text);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* HSB sliders - same styles as regular sliders */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* HSB Sliders - такие же стили как у обычных слайдеров */
 .hsb-control-group input[type="range"] {
     width: 100%;
     height: 10px;
@@ -1808,19 +1207,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-text);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Color gradients for HSB sliders - set dynamically via JS in ColorPicker.updateGradients() */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Color Gradients для HSB слайдеров - устанавливаются динамически через JS в ColorPicker.updateGradients() */
 
 /* Color Preset Button */
 .color-preset {
@@ -1842,22 +1229,10 @@ input[name="textAlign"]:checked + .align-icon-btn {
 }
 
 /* ============================================
-   9. BUTTONS
+   9. КНОПКИ
    ============================================ */
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Base button styles */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Base Button Styles - общие стили для всех кнопок */
 .btn-primary,
 .btn-secondary,
 .btn-fixed {
@@ -1865,14 +1240,14 @@ input[name="textAlign"]:checked + .align-icon-btn {
     border: none;
     border-radius: var(--radius-button);
     font-size: 0.9rem;
-    font-weight: 500;
-    letter-spacing: 0;
+    font-weight: 600;
     cursor: pointer;
     transition: all var(--transition-slow);
     height: var(--button-height);
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    /* Защита от двойного тапа зума на мобильных */
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
 }
@@ -1905,19 +1280,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     cursor: not-allowed;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Fixed buttons for bottom bar */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Fixed Buttons - для bottom bar */
 .btn-fixed {
     background: var(--color-text);
     color: var(--color-bg);
@@ -1933,19 +1296,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     transform: none;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Apply/Close buttons in modal panels */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Apply/Close Buttons в модальных панелях */
 .btn-apply {
     padding: var(--spacing-sm) var(--spacing-2xl);
     background: var(--color-text);
@@ -2006,19 +1357,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     border-color: #d2d2d2;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Button group */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Button Group - группа кнопок */
 .button-group {
     display: flex;
     gap: var(--spacing-md);
@@ -2026,6 +1365,8 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 /* ============================================
    10. TOGGLE CHIPS
+   ============================================
+   Переключатели в виде чипов (например, Show Columns/Rows/Baseline)
    ============================================ */
 
 .show-toggle-chip-group {
@@ -2047,6 +1388,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     transition: border-color var(--transition-normal), 
                 background var(--transition-normal), 
                 color var(--transition-normal);
+    /* Защита от двойного тапа зума на мобильных */
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
 }
@@ -2070,19 +1412,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     gap: 2px;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Toggle chip icons */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Toggle Chip Icons - иконки внутри чипов */
 .toggle-chip-icon-wrapper {
     position: relative;
     width: 14px;
@@ -2104,19 +1434,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     display: block;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Inactive buttons: crossed icon by default */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Неактивные кнопки: перечеркнутая иконка по умолчанию */
 .toggle-chip:not(.toggle-chip-checked) .toggle-chip-icon-open {
     opacity: 0;
 }
@@ -2133,19 +1451,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     opacity: 0;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Active buttons: uncrossed icon */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Активные кнопки: неперечеркнутая иконка */
 .toggle-chip-checked .toggle-chip-icon-open,
 .toggle-chip input:checked + span .toggle-chip-icon-open {
     opacity: 1;
@@ -2200,6 +1506,8 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 /* ============================================
    11. SEGMENTED CONTROL
+   ============================================
+   Переключатель с несколькими вариантами (радио-кнопки)
    ============================================ */
 
 fieldset {
@@ -2219,6 +1527,7 @@ legend {
     padding: 4px;
     gap: 4px;
     margin-top: var(--spacing-md);
+    /* Защита от двойного тапа зума на мобильных */
     touch-action: manipulation;
 }
 
@@ -2264,40 +1573,17 @@ legend {
     outline-offset: 2px;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Compact segmented control */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Compact Segmented Control - меньшая высота */
 .segmented-control-compact label {
     padding: 6px var(--spacing-lg);
 }
 
+/* Убрать верхний margin у segmented-control-compact на панели Variability */
 #variabilityPanel .segmented-control-compact {
     margin-top: 0;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Style buttons container */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Style Buttons Container - кнопки стилей с переносом */
 .style-buttons-container {
     display: flex;
     flex-wrap: wrap;
@@ -2312,12 +1598,15 @@ legend {
     line-height: 1;
     font-weight: 400;
     border: none;
-    border-radius: 999px;
+    border-radius: 999px; /* Полностью скругленные */
     cursor: pointer;
     transition: all var(--transition-normal);
     user-select: none;
+    /* Защита от двойного тапа зума на мобильных */
     touch-action: manipulation;
+    /* Ширина зависит от содержимого */
     white-space: nowrap;
+    /* Неактивное состояние: черный фон, белый текст */
     background: var(--color-bg);
     color: var(--color-text);
 }
@@ -2327,6 +1616,7 @@ legend {
 }
 
 .style-button.active {
+    /* Активное состояние: белый фон, черный текст */
     background: var(--color-text);
     color: var(--color-bg);
     font-weight: 500;
@@ -2337,29 +1627,19 @@ legend {
     outline-offset: 2px;
 }
 
+/* Увеличить расстояние между переключателем табов и первым слайдером на вкладке Random */
 #randomControlGroupStem {
     margin-top: 18px;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Compact color pickers row */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Контейнер для группы пикеров цветов */
+/* Компактная строка с превью цветов - прямоугольные */
 .color-pickers-compact-row {
     display: flex;
     align-items: stretch;
     gap: 8px;
     margin-bottom: 20px;
-    padding-top: 1px;
+    padding-top: 1px; /* Защита от обрезки при ховере */
 }
 
 .color-preview-rect {
@@ -2389,6 +1669,7 @@ legend {
 }
 
 .color-preview-rect.active {
+    /* Активное состояние теперь индицируется символом ● в начале текста */
 }
 
 .color-label-inside {
@@ -2398,6 +1679,7 @@ legend {
     position: relative;
     z-index: 1;
     pointer-events: none;
+    /* Цвет будет устанавливаться динамически через JS */
 }
 
 .color-pickers-group {
@@ -2425,6 +1707,7 @@ legend {
     padding: 10px 0;
     margin-bottom: 0 !important;
     position: relative;
+    /* Защита от двойного тапа зума на мобильных */
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
 }
@@ -2433,19 +1716,8 @@ legend {
     margin-bottom: var(--spacing-xs);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Toggle groups in a row */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Группы тоглов в одну строку (2 или 3 тогла) */
+/* display устанавливается через inline style: flex для видимых, none для скрытых */
 .control-group.toggle-group-row {
     gap: 15px;
     flex-wrap: nowrap;
@@ -2638,19 +1910,7 @@ legend {
     color: var(--color-text);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Custom preset dropdown */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Custom Preset Dropdown (в top-links) */
 .preset-dropdown {
     position: relative;
     display: inline-block;
@@ -2663,9 +1923,9 @@ legend {
     border: none;
     border-radius: var(--radius-button);
     font-size: 0.9rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -2746,7 +2006,7 @@ legend {
     cursor: pointer;
     border-radius: 8px;
     transition: all var(--transition-fast);
-    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2765,7 +2025,7 @@ legend {
 .preset-dropdown-item.selected {
     background: rgba(255, 255, 255, 0.12);
     color: var(--color-text);
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .preset-dropdown-item-danger {
@@ -2818,22 +2078,10 @@ textarea::placeholder {
 
 .char-counter {
     font-size: 0.75rem;
-    font-weight: 400;
+    font-weight: normal;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Text input */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Text Input - обычное текстовое поле */
 .text-input {
     width: 100%;
     background: var(--color-bg-input);
@@ -2855,19 +2103,7 @@ textarea::placeholder {
     color: var(--color-text-muted);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Select input */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Select Input - выпадающий список */
 .select-input {
     width: 100%;
     background: var(--color-bg-input);
@@ -2896,19 +2132,7 @@ textarea::placeholder {
     border-color: var(--color-text-dim);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Danger button */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Button Danger - кнопка удаления */
 .btn-danger {
     background: var(--color-bg);
     color: var(--color-text-secondary);
@@ -2921,7 +2145,7 @@ textarea::placeholder {
 }
 
 /* ============================================
-   15. MODALS
+   15. МОДАЛЬНЫЕ ОКНА
    ============================================ */
 
 .modal-overlay {
@@ -2990,7 +2214,7 @@ textarea::placeholder {
     font-size: 1.5rem;
     margin-bottom: var(--spacing-3xl);
     color: var(--color-text);
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .modal-body {
@@ -3002,7 +2226,7 @@ textarea::placeholder {
 .modal-body h3 {
     color: var(--color-text);
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 600;
     margin-top: var(--spacing-4xl);
     margin-bottom: var(--spacing-lg);
 }
@@ -3030,7 +2254,7 @@ textarea::placeholder {
 
 .modal-body strong {
     color: var(--color-text);
-    font-weight: 500;
+    font-weight: 600;
 }
 
 /* ============================================
@@ -3048,19 +2272,7 @@ textarea::placeholder {
     z-index: 10000;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Toggle label */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Toggle Label для "Outline fonts" и подобных */
 .toggle-label {
     display: flex;
     align-items: center;
@@ -3132,19 +2344,7 @@ textarea::placeholder {
    17. ZOOM CONTROLS
    ============================================ */
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Zoom indicator button */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Zoom Indicator Button (в top-links) */
 .zoom-indicator {
     padding: var(--spacing-md) var(--spacing-lg);
     background: var(--color-bg-panel);
@@ -3152,9 +2352,9 @@ textarea::placeholder {
     border: none;
     border-radius: var(--radius-button);
     font-size: 0.9rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
-    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     transition: background-color var(--transition-slow);
     height: var(--button-height);
     display: inline-flex;
@@ -3168,19 +2368,7 @@ textarea::placeholder {
     background-color: #2a2a2a;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Zoom controls */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Zoom Controls (в bottom-buttons) */
 .zoom-controls {
     display: flex;
     align-items: center;
@@ -3227,7 +2415,7 @@ textarea::placeholder {
     font-size: 13px;
     font-weight: 500;
     color: var(--color-text);
-    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     user-select: none;
     padding: 0 var(--spacing-sm);
     cursor: pointer;
@@ -3304,7 +2492,7 @@ textarea::placeholder {
 }
 
 /* ============================================
-   19. RESPONSIVE DESIGN
+   19. АДАПТИВНОСТЬ (Responsive Design)
    ============================================ */
 
 @media (max-width: 1024px) {
@@ -3313,19 +2501,7 @@ textarea::placeholder {
     }
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Hide panels on mobile devices before JS loads */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Скрыть панели на мобильных устройствах сразу (до загрузки JS) */
 .is-mobile .controls-panel,
 .is-mobile #presetDropdown,
 .is-mobile #savePresetBtn,
@@ -3335,19 +2511,7 @@ textarea::placeholder {
     display: none !important;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Show Update button only on mobile devices */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Показать кнопку Update только на мобильных устройствах */
 .is-mobile #renewBtn {
     display: inline-flex !important;
     align-items: center;
@@ -3416,7 +2580,7 @@ textarea::placeholder {
 }
 
 /* ============================================
-   20. ADDITIONAL COMPONENTS
+   20. ДОПОЛНИТЕЛЬНЫЕ КОМПОНЕНТЫ
    ============================================ */
 
 /* File Upload Area */
@@ -3479,38 +2643,14 @@ textarea::placeholder {
     border-color: var(--color-text-dim);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Font size display */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Font Size Display (для отображения текущего размера шрифта) */
 .font-size-display {
     opacity: 0.4;
     white-space: nowrap;
     margin-left: 6px;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Linked controls group */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Linked Controls Group - визуальное группирование связанных контролов */
 #linkedControlsContainer {
     padding: var(--spacing-lg);
     margin: var(--spacing-3xl) calc(-1 * var(--spacing-lg)) 0;
@@ -3614,7 +2754,7 @@ textarea::placeholder {
 .editor-module-display {
     font-family: var(--font-mono);
     font-size: 42px;
-    font-weight: 500;
+    font-weight: 600;
     padding: 36px 12px;
     text-align: center;
     background: #808080;
@@ -3662,19 +2802,7 @@ textarea::placeholder {
     resize: none;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Editor hint */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Editor Hint - подсказка в правом нижнем углу */
 .editor-hint {
     position: absolute;
     bottom: 20px;
@@ -3690,19 +2818,7 @@ textarea::placeholder {
     backdrop-filter: blur(4px);
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-/* Editor alternatives panel */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Editor Alternatives Panel - панель альтернативных начертаний */
 .editor-alternatives-panel {
     position: absolute;
     right: 20px;
@@ -3798,27 +2914,18 @@ textarea::placeholder {
     display: none !important;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 /* ============================================
-   HIDE PRESET CONTROLS
+   СКРЫТИЕ УПРАВЛЕНИЯ ПРЕСЕТАМИ
    ============================================ */
 
-/* Hide preset controls (functionality remains) */
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
-=======
->>>>>>> parent of e1a49ee (-)
+/* Скрыть элементы управления пресетами (функционал остается) */
 #presetDropdown,
 #savePresetBtn,
 #deletePresetBtn {
     display: none !important;
 }
 
+/* ============================================
+   КОНЕЦ ФАЙЛА
+   ============================================ */
 
