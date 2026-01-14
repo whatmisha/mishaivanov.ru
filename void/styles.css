@@ -14,6 +14,28 @@
  */
 
 /* ============================================
+   0. ШРИФТЫ
+   ============================================ */
+
+@font-face {
+    font-family: 'CoFo Sans';
+    src: url('https://mishaivanov.ru/fonts/CoFoSans-Regular.woff2') format('woff2'),
+         url('https://mishaivanov.ru/fonts/CoFoSans-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'CoFo Sans';
+    src: url('https://mishaivanov.ru/fonts/CoFoSans-Medium.woff2') format('woff2'),
+         url('https://mishaivanov.ru/fonts/CoFoSans-Medium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ============================================
    1. CSS ПЕРЕМЕННЫЕ
    ============================================ */
 
@@ -93,7 +115,7 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     background: var(--color-bg);
     height: 100vh;
     padding: 0;
@@ -133,13 +155,14 @@ body {
 
 /* Top Link - кнопка возврата */
 .top-link {
-    padding: var(--spacing-md) var(--spacing-2xl);
+    padding: var(--spacing-md) var(--spacing-3xl);
     background: var(--color-text);
     color: var(--color-bg);
     border: none;
     border-radius: var(--radius-button);
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
     text-decoration: none;
     cursor: pointer;
     transition: all var(--transition-slow);
@@ -161,6 +184,10 @@ body {
     color: var(--color-text);
     border: none;
     border-radius: var(--radius-button);
+    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: var(--spacing-md) var(--spacing-3xl);
 }
 
 #savePresetBtn:hover {
@@ -276,7 +303,7 @@ body {
 
 .panel-header span:first-child {
     font-weight: 500;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     color: var(--color-text);
 }
 
@@ -413,10 +440,10 @@ body {
 }
 
 .control-section h3 {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     margin-bottom: var(--spacing-md);
     color: var(--color-text);
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: 0.5px;
     display: flex;
     justify-content: space-between;
@@ -425,7 +452,7 @@ body {
 
 /* Collapsible Header - складные секции */
 .control-section h3.collapsible-header {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 400;
     color: var(--color-text-secondary);
     letter-spacing: 0;
@@ -524,7 +551,7 @@ body {
     font-weight: 400;
     margin-bottom: var(--spacing-xs);
     color: var(--color-text-secondary);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     gap: var(--spacing-md);
 }
 
@@ -534,7 +561,7 @@ body {
     font-weight: 400;
     margin-bottom: var(--spacing-xs);
     color: var(--color-text-secondary);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     gap: var(--spacing-md);
 }
 
@@ -920,12 +947,12 @@ input[name="textAlign"]:checked + .align-icon-btn {
     border: none;
     padding: 1px 5px;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     color: #ccc;
     opacity: 0.4;
     border-radius: 2px;
     transition: all var(--transition-fast);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     font-weight: 400;
     line-height: 1;
 }
@@ -1104,7 +1131,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     font-weight: 400;
     margin-bottom: var(--spacing-xs);
     color: var(--color-text-secondary);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
 }
 
 .hsb-control-group label > span {
@@ -1211,7 +1238,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 /* Color Preset Button */
 .color-preset {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     color: var(--color-text-dim);
     cursor: pointer;
     padding: var(--spacing-xs) 6px;
@@ -1236,11 +1263,12 @@ input[name="textAlign"]:checked + .align-icon-btn {
 .btn-primary,
 .btn-secondary,
 .btn-fixed {
-    padding: var(--spacing-md) var(--spacing-2xl);
+    padding: var(--spacing-md) var(--spacing-3xl);
     border: none;
     border-radius: var(--radius-button);
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
     cursor: pointer;
     transition: all var(--transition-slow);
     height: var(--button-height);
@@ -1303,7 +1331,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     color: var(--color-bg);
     border: none;
     border-radius: var(--radius-button);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
     transition: all var(--transition-normal);
@@ -1322,7 +1350,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     color: var(--color-text-secondary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-button);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
     transition: all var(--transition-normal);
@@ -1344,7 +1372,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
     color: var(--color-text-secondary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-button);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
     transition: all var(--transition-normal);
@@ -1546,7 +1574,7 @@ legend {
     text-align: center;
     padding: var(--spacing-lg);
     margin: 0;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     line-height: 1;
     color: var(--color-text-secondary);
     background: transparent;
@@ -1593,8 +1621,8 @@ legend {
 }
 
 .style-button {
-    padding: 8px 12px;
-    font-size: 0.85rem;
+    padding: 8px 14px;
+    font-size: 0.9rem;
     line-height: 1;
     font-weight: 400;
     border: none;
@@ -1673,7 +1701,7 @@ legend {
 }
 
 .color-label-inside {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     text-align: center;
     font-weight: 500;
     position: relative;
@@ -1731,7 +1759,7 @@ legend {
 }
 
 .checkbox-label span {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     color: var(--color-text-secondary);
     display: inline-flex;
     align-items: center;
@@ -1813,7 +1841,7 @@ legend {
     border: none;
     color: var(--color-text);
     font-family: inherit;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     border-radius: var(--radius-input);
     margin-top: var(--spacing-md);
     cursor: pointer;
@@ -1917,15 +1945,15 @@ legend {
 }
 
 .preset-dropdown-toggle {
-    padding: var(--spacing-md) var(--spacing-xl) var(--spacing-md) var(--spacing-3xl);
+    padding: var(--spacing-md) var(--spacing-3xl) var(--spacing-md) var(--spacing-3xl);
     background: var(--color-bg-panel);
     color: var(--color-text);
     border: none;
     border-radius: var(--radius-button);
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-size: 1rem;
+    font-weight: 500;
     cursor: pointer;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -2006,7 +2034,7 @@ legend {
     cursor: pointer;
     border-radius: 8px;
     transition: all var(--transition-fast);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2025,7 +2053,7 @@ legend {
 .preset-dropdown-item.selected {
     background: rgba(255, 255, 255, 0.12);
     color: var(--color-text);
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .preset-dropdown-item-danger {
@@ -2050,7 +2078,7 @@ textarea {
     border: 1px solid var(--color-border);
     color: var(--color-text);
     font-family: inherit;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     padding: var(--spacing-md);
     border-radius: var(--radius-input);
     resize: vertical;
@@ -2088,7 +2116,7 @@ textarea::placeholder {
     border: 1px solid var(--color-border);
     color: var(--color-text);
     font-family: inherit;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     padding: var(--spacing-md);
     border-radius: var(--radius-input);
     transition: border-color var(--transition-fast);
@@ -2110,7 +2138,7 @@ textarea::placeholder {
     border: 1px solid var(--color-border);
     color: var(--color-text);
     font-family: inherit;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     padding: var(--spacing-md);
     border-radius: var(--radius-input);
     cursor: pointer;
@@ -2214,19 +2242,19 @@ textarea::placeholder {
     font-size: 1.5rem;
     margin-bottom: var(--spacing-3xl);
     color: var(--color-text);
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .modal-body {
     color: var(--color-text-secondary);
     line-height: 1.7;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
 }
 
 .modal-body h3 {
     color: var(--color-text);
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 500;
     margin-top: var(--spacing-4xl);
     margin-bottom: var(--spacing-lg);
 }
@@ -2254,7 +2282,7 @@ textarea::placeholder {
 
 .modal-body strong {
     color: var(--color-text);
-    font-weight: 600;
+    font-weight: 500;
 }
 
 /* ============================================
@@ -2282,7 +2310,7 @@ textarea::placeholder {
 }
 
 .toggle-label-text {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     color: var(--color-text-secondary);
     transition: color var(--transition-fast);
 }
@@ -2351,10 +2379,10 @@ textarea::placeholder {
     color: var(--color-text);
     border: none;
     border-radius: var(--radius-button);
+    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     font-size: 0.9rem;
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     transition: background-color var(--transition-slow);
     height: var(--button-height);
     display: inline-flex;
@@ -2415,7 +2443,7 @@ textarea::placeholder {
     font-size: 13px;
     font-weight: 500;
     color: var(--color-text);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     user-select: none;
     padding: 0 var(--spacing-sm);
     cursor: pointer;
@@ -2544,21 +2572,21 @@ textarea::placeholder {
     
     .btn-fixed {
         padding: calc(var(--spacing-xl) * 1.5) calc(var(--spacing-3xl) * 1.5);
-        font-size: calc(0.9rem * 1.5);
+        font-size: calc(1rem * 1.5);
         height: calc(var(--button-height) * 1.5);
         border-radius: calc(calc(var(--button-height) * 1.5) / 2);
     }
     
     .btn-secondary {
-        padding: calc(var(--spacing-md) * 1.5) calc(var(--spacing-2xl) * 1.5);
-        font-size: calc(0.9rem * 1.5);
+        padding: calc(var(--spacing-md) * 1.5) calc(var(--spacing-3xl) * 1.5);
+        font-size: calc(1rem * 1.5);
         height: calc(var(--button-height) * 1.5);
         border-radius: calc(calc(var(--button-height) * 1.5) / 2);
     }
     
     .top-link {
-        padding: calc(var(--spacing-md) * 1.5) calc(var(--spacing-2xl) * 1.5);
-        font-size: calc(0.9rem * 1.5);
+        padding: calc(var(--spacing-md) * 1.5) calc(var(--spacing-3xl) * 1.5);
+        font-size: calc(1rem * 1.5);
         height: calc(var(--button-height) * 1.5);
         border-radius: calc(calc(var(--button-height) * 1.5) / 2);
     }
@@ -2607,7 +2635,7 @@ textarea::placeholder {
 .upload-placeholder p {
     margin: 0;
     color: var(--color-text-secondary);
-    font-size: 0.85rem;
+    font-size: 0.9rem;
 }
 
 /* Row Presets Buttons */
@@ -2754,7 +2782,7 @@ textarea::placeholder {
 .editor-module-display {
     font-family: var(--font-mono);
     font-size: 42px;
-    font-weight: 600;
+    font-weight: 500;
     padding: 36px 12px;
     text-align: center;
     background: #808080;
@@ -2838,7 +2866,7 @@ textarea::placeholder {
     padding: var(--spacing-xl) var(--spacing-2xl);
     border-bottom: 1px solid var(--color-border);
     font-weight: 500;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     color: var(--color-text);
     flex-shrink: 0;
 }
