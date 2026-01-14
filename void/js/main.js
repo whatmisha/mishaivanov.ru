@@ -1,5 +1,5 @@
 /**
- * Void Typeface - главный файл инициализации
+ * Void Typeface - main initialization file
  */
 
 import { VoidRenderer } from './core/VoidRenderer.js';
@@ -20,7 +20,7 @@ class VoidTypeface {
         // Settings storage
         this.settings = {
             values: {
-                stemMultiplier: 0.5, // множитель размера модуля (реальное значение)
+                stemMultiplier: 0.5,
                 moduleSize: 24,
                 letterSpacingMultiplier: 1,
                 lineHeightMultiplier: 2,
@@ -43,17 +43,17 @@ class VoidTypeface {
                 randomDashLengthMax: 1.5,
                 randomGapLengthMin: 1.0,
                 randomGapLengthMax: 1.5,
-                randomModeType: 'byType', // 'byType' или 'full'
-                randomRounded: false, // скругления на концах линий в режиме Random (Rounded)
-                randomCloseEnds: true, // закрывающие линии на концах в режиме Random
-                randomDash: false, // пунктир в режиме Random
-                roundedCaps: false, // скругления на концах линий (Rounded)
-                closeEnds: false, // закрывающие линии на концах в режиме Stripes
-                dashLength: 0.10, // длина штриха для Dash mode (множитель от stem)
-                gapLength: 0.30, // длина промежутка для Dash mode (множитель от stem)
-                dashChess: false, // шахматный порядок для Dash mode (чередование начала штрихов)
-                useAlternativesInRandom: true, // использовать альтернативные глифы в режиме Random
-                currentMode: 'normal' // 'normal' или 'editor'
+                randomModeType: 'byType',
+                randomRounded: false,
+                randomCloseEnds: true,
+                randomDash: false,
+                roundedCaps: false,
+                closeEnds: false,
+                dashLength: 0.10,
+                gapLength: 0.30,
+                dashChess: false,
+                useAlternativesInRandom: true,
+                currentMode: 'normal'
             },
             get(key) { return this.values[key]; },
             set(key, value) { 
@@ -72,19 +72,15 @@ class VoidTypeface {
         // MIDI Controller
         this.midiController = null;
 
-        // Проверка на мобильное устройство
         this.isMobile = this.checkIsMobile();
         
-        // Инициализация компонентов
         this.initCanvas();
         this.initExporter();
         this.initPresetManager();
         
         if (this.isMobile) {
-            // На мобильных устройствах скрываем панели и показываем сообщение
             this.initMobileView();
         } else {
-            // На десктопе инициализируем все как обычно
             this.initPanels();
             this.initSliders();
             this.initRangeSliders();
@@ -96,20 +92,18 @@ class VoidTypeface {
             this.initCloseEndsToggle();
             this.initDashChessToggle();
             this.initGridToggle();
-            // this.initGlyphEditor(); // Редактор глифов (ОТКЛЮЧЕНО - используйте editor.html)
-            // this.initEditorHotkey(); // Хоткей Cmd+G для редактора (ОТКЛЮЧЕНО)
-            this.initAlternativeGlyphs(); // Альтернативные глифы
+            // this.initGlyphEditor(); // DISABLED - use editor.html
+            // this.initEditorHotkey(); // DISABLED
+            this.initAlternativeGlyphs();
             
-            // Установить правильную видимость Rounded при инициализации
             this.updateRoundedCapsVisibility();
             this.updateRandomRoundedVisibility();
             this.updateAlternativeGlyphsVisibility();
             
-            // Отслеживание изменений для показа кнопки Save
             this.hasUnsavedChanges = false;
             this.currentPresetName = 'Default';
             this.isLoadingPreset = false;
-            this.isInitializing = true; // Флаг инициализации
+            this.isInitializing = true;
             
             this.setupChangeTracking();
             this.initPresets();
@@ -117,18 +111,14 @@ class VoidTypeface {
             this.initResize();
             this.initMIDI();
             
-            // Очистить кэш случайных значений перед первой отрисовкой
-            // чтобы использовать правильные значения из settings
             if (this.renderer && this.renderer.clearModuleTypeCache) {
                 this.renderer.clearModuleTypeCache();
             }
             
-            // Первая отрисовка (с правильным вычислением параметров)
             this.updateRenderer();
             
-            // Завершить инициализацию и обновить кнопки
             this.isInitializing = false;
-            this.hasUnsavedChanges = false; // Убедиться, что после инициализации нет изменений
+            this.hasUnsavedChanges = false;
             if (this.currentPresetName === 'Default') {
                 this.updateSaveDeleteButtons();
             }
@@ -136,36 +126,31 @@ class VoidTypeface {
     }
 
     /**
-     * Проверка на мобильное устройство
-     * Возвращает true если ширина экрана < 768px И это touch-устройство
-     * Или если это мобильный телефон (не планшет) по User Agent
+     * Check if device is mobile
+     * Returns true if screen width < 768px AND it's a touch device
+     * OR if it's a mobile phone (not tablet) by User Agent
      */
     checkIsMobile() {
         const width = window.innerWidth;
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
         const userAgent = navigator.userAgent.toLowerCase();
         
-        // Проверка на планшеты (iPad, Android планшеты)
         const isTablet = /ipad|android(?!.*mobile)|tablet/i.test(userAgent);
         
-        // Мобильное устройство = маленький экран И touch-устройство И НЕ планшет
-        // Или явно мобильный телефон по User Agent
         const isMobilePhone = /mobile|iphone|ipod|android.*mobile|blackberry|windows phone/i.test(userAgent);
         
         return (width < 768 && isTouchDevice && !isTablet) || (isMobilePhone && width < 1024);
     }
 
     /**
-     * Инициализация мобильного вида
+     * Initialize mobile view
      */
     initMobileView() {
-        // Скрыть все панели управления
         const panels = document.querySelectorAll('.controls-panel');
         panels.forEach(panel => {
             panel.style.display = 'none';
         });
         
-        // Скрыть дропдаун пресетов и кнопки Save/Delete
         const presetDropdown = document.getElementById('presetDropdown');
         const saveBtn = document.getElementById('savePresetBtn');
         const deleteBtn = document.getElementById('deletePresetBtn');
@@ -173,37 +158,30 @@ class VoidTypeface {
         if (saveBtn) saveBtn.style.display = 'none';
         if (deleteBtn) deleteBtn.style.display = 'none';
         
-        // Скрыть кнопки экспорта
         const exportBtn = document.getElementById('exportBtn');
         const copyBtn = document.getElementById('copyBtn');
         if (exportBtn) exportBtn.style.display = 'none';
         if (copyBtn) copyBtn.style.display = 'none';
         
-        // Показать кнопку Update
         const renewBtn = document.getElementById('renewBtn');
         if (renewBtn) {
             renewBtn.style.display = 'inline-flex';
             renewBtn.addEventListener('click', () => {
-                // Очистить кэш случайных значений
                 this.renderer.clearModuleTypeCache();
-                // Очистить кэш альтернативных глифов (чтобы сгенерировать новые случайные альтернативы)
                 if (this.renderer.clearAlternativeGlyphCache) {
                     this.renderer.clearAlternativeGlyphCache();
                 }
-                // Перерисовать графику с новыми случайными значениями
                 this.calculateMobileModuleSize();
             });
         }
         
-        // Установить режим Random и текст
         this.settings.set('mode', 'random');
         this.settings.set('text', 'DESK\nTOP\nONLY');
         
-        // Обработчик touch-событий для переключения альтернативных глифов
         const canvas = document.getElementById('mainCanvas');
         if (canvas) {
             canvas.addEventListener('touchend', (e) => {
-                e.preventDefault(); // Предотвратить стандартное поведение (например, скролл)
+                e.preventDefault();
                 
                 const rect = canvas.getBoundingClientRect();
                 const touch = e.changedTouches[0];
@@ -212,7 +190,6 @@ class VoidTypeface {
                 
                 const position = this.renderer.getLetterPositionAt(touchX, touchY);
                 if (position) {
-                    // Проверяем, есть ли альтернативы для этого символа
                     const char = position.char.toUpperCase();
                     const hasAlternatives = VOID_ALPHABET_ALTERNATIVES && VOID_ALPHABET_ALTERNATIVES[char] && VOID_ALPHABET_ALTERNATIVES[char].length > 0;
                     
@@ -227,21 +204,15 @@ class VoidTypeface {
             });
         }
         
-        // Вычислить оптимальный размер модуля, чтобы текст влезал в окно
-        // (updateRenderer будет вызван внутри calculateMobileModuleSize)
         this.calculateMobileModuleSize();
         
-        // Обработка изменения размера окна (на случай поворота экрана)
         window.addEventListener('resize', () => {
             const wasMobile = this.isMobile;
             this.isMobile = this.checkIsMobile();
             
-            // Если перешли с мобильного на десктоп, перезагрузить страницу
             if (wasMobile && !this.isMobile) {
                 window.location.reload();
             } else if (this.isMobile) {
-                // Пересчитать размер модуля при изменении размера окна
-                // (updateRenderer будет вызван внутри calculateMobileModuleSize)
                 this.calculateMobileModuleSize();
             }
         });
@@ -252,88 +223,67 @@ class VoidTypeface {
      * чтобы текст "DESK\nTOP\nONLY" влезал в окно без обрезки
      */
     calculateMobileModuleSize() {
-        // Дождаться следующего кадра, чтобы canvas успел получить размеры
         requestAnimationFrame(() => {
             const canvasContainer = document.getElementById('canvasContainer');
             const canvas = document.getElementById('mainCanvas');
             
-            // Получить размеры контейнера или окна
             const containerRect = canvasContainer ? canvasContainer.getBoundingClientRect() : null;
             const availableWidth = containerRect ? containerRect.width : window.innerWidth;
             const availableHeight = containerRect ? containerRect.height : window.innerHeight;
             
-            // Текст состоит из 3 строк: "DESK", "TOP", "ONLY"
-            // Самая длинная строка - "DESK" и "ONLY" (4 символа)
             const maxLineLength = 4;
             const numLines = 3;
             
-            // Размеры одного символа: 5 модулей в ширину
             const cols = 5;
             const rows = 5;
             
-            // Используем текущие значения multipliers из settings
             const letterSpacingMultiplier = this.settings.get('letterSpacingMultiplier') || 1;
             const lineHeightMultiplier = this.settings.get('lineHeightMultiplier') || 2;
             
-            // Учитываем padding (10% с каждой стороны для безопасности)
             const padding = 0.1;
             const maxWidth = availableWidth * (1 - 2 * padding);
             const maxHeight = availableHeight * (1 - 2 * padding);
             
-            // Расчет по ширине:
-            // Ширина строки = maxLineLength * cols * moduleSize + (maxLineLength - 1) * letterSpacingMultiplier * moduleSize
-            // = moduleSize * (maxLineLength * cols + (maxLineLength - 1) * letterSpacingMultiplier)
             const moduleSizeByWidth = maxWidth / (maxLineLength * cols + (maxLineLength - 1) * letterSpacingMultiplier);
-            
-            // Расчет по высоте:
-            // Высота текста = numLines * rows * moduleSize + (numLines - 1) * lineHeightMultiplier * moduleSize
-            // = moduleSize * (numLines * rows + (numLines - 1) * lineHeightMultiplier)
             const moduleSizeByHeight = maxHeight / (numLines * rows + (numLines - 1) * lineHeightMultiplier);
             
-            // Выбрать минимальный размер, чтобы влезло и по ширине, и по высоте
             const optimalModuleSize = Math.floor(Math.min(moduleSizeByWidth, moduleSizeByHeight));
-            
-            // Установить размер модуля (но не меньше 8px и не больше 128px)
             const finalModuleSize = Math.max(8, Math.min(128, optimalModuleSize));
             this.settings.set('moduleSize', finalModuleSize);
             
-            // Обновить renderer после установки размера модуля
             this.updateRenderer();
         });
     }
 
     /**
-     * Инициализация canvas и renderer
+     * Initialize canvas and renderer
      */
     initCanvas() {
         const canvas = document.getElementById('mainCanvas');
         this.renderer = new VoidRenderer(canvas);
-        
-        // Установить начальные параметры
         this.renderer.updateParams(this.settings.values);
     }
 
     /**
-     * Инициализация экспортера
+     * Initialize exporter
      */
     initExporter() {
         this.exporter = new VoidExporter(this.renderer, this.settings);
     }
 
     /**
-     * Инициализация preset manager
+     * Initialize preset manager
      */
     initPresetManager() {
         this.presetManager = new PresetManager();
     }
 
     /**
-     * Инициализация панелей управления
+     * Initialize control panels
      */
     initPanels() {
         this.panelManager = new PanelManager();
         
-        // Регистрация панелей
         this.panelManager.registerPanel('controlsPanel', {
             headerId: 'controlsPanelHeader',
             draggable: true,
@@ -363,12 +313,11 @@ class VoidTypeface {
     }
 
     /**
-     * Инициализация слайдеров
+     * Initialize sliders
      */
     initSliders() {
         this.sliderController = new SliderController(this.settings);
 
-        // Module (в пикселях)
         this.sliderController.initSlider('moduleSizeSlider', {
             valueId: 'moduleSizeValue',
             setting: 'moduleSize',
@@ -383,7 +332,6 @@ class VoidTypeface {
             }
         });
 
-        // Stem Weight (относительно размера модуля)
         this.sliderController.initSlider('stemSlider', {
             valueId: 'stemValue',
             setting: 'stemMultiplier',
@@ -414,7 +362,6 @@ class VoidTypeface {
             step: 1
         });
 
-        // Strokes Number (для Stripes mode)
         this.sliderController.initSlider('strokesSlider', {
             valueId: 'strokesValue',
             setting: 'strokesNum',
@@ -429,7 +376,6 @@ class VoidTypeface {
             }
         });
 
-        // Contrast (для Stripes mode)
         this.sliderController.initSlider('strokeGapRatioSlider', {
             valueId: 'strokeGapRatioValue',
             setting: 'strokeGapRatio',
@@ -444,7 +390,6 @@ class VoidTypeface {
             }
         });
 
-        // Dash Length (для Dash mode)
         this.sliderController.initSlider('dashLengthSlider', {
             valueId: 'dashLengthValue',
             setting: 'dashLength',
@@ -459,7 +404,6 @@ class VoidTypeface {
             }
         });
 
-        // Gap Length (для Dash mode)
         this.sliderController.initSlider('gapLengthSlider', {
             valueId: 'gapLengthValue',
             setting: 'gapLength',
@@ -484,10 +428,7 @@ class VoidTypeface {
         
         const { setting, min, max, step } = config;
         
-        // Установить начальное значение
         input.value = this.settings.get(setting);
-        
-        // Обработчик изменения
         const handleChange = () => {
             let value = parseInt(input.value, 10);
             if (isNaN(value)) value = min;
@@ -501,13 +442,12 @@ class VoidTypeface {
         input.addEventListener('change', handleChange);
         input.addEventListener('input', handleChange);
         
-        // Сохраняем ссылку для обновления из пресетов
         if (!this.compactInputs) this.compactInputs = {};
         this.compactInputs[inputId] = { input, setting, min, max };
     }
 
     /**
-     * Инициализация range-слайдеров (для Random mode)
+     * Initialize range sliders (for Random mode)
      */
     initRangeSliders() {
         this.rangeSliderController = new RangeSliderController(this.settings);
@@ -531,7 +471,7 @@ class VoidTypeface {
             }
         });
 
-        // Strokes Range (Lines в режиме Random)
+        // Strokes Range (Lines in Random mode)
         this.rangeSliderController.initRangeSlider('randomStrokesRangeSlider', {
             minSetting: 'randomStrokesMin',
             maxSetting: 'randomStrokesMax',
@@ -607,7 +547,6 @@ class VoidTypeface {
             }
         });
 
-        // Обработчики для текстовых полей Stem Weight
         const stemMinInput = document.getElementById('randomStemMinValue');
         const stemMaxInput = document.getElementById('randomStemMaxValue');
         
@@ -641,7 +580,6 @@ class VoidTypeface {
             });
         }
 
-        // Обработчики для текстовых полей Strokes
         const strokesMinInput = document.getElementById('randomStrokesMinValue');
         const strokesMaxInput = document.getElementById('randomStrokesMaxValue');
         
@@ -675,7 +613,6 @@ class VoidTypeface {
             });
         }
 
-        // Обработчики для текстовых полей Contrast
         const contrastMinInput = document.getElementById('randomContrastMinValue');
         const contrastMaxInput = document.getElementById('randomContrastMaxValue');
         
@@ -720,15 +657,13 @@ class VoidTypeface {
         if (preview) {
             preview.style.backgroundColor = color;
             
-            // Определяем цвет текста в зависимости от яркости фона
+            // Determine text color based on background brightness
             const label = preview.querySelector('.color-label-inside');
             if (label) {
                 const luminance = ColorUtils.getLuminance(color);
                 label.style.color = luminance > 0.5 ? '#000000' : '#ffffff';
                 
-                // Сохраняем оригинальный текст в data-атрибуте, если еще не сохранен
                 if (!label.dataset.originalText) {
-                    // Убираем символ ● если он есть при сохранении оригинального текста
                     const text = label.textContent.trim();
                     label.dataset.originalText = text.startsWith('●') ? text.substring(1).trim() : text;
                 }
@@ -747,7 +682,6 @@ class VoidTypeface {
             'grid': document.getElementById('gridColorPreview')
         };
         
-        // Обрабатываем все цвета
         Object.keys(previewMap).forEach(colorType => {
             const preview = previewMap[colorType];
             if (!preview) return;
@@ -755,7 +689,6 @@ class VoidTypeface {
             const label = preview.querySelector('.color-label-inside');
             if (!label) return;
             
-            // Сохраняем оригинальный текст, если еще не сохранен
             if (!label.dataset.originalText) {
                 const text = label.textContent.trim();
                 label.dataset.originalText = text.startsWith('●') ? text.substring(1).trim() : text;
@@ -765,12 +698,10 @@ class VoidTypeface {
             const isActive = colorType === this.activeColorType;
             
             if (show && isActive) {
-                // Добавляем символ ● только к активному цвету, если его еще нет
                 if (!label.textContent.trim().startsWith('●')) {
                     label.textContent = '● ' + originalText;
                 }
             } else {
-                // Убираем символ ● у всех цветов
                 const currentText = label.textContent.trim();
                 if (currentText.startsWith('●')) {
                     label.textContent = originalText;
@@ -780,25 +711,20 @@ class VoidTypeface {
     }
 
     initColorPickers() {
-        // Инициализация превью кнопок
         const letterPreview = document.getElementById('letterColorPreview');
         const bgPreview = document.getElementById('bgColorPreview');
         const gridPreview = document.getElementById('gridColorPreview');
         
-        // Обновление цвета превью с автоматическим выбором цвета текста
         const updatePreview = (preview, color) => this.updateColorPreview(preview, color);
         
-        // Инициализация превью с текущими цветами
         updatePreview(letterPreview, this.settings.get('letterColor'));
         updatePreview(bgPreview, this.settings.get('bgColor'));
         updatePreview(gridPreview, this.settings.get('gridColor'));
         
-        // Единый цветовой пикер
         this.unifiedColorPicker = new ColorPicker({
             containerId: 'unifiedColorPickerContainer',
             initialColor: this.settings.get('letterColor'),
             onChange: (color) => {
-                // Обновляем активный цвет
                 const settingMap = {
                     'letter': 'letterColor',
                     'bg': 'bgColor',
@@ -822,7 +748,6 @@ class VoidTypeface {
         });
         this.unifiedColorPicker.init();
         
-        // Обработчики клика на превью
         const switchColor = (colorType, openPicker = true) => {
             const previewMap = {
                 'letter': letterPreview,
@@ -831,23 +756,19 @@ class VoidTypeface {
             };
             const activePreview = previewMap[colorType];
             
-            // Если кликнули на уже активный цвет - закрываем пикер и убираем символ ●
             const pickerElement = this.unifiedColorPicker.elements?.picker;
             const isCurrentlyActive = this.activeColorType === colorType && 
                 pickerElement && pickerElement.style.display !== 'none';
             if (isCurrentlyActive && openPicker) {
                 this.unifiedColorPicker.toggle();
-                // Убираем символ ● при закрытии пикера
                 this.updateColorIndicator(false);
                 return;
             }
             
-            // Убираем символ ● у всех цветов перед переключением
             this.updateColorIndicator(false);
             
             this.activeColorType = colorType;
             
-            // Загружаем цвет в пикер
             const colorMap = {
                 'letter': this.settings.get('letterColor'),
                 'bg': this.settings.get('bgColor'),
@@ -855,19 +776,15 @@ class VoidTypeface {
             };
             this.unifiedColorPicker.setColor(colorMap[colorType]);
             
-            // Открываем пикер только если нужно и он еще не открыт
             if (openPicker) {
                 const pickerElement = this.unifiedColorPicker.elements?.picker;
                 if (pickerElement && pickerElement.style.display === 'none') {
                     this.unifiedColorPicker.toggle();
-                    // После открытия пикера добавляем символ ● только к новому активному цвету
                     this.updateColorIndicator(true);
                 } else if (pickerElement && pickerElement.style.display !== 'none') {
-                    // Пикер уже открыт - добавляем символ ● только к новому активному цвету
                     this.updateColorIndicator(true);
                 }
             }
-            // Если openPicker = false, символ ● уже убран выше
         };
         
         if (letterPreview) {
@@ -880,7 +797,6 @@ class VoidTypeface {
             gridPreview.addEventListener('click', () => switchColor('grid'));
         }
         
-        // Устанавливаем начальное активное состояние (цвет букв по умолчанию) без открытия пикера и без индикатора
         this.activeColorType = 'letter';
         const colorMap = {
             'letter': this.settings.get('letterColor'),
@@ -888,7 +804,6 @@ class VoidTypeface {
             'grid': this.settings.get('gridColor')
         };
         this.unifiedColorPicker.setColor(colorMap['letter']);
-        // Убеждаемся, что индикатор не отображается
         this.updateColorIndicator(false);
     }
 
@@ -899,7 +814,6 @@ class VoidTypeface {
         const textarea = document.getElementById('textInput');
         
         const debouncedUpdate = MathUtils.debounce(() => {
-            // Убрать пробелы перед переносами строк
             let text = textarea.value;
             text = text.replace(/ +\n/g, '\n').replace(/\n +/g, '\n');
             
@@ -944,13 +858,10 @@ class VoidTypeface {
         const alternativeGlyphsCheckbox = document.getElementById('alternativeGlyphsCheckbox');
         if (!alternativeGlyphsCheckbox) return;
         
-        // Установить начальное значение
         alternativeGlyphsCheckbox.checked = this.settings.get('useAlternativesInRandom') ?? true;
         
-        // Обработчик изменения
         alternativeGlyphsCheckbox.addEventListener('change', () => {
             this.settings.set('useAlternativesInRandom', alternativeGlyphsCheckbox.checked);
-            // Очистить кэш альтернативных глифов при выключении Alt Glyphs
             if (!alternativeGlyphsCheckbox.checked && this.renderer.clearAlternativeGlyphCache) {
                 this.renderer.clearAlternativeGlyphCache();
             }
@@ -958,12 +869,10 @@ class VoidTypeface {
             this.markAsChanged();
         });
         
-        // Обработчик клика на канвасе для переключения альтернатив
         const canvas = document.getElementById('mainCanvas');
         if (canvas && !canvas.hasAttribute('data-alternatives-initialized')) {
             canvas.setAttribute('data-alternatives-initialized', 'true');
             
-            // Обработчик движения мыши для изменения курсора и эффекта прозрачности
             let lastHoveredPosition = null;
             let rafPending = false;
             
@@ -981,32 +890,26 @@ class VoidTypeface {
             };
             
             canvas.addEventListener('mousemove', (e) => {
-                // Не обрабатывать события в режиме редактора
                 const currentMode = this.settings.get('currentMode') || 'normal';
                 if (currentMode === 'editor') return;
                 
                 const rect = canvas.getBoundingClientRect();
-                // Используем CSS размеры, а не физические размеры canvas
                 const mouseX = e.clientX - rect.left;
                 const mouseY = e.clientY - rect.top;
                 
                 const position = this.renderer.getLetterPositionAt(mouseX, mouseY);
                 
-                // Обновляем курсор
                 if (position) {
-                    // Проверяем, есть ли альтернативы для этого символа
                     const char = position.char.toUpperCase();
                     const hasAlternatives = VOID_ALPHABET_ALTERNATIVES && VOID_ALPHABET_ALTERNATIVES[char] && VOID_ALPHABET_ALTERNATIVES[char].length > 0;
                     canvas.style.cursor = hasAlternatives ? 'pointer' : 'default';
                     
-                    // Устанавливаем hoveredLetter для эффекта прозрачности
                     const positionChanged = !this.renderer.hoveredLetter || 
                         this.renderer.hoveredLetter.lineIndex !== position.lineIndex ||
                         this.renderer.hoveredLetter.charIndex !== position.charIndex;
                     
                     if (positionChanged) {
                         this.renderer.setHoveredLetter(position);
-                        // Перерисовываем только если позиция изменилась и есть альтернативы
                         if (hasAlternatives && !rafPending) {
                             rafPending = true;
                             requestAnimationFrame(updateHover);
@@ -1014,7 +917,6 @@ class VoidTypeface {
                     }
                 } else {
                     canvas.style.cursor = 'default';
-                    // Убираем hoveredLetter только если он был установлен
                     if (this.renderer.hoveredLetter) {
                         this.renderer.setHoveredLetter(null);
                         if (!rafPending) {
@@ -1025,9 +927,7 @@ class VoidTypeface {
                 }
             });
             
-            // Обработчик ухода мыши с канваса
             canvas.addEventListener('mouseleave', () => {
-                // Не обрабатывать события в режиме редактора
                 const currentMode = this.settings.get('currentMode') || 'normal';
                 if (currentMode === 'editor') return;
                 
@@ -1041,12 +941,10 @@ class VoidTypeface {
             });
             
             canvas.addEventListener('click', (e) => {
-                // Не обрабатывать события в режиме редактора
                 const currentMode = this.settings.get('currentMode') || 'normal';
                 if (currentMode === 'editor') return;
                 
                 const rect = canvas.getBoundingClientRect();
-                // Используем CSS размеры, а не физические размеры canvas
                 const clickX = e.clientX - rect.left;
                 const clickY = e.clientY - rect.top;
                 
@@ -1063,27 +961,26 @@ class VoidTypeface {
     }
 
     /**
-     * Обновить видимость элементов управления альтернативными глифами
+     * Update alternative glyphs controls visibility
      */
     updateAlternativeGlyphsVisibility() {
-        // Альтернативные глифы теперь объединены с randomControlGroup, поэтому эта функция больше не нужна
-        // Оставляем пустой для совместимости
+        // Alternative glyphs are now merged with randomControlGroup, this function is no longer needed
+        // Kept empty for compatibility
         return;
         alternativeGlyphsGroup.style.display = shouldShow ? 'block' : 'none';
     }
 
     /**
-     * Инициализация тогла Rounded
-     * Round и Close Ends работают независимо друг от друга
+     * Initialize Rounded toggle
+     * Round and Close Ends work independently
      */
     initRoundedCapsToggle() {
         const roundedCapsCheckbox = document.getElementById('roundedCapsCheckbox');
         if (!roundedCapsCheckbox) return;
         
-        // Установить начальное значение
         roundedCapsCheckbox.checked = this.settings.get('roundedCaps') || false;
         
-        // Обработчик изменения — просто меняем Rounded Caps, не трогая Close Ends
+ — просто меняем Rounded Caps, не трогая Close Ends
         roundedCapsCheckbox.addEventListener('change', () => {
                 this.settings.set('roundedCaps', roundedCapsCheckbox.checked);
             this.updateRenderer();
@@ -1092,17 +989,16 @@ class VoidTypeface {
     }
 
     /**
-     * Инициализация тогла Close Ends
-     * Round и Close Ends работают независимо друг от друга
+     * Initialize Close Ends toggle
+     * Round and Close Ends work independently
      */
     initCloseEndsToggle() {
         const closeEndsCheckbox = document.getElementById('closeEndsCheckbox');
         if (!closeEndsCheckbox) return;
         
-        // Установить начальное значение
         closeEndsCheckbox.checked = this.settings.get('closeEnds') || false;
         
-        // Обработчик изменения — просто меняем Close Ends, не трогая Round
+ — просто меняем Close Ends, не трогая Round
         closeEndsCheckbox.addEventListener('change', () => {
             this.settings.set('closeEnds', closeEndsCheckbox.checked);
             this.updateRenderer();
@@ -1111,7 +1007,7 @@ class VoidTypeface {
     }
 
     /**
-     * Инициализация тогла Dash Chess
+     * Initialize Dash Chess toggle
      */
     initDashChessToggle() {
         const dashChessCheckboxPD = document.getElementById('dashChessCheckboxPD');
@@ -1122,30 +1018,27 @@ class VoidTypeface {
             return;
         }
         
-        // Функция для синхронизации состояния обоих checkbox
         const syncCheckboxes = (sourceCheckbox, targetCheckbox) => {
             targetCheckbox.checked = sourceCheckbox.checked;
         };
         
-        // Функция для обновления настроек и рендерера
         const updateDashChess = (checked) => {
             this.settings.set('dashChess', checked);
             this.updateRenderer();
             this.markAsChanged();
         };
         
-        // Установить начальное значение
         const initialValue = this.settings.get('dashChess') || false;
         dashChessCheckboxPD.checked = initialValue;
         dashChessCheckboxRandom.checked = initialValue;
         
-        // Обработчик изменения для PD checkbox
+ для PD checkbox
         dashChessCheckboxPD.addEventListener('change', (e) => {
             syncCheckboxes(e.target, dashChessCheckboxRandom);
             updateDashChess(e.target.checked);
         });
         
-        // Обработчик изменения для Random checkbox
+ для Random checkbox
         dashChessCheckboxRandom.addEventListener('change', (e) => {
             syncCheckboxes(e.target, dashChessCheckboxPD);
             updateDashChess(e.target.checked);
@@ -1153,7 +1046,7 @@ class VoidTypeface {
     }
 
     /**
-     * Обновить видимость Rounded (для стилей Solid, Stripes и Dash)
+     * Update Rounded visibility (for Solid, Stripes and Dash styles)
      */
     updateRoundedCapsVisibility() {
         const roundedCapsGroup = document.getElementById('roundedCapsControlGroup');
@@ -1161,11 +1054,9 @@ class VoidTypeface {
         
         const mode = this.settings.get('mode') || 'fill';
         
-        // Round (roundedCapsControlGroup) показываем для fill, stripes, dash, sd, random
         const shouldShow = mode === 'fill' || mode === 'stripes' || mode === 'dash' || mode === 'sd' || mode === 'random';
         roundedCapsGroup.style.display = shouldShow ? 'flex' : 'none';
         
-        // Round показываем для fill, stripes, dash, sd (НЕ для random)
         const roundedCapsLabel = document.getElementById('roundedCapsLabel');
         if (roundedCapsLabel) {
             if (mode === 'random') {
@@ -1175,8 +1066,6 @@ class VoidTypeface {
             }
         }
         
-        // Close Ends показываем в режимах Stripes и SD (НЕ для random)
-        // Используем класс hidden т.к. CSS имеет display: flex !important для .checkbox-label
         const closeEndsLabel = document.getElementById('closeEndsLabel');
         if (closeEndsLabel) {
             if (mode === 'stripes' || mode === 'sd') {
@@ -1186,7 +1075,6 @@ class VoidTypeface {
             }
         }
         
-        // Chess для PD (sd) - показываем в roundedCapsControlGroup
         const dashChessLabel = document.getElementById('dashChessLabel');
         if (dashChessLabel) {
             if (mode === 'sd') {
@@ -1196,7 +1084,6 @@ class VoidTypeface {
             }
         }
         
-        // Chess для Random - показываем в randomControlGroup
         const dashChessLabelRandom = document.getElementById('dashChessLabelRandom');
         if (dashChessLabelRandom) {
             if (mode === 'random') {
@@ -1216,7 +1103,6 @@ class VoidTypeface {
         
         const mode = this.settings.get('mode') || 'fill';
         
-        // Показывать только в режиме Random
         if (mode === 'random') {
             randomRoundedLabel.classList.remove('hidden');
         } else {
@@ -1257,12 +1143,10 @@ class VoidTypeface {
         if (gapLengthValue) gapLengthValue.value = '1.50';
         if (gapLengthSlider) gapLengthSlider.value = '1.5';
         
-        // Round: включен
         this.settings.set('roundedCaps', true);
         const roundedCapsCheckbox = document.getElementById('roundedCapsCheckbox');
         if (roundedCapsCheckbox) roundedCapsCheckbox.checked = true;
         
-        // Close Ends: выключен
         this.settings.set('closeEnds', false);
         const closeEndsCheckbox = document.getElementById('closeEndsCheckbox');
         if (closeEndsCheckbox) closeEndsCheckbox.checked = false;
@@ -1283,13 +1167,10 @@ class VoidTypeface {
         const gapLengthControlGroup = document.getElementById('gapLengthControlGroup');
         const closeEndsControlGroup = document.getElementById('closeEndsControlGroup');
 
-        // Функция для установки активной кнопки
         const setActiveButton = (activeButton) => {
-            // Убрать класс active у всех кнопок
             [fillButton, stripesButton, dashButton, sdButton, randomButton].forEach(btn => {
                 if (btn) btn.classList.remove('active');
             });
-            // Добавить класс active выбранной кнопке
             if (activeButton) activeButton.classList.add('active');
         };
 
@@ -1303,17 +1184,12 @@ class VoidTypeface {
             
             this.settings.set('mode', mode);
             
-            // Очистить кэш при переключении режима
             if (this.renderer.clearModuleTypeCache) {
                 this.renderer.clearModuleTypeCache();
             }
-            // Очистить кэш альтернативных глифов при переключении режима
             if (this.renderer.clearAlternativeGlyphCache) {
                 this.renderer.clearAlternativeGlyphCache();
             }
-            
-            // Показать/скрыть контролы в зависимости от режима
-            // SD показывает все контролы (Lines, Contrast, Dash Length, Gap Length)
             const showStripes = mode === 'stripes' || mode === 'sd';
             const showDash = mode === 'dash' || mode === 'sd';
             
@@ -1322,7 +1198,6 @@ class VoidTypeface {
             dashLengthControlGroup.style.display = showDash ? 'block' : 'none';
             gapLengthControlGroup.style.display = showDash ? 'block' : 'none';
             
-            // Обновить видимость Round, Close Ends и Chess
             this.updateRoundedCapsVisibility();
             
             const randomGroups = [
@@ -1337,14 +1212,12 @@ class VoidTypeface {
             ];
             randomGroups.forEach(group => {
                 if (group) {
-                    // toggle-group-row элементы используют flex
                     const isToggleRow = group.id === 'randomControlGroup' || group.id === 'randomControlGroup4';
                     const displayValue = isToggleRow ? 'flex' : 'block';
                     group.style.display = mode === 'random' ? displayValue : 'none';
                 }
             });
             
-            // Инициализация toggle для режима рандома
             const randomFullRandomCheckbox = document.getElementById('randomFullRandomCheckbox');
             if (randomFullRandomCheckbox && mode === 'random') {
                 randomFullRandomCheckbox.checked = this.settings.get('randomModeType') === 'full';
@@ -1365,10 +1238,7 @@ class VoidTypeface {
                 randomDashCheckbox.checked = this.settings.get('randomDash') ?? false;
             }
 
-            // Обновить состояние слайдеров Dash Length и Gap Length
             this.updateRandomDashSlidersState();
-            
-            // Отключить/включить Stem Weight в панели Metrics при режиме Random
             const stemSlider = document.getElementById('stemSlider');
             const stemValue = document.getElementById('stemValue');
             if (stemSlider && stemValue) {
@@ -1377,15 +1247,8 @@ class VoidTypeface {
                 stemValue.disabled = isDisabled;
             }
             
-            // Обновить видимость Rounded
             this.updateRoundedCapsVisibility();
-            
-            // Обновить видимость Rounded в режиме Random (должно быть после показа randomGroups)
             this.updateRandomRoundedVisibility();
-            
-            // Обновить видимость Dash
-            
-            // Обновить видимость альтернативных глифов
             this.updateAlternativeGlyphsVisibility();
             
             this.updateRenderer();
@@ -1409,7 +1272,6 @@ class VoidTypeface {
         if (sdButton) {
             sdButton.addEventListener('click', () => {
                 setActiveButton(sdButton);
-                // Установить дефолтные значения для режима SD
                 this.applySDDefaults();
                 updateMode();
                 this.markAsChanged();
@@ -1421,16 +1283,13 @@ class VoidTypeface {
             this.markAsChanged();
         });
 
-        // Кнопка Update для random mode
         const renewBtn = document.getElementById('renewRandomBtn');
         if (renewBtn) {
             renewBtn.addEventListener('click', () => {
                 if (this.settings.get('mode') === 'random') {
-                    // Очистить кэш значений по типу модуля
                     if (this.renderer.clearModuleTypeCache) {
                         this.renderer.clearModuleTypeCache();
                     }
-                    // Очистить кэш альтернативных глифов (чтобы сгенерировать новые случайные альтернативы)
                     if (this.renderer.clearAlternativeGlyphCache) {
                         this.renderer.clearAlternativeGlyphCache();
                     }
@@ -1440,13 +1299,11 @@ class VoidTypeface {
             });
         }
 
-        // Toggle для режима рандома (Full Random)
         const randomFullRandomCheckbox = document.getElementById('randomFullRandomCheckbox');
         if (randomFullRandomCheckbox) {
             randomFullRandomCheckbox.addEventListener('change', () => {
                 const isFullRandom = randomFullRandomCheckbox.checked;
                 this.settings.set('randomModeType', isFullRandom ? 'full' : 'byType');
-                // Очистить кэш при переключении режима
                 if (this.renderer.clearModuleTypeCache) {
                     this.renderer.clearModuleTypeCache();
                 }
@@ -1455,12 +1312,10 @@ class VoidTypeface {
             });
         }
 
-        // Toggle для режима рандома (Rounded)
         const randomRoundedCheckbox = document.getElementById('randomRoundedCheckbox');
         if (randomRoundedCheckbox) {
             randomRoundedCheckbox.addEventListener('change', () => {
                 this.settings.set('randomRounded', randomRoundedCheckbox.checked);
-                // Очистить кэш при переключении режима
                 if (this.renderer.clearModuleTypeCache) {
                     this.renderer.clearModuleTypeCache();
                 }
@@ -1469,12 +1324,10 @@ class VoidTypeface {
             });
         }
 
-        // Toggle для режима рандома (Close Ends)
         const randomCloseEndsCheckbox = document.getElementById('randomCloseEndsCheckbox');
         if (randomCloseEndsCheckbox) {
             randomCloseEndsCheckbox.addEventListener('change', () => {
                 this.settings.set('randomCloseEnds', randomCloseEndsCheckbox.checked);
-                // Очистить кэш при переключении режима
                 if (this.renderer.clearModuleTypeCache) {
                     this.renderer.clearModuleTypeCache();
                 }
@@ -1483,14 +1336,11 @@ class VoidTypeface {
             });
         }
 
-        // Toggle для режима рандома (Dash)
         const randomDashCheckbox = document.getElementById('randomDashCheckbox');
         if (randomDashCheckbox) {
             randomDashCheckbox.addEventListener('change', () => {
                 this.settings.set('randomDash', randomDashCheckbox.checked);
-                // Обновить состояние слайдеров
                 this.updateRandomDashSlidersState();
-                // Очистить кэш при переключении режима
                 if (this.renderer.clearModuleTypeCache) {
                     this.renderer.clearModuleTypeCache();
                 }
@@ -1501,7 +1351,7 @@ class VoidTypeface {
     }
 
     /**
-     * Обновить состояние слайдеров Dash Length и Gap Length в режиме Random
+     * Update Dash Length and Gap Length sliders state in Random mode
      */
     updateRandomDashSlidersState() {
         const randomDashEnabled = this.settings.get('randomDash') ?? false;
@@ -1518,7 +1368,6 @@ class VoidTypeface {
         if (gapLengthMinInput) gapLengthMinInput.disabled = isDisabled;
         if (gapLengthMaxInput) gapLengthMaxInput.disabled = isDisabled;
 
-        // Отключить range sliders и их контейнеры
         const dashLengthGroup = document.getElementById('randomControlGroupDashLength');
         const gapLengthGroup = document.getElementById('randomControlGroupGapLength');
         
@@ -1526,7 +1375,6 @@ class VoidTypeface {
             dashLengthGroup.style.opacity = isDisabled ? '0.5' : '1';
             dashLengthGroup.style.pointerEvents = isDisabled ? 'none' : 'auto';
             
-            // Отключить label визуально
             const dashLabel = dashLengthGroup.querySelector('label span:first-child');
             if (dashLabel) dashLabel.style.opacity = isDisabled ? '0.5' : '1';
             
@@ -1550,7 +1398,6 @@ class VoidTypeface {
             gapLengthGroup.style.opacity = isDisabled ? '0.5' : '1';
             gapLengthGroup.style.pointerEvents = isDisabled ? 'none' : 'auto';
             
-            // Отключить label визуально
             const gapLabel = gapLengthGroup.querySelector('label span:first-child');
             if (gapLabel) gapLabel.style.opacity = isDisabled ? '0.5' : '1';
             
@@ -1610,20 +1457,15 @@ class VoidTypeface {
         const savePresetBtn = document.getElementById('savePresetBtn');
         const deletePresetBtn = document.getElementById('deletePresetBtn');
 
-        // Создать или обновить дефолтный пресет
         const defaultPreset = this.presetManager.loadPreset('Default');
         if (!defaultPreset) {
-            // Создать новый дефолтный пресет
             this.presetManager.savePreset('Default', this.settings.values);
         } else {
-            // Обновить существующий пресет Default, если текст устарел
             if (defaultPreset.text === 'Void\nTypeface\ncoded') {
                 defaultPreset.text = 'Void\nTypeface\nCode';
                 this.presetManager.presets['Default'] = defaultPreset;
                 this.presetManager.savePresets();
             }
-            
-            // Обновить значения random параметров в пресете, если они не соответствуют новым дефолтным
             const needsUpdate = 
                 defaultPreset.randomStemMin !== 0.5 ||
                 defaultPreset.randomStemMax !== 1.0 ||
@@ -1641,7 +1483,6 @@ class VoidTypeface {
                 defaultPreset.useAlternativesInRandom !== true;
             
             if (needsUpdate) {
-                // Обновить значения в пресете
                 defaultPreset.randomStemMin = 0.5;
                 defaultPreset.randomStemMax = 1.0;
                 defaultPreset.randomStrokesMin = 1;
@@ -1661,15 +1502,10 @@ class VoidTypeface {
             }
         }
 
-        // Обновить список preset'ов
         this.updatePresetList();
-        
-        // Загрузить дефолтный пресет
-        // loadPreset установит currentPresetName и hasUnsavedChanges = false
         this.loadPreset('Default', false);
         presetDropdownText.textContent = 'Default';
 
-        // Открытие/закрытие дропдауна
         presetDropdownToggle.addEventListener('click', (e) => {
             e.stopPropagation();
             const isExpanded = presetDropdownToggle.getAttribute('aria-expanded') === 'true';
@@ -1677,7 +1513,6 @@ class VoidTypeface {
             presetDropdownMenu.classList.toggle('active');
         });
 
-        // Закрытие дропдауна при клике вне его
         document.addEventListener('click', (e) => {
             if (!presetDropdown.contains(e.target)) {
                 presetDropdownToggle.setAttribute('aria-expanded', 'false');
@@ -1685,13 +1520,11 @@ class VoidTypeface {
             }
         });
 
-        // Загрузка preset'а при клике на элемент
         presetDropdownMenu.addEventListener('click', (e) => {
             const item = e.target.closest('.preset-dropdown-item');
             if (item) {
                 const presetName = item.dataset.value;
                 
-                // Обработка удаления всех пресетов
                 if (presetName === '__delete_all__') {
                     if (confirm('Delete all saved presets?')) {
                         const names = this.presetManager.getPresetNames();
@@ -1700,9 +1533,7 @@ class VoidTypeface {
                                 this.presetManager.deletePreset(name);
                             }
                         });
-                        // Перезагрузить пресеты из localStorage, чтобы синхронизировать объект
                         this.presetManager.presets = this.presetManager.loadPresets();
-                        // Переключиться на Default
                         this.loadPreset('Default');
                         presetDropdownText.textContent = 'Default';
                         this.currentPresetName = 'Default';
@@ -1721,19 +1552,14 @@ class VoidTypeface {
                 }
                 
                 if (presetName && presetName !== this.currentPresetName) {
-                    // Проверка на несохраненные изменения
-                    // Показываем попап только если есть изменения И это не Default пресет
                     if (this.hasUnsavedChanges && this.currentPresetName !== 'Default') {
                         const shouldSave = confirm('You have unsaved changes. Save current preset before switching?');
                         if (shouldSave) {
-                            // Перезаписываем текущий пресет
                             this.presetManager.savePreset(this.currentPresetName, this.settings.values);
                             this.updatePresetList();
                         }
-                        // Если Cancel - просто переключаемся без сохранения
                     }
                     this.loadPreset(presetName);
-                    // Отображать сокращенное имя в дропдауне
                     const displayName = presetName === 'Default' ? 'Default' : this.getDisplayName(presetName);
                     presetDropdownText.textContent = displayName;
                     presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
@@ -1747,24 +1573,19 @@ class VoidTypeface {
             }
         });
 
-        // Сохранение preset'а
         savePresetBtn.addEventListener('click', () => {
             this.saveCurrentPreset();
         });
 
-        // Удаление preset'а
         deletePresetBtn.addEventListener('click', () => {
             if (this.currentPresetName === 'Default') {
                 alert('Cannot delete "Default" preset');
                 return;
             }
             
-            // Показать полное название в модальном окне
             if (confirm(`Delete preset "${this.currentPresetName}"?`)) {
                 if (this.presetManager.deletePreset(this.currentPresetName)) {
-                    // Перезагрузить пресеты из localStorage, чтобы синхронизировать объект
                     this.presetManager.presets = this.presetManager.loadPresets();
-                    // Переключиться на Default
                     this.loadPreset('Default');
                     presetDropdownText.textContent = 'Default';
                     this.currentPresetName = 'Default';
@@ -1782,8 +1603,6 @@ class VoidTypeface {
             }
         });
         
-        // Инициализировать видимость кнопок после загрузки Default
-        // Убедиться, что для Default без изменений кнопки скрыты
         if (this.currentPresetName === 'Default') {
             this.hasUnsavedChanges = false;
         }
@@ -1791,19 +1610,18 @@ class VoidTypeface {
     }
 
     /**
-     * Обновить список preset'ов в дропдауне
+     * Update preset list in dropdown
      */
     updatePresetList() {
         const presetDropdownMenu = document.getElementById('presetDropdownMenu');
         const names = this.presetManager.getPresetNames();
-        const hasCustomPresets = names.length > 1; // Больше чем только Default
+        const hasCustomPresets = names.length > 1;
         
         presetDropdownMenu.innerHTML = '';
         names.forEach(name => {
             const item = document.createElement('li');
             item.className = 'preset-dropdown-item';
             item.dataset.value = name;
-            // Отображать сокращенное имя, но хранить полное в dataset
             const displayName = name === 'Default' ? 'Default' : this.getDisplayName(name);
             item.textContent = displayName;
             item.setAttribute('role', 'option');
@@ -1812,8 +1630,6 @@ class VoidTypeface {
             }
             presetDropdownMenu.appendChild(item);
         });
-        
-        // Добавить "× delete all" если есть кастомные пресеты
         if (hasCustomPresets) {
             const deleteAllItem = document.createElement('li');
             deleteAllItem.className = 'preset-dropdown-item preset-dropdown-item-danger';
@@ -1825,59 +1641,43 @@ class VoidTypeface {
     }
 
     /**
-     * Загрузить preset
+     * Load preset
      */
     loadPreset(name, updateUI = true) {
         const preset = this.presetManager.loadPreset(name);
         if (!preset) {
-            alert('Preset не найден');
+            alert('Preset not found');
             return;
         }
 
-        // Установить флаг загрузки, чтобы не триггерить отслеживание изменений
         this.isLoadingPreset = true;
-        
-        // Установить имя пресета ДО применения параметров, чтобы отслеживание знало текущий пресет
         this.currentPresetName = name;
 
-        // Применить все параметры из preset'а
         Object.keys(preset).forEach(key => {
             if (key !== 'createdAt' && this.settings.values.hasOwnProperty(key)) {
                 this.settings.set(key, preset[key]);
             }
         });
         
-        // Сбросить флаг изменений ДО снятия флага isLoadingPreset
         this.hasUnsavedChanges = false;
-        
         this.isLoadingPreset = false;
         
         if (updateUI) {
-            // Очистить кэш случайных значений перед обновлением renderer
-            // чтобы использовать правильные значения из загруженного пресета
             if (this.renderer && this.renderer.clearModuleTypeCache) {
                 this.renderer.clearModuleTypeCache();
             }
-            
-            // Обновить UI
             this.updateUIFromSettings();
-            
-            // Обновить renderer
             this.updateRenderer();
         }
-        
-        // Обновить кнопки после всех изменений
         this.updateSaveDeleteButtons();
     }
 
     /**
-     * Обновить UI элементы из settings
+     * Update UI elements from settings
      */
     updateUIFromSettings() {
-        // Обновить слайдеры (без вызова коллбэков, чтобы избежать лишних обновлений)
         this.sliderController.setValue('stemSlider', this.settings.get('stemMultiplier'), false);
         this.sliderController.setValue('moduleSizeSlider', this.settings.get('moduleSize'), false);
-        // Обновить компактные инпуты
         if (this.compactInputs) {
             if (this.compactInputs['letterSpacingValue']) {
                 this.compactInputs['letterSpacingValue'].input.value = this.settings.get('letterSpacingMultiplier');
@@ -1891,7 +1691,6 @@ class VoidTypeface {
         this.sliderController.setValue('dashLengthSlider', this.settings.get('dashLength'), false);
         this.sliderController.setValue('gapLengthSlider', this.settings.get('gapLength'), false);
         
-        // Обновить range-слайдеры
         if (this.rangeSliderController) {
             this.rangeSliderController.setValues('randomStemRangeSlider', 
                 this.settings.get('randomStemMin'), 
@@ -1920,7 +1719,6 @@ class VoidTypeface {
             );
         }
 
-        // Обновить режим отрисовки
         const mode = this.settings.get('mode');
         const fillBtn = document.getElementById('modeFill');
         const stripesBtn = document.getElementById('modeStripes');
@@ -1928,27 +1726,22 @@ class VoidTypeface {
         const sdBtn = document.getElementById('modeSD');
         const randomBtn = document.getElementById('modeRandom');
         
-        // Убрать класс active у всех кнопок
         [fillBtn, stripesBtn, dashBtn, sdBtn, randomBtn].forEach(btn => {
             if (btn) btn.classList.remove('active');
         });
         
-        // Установить активную кнопку в зависимости от режима
         if (mode === 'fill' && fillBtn) fillBtn.classList.add('active');
         else if (mode === 'stripes' && stripesBtn) stripesBtn.classList.add('active');
         else if (mode === 'dash' && dashBtn) dashBtn.classList.add('active');
         else if (mode === 'sd' && sdBtn) sdBtn.classList.add('active');
         else if (mode === 'random' && randomBtn) randomBtn.classList.add('active');
-        // По умолчанию, если режим не определен, выбираем fill
         else if (fillBtn) fillBtn.classList.add('active');
         
-        // SD показывает все контролы (Lines, Contrast, Dash Length, Gap Length)
         const showStripes = mode === 'stripes' || mode === 'sd';
         const showDash = mode === 'dash' || mode === 'sd';
         
         document.getElementById('strokesControlGroup').style.display = showStripes ? 'block' : 'none';
         document.getElementById('strokeGapRatioControlGroup').style.display = showStripes ? 'block' : 'none';
-        // closeEndsControlGroup теперь объединен с roundedCapsControlGroup
         const roundedCapsControlGroup = document.getElementById('roundedCapsControlGroup');
         if (roundedCapsControlGroup) {
             roundedCapsControlGroup.style.display = (mode === 'fill' || mode === 'stripes' || mode === 'dash' || mode === 'sd') ? 'flex' : 'none';
@@ -1956,8 +1749,6 @@ class VoidTypeface {
         document.getElementById('dashLengthControlGroup').style.display = showDash ? 'block' : 'none';
         document.getElementById('gapLengthControlGroup').style.display = showDash ? 'block' : 'none';
         
-        
-        // Обновить Rounded
         const roundedCapsCheckbox = document.getElementById('roundedCapsCheckbox');
         if (roundedCapsCheckbox) {
             roundedCapsCheckbox.checked = this.settings.get('roundedCaps') || false;
@@ -1977,17 +1768,13 @@ class VoidTypeface {
         ];
         randomGroups.forEach(group => {
             if (group) {
-                // toggle-group-row элементы используют flex
                 const isToggleRow = group.id === 'randomControlGroup' || group.id === 'randomControlGroup4';
                 const displayValue = isToggleRow ? 'flex' : 'block';
                 group.style.display = mode === 'random' ? displayValue : 'none';
             }
         });
 
-        // Обновить видимость Rounded в режиме Random (после показа групп)
         this.updateRandomRoundedVisibility();
-
-        // Обновить состояние toggle для режима рандома
         const randomFullRandomCheckbox = document.getElementById('randomFullRandomCheckbox');
         if (randomFullRandomCheckbox) {
             randomFullRandomCheckbox.checked = this.settings.get('randomModeType') === 'full';
@@ -2008,10 +1795,7 @@ class VoidTypeface {
             randomDashCheckbox.checked = this.settings.get('randomDash') ?? false;
         }
 
-        // Обновить состояние слайдеров Dash Length и Gap Length
         this.updateRandomDashSlidersState();
-
-        // Отключить/включить Stem Weight в панели Metrics при режиме Random
         const stemSlider = document.getElementById('stemSlider');
         const stemValue = document.getElementById('stemValue');
         if (stemSlider && stemValue) {
@@ -2020,12 +1804,10 @@ class VoidTypeface {
             stemValue.disabled = isDisabled;
         }
 
-        // Обновить цвета
         const letterColor = this.settings.get('letterColor');
         const bgColor = this.settings.get('bgColor');
         const gridColor = this.settings.get('gridColor');
         
-        // Обновляем превью с автоматическим выбором цвета текста
         const letterPreview = document.getElementById('letterColorPreview');
         const bgPreview = document.getElementById('bgColorPreview');
         const gridPreview = document.getElementById('gridColorPreview');
@@ -2033,8 +1815,6 @@ class VoidTypeface {
         this.updateColorPreview(letterPreview, letterColor);
         this.updateColorPreview(bgPreview, bgColor);
         this.updateColorPreview(gridPreview, gridColor);
-        
-        // Обновляем пикер, если он открыт и соответствует активному цвету
         if (this.unifiedColorPicker) {
             const colorMap = {
                 'letter': letterColor,
@@ -2044,21 +1824,16 @@ class VoidTypeface {
             this.unifiedColorPicker.setColor(colorMap[this.activeColorType]);
         }
 
-        // Обновить текст
         const text = this.settings.get('text');
         document.getElementById('textInput').value = text;
         this.renderer.setText(text);
 
-        // Обновить выравнивание текста
         const textAlign = this.settings.get('textAlign') || 'center';
         document.getElementById('textAlignLeft').checked = textAlign === 'left';
         document.getElementById('textAlignCenter').checked = textAlign === 'center';
         document.getElementById('textAlignRight').checked = textAlign === 'right';
 
-        // Обновить сетку и endpoints
         document.getElementById('showGridCheckbox').checked = this.settings.get('showGrid');
-        
-        // Обновить тоглы Dash Chess (для PD и Random)
         const dashChessCheckboxPD = document.getElementById('dashChessCheckboxPD');
         const dashChessCheckboxRandom = document.getElementById('dashChessCheckboxRandom');
         const dashChessValue = this.settings.get('dashChess') || false;
@@ -2073,7 +1848,7 @@ class VoidTypeface {
     }
 
     /**
-     * Инициализация экспорта
+     * Initialize export
      */
     initExport() {
         const exportBtn = document.getElementById('exportBtn');
@@ -2087,24 +1862,17 @@ class VoidTypeface {
             this.copySVG();
         });
 
-        // Шорткат ⌘E (Cmd на Mac, Ctrl на Windows/Linux)
         document.addEventListener('keydown', (e) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 'e') {
-                // Не экспортировать в режиме редактора
                 const currentMode = this.settings.get('currentMode') || 'normal';
                 if (currentMode === 'editor') return;
-                
                 e.preventDefault();
                 this.exportSVG();
             }
             
-            // Шорткат ⌘C (Cmd на Mac, Ctrl на Windows/Linux)
             if ((e.metaKey || e.ctrlKey) && e.key === 'c') {
-                // Не копировать в режиме редактора
                 const currentMode = this.settings.get('currentMode') || 'normal';
                 if (currentMode === 'editor') return;
-                
-                // Проверяем, что не выделен текст в input/textarea
                 const activeElement = document.activeElement;
                 const isInputFocused = activeElement && (
                     activeElement.tagName === 'INPUT' ||
@@ -2121,7 +1889,7 @@ class VoidTypeface {
     }
 
     /**
-     * Инициализация resize handler
+     * Initialize resize handler
      */
     initResize() {
         const debouncedResize = MathUtils.debounce(() => {
@@ -2132,15 +1900,13 @@ class VoidTypeface {
     }
 
     /**
-     * Обновить renderer с текущими настройками
+     * Update renderer with current settings
      */
     updateRenderer() {
-        // Не обновлять renderer в режиме редактора
         const currentMode = this.settings.get('currentMode') || 'normal';
         if (currentMode === 'editor') return;
         
         const moduleSize = this.settings.get('moduleSize');
-        // Умножаем на 2, так как в ModuleDrawer используется stem / 2
         const stem = moduleSize * this.settings.get('stemMultiplier') * 2;
         const letterSpacing = moduleSize * this.settings.get('letterSpacingMultiplier');
         const lineHeight = moduleSize * this.settings.get('lineHeightMultiplier');
@@ -2160,7 +1926,7 @@ class VoidTypeface {
             gridColor: this.settings.get('gridColor'),
             textAlign: this.settings.get('textAlign') || 'center',
             showGrid: this.settings.get('showGrid'),
-            includeGridToExport: this.settings.get('showGrid'), // Автоматически экспортировать сетку, если она видна
+            includeGridToExport: this.settings.get('showGrid'),
             randomStemMin: this.settings.get('randomStemMin'),
             randomStemMax: this.settings.get('randomStemMax'),
             randomStrokesMin: this.settings.get('randomStrokesMin'),
@@ -2188,40 +1954,37 @@ class VoidTypeface {
 
         this.renderer.updateParams(params);
         
-        // Установить текст из settings
         this.renderer.setText(this.settings.get('text'));
         
         this.renderer.render();
     }
 
     /**
-     * Экспорт в SVG
+     * Export to SVG
      */
     exportSVG() {
         this.exporter.exportToSVG();
     }
 
     /**
-     * Копировать SVG в буфер обмена
+     * Copy SVG to clipboard
      */
     async copySVG() {
         await this.exporter.copySVG();
     }
 
     /**
-     * Сохранить текущий пресет
-     * Если текущий пресет - Default, создаём новый с автогенерированным именем
-     * Если текущий пресет - кастомный, перезаписываем его
+     * Save current preset
+     * If current preset is Default, create new with auto-generated name
+     * If current preset is custom, overwrite it
      */
     saveCurrentPreset() {
         let name;
         const isDefaultPreset = this.currentPresetName === 'Default';
         
         if (isDefaultPreset) {
-            // Для Default создаём новый пресет с автогенерированным именем
             name = this.generatePresetName();
         } else {
-            // Для кастомного пресета - перезаписываем его
             name = this.currentPresetName;
         }
         
@@ -2230,7 +1993,6 @@ class VoidTypeface {
             this.updatePresetList();
             const presetDropdownText = document.querySelector('.preset-dropdown-text');
             const presetDropdownMenu = document.getElementById('presetDropdownMenu');
-            // Отображать сокращенное имя в дропдауне
             const displayName = name === 'Default' ? 'Default' : this.getDisplayName(name);
             presetDropdownText.textContent = displayName;
             this.currentPresetName = name;
@@ -2247,23 +2009,18 @@ class VoidTypeface {
     }
 
     /**
-     * Генерация имени пресета: полный текст + режим
-     * Если имя уже существует, добавляет порядковый номер
+     * Generate preset name: full text + mode
+     * If name already exists, adds sequential number
      */
     generatePresetName() {
         const text = this.settings.get('text') || '';
         const mode = this.settings.get('mode') || 'fill';
         
-        // Полный текст (без пробелов и переносов строк)
         const fullText = text.replace(/\s+/g, ' ').trim();
-        
-        // Название режима с заглавной буквы
         const modeName = mode.charAt(0).toUpperCase() + mode.slice(1);
         
         let baseName = `${fullText} ${modeName}`;
         const existingNames = this.presetManager.getPresetNames();
-        
-        // Если имя уже существует, добавляем порядковый номер
         if (existingNames.includes(baseName)) {
             let counter = 1;
             let newName = `${baseName} ${counter}`;
@@ -2278,45 +2035,32 @@ class VoidTypeface {
     }
 
     /**
-     * Получить отображаемое имя пресета (максимум 24 символа суммарно, включая режим)
+     * Get display name for preset (max 24 characters total, including mode)
      */
     getDisplayName(fullName) {
         const parts = fullName.split(' ');
         if (parts.length < 2) {
-            // Если нет режима, просто обрезаем до 24 символов
             return fullName.length > 24 ? fullName.substring(0, 21) + '...' : fullName;
         }
         
-        // Последняя часть - это режим
         const mode = parts[parts.length - 1];
-        // Все остальное - это текст
         const textPart = parts.slice(0, -1).join(' ');
         
-        // Формат: "текст... режим" или "текст режим"
-        // Максимальная длина: 24 символа
-        
-        // Пробуем без многоточия
         const withoutEllipsis = `${textPart} ${mode}`;
         if (withoutEllipsis.length <= 24) {
             return withoutEllipsis;
         }
         
-        // Нужно многоточие: "текст... режим"
-        // Длина: текст + "..." + " " + режим <= 24
-        // Максимальная длина текста: 24 - 3 - 1 - длина_режима
-        const maxTextLength = 24 - 3 - 1 - mode.length; // -3 для "...", -1 для пробела
+        const maxTextLength = 24 - 3 - 1 - mode.length;
         
         if (maxTextLength <= 0) {
-            // Если режим слишком длинный, просто возвращаем режим
             return mode.length > 24 ? mode.substring(0, 21) + '...' : mode;
         }
         
         const truncatedText = textPart.substring(0, maxTextLength) + '...';
         const result = `${truncatedText} ${mode}`;
         
-        // Финальная проверка: строго ограничиваем до 24 символов
         if (result.length > 24) {
-            // Если все равно больше, жестко обрезаем до 24
             const excess = result.length - 24;
             const newTruncatedText = textPart.substring(0, Math.max(0, maxTextLength - excess));
             return `${newTruncatedText}... ${mode}`;
@@ -2326,23 +2070,19 @@ class VoidTypeface {
     }
 
     /**
-     * Настроить отслеживание изменений
+     * Setup change tracking
      */
     setupChangeTracking() {
-        // Отслеживать изменения всех настроек
         const originalSet = this.settings.set.bind(this.settings);
         const self = this;
         this.settings.set = function(key, value) {
             const oldValue = self.settings.values[key];
             const result = originalSet(key, value);
-            // Если это не загрузка пресета, не инициализация и значение действительно изменилось, отметить изменения
             if (!self.isLoadingPreset && !self.isInitializing && self.currentPresetName && oldValue !== value) {
                 self.markAsChanged();
             }
             return result;
         };
-        
-        // Отслеживать изменения текста через renderer
         const originalSetText = this.renderer.setText.bind(this.renderer);
         this.renderer.setText = (text) => {
             originalSetText(text);
@@ -2353,10 +2093,9 @@ class VoidTypeface {
     }
 
     /**
-     * Отметить что были изменения
+     * Mark as changed
      */
     markAsChanged() {
-        // Не отслеживать изменения в режиме редактора, во время загрузки пресета или инициализации
         const currentMode = this.settings.get('currentMode') || 'normal';
         if (currentMode === 'editor') return;
         
@@ -2367,10 +2106,9 @@ class VoidTypeface {
     }
 
     /**
-     * Обновить видимость кнопок Save и Delete
+     * Update Save and Delete buttons visibility
      */
     updateSaveDeleteButtons() {
-        // Не показывать кнопки в режиме редактора
         const currentMode = this.settings.get('currentMode') || 'normal';
         if (currentMode === 'editor') {
             const savePresetBtn = document.getElementById('savePresetBtn');
@@ -2385,31 +2123,25 @@ class VoidTypeface {
         const isDefaultPreset = this.currentPresetName === 'Default';
         const isDefaultWithoutChanges = isDefaultPreset && !this.hasUnsavedChanges;
         
-        // В Default без изменений - НИКОГДА не показывать Save и Delete
         if (isDefaultWithoutChanges) {
             if (savePresetBtn) savePresetBtn.style.display = 'none';
             if (deletePresetBtn) deletePresetBtn.style.display = 'none';
             return;
         }
         
-        // Показывать Save если есть несохраненные изменения
         if (savePresetBtn) {
             savePresetBtn.style.display = this.hasUnsavedChanges ? 'inline-flex' : 'none';
         }
-        
-        // Показывать Delete только если это НЕ Default пресет
-        // (кастомные пресеты можно удалять)
         if (deletePresetBtn) {
             deletePresetBtn.style.display = !isDefaultPreset ? 'inline-flex' : 'none';
         }
     }
     
     /**
-     * Инициализация хоткея для редактора (Cmd+G)
+     * Initialize editor hotkey (Cmd+G)
      */
     initEditorHotkey() {
         document.addEventListener('keydown', (e) => {
-            // Cmd+G (Mac) или Ctrl+G (Windows/Linux) - переключить режим редактора
             if ((e.metaKey || e.ctrlKey) && e.key === 'g') {
                 e.preventDefault();
                 const currentMode = this.settings.get('currentMode') || 'normal';
@@ -2420,7 +2152,7 @@ class VoidTypeface {
     }
     
     /**
-     * Переключение режима (Normal/Editor)
+     * Switch mode (Normal/Editor)
      */
     switchMode(mode) {
         this.settings.set('currentMode', mode);
@@ -2438,14 +2170,10 @@ class VoidTypeface {
         const editorHint = document.getElementById('editorHint');
         
         if (mode === 'editor') {
-            // Активировать режим редактора
-            
-            // Скрыть обычные панели
             if (controlsPanel) controlsPanel.style.display = 'none';
             if (variabilityPanel) variabilityPanel.style.display = 'none';
             if (viewColorsPanel) viewColorsPanel.style.display = 'none';
             
-            // Скрыть пресеты и кнопки
             if (presetDropdown) presetDropdown.style.display = 'none';
             if (savePresetBtn) savePresetBtn.style.display = 'none';
             if (deletePresetBtn) deletePresetBtn.style.display = 'none';
@@ -2453,52 +2181,38 @@ class VoidTypeface {
             if (exportBtn) exportBtn.style.display = 'none';
             if (aboutVoidLink) aboutVoidLink.style.display = 'none';
             
-            // Показать панель редактора
             if (editorPanel) editorPanel.style.display = 'block';
-            
-            // Показать подсказку редактора
             if (editorHint) editorHint.style.display = 'block';
             
-            // Деактивировать рендерер и активировать редактор
             if (this.glyphEditor) {
                 this.glyphEditor.activate();
             }
         } else {
-            // Активировать обычный режим
-            
-            // Скрыть подсказку редактора
             const editorHint = document.getElementById('editorHint');
             if (editorHint) editorHint.style.display = 'none';
             
-            // Показать обычные панели
             if (controlsPanel) controlsPanel.style.display = 'block';
             if (variabilityPanel) variabilityPanel.style.display = 'block';
             if (viewColorsPanel) viewColorsPanel.style.display = 'block';
             
-            // Показать пресеты и кнопки
             if (presetDropdown) presetDropdown.style.display = 'flex';
             if (copyBtn) copyBtn.style.display = 'inline-flex';
             if (exportBtn) exportBtn.style.display = 'inline-flex';
             if (aboutVoidLink) aboutVoidLink.style.display = 'inline-flex';
             this.updateSaveDeleteButtons();
             
-            // Скрыть панель редактора
             if (editorPanel) editorPanel.style.display = 'none';
             
-            // Деактивировать редактор и активировать рендерер
             if (this.glyphEditor) {
                 this.glyphEditor.deactivate();
             }
             
-            // Принудительно обновить размеры canvas после обновления DOM
             requestAnimationFrame(() => {
-                // Принудительный reflow для гарантии, что размеры контейнера обновились
                 const canvas = document.getElementById('mainCanvas');
                 if (canvas) {
-                    canvas.offsetHeight; // Force reflow
+                    canvas.offsetHeight;
                 }
                 
-                // Обновить размеры canvas и отрендерить
                 if (this.renderer && this.renderer.setupCanvas) {
                     this.renderer.setupCanvas();
                 }
@@ -2508,7 +2222,7 @@ class VoidTypeface {
     }
     
     /**
-     * Инициализация редактора глифов
+     * Initialize glyph editor
      */
     initGlyphEditor() {
         const canvas = document.getElementById('mainCanvas');
@@ -2516,7 +2230,6 @@ class VoidTypeface {
         
         this.glyphEditor = new GlyphEditor(canvas, this.renderer.moduleDrawer);
         
-        // Обработчик кнопки Save
         const saveBtn = document.getElementById('editorSaveBtn');
         if (saveBtn) {
             saveBtn.addEventListener('click', () => {
@@ -2525,8 +2238,6 @@ class VoidTypeface {
                 }
             });
         }
-        
-        // Обработчик кнопки Copy
         const copyBtn = document.getElementById('editorCopyBtn');
         if (copyBtn) {
             copyBtn.addEventListener('click', () => {
@@ -2538,10 +2249,10 @@ class VoidTypeface {
     }
     
     /**
-     * Инициализация MIDI контроллера
+     * Initialize MIDI controller
      */
     async initMIDI() {
-        if (this.isMobile) return; // Не инициализировать на мобильных
+        if (this.isMobile) return;
         
         try {
             this.midiController = new MIDIController(this);
@@ -2558,7 +2269,6 @@ class VoidTypeface {
     }
 }
 
-// Инициализация при загрузке
 document.addEventListener('DOMContentLoaded', () => {
     new VoidTypeface();
 });

@@ -1,33 +1,30 @@
 /**
- * ZoomPanManager - Управление зумом и панорамированием canvas как в Figma
+ * ZoomPanManager - Zoom and pan canvas like in Figma
  * 
- * Функции:
- * - Zoom: колесо мыши с центром на курсоре (векторное через viewBox)
- * - Pan: пробел + drag или средняя кнопка мыши
- * - Pinch-to-zoom на тачпадах
+ * Features:
+ * - Zoom: mouse wheel centered on cursor (vector via viewBox)
+ * - Pan: space + drag or middle mouse button
+ * - Pinch-to-zoom on trackpads
  * - Fit to screen
  * - Reset zoom (100%)
  * 
- * ВАЖНО: Использует SVG viewBox для настоящего векторного масштабирования
+ * IMPORTANT: Uses SVG viewBox for true vector scaling
  */
 export class ZoomPanManager {
     constructor(containerElement, svgElement) {
         this.container = containerElement;
         this.svg = svgElement;
         
-        // Состояние трансформации
         this.zoom = 1;
-        this.baseZoom = 1; // Базовый зум (fit to screen), считается за 100%
-        this.minZoom = 1.0; // Минимальный зум 100% (не позволяем зумить меньше)
+        this.baseZoom = 1;
+        this.minZoom = 1.0;
         this.maxZoom = 10;
         this.panX = 0;
         this.panY = 0;
         
-        // Исходные размеры SVG
         this.originalWidth = 0;
         this.originalHeight = 0;
         
-        // Состояние перетаскивания
         this.isPanning = false;
         this.isSpacePressed = false;
         this.startX = 0;
@@ -35,10 +32,8 @@ export class ZoomPanManager {
         this.lastX = 0;
         this.lastY = 0;
         
-        // Инициализируем SVG для векторного зума
         this.initializeSVG();
         
-        // Инициализируем обработчики
         this.initEventListeners();
     }
     
@@ -46,25 +41,20 @@ export class ZoomPanManager {
      * Инициализирует SVG для векторного зума через viewBox
      */
     initializeSVG() {
-        // Ждем следующий фрейм, чтобы SVG был отрисован
         requestAnimationFrame(() => {
             try {
-                // Получаем размеры из атрибутов SVG, если они установлены
                 const width = parseFloat(this.svg.getAttribute('width')) || 0;
                 const height = parseFloat(this.svg.getAttribute('height')) || 0;
                 
                 if (width > 0 && height > 0) {
-                    // Используем размеры из атрибутов
                     this.originalWidth = width;
                     this.originalHeight = height;
                 } else {
-                    // Fallback: используем getBBox
                     const bbox = this.svg.getBBox();
                     this.originalWidth = bbox.width || 1000;
                     this.originalHeight = bbox.height || 1000;
                 }
                 
-                // Устанавливаем начальный viewBox (полный размер, зум 100%)
                 const viewBoxWidth = this.originalWidth / this.zoom;
                 const viewBoxHeight = this.originalHeight / this.zoom;
                 this.panX = 0;
@@ -72,7 +62,6 @@ export class ZoomPanManager {
                 
                 this.svg.setAttribute('viewBox', `${this.panX} ${this.panY} ${viewBoxWidth} ${viewBoxHeight}`);
             } catch (e) {
-                // Fallback если getBBox не работает
                 console.warn('Could not get SVG dimensions, using fallback');
                 this.originalWidth = 1000;
                 this.originalHeight = 1000;
@@ -80,37 +69,30 @@ export class ZoomPanManager {
             }
         });
         
-        // Убираем фиксированные размеры, чтобы SVG масштабировался
         this.svg.style.width = '100%';
         this.svg.style.height = '100%';
         
-        // Улучшаем качество рендеринга для четкости векторной графики
         this.svg.style.shapeRendering = 'geometricPrecision';
         this.svg.style.textRendering = 'geometricPrecision';
         
-        // Делаем container позиционированным для правильной работы
         this.container.style.position = 'relative';
         this.container.style.overflow = 'hidden';
         this.container.style.cursor = 'default';
     }
     
     /**
-     * Инициализирует все обработчики событий
+     * Initialize all event listeners
      */
     initEventListeners() {
-        // Zoom: колесо мыши
         this.container.addEventListener('wheel', this.handleWheel.bind(this), { passive: false });
         
-        // Pan: клавиша пробел
         document.addEventListener('keydown', this.handleKeyDown.bind(this));
         document.addEventListener('keyup', this.handleKeyUp.bind(this));
         
-        // Pan: мышь
         this.container.addEventListener('mousedown', this.handleMouseDown.bind(this));
         document.addEventListener('mousemove', this.handleMouseMove.bind(this));
         document.addEventListener('mouseup', this.handleMouseUp.bind(this));
         
-        // Предотвращаем контекстное меню на средней кнопке
         this.container.addEventListener('contextmenu', (e) => {
             if (e.button === 1) {
                 e.preventDefault();
@@ -119,34 +101,27 @@ export class ZoomPanManager {
     }
     
     /**
-     * Обработчик колеса мыши для зума и панорамирования
+     * Handle mouse wheel for zoom and pan
      */
     handleWheel(e) {
         e.preventDefault();
         
-        // Получаем координаты курсора относительно container
         const rect = this.container.getBoundingClientRect();
         const mouseX = e.clientX - rect.left;
         const mouseY = e.clientY - rect.top;
         
-        // Если зажат Cmd/Ctrl - зум (как в Figma/Apple приложениях)
         if (e.metaKey || e.ctrlKey) {
-            // Определяем направление зума
             const delta = -Math.sign(e.deltaY);
-            const zoomSpeed = 0.05; // Уменьшено в 2 раза (было 0.1)
+            const zoomSpeed = 0.05;
             const newZoom = this.zoom * (1 + delta * zoomSpeed);
             
-            // Применяем зум с центром на курсоре
             this.zoomTo(newZoom, mouseX, mouseY);
         } else {
-            // Иначе - панорамирование (для Apple Magic Mouse и трекпадов)
             const viewBox = this.getViewBox();
             
-            // Преобразуем движение в координаты SVG
             const deltaXSvg = (e.deltaX / rect.width) * viewBox.width;
             const deltaYSvg = (e.deltaY / rect.height) * viewBox.height;
             
-            // Обновляем позицию viewBox
             this.panX += deltaXSvg;
             this.panY += deltaYSvg;
             
@@ -155,27 +130,22 @@ export class ZoomPanManager {
     }
     
     /**
-     * Зум к указанной точке
+     * Zoom to specified point
      */
     zoomTo(newZoom, mouseX, mouseY) {
-        // Ограничиваем зум
         newZoom = Math.max(this.minZoom, Math.min(this.maxZoom, newZoom));
         
         if (newZoom === this.zoom) return;
         
-        // Получаем текущий viewBox
         const viewBox = this.getViewBox();
         
-        // Преобразуем координаты мыши в координаты SVG
         const rect = this.container.getBoundingClientRect();
         const svgX = viewBox.x + (mouseX / rect.width) * viewBox.width;
         const svgY = viewBox.y + (mouseY / rect.height) * viewBox.height;
         
-        // Вычисляем новые размеры viewBox
         const newWidth = this.originalWidth / newZoom;
         const newHeight = this.originalHeight / newZoom;
         
-        // Вычисляем новую позицию viewBox для зума относительно курсора
         const newX = svgX - (mouseX / rect.width) * newWidth;
         const newY = svgY - (mouseY / rect.height) * newHeight;
         
@@ -188,10 +158,9 @@ export class ZoomPanManager {
     }
     
     /**
-     * Обработчик нажатия клавиш
+     * Handle key press
      */
     handleKeyDown(e) {
-        // Проверяем, что фокус не на input элементах
         if (e.target.tagName === 'INPUT' || 
             e.target.tagName === 'TEXTAREA' || 
             e.target.tagName === 'SELECT') {
@@ -246,10 +215,9 @@ export class ZoomPanManager {
      * Обработчик нажатия кнопки мыши
      */
     handleMouseDown(e) {
-        // Пробел + левая кнопка или средняя кнопка мыши
         if ((this.isSpacePressed && e.button === 0) || e.button === 1) {
             e.preventDefault();
-            e.stopPropagation(); // Предотвращаем всплытие события
+            e.stopPropagation();
             this.isPanning = true;
             this.startX = e.clientX;
             this.startY = e.clientY;
@@ -260,23 +228,20 @@ export class ZoomPanManager {
     }
     
     /**
-     * Обработчик движения мыши
+     * Handle mouse movement
      */
     handleMouseMove(e) {
         if (this.isPanning) {
             e.preventDefault();
             
-            // Вычисляем перемещение в пикселях
             const dxPixels = e.clientX - this.startX;
             const dyPixels = e.clientY - this.startY;
             
-            // Преобразуем перемещение в координаты SVG
             const rect = this.container.getBoundingClientRect();
             const viewBox = this.getViewBox();
             const dxSvg = (dxPixels / rect.width) * viewBox.width;
             const dySvg = (dyPixels / rect.height) * viewBox.height;
             
-            // Обновляем позицию (при панорамировании двигаем viewBox в обратную сторону)
             this.panX = this.lastX - dxSvg;
             this.panY = this.lastY - dySvg;
             
@@ -337,21 +302,17 @@ export class ZoomPanManager {
     }
     
     /**
-     * Сброс зума в 100% (возврат к baseZoom) с центрированием и отступами
+     * Reset zoom to 100% (return to baseZoom) with centering and padding
      */
     resetZoom() {
-        // При зуме 100% (baseZoom = 1.0) центрируем макет с отступами
         this.zoom = 1.0;
         this.baseZoom = 1.0;
         
-        // Получаем размеры содержимого SVG
         const bbox = this.svg.getBBox();
         
-        // Вычисляем размеры viewBox для зума 100%
         const viewBoxWidth = this.originalWidth / this.zoom;
         const viewBoxHeight = this.originalHeight / this.zoom;
         
-        // Центрируем содержимое
         this.panX = bbox.x - (viewBoxWidth - bbox.width) / 2;
         this.panY = bbox.y - (viewBoxHeight - bbox.height) / 2;
         
@@ -360,45 +321,35 @@ export class ZoomPanManager {
     }
     
     /**
-     * Fit to screen - масштабирует содержимое по размеру контейнера с фиксированными отступами
-     * Минимальный зум ограничен 100%
+     * Fit to screen - scale content to container size with fixed padding
+     * Minimum zoom limited to 100%
      */
     fitToScreen() {
-        // Получаем размеры содержимого SVG
         const bbox = this.svg.getBBox();
         const containerRect = this.container.getBoundingClientRect();
         
-        // Фиксированные отступы в пикселях
-        const paddingHorizontal = 360; // 360px слева и справа
-        const paddingVertical = 120;   // 120px сверху и снизу
+        const paddingHorizontal = 360;
+        const paddingVertical = 120;
         
-        // Вычисляем доступную область для размещения макета
         const availableWidth = Math.max(100, containerRect.width - paddingHorizontal * 2);
         const availableHeight = Math.max(100, containerRect.height - paddingVertical * 2);
         
-        // Вычисляем необходимый зум
         const scaleX = availableWidth / bbox.width;
         const scaleY = availableHeight / bbox.height;
         const scale = Math.min(scaleX, scaleY);
         
-        // Ограничиваем зум (минимум 100%, то есть 1.0)
         this.zoom = Math.max(this.minZoom, Math.min(this.maxZoom, scale));
         
-        // Если зум получился меньше 1.0 (что теперь невозможно из-за minZoom),
-        // или равен 1.0, то это будет базовый зум 100%
         if (this.zoom <= 1.0) {
             this.zoom = 1.0;
             this.baseZoom = 1.0;
         } else {
-            // Сохраняем этот зум как базовый (будет считаться за 100%)
             this.baseZoom = this.zoom;
         }
         
-        // Вычисляем размеры viewBox
         const viewBoxWidth = this.originalWidth / this.zoom;
         const viewBoxHeight = this.originalHeight / this.zoom;
         
-        // Центрируем содержимое
         this.panX = bbox.x - (viewBoxWidth - bbox.width) / 2;
         this.panY = bbox.y - (viewBoxHeight - bbox.height) / 2;
         
@@ -407,7 +358,7 @@ export class ZoomPanManager {
     }
     
     /**
-     * Получить текущий уровень зума в процентах (относительно baseZoom)
+     * Get current zoom level in percent (relative to baseZoom)
      */
     getZoomPercent() {
         return Math.round((this.zoom / this.baseZoom) * 100);
@@ -432,7 +383,6 @@ export class ZoomPanManager {
      */
     reinitializeSVGDimensions() {
         try {
-            // Получаем размеры из атрибутов SVG
             const width = parseFloat(this.svg.getAttribute('width')) || this.originalWidth;
             const height = parseFloat(this.svg.getAttribute('height')) || this.originalHeight;
             

@@ -1,14 +1,14 @@
 /**
- * RandomUtils - утилиты для генерации случайных значений модулей
+ * RandomUtils - utilities for generating random module values
  */
 
 export class RandomUtils {
     /**
-     * Получить случайные значения для модуля (с учетом режима рандома)
-     * @param {string} moduleType - тип модуля (S, C, J, L, R, B)
-     * @param {string|null} cacheKey - ключ кэша для режима 'full' (null для режима 'byType')
-     * @param {Object} params - параметры случайной генерации
-     * @param {Object} cache - объект кэша (moduleTypeCache или moduleValueCache)
+     * Get random values for module (considering random mode)
+     * @param {string} moduleType - module type (S, C, J, L, R, B)
+     * @param {string|null} cacheKey - cache key for 'full' mode (null for 'byType' mode)
+     * @param {Object} params - random generation parameters
+     * @param {Object} cache - cache object (moduleTypeCache or moduleValueCache)
      * @returns {Object} {stem, strokesNum, strokeGapRatio, dashLength, gapLength, useDash}
      */
     static getRandomModuleValues(moduleType, cacheKey, params, cache) {
@@ -25,7 +25,6 @@ export class RandomUtils {
         const randomModeType = params.randomModeType || 'byType';
 
         if (randomModeType === 'byType') {
-            // Режим по типу модуля: генерируем значения один раз для каждого типа
             if (!cache[moduleType]) {
                 const randomMultiplier = stemMin + Math.random() * (stemMax - stemMin);
                 const stem = params.moduleSize * randomMultiplier * 2;
@@ -34,18 +33,14 @@ export class RandomUtils {
                 const dashLength = dashLengthMin + Math.random() * (dashLengthMax - dashLengthMin);
                 const gapLength = gapLengthMin + Math.random() * (gapLengthMax - gapLengthMin);
                 
-                // Определяем useDash для этого типа модуля
-                // Dash применяется только если randomDash включен и strokesNum > 1
                 const moduleUseDash = params.randomDash && strokesNum > 1 
-                    ? Math.random() < 0.5  // 50% вероятность dash
+                    ? Math.random() < 0.5
                     : false;
                 
                 cache[moduleType] = { stem, strokesNum, strokeGapRatio, dashLength, gapLength, useDash: moduleUseDash };
             }
             return cache[moduleType];
         } else {
-            // Полный рандом: генерируем новые значения для каждого модуля
-            // Но используем кэш, чтобы при экспорте использовать те же значения
             if (cacheKey && cache[cacheKey]) {
                 return cache[cacheKey];
             }
@@ -57,10 +52,8 @@ export class RandomUtils {
             const dashLength = dashLengthMin + Math.random() * (dashLengthMax - dashLengthMin);
             const gapLength = gapLengthMin + Math.random() * (gapLengthMax - gapLengthMin);
             
-            // Определяем useDash для этого модуля
-            // Dash применяется только если randomDash включен и strokesNum > 1
             const moduleUseDash = params.randomDash && strokesNum > 1 
-                ? Math.random() < 0.5  // 50% вероятность dash
+                ? Math.random() < 0.5
                 : false;
             
             const values = { stem, strokesNum, strokeGapRatio, dashLength, gapLength, useDash: moduleUseDash };

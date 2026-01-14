@@ -16,7 +16,7 @@
             height: 100vh;
         }
         
-        /* Левая панель - Glyphs */
+        /* Left panel - Glyphs */
         .editor-nav-panel {
             position: fixed;
             top: var(--spacing-3xl);
@@ -80,7 +80,7 @@
             background: rgba(255, 255, 255, 0.02);
         }
         
-        /* Состояние 1: Неактивное (глифа нет) */
+        /* State 1: Inactive (no glyph) */
         .char-cell.inactive {
             opacity: 0.3;
         }
@@ -89,12 +89,12 @@
             opacity: 0.5;
         }
         
-        /* Состояние 2: Ховер */
+        /* State 2: Hover */
         .char-cell:hover {
             background: rgba(255, 255, 255, 0.08);
         }
         
-        /* Состояние 3: Кликнули, но не нарисовали */
+        /* State 3: Clicked but not drawn */
         .char-cell.empty {
             background: rgba(255, 255, 255, 0.05);
             opacity: 1;
@@ -104,12 +104,12 @@
             opacity: 0.8;
         }
         
-        /* Состояние 4: Глиф нарисован */
+        /* State 4: Glyph drawn */
         .char-cell.has-glyph {
             opacity: 1;
         }
         
-        /* Состояние 5: Выбрана */
+        /* State 5: Selected */
         .char-cell.selected {
             background: rgba(255, 255, 255, 0.15);
         }
@@ -185,7 +185,7 @@
             margin-top: 0;
         }
         
-        /* Центральная область - канвас */
+        /* Central area - canvas */
         .canvas-area {
             position: absolute;
             top: 0;
@@ -219,7 +219,7 @@
             text-align: center;
         }
         
-        /* Правая панель - Alternates */
+        /* Right panel - Alternates */
         .editor-alternatives-panel {
             position: fixed;
             top: var(--spacing-3xl);
@@ -274,7 +274,7 @@
             background: rgba(255, 255, 255, 0.02);
         }
         
-        /* Состояние: пустая ячейка */
+        /* State: empty cell */
         .alternative-item.empty {
             opacity: 0.3;
         }
@@ -283,7 +283,7 @@
             opacity: 0.5;
         }
         
-        /* Состояние: ячейка с глифом */
+        /* State: cell with glyph */
         .alternative-item.has-glyph {
             opacity: 1;
         }
@@ -300,7 +300,7 @@
             background: rgba(255, 255, 255, 0.15);
         }
         
-        /* Кнопка добавления новой альтернативы */
+        /* Add new alternative button */
         .alternative-item.add-alternative-button {
             background: rgba(255, 255, 255, 0.02);
             border: 1px dashed rgba(255, 255, 255, 0.2);
@@ -317,7 +317,7 @@
             color: var(--color-text);
         }
         
-        /* Drag-and-drop стили */
+        /* Drag-and-drop styles */
         .alternative-item.draggable {
             cursor: grab;
         }
@@ -387,7 +387,7 @@
             right: 0;
         }
         
-        /* Новый глиф */
+        /* New glyph */
         .new-glyph-section {
             padding: var(--spacing-lg);
             border-bottom: 1px solid var(--color-border);
@@ -411,7 +411,7 @@
             font-size: 0.75rem;
         }
         
-        /* Верхняя навигация */
+        /* Top navigation */
         .editor-top-nav {
             position: fixed;
             top: var(--spacing-3xl);
@@ -452,7 +452,7 @@
             display: none;
         }
         
-        /* Кнопки внизу */
+        /* Bottom buttons */
         .editor-bottom-buttons {
             position: fixed;
             bottom: var(--spacing-3xl);
@@ -464,7 +464,7 @@
             z-index: 10000;
         }
         
-        /* Панель инструментов - стили для toolbar внутри canvas-wrapper */
+        /* Toolbar panel - styles for toolbar inside canvas-wrapper */
         .canvas-wrapper .toolbar {
             position: static;
             transform: none;
@@ -494,17 +494,16 @@
         .toolbar-value {
             font-size: 0.9rem;
             font-weight: 600;
-            min-height: 1.2em; /* Фиксированная высота для стабильности */
+            min-height: 1.2em;
             display: flex;
             align-items: center;
         }
         
-        /* Кликабельные секции в toolbar */
+        /* Clickable sections in toolbar */
         .toolbar-section:has(#currentModule),
         .toolbar-section:has(#currentAngle) {
             cursor: pointer;
             transition: opacity var(--transition-fast);
-            /* Защита от двойного тапа зума на мобильных */
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
         }
@@ -514,7 +513,7 @@
             opacity: 0.7;
         }
         
-        /* Стили для placeholder */
+        /* Placeholder styles */
         #newGlyphInput::placeholder {
             color: rgba(255, 255, 255, 0.25);
         }
