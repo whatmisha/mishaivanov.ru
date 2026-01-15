@@ -10,6 +10,7 @@ import { SliderController } from './ui/SliderController.js';
 import { RangeSliderController } from './ui/RangeSliderController.js';
 import { PanelManager } from './ui/PanelManager.js';
 import { ColorPicker } from './ui/ColorPicker.js';
+import { ModalManager } from './ui/ModalManager.js';
 import { ColorUtils } from './utils/ColorUtils.js';
 import { MathUtils } from './utils/MathUtils.js';
 import GlyphEditor from './core/GlyphEditor.js';
@@ -115,7 +116,7 @@ class VoidTypeface {
             
             // Track changes to show Save button
             this.hasUnsavedChanges = false;
-            this.currentPresetName = 'Default';
+            this.currentPresetName = 'New';
             this.isLoadingPreset = false;
             this.isInitializing = true; // Initialization flag
             
@@ -137,7 +138,7 @@ class VoidTypeface {
             // Complete initialization and update buttons
             this.isInitializing = false;
             this.hasUnsavedChanges = false; // Ensure no changes after initialization
-            if (this.currentPresetName === 'Default') {
+            if (this.currentPresetName === 'New') {
                 this.updateSaveDeleteButtons();
             }
         }
@@ -329,10 +330,11 @@ class VoidTypeface {
     }
 
     /**
-     * Initialize preset manager
+     * Initialize preset manager and modal manager
      */
     initPresetManager() {
         this.presetManager = new PresetManager();
+        this.modalManager = new ModalManager();
     }
 
     /**
@@ -1619,15 +1621,15 @@ class VoidTypeface {
         const deletePresetBtn = document.getElementById('deletePresetBtn');
 
         // Create or update default preset
-        const defaultPreset = this.presetManager.loadPreset('Default');
+        const defaultPreset = this.presetManager.loadPreset('New');
         if (!defaultPreset) {
             // Create new default preset
-            this.presetManager.savePreset('Default', this.settings.values);
+            this.presetManager.savePreset('New', this.settings.values);
         } else {
-            // Update existing Default preset if text is outdated
+            // Update existing New preset if text is outdated
             if (defaultPreset.text === 'Void\nTypeface\ncoded') {
                 defaultPreset.text = 'Void\nTypeface\nCode';
-                this.presetManager.presets['Default'] = defaultPreset;
+                this.presetManager.presets['New'] = defaultPreset;
                 this.presetManager.savePresets();
             }
             
@@ -1664,7 +1666,7 @@ class VoidTypeface {
                 defaultPreset.randomCloseEnds = true;
                 defaultPreset.randomDash = false;
                 defaultPreset.useAlternativesInRandom = true;
-                this.presetManager.presets['Default'] = defaultPreset;
+                this.presetManager.presets['New'] = defaultPreset;
                 this.presetManager.savePresets();
             }
         }
@@ -1674,8 +1676,8 @@ class VoidTypeface {
         
         // Load default preset
         // loadPreset will set currentPresetName and hasUnsavedChanges = false
-        this.loadPreset('Default', false);
-        presetDropdownText.textContent = 'Default';
+        this.loadPreset('New', false);
+        presetDropdownText.textContent = 'New';
 
         // Open/close dropdown
         presetDropdownToggle.addEventListener('click', (e) => {
@@ -1694,61 +1696,138 @@ class VoidTypeface {
         });
 
         // Load preset on item click
-        presetDropdownMenu.addEventListener('click', (e) => {
+        presetDropdownMenu.addEventListener('click', async (e) => {
+            // Handle rename button click
+            const editBtn = e.target.closest('.preset-dropdown-item-edit');
+            if (editBtn) {
+                e.stopPropagation();
+                const presetName = editBtn.dataset.preset;
+                
+                // Close dropdown first
+                presetDropdownToggle.setAttribute('aria-expanded', 'false');
+                presetDropdownMenu.classList.remove('active');
+                
+                // Show rename modal
+                const newName = await this.modalManager.promptRename(presetName);
+                if (newName) {
+                    // Check if name already exists
+                    if (this.presetManager.hasPreset(newName)) {
+                        await this.modalManager.showError(`Preset "${newName}" already exists.`);
+                        return;
+                    }
+                    
+                    const result = this.presetManager.renamePreset(presetName, newName);
+                    if (result.success) {
+                        // Update current preset name if it was renamed
+                        if (this.currentPresetName === presetName) {
+                            this.currentPresetName = newName;
+                        }
+                        this.updatePresetList();
+                        
+                        // Update dropdown text if current preset was renamed
+                        if (this.currentPresetName === newName) {
+                            presetDropdownText.textContent = this.getDisplayName(newName);
+                        }
+                    } else {
+                        await this.modalManager.showError(result.error || 'Failed to rename preset.');
+                    }
+                }
+                return;
+            }
+            
             const item = e.target.closest('.preset-dropdown-item');
             if (item) {
                 const presetName = item.dataset.value;
                 
                 // Handle delete all presets
                 if (presetName === '__delete_all__') {
-                    if (confirm('Delete all saved presets?')) {
+                    // Close dropdown first
+                    presetDropdownToggle.setAttribute('aria-expanded', 'false');
+                    presetDropdownMenu.classList.remove('active');
+                    
+                    const confirmed = await this.modalManager.confirmDeleteAll();
+                    if (confirmed) {
+                        // Delete all presets except New
                         const names = this.presetManager.getPresetNames();
                         names.forEach(name => {
-                            if (name !== 'Default') {
+                            if (name !== 'New') {
                                 this.presetManager.deletePreset(name);
                             }
                         });
-                        // Reload presets from localStorage to sync object
-                        this.presetManager.presets = this.presetManager.loadPresets();
-                        // Switch to Default
-                        this.loadPreset('Default');
-                        presetDropdownText.textContent = 'Default';
-                        this.currentPresetName = 'Default';
-                        this.hasUnsavedChanges = false;
+                        
+                        // Update preset list FIRST (before loadPreset, so it shows correct list)
                         this.updatePresetList();
-                        this.updateSaveDeleteButtons();
-                        const defaultItem = Array.from(presetDropdownMenu.children).find(item => item.dataset.value === 'Default');
+                        
+                        // Switch to New
+                        this.loadPreset('New');
+                        
+                        // Update dropdown UI
+                        presetDropdownText.textContent = 'New';
+                        const defaultItem = Array.from(presetDropdownMenu.children).find(el => el.dataset.value === 'New');
                         if (defaultItem) {
                             presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
                             defaultItem.classList.add('selected');
                         }
-                        presetDropdownToggle.setAttribute('aria-expanded', 'false');
-                        presetDropdownMenu.classList.remove('active');
                     }
                     return;
                 }
                 
                 if (presetName && presetName !== this.currentPresetName) {
-                    // Check for unsaved changes
-                    // Show popup only if there are changes AND it's not Default preset
-                    if (this.hasUnsavedChanges && this.currentPresetName !== 'Default') {
-                        const shouldSave = confirm('You have unsaved changes. Save current preset before switching?');
-                        if (shouldSave) {
-                            // Overwrite current preset
-                            this.presetManager.savePreset(this.currentPresetName, this.settings.values);
-                            this.updatePresetList();
-                        }
-                        // If Cancel - just switch without saving
+                    // Handle "Unsaved" - it's just New with changes, so just update selection
+                    if (presetName === 'Unsaved' && this.currentPresetName === 'New' && this.hasUnsavedChanges) {
+                        presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
+                        item.classList.add('selected');
+                        presetDropdownToggle.setAttribute('aria-expanded', 'false');
+                        presetDropdownMenu.classList.remove('active');
+                        return;
                     }
+                    
+                    // Handle switching from New with changes to another preset
+                    const isSwitchingFromNewWithChanges = this.currentPresetName === 'New' && this.hasUnsavedChanges;
+                    
+                    // Check for unsaved changes
+                    if (this.hasUnsavedChanges) {
+                        // Close dropdown first
+                        presetDropdownToggle.setAttribute('aria-expanded', 'false');
+                        presetDropdownMenu.classList.remove('active');
+                        
+                        // Use appropriate preset name for dialog
+                        const presetNameForDialog = this.currentPresetName === 'New' ? 'New' : this.currentPresetName;
+                        const action = await this.modalManager.confirmUnsavedChanges(presetNameForDialog);
+                        
+                        if (action === 'cancel') {
+                            return; // Stay on current preset
+                        }
+                        
+                        if (action === 'save') {
+                            if (this.currentPresetName === 'New') {
+                                // Save as new preset
+                                await this.saveCurrentPreset();
+                                // After saving, we might have switched to a new preset
+                                if (this.currentPresetName !== 'New') {
+                                    // We switched to the newly saved preset, update list and return
+                                    this.updatePresetList();
+                                    return;
+                                }
+                            } else {
+                                // Update current preset
+                                this.presetManager.updatePreset(this.currentPresetName, this.settings.values);
+                                this.updatePresetList();
+                            }
+                        }
+                        // If 'discard' - continue to load selected preset
+                    }
+                    
+                    // loadPreset sets currentPresetName, hasUnsavedChanges and calls updateSaveDeleteButtons
                     this.loadPreset(presetName);
-                    // Display shortened name in dropdown
-                    const displayName = presetName === 'Default' ? 'Default' : this.getDisplayName(presetName);
+                    
+                    // Update UI elements
+                    const displayName = presetName === 'New' ? 'New' : this.getDisplayName(presetName);
                     presetDropdownText.textContent = displayName;
                     presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
                     item.classList.add('selected');
-                    this.currentPresetName = presetName;
-                    this.hasUnsavedChanges = false;
-                    this.updateSaveDeleteButtons();
+                    
+                    // Close dropdown
                     presetDropdownToggle.setAttribute('aria-expanded', 'false');
                     presetDropdownMenu.classList.remove('active');
                 }
@@ -1756,46 +1835,113 @@ class VoidTypeface {
         });
 
         // Save preset
-        savePresetBtn.addEventListener('click', () => {
-            this.saveCurrentPreset();
+        savePresetBtn.addEventListener('click', async () => {
+            await this.saveCurrentPreset();
         });
 
         // Delete preset
-        deletePresetBtn.addEventListener('click', () => {
-            if (this.currentPresetName === 'Default') {
-                alert('Cannot delete "Default" preset');
-                return;
+        deletePresetBtn.addEventListener('click', async () => {
+            if (this.currentPresetName === 'New') {
+                return; // Cannot delete New preset
             }
             
-            // Show full name in modal window
-            if (confirm(`Delete preset "${this.currentPresetName}"?`)) {
+            const confirmed = await this.modalManager.confirmDelete(this.currentPresetName);
+            if (confirmed) {
                 if (this.presetManager.deletePreset(this.currentPresetName)) {
-                    // Reload presets from localStorage to sync object
-                    this.presetManager.presets = this.presetManager.loadPresets();
-                    // Switch to Default
-                    this.loadPreset('Default');
-                    presetDropdownText.textContent = 'Default';
-                    this.currentPresetName = 'Default';
-                    this.hasUnsavedChanges = false;
+                    // Update preset list first
                     this.updatePresetList();
-                    this.updateSaveDeleteButtons();
-                    const defaultItem = Array.from(presetDropdownMenu.children).find(item => item.dataset.value === 'Default');
+                    
+                    // Switch to New
+                    this.loadPreset('New');
+                    
+                    // Update dropdown UI
+                    presetDropdownText.textContent = 'New';
+                    const defaultItem = Array.from(presetDropdownMenu.children).find(el => el.dataset.value === 'New');
                     if (defaultItem) {
                         presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
                         defaultItem.classList.add('selected');
                     }
-                } else {
-                    alert('Error deleting preset');
                 }
             }
         });
         
-        // Initialize button visibility after loading Default
-        // Ensure buttons are hidden for Default without changes
-        if (this.currentPresetName === 'Default') {
+        // Initialize button visibility after loading New
+        // Ensure buttons are hidden for New without changes
+        if (this.currentPresetName === 'New') {
             this.hasUnsavedChanges = false;
         }
         this.updateSaveDeleteButtons();
+        
+        // Warn before closing tab with unsaved changes
+        window.addEventListener('beforeunload', (e) => {
+            if (this.hasUnsavedChanges && this.currentPresetName !== 'New') {
+                e.preventDefault();
+                e.returnValue = ''; // Required for Chrome
+                return ''; // Required for some browsers
+            }
+        });
+    }
+
+    /**
+     * Normalize color string for comparison (lowercase, handle variations)
+     * @param {string} color - Color string
+     * @returns {string} - Normalized color
+     */
+    normalizeColor(color) {
+        if (!color) return '';
+        return color.toLowerCase().trim();
+    }
+
+    /**
+     * Check if preset has non-default colors
+     * @param {string} presetName - Preset name
+     * @returns {Object|null} - Object with letterColor and bgColor if colors differ from defaults, null otherwise
+     */
+    getPresetColors(presetName) {
+        const defaultLetterColor = '#ffffff';
+        const defaultBgColor = '#000000';
+        
+        // For "Unsaved", use current settings
+        if (presetName === 'Unsaved') {
+            const letterColor = this.normalizeColor(this.settings.get('letterColor'));
+            const bgColor = this.normalizeColor(this.settings.get('bgColor'));
+            const normalizedDefaultLetter = this.normalizeColor(defaultLetterColor);
+            const normalizedDefaultBg = this.normalizeColor(defaultBgColor);
+            
+            if (letterColor !== normalizedDefaultLetter || bgColor !== normalizedDefaultBg) {
+                return { 
+                    letterColor: this.settings.get('letterColor'), 
+                    bgColor: this.settings.get('bgColor') 
+                };
+            }
+            return null;
+        }
+        
+        // For "New", always return null (default colors)
+        if (presetName === 'New') {
+            return null;
+        }
+        
+        // Load preset and check colors
+        const preset = this.presetManager.loadPreset(presetName);
+        if (!preset) {
+            return null;
+        }
+        
+        const letterColor = this.normalizeColor(preset.letterColor || defaultLetterColor);
+        const bgColor = this.normalizeColor(preset.bgColor || defaultBgColor);
+        const normalizedDefaultLetter = this.normalizeColor(defaultLetterColor);
+        const normalizedDefaultBg = this.normalizeColor(defaultBgColor);
+        
+        // Check if colors differ from defaults
+        if (letterColor !== normalizedDefaultLetter || bgColor !== normalizedDefaultBg) {
+            return { 
+                letterColor: preset.letterColor || defaultLetterColor, 
+                bgColor: preset.bgColor || defaultBgColor 
+            };
+        }
+        
+        return null;
     }
 
     /**
@@ -1804,18 +1950,69 @@ class VoidTypeface {
     updatePresetList() {
         const presetDropdownMenu = document.getElementById('presetDropdownMenu');
         const names = this.presetManager.getPresetNames();
-        const hasCustomPresets = names.length > 1; // More than just Default
+        const hasCustomPresets = names.length > 1; // More than just New
+        
+        // Add "Unsaved" if we're in New with unsaved changes
+        const showUnsaved = this.currentPresetName === 'New' && this.hasUnsavedChanges;
+        const listNames = [...names];
+        if (showUnsaved && !listNames.includes('Unsaved')) {
+            listNames.push('Unsaved');
+        }
         
         presetDropdownMenu.innerHTML = '';
-        names.forEach(name => {
+        listNames.forEach(name => {
             const item = document.createElement('li');
             item.className = 'preset-dropdown-item';
             item.dataset.value = name;
-            // Display shortened name but store full name in dataset
-            const displayName = name === 'Default' ? 'Default' : this.getDisplayName(name);
-            item.textContent = displayName;
             item.setAttribute('role', 'option');
-            if (name === this.currentPresetName) {
+            
+            // Create name span
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'preset-dropdown-item-name';
+            let displayName;
+            if (name === 'New') {
+                displayName = 'New';
+            } else if (name === 'Unsaved') {
+                displayName = 'Unsaved';
+            } else {
+                displayName = this.getDisplayName(name);
+            }
+            nameSpan.textContent = displayName;
+            nameSpan.title = name; // Full name on hover
+            item.appendChild(nameSpan);
+            
+            // Add color indicators if colors differ from defaults
+            const colors = this.getPresetColors(name);
+            if (colors) {
+                const colorIndicators = document.createElement('span');
+                colorIndicators.className = 'preset-dropdown-item-colors';
+                
+                const typeDot = document.createElement('span');
+                typeDot.textContent = '●';
+                typeDot.style.color = colors.letterColor;
+                
+                const backDot = document.createElement('span');
+                backDot.textContent = '●';
+                backDot.style.color = colors.bgColor;
+                
+                colorIndicators.appendChild(typeDot);
+                colorIndicators.appendChild(backDot);
+                nameSpan.appendChild(colorIndicators);
+            }
+            
+            // Add edit icon for custom presets (not New or Unsaved)
+            if (name !== 'New' && name !== 'Unsaved') {
+                const editBtn = document.createElement('span');
+                editBtn.className = 'preset-dropdown-item-edit';
+                editBtn.dataset.action = 'rename';
+                editBtn.dataset.preset = name;
+                editBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.5 1.5L10.5 3.5L4 10H2V8L8.5 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                editBtn.title = 'Rename';
+                item.appendChild(editBtn);
+            }
+            
+            // Mark as selected if it's the current preset, or if it's Unsaved and we're in New with changes
+            if (name === this.currentPresetName || (name === 'Unsaved' && this.currentPresetName === 'New' && this.hasUnsavedChanges)) {
                 item.classList.add('selected');
             }
             presetDropdownMenu.appendChild(item);
@@ -1850,15 +2047,10 @@ class VoidTypeface {
 
         // Apply all parameters from preset
         Object.keys(preset).forEach(key => {
-            if (key !== 'createdAt' && this.settings.values.hasOwnProperty(key)) {
+            if (key !== 'createdAt' && key !== 'updatedAt' && this.settings.values.hasOwnProperty(key)) {
                 this.settings.set(key, preset[key]);
             }
         });
-        
-        // Reset changes flag BEFORE clearing isLoadingPreset flag
-        this.hasUnsavedChanges = false;
-        
-        this.isLoadingPreset = false;
         
         if (updateUI) {
             // Clear random values cache before updating renderer
@@ -1867,12 +2059,16 @@ class VoidTypeface {
                 this.renderer.clearModuleTypeCache();
             }
             
-            // Update UI
+            // Update UI (still with isLoadingPreset = true to prevent markAsChanged)
             this.updateUIFromSettings();
             
             // Update renderer
             this.updateRenderer();
         }
+        
+        // Reset changes flag and loading flag AFTER all UI updates
+        this.hasUnsavedChanges = false;
+        this.isLoadingPreset = false;
         
         // Update buttons after all changes
         this.updateSaveDeleteButtons();
@@ -1971,7 +2167,6 @@ class VoidTypeface {
             roundedCapsCheckbox.checked = this.settings.get('roundedCaps') || false;
         }
         this.updateRoundedCapsVisibility();
-        this.updateDashVisibility();
         
         const randomGroups = [
             document.getElementById('randomControlGroup'),
@@ -2217,29 +2412,68 @@ class VoidTypeface {
     }
 
     /**
-     * Сохранить текущий пресет
-     * Если текущий пресет - Default, создаём новый с автогенерированным именем
-     * Если текущий пресет - кастомный, перезаписываем его
+     * Save current preset
+     * If current preset is New, prompt for name and create new preset
+     * If current preset is custom, ask to update or save as new
      */
-    saveCurrentPreset() {
+    async saveCurrentPreset() {
+        const isDefaultPreset = this.currentPresetName === 'New';
         let name;
-        const isDefaultPreset = this.currentPresetName === 'Default';
+        let result;
         
         if (isDefaultPreset) {
-            // For Default create new preset with auto-generated name
-            name = this.generatePresetName();
+            // For New: prompt for name with auto-generated default
+            const defaultName = this.generatePresetName();
+            name = await this.modalManager.promptPresetName(defaultName);
+            
+            if (!name) {
+                return; // Cancelled
+            }
+            
+            // Check if name already exists
+            if (this.presetManager.hasPreset(name)) {
+                await this.modalManager.showError(`Preset "${name}" already exists. Choose a different name.`);
+                return this.saveCurrentPreset(); // Re-prompt
+            }
+            
+            result = this.presetManager.savePreset(name, this.settings.values);
         } else {
-            // For custom preset - overwrite it
-            name = this.currentPresetName;
+            // For custom preset: ask to update or save as new
+            const action = await this.modalManager.confirmSaveOrNew(this.currentPresetName);
+            
+            if (action === 'cancel') {
+                return;
+            }
+            
+            if (action === 'update') {
+                // Update current preset
+                name = this.currentPresetName;
+                result = this.presetManager.updatePreset(name, this.settings.values);
+            } else if (action === 'new') {
+                // Save as new preset
+                const defaultName = this.generatePresetName();
+                name = await this.modalManager.promptPresetName(defaultName);
+                
+                if (!name) {
+                    return; // Cancelled
+                }
+                
+                // Check if name already exists
+                if (this.presetManager.hasPreset(name)) {
+                    await this.modalManager.showError(`Preset "${name}" already exists. Choose a different name.`);
+                    return this.saveCurrentPreset(); // Re-prompt
+                }
+                
+                result = this.presetManager.savePreset(name, this.settings.values);
+            }
         }
         
-        const result = this.presetManager.savePreset(name, this.settings.values);
-        if (result.success) {
+        if (result && result.success) {
             this.updatePresetList();
             const presetDropdownText = document.querySelector('.preset-dropdown-text');
             const presetDropdownMenu = document.getElementById('presetDropdownMenu');
             // Display shortened name in dropdown
-            const displayName = name === 'Default' ? 'Default' : this.getDisplayName(name);
+            const displayName = name === 'New' ? 'New' : this.getDisplayName(name);
             presetDropdownText.textContent = displayName;
             this.currentPresetName = name;
             this.hasUnsavedChanges = false;
@@ -2249,8 +2483,8 @@ class VoidTypeface {
                 presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
                 newItem.classList.add('selected');
             }
-        } else {
-            alert(result.error || 'Error saving preset');
+        } else if (result && !result.success) {
+            await this.modalManager.showError(result.error || 'Failed to save preset.');
         }
     }
 
@@ -2352,9 +2586,13 @@ class VoidTypeface {
         
         // Track text changes through renderer
         const originalSetText = this.renderer.setText.bind(this.renderer);
+        let lastRendererText = null;
         this.renderer.setText = (text) => {
+            const oldText = lastRendererText;
             originalSetText(text);
-            if (!this.isLoadingPreset && !this.isInitializing && this.currentPresetName) {
+            lastRendererText = text;
+            // Only mark as changed if text actually changed
+            if (!this.isLoadingPreset && !this.isInitializing && this.currentPresetName && oldText !== null && oldText !== text) {
                 this.markAsChanged();
             }
         };
@@ -2375,7 +2613,7 @@ class VoidTypeface {
     }
 
     /**
-     * Update Save and Delete buttons visibility
+     * Update Save and Delete buttons visibility and dropdown state
      */
     updateSaveDeleteButtons() {
         // Don't show buttons in editor mode
@@ -2390,8 +2628,28 @@ class VoidTypeface {
         
         const savePresetBtn = document.getElementById('savePresetBtn');
         const deletePresetBtn = document.getElementById('deletePresetBtn');
-        const isDefaultPreset = this.currentPresetName === 'Default';
+        const presetDropdownToggle = document.getElementById('presetDropdownToggle');
+        const presetDropdownText = document.querySelector('.preset-dropdown-text');
+        const isDefaultPreset = this.currentPresetName === 'New';
         const isDefaultWithoutChanges = isDefaultPreset && !this.hasUnsavedChanges;
+        const names = this.presetManager.getPresetNames();
+        const hasCustomPresets = names.length > 1; // More than just New
+        
+        // Update dropdown text: show "Unsaved" if in New with changes, otherwise show current preset name
+        if (presetDropdownText) {
+            if (isDefaultPreset && this.hasUnsavedChanges) {
+                presetDropdownText.textContent = 'Unsaved';
+            } else {
+                const displayName = this.currentPresetName === 'New' ? 'New' : this.getDisplayName(this.currentPresetName);
+                presetDropdownText.textContent = displayName;
+            }
+        }
+        
+        // Disable dropdown if no custom presets and we're in New without changes
+        if (presetDropdownToggle) {
+            const shouldDisable = !hasCustomPresets && isDefaultWithoutChanges;
+            presetDropdownToggle.disabled = shouldDisable;
+        }
         
         // In Default without changes - NEVER show Save and Delete
         if (isDefaultWithoutChanges) {
@@ -2410,6 +2668,9 @@ class VoidTypeface {
         if (deletePresetBtn) {
             deletePresetBtn.style.display = !isDefaultPreset ? 'inline-flex' : 'none';
         }
+        
+        // Update preset list to reflect Unsaved state
+        this.updatePresetList();
     }
     
     /**

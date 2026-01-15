@@ -30,7 +30,7 @@
             <!-- Preset Dropdown -->
             <div class="preset-dropdown" id="presetDropdown">
                 <button class="preset-dropdown-toggle" id="presetDropdownToggle" type="button" aria-haspopup="listbox" aria-expanded="false">
-                    <span class="preset-dropdown-text">Default</span>
+                    <span class="preset-dropdown-text">New</span>
                     <svg class="preset-dropdown-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
@@ -40,10 +40,10 @@
                 </ul>
             </div>
 
-            <!-- Save Preset Button -->
+            <!-- Save Preset Button (hidden by default, shown via JS when needed) -->
             <button class="top-link" id="savePresetBtn" type="button" style="display: none;">Save</button>
 
-            <!-- Delete Preset Button -->
+            <!-- Delete Preset Button (hidden by default, shown via JS when needed) -->
             <button class="top-link btn-danger" id="deletePresetBtn" type="button" style="display: none;">Delete</button>
         </div>
 
@@ -430,6 +430,18 @@ Code</textarea>
         <button class="btn-fixed" id="exportBtn">Export SVG ⌘E</button>
         <button class="btn-fixed" id="renewBtn" style="display: none;">Update</button>
     </nav>
+
+    <!-- Modal Dialogs -->
+    <dialog class="modal" id="presetModal">
+        <div class="modal-content">
+            <h3 class="modal-title" id="modalTitle">Title</h3>
+            <p class="modal-text" id="modalText"></p>
+            <input type="text" class="modal-input" id="modalInput" style="display: none;" placeholder="Preset name">
+            <div class="modal-buttons" id="modalButtons">
+                <!-- Buttons will be added dynamically -->
+            </div>
+        </div>
+    </dialog>
 
     <script type="module" src="js/main.js"></script>
 </body>

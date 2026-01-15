@@ -36,7 +36,7 @@ export class PresetManager {
     }
 
     /**
-     * Save current parameters as preset
+     * Save current parameters as NEW preset
      * @param {string} name - preset name
      * @param {object} params - parameters object
      */
@@ -58,6 +58,74 @@ export class PresetManager {
             ...params,
             createdAt: new Date().toISOString()
         };
+
+        if (this.savePresets()) {
+            return { success: true };
+        } else {
+            return { success: false, error: 'Save error' };
+        }
+    }
+
+    /**
+     * Update existing preset with new parameters
+     * @param {string} name - preset name
+     * @param {object} params - parameters object
+     */
+    updatePreset(name, params) {
+        if (!name || name.trim() === '') {
+            return { success: false, error: 'Preset name cannot be empty' };
+        }
+
+        name = name.trim();
+
+        // Check if preset exists
+        if (!this.presets[name]) {
+            return { success: false, error: 'Preset not found' };
+        }
+
+        // Update preset, keeping original createdAt
+        const originalCreatedAt = this.presets[name].createdAt;
+        this.presets[name] = {
+            ...params,
+            createdAt: originalCreatedAt,
+            updatedAt: new Date().toISOString()
+        };
+
+        if (this.savePresets()) {
+            return { success: true };
+        } else {
+            return { success: false, error: 'Save error' };
+        }
+    }
+
+    /**
+     * Rename preset
+     * @param {string} oldName - current preset name
+     * @param {string} newName - new preset name
+     */
+    renamePreset(oldName, newName) {
+        if (!oldName || !newName) {
+            return { success: false, error: 'Names cannot be empty' };
+        }
+
+        oldName = oldName.trim();
+        newName = newName.trim();
+
+        if (oldName === newName) {
+            return { success: true }; // No change needed
+        }
+
+        if (!this.presets[oldName]) {
+            return { success: false, error: 'Preset not found' };
+        }
+
+        if (this.presets[newName]) {
+            return { success: false, error: 'Preset with this name already exists' };
+        }
+
+        // Copy preset with new name
+        this.presets[newName] = { ...this.presets[oldName] };
+        delete this.presets[oldName];
 
         if (this.savePresets()) {
             return { success: true };

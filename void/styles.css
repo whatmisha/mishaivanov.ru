@@ -1966,13 +1966,21 @@ legend {
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.7);
 }
 
-.preset-dropdown-toggle:hover {
+.preset-dropdown-toggle:hover:not(:disabled) {
     background-color: #2a2a2a;
 }
 
-.preset-dropdown-toggle:focus {
+.preset-dropdown-toggle:focus:not(:disabled) {
     outline: none;
     background-color: #2a2a2a;
+}
+
+.preset-dropdown-toggle:disabled {
+    cursor: default;
+}
+
+.preset-dropdown-toggle:disabled .preset-dropdown-arrow {
+    opacity: 0.3;
 }
 
 .preset-dropdown-text {
@@ -2027,6 +2035,10 @@ legend {
 }
 
 .preset-dropdown-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
     padding: var(--spacing-lg) var(--spacing-xl);
     color: var(--color-text-secondary);
     font-size: 0.9rem;
@@ -2035,10 +2047,52 @@ legend {
     border-radius: 8px;
     transition: all var(--transition-fast);
     font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    margin-bottom: 2px;
+}
+
+.preset-dropdown-item-name {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-bottom: 2px;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+}
+
+.preset-dropdown-item-colors {
+    display: inline-flex;
+    gap: 4px;
+    margin-left: 8px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.preset-dropdown-item-colors span {
+    font-size: 0.75rem;
+    line-height: 1;
+}
+
+.preset-dropdown-item-edit {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+    color: var(--color-text-muted);
+    border-radius: 4px;
+}
+
+.preset-dropdown-item:hover .preset-dropdown-item-edit {
+    opacity: 1;
+}
+
+.preset-dropdown-item-edit:hover {
+    color: var(--color-text);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .preset-dropdown-item:last-child {
@@ -2058,14 +2112,13 @@ legend {
 
 .preset-dropdown-item-danger {
     color: var(--color-text-muted);
-    border-top: 1px solid var(--color-border);
     margin-top: var(--spacing-sm);
     padding-top: var(--spacing-md);
 }
 
 .preset-dropdown-item-danger:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: var(--color-text);
+    background: #c0392b;
+    color: white;
 }
 
 /* ============================================
@@ -2943,14 +2996,141 @@ textarea::placeholder {
 }
 
 /* ============================================
-   СКРЫТИЕ УПРАВЛЕНИЯ ПРЕСЕТАМИ
+   MODAL DIALOGS
    ============================================ */
 
-/* Скрыть элементы управления пресетами (функционал остается) */
-#presetDropdown,
-#savePresetBtn,
-#deletePresetBtn {
-    display: none !important;
+.modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: none;
+    border-radius: var(--radius);
+    padding: 0;
+    background: var(--color-bg-panel);
+    color: var(--color-text);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.7);
+    max-width: 480px;
+    width: calc(100% - 32px);
+    margin: 0;
+}
+
+.modal::backdrop {
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    padding: var(--spacing-3xl);
+}
+
+.modal-title {
+    margin: 0 0 var(--spacing-3xl) 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.modal-text {
+    margin: 0 0 var(--spacing-3xl) 0;
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--color-text-muted);
+    line-height: 1.5;
+}
+
+.modal-text:empty {
+    display: none;
+    margin: 0;
+}
+
+.modal-input {
+    display: block;
+    width: 100%;
+    padding: var(--spacing-md);
+    margin: 0 0 var(--spacing-3xl) 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-input);
+    background: var(--color-bg-input);
+    color: var(--color-text);
+    font-size: 0.9rem;
+    font-family: inherit;
+    box-sizing: border-box;
+    transition: border-color var(--transition-normal);
+}
+
+.modal-input:hover {
+    border-color: var(--color-border);
+}
+
+.modal-input:focus {
+    outline: none;
+    border-color: var(--color-text-dim);
+}
+
+.modal-buttons {
+    display: flex;
+    gap: var(--spacing-md);
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.modal-btn {
+    padding: var(--spacing-md) var(--spacing-3xl);
+    border: none;
+    border-radius: var(--radius-button);
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-slow);
+    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    height: var(--button-height);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.modal-btn-primary {
+    background: var(--color-text);
+    color: var(--color-bg);
+}
+
+.modal-btn-primary:hover:not(:disabled) {
+    background: #2a2a2a;
+    color: var(--color-text);
+}
+
+.modal-btn-secondary {
+    background: var(--color-bg);
+    color: var(--color-text);
+}
+
+.modal-btn-secondary:hover:not(:disabled) {
+    background: var(--color-text);
+    color: var(--color-bg);
+}
+
+.modal-btn-danger {
+    background: #c0392b;
+    color: white;
+}
+
+.modal-btn-danger:hover:not(:disabled) {
+    background: #e74c3c;
+}
+
+.modal-btn-ghost {
+    background: var(--color-bg);
+    color: var(--color-text);
+}
+
+.modal-btn-ghost:hover:not(:disabled) {
+    background: var(--color-text);
+    color: var(--color-bg);
 }
 
 /* ============================================
