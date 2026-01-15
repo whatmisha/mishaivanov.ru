@@ -72,6 +72,14 @@ class VoidTypeface {
         // MIDI Controller
         this.midiController = null;
 
+        // Render scheduling for performance optimization
+        this.renderScheduled = false;
+        
+        // Throttled updateRenderer for slider dragging (16ms = ~60fps)
+        this.throttledUpdateRenderer = MathUtils.throttle(() => {
+            this.updateRenderer();
+        }, 16);
+
         // Check for mobile device
         this.isMobile = this.checkIsMobile();
         
@@ -378,7 +386,7 @@ class VoidTypeface {
             baseStep: 1,
             shiftStep: 4,
             onUpdate: (value) => {
-                this.updateRenderer();
+                this.throttledUpdateRenderer();
                 this.markAsChanged();
             }
         });
@@ -393,7 +401,7 @@ class VoidTypeface {
             baseStep: 0.01,
             shiftStep: 0.1,
             onUpdate: (value) => {
-                this.updateRenderer();
+                this.throttledUpdateRenderer();
                 this.markAsChanged();
             }
         });
@@ -424,7 +432,7 @@ class VoidTypeface {
             baseStep: 1,
             shiftStep: 1,
             onUpdate: (value) => {
-                this.updateRenderer();
+                this.throttledUpdateRenderer();
                 this.markAsChanged();
             }
         });
@@ -439,7 +447,7 @@ class VoidTypeface {
             baseStep: 0.1,
             shiftStep: 0.5,
             onUpdate: (value) => {
-                this.updateRenderer();
+                this.throttledUpdateRenderer();
                 this.markAsChanged();
             }
         });
@@ -454,7 +462,7 @@ class VoidTypeface {
             baseStep: 0.01,
             shiftStep: 0.1,
             onUpdate: (value) => {
-                this.updateRenderer();
+                this.throttledUpdateRenderer();
                 this.markAsChanged();
             }
         });
@@ -469,7 +477,7 @@ class VoidTypeface {
             baseStep: 0.01,
             shiftStep: 0.1,
             onUpdate: (value) => {
-                this.updateRenderer();
+                this.throttledUpdateRenderer();
                 this.markAsChanged();
             }
         });
@@ -527,7 +535,7 @@ class VoidTypeface {
                 if (this.renderer.clearModuleTypeCache) {
                     this.renderer.clearModuleTypeCache();
                 }
-                this.updateRenderer();
+                this.throttledUpdateRenderer();
             }
         });
 
@@ -546,7 +554,7 @@ class VoidTypeface {
                 if (this.renderer.clearModuleTypeCache) {
                     this.renderer.clearModuleTypeCache();
                 }
-                this.updateRenderer();
+                this.throttledUpdateRenderer();
             }
         });
 
@@ -565,7 +573,7 @@ class VoidTypeface {
                 if (this.renderer.clearModuleTypeCache) {
                     this.renderer.clearModuleTypeCache();
                 }
-                this.updateRenderer();
+                this.throttledUpdateRenderer();
             }
         });
 
@@ -584,7 +592,7 @@ class VoidTypeface {
                 if (this.renderer.clearModuleTypeCache) {
                     this.renderer.clearModuleTypeCache();
                 }
-                this.updateRenderer();
+                this.throttledUpdateRenderer();
             }
         });
 
@@ -603,7 +611,7 @@ class VoidTypeface {
                 if (this.renderer.clearModuleTypeCache) {
                     this.renderer.clearModuleTypeCache();
                 }
-                this.updateRenderer();
+                this.throttledUpdateRenderer();
             }
         });
 

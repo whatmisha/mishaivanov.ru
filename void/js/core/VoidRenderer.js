@@ -59,6 +59,10 @@ export class VoidRenderer {
         // Cache for glyph endpoint analysis (key: "glyphCode_cols_rows")
         this.glyphAnalysisCache = new Map();
         
+        // Cache for text layout (to avoid recalculating on every render)
+        this.layoutCache = null;
+        this.layoutCacheKey = null;
+        
         this.setupCanvas();
     }
 
@@ -75,6 +79,14 @@ export class VoidRenderer {
      */
     clearAlternativeGlyphCache() {
         this.alternativeGlyphCache = {};
+    }
+
+    /**
+     * Clear layout cache (called when text layout parameters change)
+     */
+    clearLayoutCache() {
+        this.layoutCache = null;
+        this.layoutCacheKey = null;
     }
 
     /**
@@ -149,6 +161,7 @@ export class VoidRenderer {
 
     /**
      * Calculate text layout (positions of all letters)
+     * Uses caching to avoid recalculation when parameters haven't changed
      * @param {number} canvasW - canvas width
      * @param {number} canvasH - canvas height
      * @returns {Object} {lines, totalWidth, totalHeight, startY, letterW, letterH, lineLayouts}
@@ -156,6 +169,14 @@ export class VoidRenderer {
     calculateTextLayout(canvasW, canvasH) {
         const text = this.params.text;
         if (!text) return null;
+        
+        // Generate cache key from parameters that affect layout
+        const cacheKey = `${text}_${canvasW}_${canvasH}_${this.params.moduleSize}_${this.params.letterSpacing}_${this.params.lineHeight}_${this.params.textAlign}`;
+        
+        // Return cached layout if parameters haven't changed
+        if (this.layoutCacheKey === cacheKey && this.layoutCache) {
+            return this.layoutCache;
+        }
         
         const lines = text.split('\n').map(line => line.replace(/^\s+|\s+$/g, ''));
         const letterW = this.cols * this.params.moduleSize;
@@ -226,7 +247,7 @@ export class VoidRenderer {
             });
         }
         
-        return {
+        const layout = {
             lines,
             totalWidth,
             totalHeight,
@@ -235,6 +256,12 @@ export class VoidRenderer {
             letterH,
             lineLayouts
         };
+        
+        // Cache the result
+        this.layoutCacheKey = cacheKey;
+        this.layoutCache = layout;
+        
+        return layout;
     }
 
     /**
