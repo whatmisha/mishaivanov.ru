@@ -56,6 +56,9 @@ export class VoidRenderer {
         this.canvasWidth = 0;
         this.canvasHeight = 0;
         
+        // Cache for glyph endpoint analysis (key: "glyphCode_cols_rows")
+        this.glyphAnalysisCache = new Map();
+        
         this.setupCanvas();
     }
 
@@ -72,6 +75,166 @@ export class VoidRenderer {
      */
     clearAlternativeGlyphCache() {
         this.alternativeGlyphCache = {};
+    }
+
+    /**
+     * Get cached glyph analysis for endpoints detection
+     * @param {string} glyphCode - glyph string
+     * @param {number} cols - number of columns
+     * @param {number} rows - number of rows
+     * @returns {Object} {connections: [], endpoints: []}
+     */
+    getCachedGlyphAnalysis(glyphCode, cols, rows) {
+        const key = `${glyphCode}_${cols}_${rows}`;
+        if (!this.glyphAnalysisCache.has(key)) {
+            this.glyphAnalysisCache.set(key, 
+                this.endpointDetector.analyzeGlyph(glyphCode, cols, rows)
+            );
+        }
+        return this.glyphAnalysisCache.get(key);
+    }
+
+    /**
+     * Calculate character width considering space logic
+     * @param {string} char - character
+     * @param {string} prevChar - previous character (or null)
+     * @param {number} letterW - standard letter width
+     * @param {number} moduleSize - module size
+     * @returns {Object} {width, addSpacing}
+     */
+    getCharWidth(char, prevChar, letterW, moduleSize) {
+        if (char === ' ') {
+            // If previous character is also space, this space = 2 modules without spacing
+            if (prevChar === ' ') {
+                return { width: 2 * moduleSize, addSpacing: false };
+            }
+            return { width: 3 * moduleSize, addSpacing: true };
+        }
+        return { width: letterW, addSpacing: true };
+    }
+
+    /**
+     * Calculate line width
+     * @param {string} line - line text
+     * @param {number} letterW - standard letter width
+     * @param {number} moduleSize - module size
+     * @param {number} letterSpacing - letter spacing
+     * @returns {number} line width in pixels
+     */
+    calculateLineWidth(line, letterW, moduleSize, letterSpacing) {
+        let lineWidth = 0;
+        for (let i = 0; i < line.length; i++) {
+            const { width, addSpacing } = this.getCharWidth(
+                line[i], 
+                i > 0 ? line[i - 1] : null,
+                letterW,
+                moduleSize
+            );
+            lineWidth += width + (addSpacing ? letterSpacing : 0);
+        }
+        // Remove last spacing (if last character doesn't follow a space)
+        if (line.length > 0) {
+            const lastCharInfo = this.getCharWidth(
+                line[line.length - 1],
+                line.length > 1 ? line[line.length - 2] : null,
+                letterW,
+                moduleSize
+            );
+            if (lastCharInfo.addSpacing) {
+                lineWidth -= letterSpacing;
+            }
+        }
+        return lineWidth;
+    }
+
+    /**
+     * Calculate text layout (positions of all letters)
+     * @param {number} canvasW - canvas width
+     * @param {number} canvasH - canvas height
+     * @returns {Object} {lines, totalWidth, totalHeight, startY, letterW, letterH, lineLayouts}
+     */
+    calculateTextLayout(canvasW, canvasH) {
+        const text = this.params.text;
+        if (!text) return null;
+        
+        const lines = text.split('\n').map(line => line.replace(/^\s+|\s+$/g, ''));
+        const letterW = this.cols * this.params.moduleSize;
+        const letterH = this.rows * this.params.moduleSize;
+        const moduleSize = this.params.moduleSize;
+        const letterSpacing = this.params.letterSpacing;
+        const textAlign = this.params.textAlign || 'center';
+        
+        // Calculate total width (max line width)
+        let totalWidth = 0;
+        const lineWidths = [];
+        for (const line of lines) {
+            const lineWidth = this.calculateLineWidth(line, letterW, moduleSize, letterSpacing);
+            lineWidths.push(lineWidth);
+            totalWidth = Math.max(totalWidth, lineWidth);
+        }
+        
+        const totalHeight = lines.length * (letterH + this.params.lineHeight) - this.params.lineHeight;
+        const startY = (canvasH - totalHeight) / 2;
+        
+        // Calculate layout for each line
+        const lineLayouts = [];
+        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+            const line = lines[lineIndex];
+            const lineWidth = lineWidths[lineIndex];
+            
+            // Calculate line X position based on alignment
+            let lineX;
+            if (textAlign === 'left') {
+                lineX = (canvasW - totalWidth) / 2;
+            } else if (textAlign === 'right') {
+                lineX = (canvasW + totalWidth) / 2 - lineWidth;
+            } else { // center
+                lineX = (canvasW - lineWidth) / 2;
+            }
+            
+            const lineY = startY + lineIndex * (letterH + this.params.lineHeight);
+            
+            // Calculate positions for each character
+            const charLayouts = [];
+            let currentX = lineX;
+            for (let charIndex = 0; charIndex < line.length; charIndex++) {
+                const char = line[charIndex];
+                const { width, addSpacing } = this.getCharWidth(
+                    char,
+                    charIndex > 0 ? line[charIndex - 1] : null,
+                    letterW,
+                    moduleSize
+                );
+                
+                charLayouts.push({
+                    char,
+                    x: currentX,
+                    y: lineY,
+                    width,
+                    height: letterH
+                });
+                
+                currentX += width + (addSpacing ? letterSpacing : 0);
+            }
+            
+            lineLayouts.push({
+                line,
+                x: lineX,
+                y: lineY,
+                width: lineWidth,
+                charLayouts
+            });
+        }
+        
+        return {
+            lines,
+            totalWidth,
+            totalHeight,
+            startY,
+            letterW,
+            letterH,
+            lineLayouts
+        };
     }
 
     /**
@@ -201,114 +364,18 @@ export class VoidRenderer {
             this.drawGrid(canvasW, canvasH);
         }
         
-        const text = this.params.text;
-        if (!text) return;
-        
-        // Split text into lines and remove spaces at start and end of each line
-        const lines = text.split('\n').map(line => line.replace(/^\s+|\s+$/g, ''));
-        
-        // Calculate dimensions
-        const letterW = this.cols * this.params.moduleSize;
-        const letterH = this.rows * this.params.moduleSize;
-        
-        // Calculate total text block dimensions considering different space width
-        let totalWidth = 0;
-        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-            const line = lines[lineIndex];
-            let lineWidth = 0;
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                // Double space (and more) has width of 5 modules (3+2) without letter spacing between spaces
-                let charWidth;
-                let addSpacing = true;
-                if (char === ' ') {
-                    // If previous character is also space, this space = 2 modules and WITHOUT letter spacing before it
-                    if (i > 0 && line[i - 1] === ' ') {
-                        charWidth = 2 * this.params.moduleSize;
-                        addSpacing = false; // Don't add spacing between spaces
-                    } else {
-                        charWidth = 3 * this.params.moduleSize;
-                    }
-                } else {
-                    charWidth = letterW;
-                }
-                lineWidth += charWidth + (addSpacing ? this.params.letterSpacing : 0);
-            }
-            // Remove last spacing (if last character is not space after space)
-            if (line.length > 0 && !(line[line.length - 1] === ' ' && line.length > 1 && line[line.length - 2] === ' ')) {
-                lineWidth -= this.params.letterSpacing;
-            }
-            totalWidth = Math.max(totalWidth, lineWidth);
-        }
-        const totalHeight = lines.length * (letterH + this.params.lineHeight) - this.params.lineHeight;
-        
-        // Initial vertical position (centering)
-        const startY = (canvasH - totalHeight) / 2;
-        
-        // Text alignment
-        const textAlign = this.params.textAlign || 'center';
+        // Calculate text layout
+        const layout = this.calculateTextLayout(canvasW, canvasH);
+        if (!layout) return;
         
         // Render each line
-        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-            const line = lines[lineIndex];
-            // Calculate line width considering different space width
-            let lineWidth = 0;
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                // Double space (and more) has width of 5 modules (3+2) without letter spacing between spaces
-                let charWidth;
-                let addSpacing = true;
-                if (char === ' ') {
-                    // If previous character is also space, this space = 2 modules and WITHOUT letter spacing before it
-                    if (i > 0 && line[i - 1] === ' ') {
-                        charWidth = 2 * this.params.moduleSize;
-                        addSpacing = false; // Don't add spacing between spaces
-                    } else {
-                        charWidth = 3 * this.params.moduleSize;
-                    }
-                } else {
-                    charWidth = letterW;
-                }
-                lineWidth += charWidth + (addSpacing ? this.params.letterSpacing : 0);
-            }
-            // Remove last spacing (if last character is not space after space)
-            if (line.length > 0 && !(line[line.length - 1] === ' ' && line.length > 1 && line[line.length - 2] === ' ')) {
-                lineWidth -= this.params.letterSpacing;
-            }
-            
-            // Calculate line position depending on alignment
-            let lineX;
-            if (textAlign === 'left') {
-                lineX = (canvasW - totalWidth) / 2;
-            } else if (textAlign === 'right') {
-                lineX = (canvasW + totalWidth) / 2 - lineWidth;
-            } else { // center
-                lineX = (canvasW - lineWidth) / 2;
-            }
-            
-            const lineY = startY + lineIndex * (letterH + this.params.lineHeight);
+        for (let lineIndex = 0; lineIndex < layout.lineLayouts.length; lineIndex++) {
+            const lineLayout = layout.lineLayouts[lineIndex];
             
             // Render each letter in line
-            let currentX = lineX;
-            for (let charIndex = 0; charIndex < line.length; charIndex++) {
-                const char = line[charIndex];
-                // Double space (and more) has width of 5 modules (3+2) without letter spacing between spaces
-                let charWidth;
-                let addSpacing = true;
-                if (char === ' ') {
-                    // If previous character is also space, this space = 2 modules and WITHOUT letter spacing before it
-                    if (charIndex > 0 && line[charIndex - 1] === ' ') {
-                        charWidth = 2 * this.params.moduleSize;
-                        addSpacing = false; // Don't add spacing between spaces
-                    } else {
-                        charWidth = 3 * this.params.moduleSize;
-                    }
-                } else {
-                    charWidth = letterW;
-                }
-                
-                this.drawLetter(char, currentX, lineY, lineIndex, charIndex);
-                currentX += charWidth + (addSpacing ? this.params.letterSpacing : 0);
+            for (let charIndex = 0; charIndex < lineLayout.charLayouts.length; charIndex++) {
+                const charLayout = lineLayout.charLayouts[charIndex];
+                this.drawLetter(charLayout.char, charLayout.x, charLayout.y, lineIndex, charIndex);
             }
         }
     }
@@ -430,7 +497,7 @@ export class VoidRenderer {
         let endpointMap = null; // Map: "i_j" -> {top, right, bottom, left}
         if (shouldUseEndpoints) {
             try {
-                const analysis = this.endpointDetector.analyzeGlyph(glyphCode, letterCols, this.rows);
+                const analysis = this.getCachedGlyphAnalysis(glyphCode, letterCols, this.rows);
                 endpointMap = {};
                 // Create map of modules with endpoints, indicating sides
                 analysis.endpoints.forEach(ep => {
@@ -459,17 +526,7 @@ export class VoidRenderer {
                 let stem = baseStem;
                 let strokesNum = this.params.strokesNum;
                 let strokeGapRatio = this.params.strokeGapRatio;
-                
-                if (this.params.mode === 'random') {
-                    // Create unique key for this module (position in text + position in module)
-                    const cacheKey = this.params.randomModeType === 'full' && lineIndex !== null && charIndex !== null
-                        ? `${lineIndex}_${charIndex}_${i}_${j}` 
-                        : null;
-                    const randomValues = this.getRandomModuleValues(moduleType, cacheKey);
-                    stem = randomValues.stem;
-                    strokesNum = randomValues.strokesNum;
-                    strokeGapRatio = randomValues.strokeGapRatio;
-                }
+                let randomValues = null;
                 
                 // Temporarily update parameters in moduleDrawer for this module
                 const originalStrokeGapRatio = this.moduleDrawer.strokeGapRatio;
@@ -479,12 +536,17 @@ export class VoidRenderer {
                 let moduleUseDash = false;
                 
                 if (this.params.mode === 'random') {
-                    this.moduleDrawer.strokeGapRatio = strokeGapRatio;
-                    // Apply dashLength and gapLength from randomValues
+                    // Create unique key for this module (position in text + position in module)
                     const cacheKey = this.params.randomModeType === 'full' && lineIndex !== null && charIndex !== null
                         ? `${lineIndex}_${charIndex}_${i}_${j}` 
                         : null;
-                    const randomValues = this.getRandomModuleValues(moduleType, cacheKey);
+                    randomValues = this.getRandomModuleValues(moduleType, cacheKey);
+                    stem = randomValues.stem;
+                    strokesNum = randomValues.strokesNum;
+                    strokeGapRatio = randomValues.strokeGapRatio;
+                    
+                    // Apply all random values to moduleDrawer
+                    this.moduleDrawer.strokeGapRatio = strokeGapRatio;
                     this.moduleDrawer.dashLength = randomValues.dashLength;
                     this.moduleDrawer.gapLength = randomValues.gapLength;
                     moduleUseDash = randomValues.useDash || false;
@@ -551,7 +613,7 @@ export class VoidRenderer {
         // Render endpoints and joints (if enabled)
         if (this.params.showEndpoints) {
             try {
-                const analysis = this.endpointDetector.analyzeGlyph(glyphCode, letterCols, this.rows);
+                const analysis = this.getCachedGlyphAnalysis(glyphCode, letterCols, this.rows);
                 this.endpointDetector.renderPoints(
                     this.ctx, 
                     analysis.connections, 
@@ -573,7 +635,7 @@ export class VoidRenderer {
         } else if (this.params.showTestCircles) {
             // If only Test enabled but not Endpoints, still analyze and draw circles
             try {
-                const analysis = this.endpointDetector.analyzeGlyph(glyphCode, letterCols, this.rows);
+                const analysis = this.getCachedGlyphAnalysis(glyphCode, letterCols, this.rows);
                 this.renderTestCircles(glyphCode, letterCols, analysis.endpoints, moduleW, x, y, baseStem);
             } catch (error) {
                 console.error('Error rendering test circles:', error);
@@ -671,9 +733,6 @@ export class VoidRenderer {
      * @returns {Object|null} - object with lineIndex, charIndex, char or null if click didn't hit letter
      */
     getLetterPositionAt(clickX, clickY) {
-        const text = this.params.text;
-        if (!text) return null;
-        
         // Ensure canvas dimensions are set
         if (this.canvasWidth === 0 || this.canvasHeight === 0) {
             const rect = this.canvas.getBoundingClientRect();
@@ -681,102 +740,23 @@ export class VoidRenderer {
             this.canvasHeight = rect.height;
         }
         
-        const lines = text.split('\n').map(line => line.replace(/^\s+|\s+$/g, ''));
-        const moduleW = this.params.moduleSize;
-        const moduleH = this.params.moduleSize;
-        const letterW = this.cols * moduleW;
-        const letterH = this.rows * moduleH;
-        
-        // Calculate total text block dimensions
-        let totalWidth = 0;
-        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-            const line = lines[lineIndex];
-            let lineWidth = 0;
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                let charWidth;
-                let addSpacing = true;
-                if (char === ' ') {
-                    if (i > 0 && line[i - 1] === ' ') {
-                        charWidth = 2 * moduleW;
-                        addSpacing = false;
-                    } else {
-                        charWidth = 3 * moduleW;
-                    }
-                } else {
-                    charWidth = letterW;
-                }
-                lineWidth += charWidth + (addSpacing ? this.params.letterSpacing : 0);
-            }
-            if (line.length > 0 && !(line[line.length - 1] === ' ' && line.length > 1 && line[line.length - 2] === ' ')) {
-                lineWidth -= this.params.letterSpacing;
-            }
-            totalWidth = Math.max(totalWidth, lineWidth);
-        }
-        const totalHeight = lines.length * (letterH + this.params.lineHeight) - this.params.lineHeight;
-        
-        const startY = (this.canvasHeight - totalHeight) / 2;
-        const textAlign = this.params.textAlign || 'center';
+        // Calculate text layout
+        const layout = this.calculateTextLayout(this.canvasWidth, this.canvasHeight);
+        if (!layout) return null;
         
         // Check each line
-        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
-            const line = lines[lineIndex];
-            let lineWidth = 0;
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
-                let charWidth;
-                let addSpacing = true;
-                if (char === ' ') {
-                    if (i > 0 && line[i - 1] === ' ') {
-                        charWidth = 2 * moduleW;
-                        addSpacing = false;
-                    } else {
-                        charWidth = 3 * moduleW;
-                    }
-                } else {
-                    charWidth = letterW;
-                }
-                lineWidth += charWidth + (addSpacing ? this.params.letterSpacing : 0);
-            }
-            if (line.length > 0 && !(line[line.length - 1] === ' ' && line.length > 1 && line[line.length - 2] === ' ')) {
-                lineWidth -= this.params.letterSpacing;
-            }
-            
-            let lineX;
-            if (textAlign === 'left') {
-                lineX = (this.canvasWidth - totalWidth) / 2;
-            } else if (textAlign === 'right') {
-                lineX = (this.canvasWidth + totalWidth) / 2 - lineWidth;
-            } else {
-                lineX = (this.canvasWidth - lineWidth) / 2;
-            }
-            
-            const lineY = startY + lineIndex * (letterH + this.params.lineHeight);
+        for (let lineIndex = 0; lineIndex < layout.lineLayouts.length; lineIndex++) {
+            const lineLayout = layout.lineLayouts[lineIndex];
             
             // Check each letter in line
-            let currentX = lineX;
-            for (let charIndex = 0; charIndex < line.length; charIndex++) {
-                const char = line[charIndex];
-                let charWidth;
-                let addSpacing = true;
-                if (char === ' ') {
-                    if (charIndex > 0 && line[charIndex - 1] === ' ') {
-                        charWidth = 2 * moduleW;
-                        addSpacing = false;
-                    } else {
-                        charWidth = 3 * moduleW;
-                    }
-                } else {
-                    charWidth = letterW;
-                }
+            for (let charIndex = 0; charIndex < lineLayout.charLayouts.length; charIndex++) {
+                const charLayout = lineLayout.charLayouts[charIndex];
                 
                 // Check if click hit this letter
-                if (clickX >= currentX && clickX < currentX + charWidth &&
-                    clickY >= lineY && clickY < lineY + letterH) {
-                    return { lineIndex, charIndex, char };
+                if (clickX >= charLayout.x && clickX < charLayout.x + charLayout.width &&
+                    clickY >= charLayout.y && clickY < charLayout.y + charLayout.height) {
+                    return { lineIndex, charIndex, char: charLayout.char };
                 }
-                
-                currentX += charWidth + (addSpacing ? this.params.letterSpacing : 0);
             }
         }
         
