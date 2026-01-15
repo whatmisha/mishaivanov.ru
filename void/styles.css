@@ -1092,9 +1092,22 @@ input[name="textAlign"]:checked + .align-icon-btn {
     border-color: var(--color-text-subtle);
 }
 
+.control-group input[type="text"]#hexColorInput::selection,
+.hex-color-input::selection {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--color-text);
+}
+
+.control-group input[type="text"]#hexColorInput::-moz-selection,
+.hex-color-input::-moz-selection {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--color-text);
+}
+
 /* HSB Picker - dropdown HSB picker */
 .hsb-picker {
-    margin-top: var(--spacing-lg);
+    margin-top: 15px;
+    margin-bottom: 15px;
     animation: slideDown var(--transition-normal) ease-out;
 }
 
@@ -1665,8 +1678,8 @@ legend {
 .color-pickers-compact-row {
     display: flex;
     align-items: stretch;
-    gap: 8px;
-    margin-bottom: 20px;
+    gap: 4px;
+    margin-bottom: 15px;
     padding-top: 1px; /* Prevent clipping on hover */
 }
 
@@ -2149,6 +2162,16 @@ textarea::placeholder {
     color: var(--color-text-muted);
 }
 
+textarea::selection {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--color-text);
+}
+
+textarea::-moz-selection {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--color-text);
+}
+
 .textarea-footer {
     display: flex;
     justify-content: space-between;
@@ -2182,6 +2205,16 @@ textarea::placeholder {
 
 .text-input::placeholder {
     color: var(--color-text-muted);
+}
+
+.text-input::selection {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--color-text);
+}
+
+.text-input::-moz-selection {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--color-text);
 }
 
 /* Select Input - dropdown list */
@@ -3021,6 +3054,7 @@ textarea::placeholder {
 }
 
 .modal-content {
+    width: 100%;
     padding: var(--spacing-3xl);
 }
 
@@ -3066,6 +3100,16 @@ textarea::placeholder {
 .modal-input:focus {
     outline: none;
     border-color: var(--color-text-dim);
+}
+
+.modal-input::selection {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--color-text);
+}
+
+.modal-input::-moz-selection {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--color-text);
 }
 
 .modal-buttons {
