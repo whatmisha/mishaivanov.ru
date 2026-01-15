@@ -349,6 +349,7 @@ body {
 
 /* Panel Content - panel content with collapse animation */
 .panel-content {
+    margin-top: 10px;
     padding-left: var(--spacing-3xl);
     padding-right: var(--spacing-3xl);
     padding-bottom: var(--spacing-3xl);
@@ -636,7 +637,7 @@ body {
 }
 
 .compact-input {
-    width: 36px;
+    width: 24px;
     background: transparent;
     border: none;
     color: var(--color-text);

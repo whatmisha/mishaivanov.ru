@@ -2499,8 +2499,15 @@ class VoidTypeface {
         // Full text (without spaces and line breaks)
         const fullText = text.replace(/\s+/g, ' ').trim();
         
-        // Mode name with capital letter
-        const modeName = mode.charAt(0).toUpperCase() + mode.slice(1);
+        // Map mode to display name (matching button labels)
+        const modeNameMap = {
+            'fill': 'Monoline',
+            'stripes': 'Stripes',
+            'dash': 'Dash',
+            'sd': 'Dashed Stripes',
+            'random': 'Random'
+        };
+        const modeName = modeNameMap[mode] || mode.charAt(0).toUpperCase() + mode.slice(1);
         
         let baseName = `${fullText} ${modeName}`;
         const existingNames = this.presetManager.getPresetNames();
