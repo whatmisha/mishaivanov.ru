@@ -88,6 +88,14 @@ export class VoidRenderer {
         this.layoutCache = null;
         this.layoutCacheKey = null;
     }
+    
+    /**
+     * Set color getter callback for Color Chaos mode
+     * @param {Function} callback - Function() => color
+     */
+    setColorGetter(callback) {
+        this.getColorForModule = callback;
+    }
 
     /**
      * Get cached glyph analysis for endpoints detection
@@ -605,6 +613,11 @@ export class VoidRenderer {
                     this.moduleDrawer.roundedCaps = isDashMode ? true : hasEndpoints;
                 }
                 
+                // Get color for this module (supports Color Chaos mode)
+                const moduleColor = (this.params.useColorChaos && this.getColorForModule) 
+                    ? this.getColorForModule()
+                    : this.params.color;
+                
                 this.moduleDrawer.drawModule(
                     this.ctx,
                     moduleType,
@@ -614,7 +627,7 @@ export class VoidRenderer {
                     moduleW,
                     moduleH,
                     stem,
-                    this.params.color,
+                    moduleColor,
                     this.params.mode === 'random' ? strokesNum : null
                 );
                 

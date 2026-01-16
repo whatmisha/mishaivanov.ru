@@ -48,6 +48,10 @@ class VoidTypeface {
                 randomRounded: false, // rounded line ends in Random mode (Rounded)
                 randomCloseEnds: true, // closing lines at ends in Random mode
                 randomDash: false, // dashed lines in Random mode
+                randomColor: false, // randomize colors in Random mode
+                randomColorChaos: false, // color chaos mode (each module gets unique color from palette)
+                randomColorChaosMin: 3, // minimum colors in palette
+                randomColorChaosMax: 6, // maximum colors in palette
                 roundedCaps: false, // rounded line ends (Rounded)
                 closeEnds: false, // closing lines at ends in Stripes mode
                 dashLength: 0.10, // dash length for Dash mode (multiplier of stem)
@@ -66,6 +70,11 @@ class VoidTypeface {
         // Color pickers
         this.unifiedColorPicker = null;
         this.activeColorType = 'letter'; // 'letter', 'bg', 'grid'
+        
+        // Color Chaos mode
+        this.colorPalette = [];
+        this.moduleColorCache = new Map();
+        this.globalModuleIndex = 0;
         
         // Glyph Editor
         this.glyphEditor = null;
@@ -131,6 +140,14 @@ class VoidTypeface {
             if (this.renderer && this.renderer.clearModuleTypeCache) {
                 this.renderer.clearModuleTypeCache();
             }
+            
+            // Initialize color palette if Color Chaos is enabled
+            if (this.settings.get('randomColorChaos')) {
+                this.generateColorPalette();
+            }
+            
+            // Initialize global module index counter for Color Chaos
+            this.globalModuleIndex = 0;
             
             // First render (with correct parameter calculation)
             this.updateRenderer();
@@ -317,6 +334,9 @@ class VoidTypeface {
     initCanvas() {
         const canvas = document.getElementById('mainCanvas');
         this.renderer = new VoidRenderer(canvas);
+        
+        // Set color getter callback
+        this.renderer.setColorGetter(() => this.getModuleColor());
         
         // Set initial parameters
         this.renderer.updateParams(this.settings.values);
@@ -616,6 +636,26 @@ class VoidTypeface {
                 this.throttledUpdateRenderer();
             }
         });
+        
+        // Color Chaos Range (number of colors in palette)
+        this.rangeSliderController.initRangeSlider('randomColorChaosRangeSlider', {
+            minSetting: 'randomColorChaosMin',
+            maxSetting: 'randomColorChaosMax',
+            minValueId: 'randomColorChaosMinValue',
+            maxValueId: 'randomColorChaosMaxValue',
+            min: 3,
+            max: 12,
+            decimals: 0,
+            baseStep: 1,
+            shiftStep: 1,
+            onUpdate: (minValue, maxValue) => {
+                // Regenerate color palette when range changes
+                if (this.settings.get('randomColorChaos')) {
+                    this.generateColorPalette();
+                    this.updateRenderer();
+                }
+            }
+        });
 
         // Handlers for Stem Weight text fields
         const stemMinInput = document.getElementById('randomStemMinValue');
@@ -876,6 +916,8 @@ class VoidTypeface {
                     // Picker already open - add ● symbol only to new active color
                     this.updateColorIndicator(true);
                 }
+                // Update button position after picker state changes
+                setTimeout(() => this.updateRandomColorsButtonPosition(), 0);
             }
             // If openPicker = false, ● symbol already removed above
         };
@@ -900,6 +942,180 @@ class VoidTypeface {
         this.unifiedColorPicker.setColor(colorMap['letter']);
         // Ensure indicator is not displayed
         this.updateColorIndicator(false);
+        
+        // Random colors button
+        const randomColorsBtn = document.getElementById('randomColorsBtn');
+        if (randomColorsBtn) {
+            randomColorsBtn.addEventListener('click', () => {
+                this.randomizeColors();
+            });
+        }
+        
+        // Store original parent and next sibling for random button repositioning
+        this.randomBtnOriginalParent = randomColorsBtn?.parentElement;
+        this.randomBtnOriginalNextSibling = randomColorsBtn?.nextElementSibling;
+        
+        // Track picker open/close to move random button
+        const pickerElement = this.unifiedColorPicker.elements?.picker;
+        if (pickerElement && randomColorsBtn) {
+            const observer = new MutationObserver(() => {
+                this.updateRandomColorsButtonPosition();
+            });
+            observer.observe(pickerElement, {
+                attributes: true,
+                attributeFilter: ['style']
+            });
+        }
+    }
+    
+    /**
+     * Update position of random colors button based on picker state
+     */
+    updateRandomColorsButtonPosition() {
+        const randomColorsBtn = document.getElementById('randomColorsBtn');
+        const pickerContainer = document.getElementById('unifiedColorPickerContainer');
+        
+        if (!randomColorsBtn || !pickerContainer) return;
+        
+        const isOpen = this.unifiedColorPicker?.isOpen();
+        
+        if (isOpen) {
+            // Move button inside picker container (after hsb-picker)
+            if (randomColorsBtn.parentElement !== pickerContainer) {
+                pickerContainer.appendChild(randomColorsBtn);
+            }
+        } else {
+            // Move button back to original position
+            if (randomColorsBtn.parentElement !== this.randomBtnOriginalParent) {
+                if (this.randomBtnOriginalNextSibling) {
+                    this.randomBtnOriginalParent.insertBefore(randomColorsBtn, this.randomBtnOriginalNextSibling);
+                } else {
+                    this.randomBtnOriginalParent.appendChild(randomColorsBtn);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Generate random colors for type, background and grid
+     */
+    randomizeColors() {
+        // Generate random colors
+        const letterColor = this.generateRandomColor();
+        const bgColor = this.generateRandomColor();
+        const gridColor = this.generateRandomColor();
+        
+        // Apply colors
+        this.settings.set('letterColor', letterColor);
+        this.settings.set('bgColor', bgColor);
+        this.settings.set('gridColor', gridColor);
+        
+        // Update previews
+        const letterPreview = document.getElementById('letterColorPreview');
+        const bgPreview = document.getElementById('bgColorPreview');
+        const gridPreview = document.getElementById('gridColorPreview');
+        
+        this.updateColorPreview(letterPreview, letterColor);
+        this.updateColorPreview(bgPreview, bgColor);
+        this.updateColorPreview(gridPreview, gridColor);
+        
+        // Update picker if open
+        if (this.unifiedColorPicker) {
+            const colorMap = {
+                'letter': letterColor,
+                'bg': bgColor,
+                'grid': gridColor
+            };
+            this.unifiedColorPicker.setColor(colorMap[this.activeColorType]);
+        }
+        
+        // Render and mark as changed
+        this.updateRenderer();
+        this.markAsChanged();
+    }
+    
+    /**
+     * Generate a random HEX color
+     * @returns {string} Random color in #RRGGBB format
+     */
+    generateRandomColor() {
+        const r = Math.floor(Math.random() * 256);
+        const g = Math.floor(Math.random() * 256);
+        const b = Math.floor(Math.random() * 256);
+        return '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+    }
+    
+    /**
+     * Generate color palette for Color Chaos mode
+     */
+    generateColorPalette() {
+        const min = this.settings.get('randomColorChaosMin');
+        const max = this.settings.get('randomColorChaosMax');
+        const numColors = Math.floor(Math.random() * (max - min + 1)) + min;
+        
+        this.colorPalette = [];
+        for (let i = 0; i < numColors; i++) {
+            this.colorPalette.push(this.generateRandomColor());
+        }
+        
+        // Also randomize background and grid colors
+        const bgColor = this.generateRandomColor();
+        const gridColor = this.generateRandomColor();
+        
+        this.settings.set('bgColor', bgColor);
+        this.settings.set('gridColor', gridColor);
+        
+        // Update previews
+        const bgPreview = document.getElementById('bgColorPreview');
+        const gridPreview = document.getElementById('gridColorPreview');
+        
+        if (bgPreview) {
+            this.updateColorPreview(bgPreview, bgColor);
+        }
+        if (gridPreview) {
+            this.updateColorPreview(gridPreview, gridColor);
+        }
+        
+        // Update picker if needed
+        if (this.unifiedColorPicker) {
+            const colorMap = {
+                'letter': this.settings.get('letterColor'),
+                'bg': bgColor,
+                'grid': gridColor
+            };
+            if (this.activeColorType) {
+                this.unifiedColorPicker.setColor(colorMap[this.activeColorType]);
+            }
+        }
+        
+        // Clear color cache when regenerating palette
+        this.moduleColorCache = new Map();
+        this.globalModuleIndex = 0; // Reset global counter
+    }
+    
+    /**
+     * Get color for a specific module from palette
+     * @returns {string} Color from palette
+     */
+    getModuleColor() {
+        if (!this.settings.get('randomColorChaos') || !this.colorPalette || this.colorPalette.length === 0) {
+            return this.settings.get('letterColor');
+        }
+        
+        // Use global counter to ensure each module gets unique random color
+        if (!this.globalModuleIndex) {
+            this.globalModuleIndex = 0;
+        }
+        
+        const currentIndex = this.globalModuleIndex++;
+        
+        if (!this.moduleColorCache.has(currentIndex)) {
+            // Pick random color from palette
+            const colorIndex = Math.floor(Math.random() * this.colorPalette.length);
+            this.moduleColorCache.set(currentIndex, this.colorPalette[colorIndex]);
+        }
+        
+        return this.moduleColorCache.get(currentIndex);
     }
 
     /**
@@ -1343,12 +1559,14 @@ class VoidTypeface {
                 document.getElementById('randomControlGroup3'),
                 document.getElementById('randomControlGroupDashLength'),
                 document.getElementById('randomControlGroupGapLength'),
-                document.getElementById('randomControlGroup5')
+                document.getElementById('randomControlGroupColorChaos'),
+                document.getElementById('randomControlGroup5'),
+                document.getElementById('randomControlGroup6')
             ];
             randomGroups.forEach(group => {
                 if (group) {
                     // toggle-group-row elements use flex
-                    const isToggleRow = group.id === 'randomControlGroup' || group.id === 'randomControlGroup4';
+                    const isToggleRow = group.id === 'randomControlGroup' || group.id === 'randomControlGroup4' || group.id === 'randomControlGroup6';
                     const displayValue = isToggleRow ? 'flex' : 'block';
                     group.style.display = mode === 'random' ? displayValue : 'none';
                 }
@@ -1374,9 +1592,22 @@ class VoidTypeface {
             if (randomDashCheckbox && mode === 'random') {
                 randomDashCheckbox.checked = this.settings.get('randomDash') ?? false;
             }
+            
+            const randomColorCheckbox = document.getElementById('randomColorCheckbox');
+            if (randomColorCheckbox && mode === 'random') {
+                randomColorCheckbox.checked = this.settings.get('randomColor') ?? false;
+            }
+            
+            const randomColorChaosCheckbox = document.getElementById('randomColorChaosCheckbox');
+            if (randomColorChaosCheckbox && mode === 'random') {
+                randomColorChaosCheckbox.checked = this.settings.get('randomColorChaos') ?? false;
+            }
 
             // Update Dash Length and Gap Length sliders state
             this.updateRandomDashSlidersState();
+            
+            // Update Color Chaos slider visibility
+            this.updateColorChaosSliderVisibility();
             
             // Disable/enable Stem Weight in Metrics panel in Random mode
             const stemSlider = document.getElementById('stemSlider');
@@ -1444,6 +1675,14 @@ class VoidTypeface {
                     if (this.renderer.clearAlternativeGlyphCache) {
                         this.renderer.clearAlternativeGlyphCache();
                     }
+                    // Randomize colors if Color toggle is enabled
+                    if (this.settings.get('randomColor')) {
+                        this.randomizeColors();
+                    }
+                    // Generate new palette if Color Chaos is enabled
+                    if (this.settings.get('randomColorChaos')) {
+                        this.generateColorPalette();
+                    }
                     this.updateRenderer();
                     this.markAsChanged();
                 }
@@ -1507,6 +1746,59 @@ class VoidTypeface {
                 this.updateRenderer();
                 this.markAsChanged();
             });
+        }
+        
+        // Toggle for random mode (Color)
+        const randomColorCheckbox = document.getElementById('randomColorCheckbox');
+        if (randomColorCheckbox) {
+            randomColorCheckbox.addEventListener('change', () => {
+                this.settings.set('randomColor', randomColorCheckbox.checked);
+                // If Color is enabled, disable Color Chaos
+                if (randomColorCheckbox.checked) {
+                    const randomColorChaosCheckbox = document.getElementById('randomColorChaosCheckbox');
+                    if (randomColorChaosCheckbox && randomColorChaosCheckbox.checked) {
+                        randomColorChaosCheckbox.checked = false;
+                        this.settings.set('randomColorChaos', false);
+                        this.updateColorChaosSliderVisibility();
+                    }
+                    this.randomizeColors();
+                }
+                this.markAsChanged();
+            });
+        }
+        
+        // Toggle for random mode (Color Chaos)
+        const randomColorChaosCheckbox = document.getElementById('randomColorChaosCheckbox');
+        if (randomColorChaosCheckbox) {
+            randomColorChaosCheckbox.addEventListener('change', () => {
+                this.settings.set('randomColorChaos', randomColorChaosCheckbox.checked);
+                // Update Color Chaos slider visibility
+                this.updateColorChaosSliderVisibility();
+                // If Color Chaos is enabled, disable Color
+                if (randomColorChaosCheckbox.checked) {
+                    const randomColorCheckbox = document.getElementById('randomColorCheckbox');
+                    if (randomColorCheckbox && randomColorCheckbox.checked) {
+                        randomColorCheckbox.checked = false;
+                        this.settings.set('randomColor', false);
+                    }
+                    // Generate palette and update
+                    this.generateColorPalette();
+                    this.updateRenderer();
+                }
+                this.markAsChanged();
+            });
+        }
+    }
+    
+    /**
+     * Update Color Chaos slider visibility
+     */
+    updateColorChaosSliderVisibility() {
+        const colorChaosEnabled = this.settings.get('randomColorChaos');
+        const colorChaosGroup = document.getElementById('randomControlGroupColorChaos');
+        
+        if (colorChaosGroup) {
+            colorChaosGroup.style.display = colorChaosEnabled ? 'block' : 'none';
         }
     }
 
@@ -2122,6 +2414,11 @@ class VoidTypeface {
                 this.settings.get('randomGapLengthMax'), 
                 false
             );
+            this.rangeSliderController.setValues('randomColorChaosRangeSlider', 
+                this.settings.get('randomColorChaosMin'), 
+                this.settings.get('randomColorChaosMax'), 
+                false
+            );
         }
 
         // Update rendering mode
@@ -2176,12 +2473,14 @@ class VoidTypeface {
             document.getElementById('randomControlGroup3'),
             document.getElementById('randomControlGroupDashLength'),
             document.getElementById('randomControlGroupGapLength'),
-            document.getElementById('randomControlGroup5')
+            document.getElementById('randomControlGroupColorChaos'),
+            document.getElementById('randomControlGroup5'),
+            document.getElementById('randomControlGroup6')
         ];
         randomGroups.forEach(group => {
             if (group) {
                 // toggle-group-row elements use flex
-                const isToggleRow = group.id === 'randomControlGroup' || group.id === 'randomControlGroup4';
+                const isToggleRow = group.id === 'randomControlGroup' || group.id === 'randomControlGroup4' || group.id === 'randomControlGroup6';
                 const displayValue = isToggleRow ? 'flex' : 'block';
                 group.style.display = mode === 'random' ? displayValue : 'none';
             }
@@ -2210,9 +2509,22 @@ class VoidTypeface {
         if (randomDashCheckbox) {
             randomDashCheckbox.checked = this.settings.get('randomDash') ?? false;
         }
+        
+        const randomColorCheckbox = document.getElementById('randomColorCheckbox');
+        if (randomColorCheckbox) {
+            randomColorCheckbox.checked = this.settings.get('randomColor') ?? false;
+        }
+        
+        const randomColorChaosCheckbox = document.getElementById('randomColorChaosCheckbox');
+        if (randomColorChaosCheckbox) {
+            randomColorChaosCheckbox.checked = this.settings.get('randomColorChaos') ?? false;
+        }
 
         // Update Dash Length and Gap Length sliders state
         this.updateRandomDashSlidersState();
+        
+        // Update Color Chaos slider visibility
+        this.updateColorChaosSliderVisibility();
 
         // Disable/enable Stem Weight in Metrics panel in Random mode
         const stemSlider = document.getElementById('stemSlider');
@@ -2378,6 +2690,11 @@ class VoidTypeface {
             randomRounded: this.settings.get('randomRounded') || false,
             randomCloseEnds: this.settings.get('randomCloseEnds') !== undefined ? this.settings.get('randomCloseEnds') : true,
             randomDash: this.settings.get('randomDash') !== undefined ? this.settings.get('randomDash') : false,
+            randomColor: this.settings.get('randomColor') !== undefined ? this.settings.get('randomColor') : false,
+            randomColorChaos: this.settings.get('randomColorChaos') !== undefined ? this.settings.get('randomColorChaos') : false,
+            randomColorChaosMin: this.settings.get('randomColorChaosMin'),
+            randomColorChaosMax: this.settings.get('randomColorChaosMax'),
+            useColorChaos: this.settings.get('randomColorChaos') && this.settings.get('mode') === 'random',
             roundedCaps: this.settings.get('roundedCaps') || false,
             closeEnds: this.settings.get('closeEnds') || false,
             dashLength: this.settings.get('dashLength') || 0.10,
@@ -2394,6 +2711,9 @@ class VoidTypeface {
         // Set text from settings
         this.renderer.setText(this.settings.get('text'));
         
+        // Reset global module index counter before each render for Color Chaos stability
+        this.globalModuleIndex = 0;
+        
         this.renderer.render();
     }
 
@@ -2401,6 +2721,8 @@ class VoidTypeface {
      * Экспорт в SVG
      */
     exportSVG() {
+        // Reset global module index for Color Chaos consistency
+        this.globalModuleIndex = 0;
         this.exporter.exportToSVG();
     }
 
@@ -2408,6 +2730,8 @@ class VoidTypeface {
      * Копировать SVG в буфер обмена
      */
     async copySVG() {
+        // Reset global module index for Color Chaos consistency
+        this.globalModuleIndex = 0;
         await this.exporter.copySVG();
     }
 

@@ -96,6 +96,10 @@ export class VoidExporter {
             if (this.settings.get('closeEnds') !== undefined) {
                 params.closeEnds = this.settings.get('closeEnds');
             }
+            // Get Color Chaos settings
+            if (this.settings.get('randomColorChaos') !== undefined) {
+                params.useColorChaos = this.settings.get('randomColorChaos') && this.settings.get('mode') === 'random';
+            }
         } else if (params.includeGridToExport === undefined) {
             // If settings unavailable, use showGrid from params
             params.includeGridToExport = params.showGrid || false;
@@ -197,8 +201,13 @@ export class VoidExporter {
             svgContent += this.renderGridToSVG(svgSize, svgSize, params, offsetX, offsetY);
         }
 
-        // Group for letters (use color from settings)
+        // Group for letters (use color from settings, unless Color Chaos is enabled)
+        if (params.useColorChaos) {
+            // In Color Chaos mode, each module will have its own stroke color
+            svgContent += `  <g id="typo" fill="none">\n`;
+        } else {
             svgContent += `  <g id="typo" stroke="${params.color || '#ffffff'}" fill="none">\n`;
+        }
 
         // Arrays for collecting all points (if endpoints enabled)
         const allConnections = [];
@@ -587,6 +596,12 @@ export class VoidExporter {
                 }
                 const actualStrokesNum = params.mode === 'fill' ? 1 : strokesNum;
                 
+                // Get color for this module if Color Chaos is enabled
+                let moduleColor = null;
+                if (params.useColorChaos && this.renderer && this.renderer.getColorForModule) {
+                    moduleColor = this.renderer.getColorForModule();
+                }
+                
                 const moduleSVG = this.renderModuleToSVG(
                     moduleType, 
                     rotation, 
@@ -604,7 +619,8 @@ export class VoidExporter {
                     gapLength,
                     endpointSides,
                     shouldUseCloseEnds,
-                    params.dashChess !== undefined ? params.dashChess : false
+                    params.dashChess !== undefined ? params.dashChess : false,
+                    moduleColor
                 );
                 
                 if (moduleSVG) {
@@ -620,7 +636,7 @@ export class VoidExporter {
     /**
      * Render module to SVG
      */
-    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, strokeGapRatio, cornerRadius = 0, roundedCaps = false, dashLength = 0.10, gapLength = 0.30, endpointSides = null, closeEnds = false, dashChess = false) {
+    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, strokeGapRatio, cornerRadius = 0, roundedCaps = false, dashLength = 0.10, gapLength = 0.30, endpointSides = null, closeEnds = false, dashChess = false, color = null) {
         if (type === 'E') return ''; // Empty
         
         // Helper function: get local endpoint sides considering rotation
@@ -743,7 +759,9 @@ export class VoidExporter {
         if (!paths) return '';
 
         // Wrap in group with transformation
-        return `      <g transform="translate(${centerX}, ${centerY}) rotate(${angle})">\n${paths}      </g>\n`;
+        // Add stroke attribute if color is provided (for Color Chaos mode)
+        const strokeAttr = color ? ` stroke="${color}"` : '';
+        return `      <g transform="translate(${centerX}, ${centerY}) rotate(${angle})"${strokeAttr}>\n${paths}      </g>\n`;
     }
 
     /**

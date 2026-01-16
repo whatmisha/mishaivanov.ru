@@ -148,6 +148,24 @@ Code</textarea>
                         </div>
 
                     </section>
+                    
+                    <!-- Grid, Endpoints and Test Toggles -->
+                    <section class="control-section">
+                        <div class="control-group toggle-group-row" style="display: flex;">
+                            <label class="checkbox-label" for="showGridCheckbox">
+                                <input type="checkbox" id="showGridCheckbox" checked>
+                                <span>Grid</span>
+                            </label>
+                            <label class="checkbox-label" for="showEndpointsCheckbox">
+                                <input type="checkbox" id="showEndpointsCheckbox">
+                                <span>Ends</span>
+                            </label>
+                            <label class="checkbox-label" for="showTestCheckbox">
+                                <input type="checkbox" id="showTestCheckbox">
+                                <span>Pointer</span>
+                            </label>
+                        </div>
+                    </section>
                 </div>
             </aside>
 
@@ -285,8 +303,20 @@ Code</textarea>
                                 </label>
                             <div id="randomGapLengthRangeSlider" class="range-slider-container"></div>
                         </div>
+                        
+                        <div class="control-group" id="randomControlGroupColorChaos" style="display: none;">
+                            <label>
+                                <span>Colors</span>
+                                <div class="range-value-display">
+                                    <input type="text" class="value-display" id="randomColorChaosMinValue" value="3">
+                                    <span class="range-separator">–</span>
+                                    <input type="text" class="value-display" id="randomColorChaosMaxValue" value="6">
+                                </div>
+                            </label>
+                            <div id="randomColorChaosRangeSlider" class="range-slider-container"></div>
+                        </div>
 
-                        <!-- Random Mode Controls: Chaos/Alt/Chess, Round/Close/Dash -->
+                        <!-- Random Mode Controls: Chaos/Alt/Chess -->
                         <div class="control-group toggle-group-row" id="randomControlGroup" style="display: none;">
                             <label class="checkbox-label" for="randomFullRandomCheckbox">
                                 <input type="checkbox" id="randomFullRandomCheckbox">
@@ -315,18 +345,30 @@ Code</textarea>
                                 <span>Dash</span>
                             </label>
                         </div>
+                        
+                        <!-- Random Mode Controls: Color/Color Chaos -->
+                        <div class="control-group toggle-group-row" id="randomControlGroup6" style="display: none;">
+                            <label class="checkbox-label" for="randomColorCheckbox">
+                                <input type="checkbox" id="randomColorCheckbox">
+                                <span>Color</span>
+                            </label>
+                            <label class="checkbox-label" for="randomColorChaosCheckbox">
+                                <input type="checkbox" id="randomColorChaosCheckbox">
+                                <span>Color Chaos</span>
+                            </label>
+                        </div>
 
                         <div class="control-group" id="randomControlGroup5" style="display: none; margin-top: 24px;">
-                            <button type="button" class="btn-secondary" id="renewRandomBtn" style="width: 100%;">Update</button>
+                            <button type="button" class="btn-secondary" id="renewRandomBtn" style="width: 100%;">Randomize</button>
                         </div>
                     </section>
                 </div>
             </aside>
 
-            <!-- View Panel -->
+            <!-- Colors Panel -->
             <aside class="controls-panel controls-panel-text" id="viewColorsPanel">
                 <div class="panel-header" id="viewColorsPanelHeader">
-                    <span>View</span>
+                    <span>Colors</span>
                     <span class="collapse-icon">
                         <svg width="10" height="6" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -353,24 +395,13 @@ Code</textarea>
                             </button>
                         </div>
                         
+                        <!-- Random Colors Button (shown by default, hidden when picker is open) -->
+                        <button type="button" class="btn-random-colors" id="randomColorsBtn" aria-label="Randomize colors">
+                            Randomize Colors
+                        </button>
+                        
                         <!-- Unified Color Picker -->
                         <div id="unifiedColorPickerContainer"></div>
-                    </div>
-
-                    <!-- Grid, Endpoints and Test Toggles -->
-                    <div class="control-group toggle-group-row" style="display: flex;">
-                        <label class="checkbox-label" for="showGridCheckbox">
-                            <input type="checkbox" id="showGridCheckbox" checked>
-                            <span>Grid</span>
-                        </label>
-                        <label class="checkbox-label" for="showEndpointsCheckbox">
-                            <input type="checkbox" id="showEndpointsCheckbox">
-                            <span>Ends</span>
-                        </label>
-                        <label class="checkbox-label" for="showTestCheckbox">
-                            <input type="checkbox" id="showTestCheckbox">
-                            <span>Pointer</span>
-                        </label>
                     </div>
 
                 </div>

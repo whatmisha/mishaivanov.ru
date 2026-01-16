@@ -1728,6 +1728,40 @@ legend {
     margin-bottom: 4px;
 }
 
+/* Random Colors Button */
+.btn-random-colors {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    background: var(--color-bg);
+    border: none;
+    border-radius: 18px;
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    margin-bottom: 15px;
+}
+
+/* When button is inside picker container (moved there when picker opens) */
+#unifiedColorPickerContainer .btn-random-colors {
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.btn-random-colors:hover {
+    background: var(--color-text);
+    color: var(--color-bg);
+}
+
+.btn-random-colors:active {
+    transform: scale(0.98);
+}
+
 .segmented-control input[type="radio"].hidden,
 .segmented-control label.hidden {
     display: none !important;
