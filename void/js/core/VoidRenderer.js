@@ -302,8 +302,10 @@ export class VoidRenderer {
 
     /**
      * Update parameters
+     * @param {Object} newParams - new parameter values
+     * @param {boolean} skipCacheClear - if true, don't clear random caches (used when loading preset with saved caches)
      */
-    updateParams(newParams) {
+    updateParams(newParams, skipCacheClear = false) {
         // Check if random parameters changed and clear cache if yes
         const oldStemMin = this.params.randomStemMin;
         const oldStemMax = this.params.randomStemMax;
@@ -315,8 +317,8 @@ export class VoidRenderer {
         
         Object.assign(this.params, newParams);
         
-        // If random parameters changed, clear cache
-        if (this.params.mode === 'random' && (
+        // If random parameters changed, clear cache (unless loading preset with saved caches)
+        if (!skipCacheClear && this.params.mode === 'random' && (
             oldStemMin !== this.params.randomStemMin ||
             oldStemMax !== this.params.randomStemMax ||
             oldStrokesMin !== this.params.randomStrokesMin ||

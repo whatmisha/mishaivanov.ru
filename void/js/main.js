@@ -2006,12 +2006,8 @@ class VoidTypeface {
         // Create or update default preset
         const defaultPreset = this.presetManager.loadPreset('New');
         if (!defaultPreset) {
-            // Create new default preset
-            // Include alternative glyph cache in preset
-            const presetData = {
-                ...this.settings.values,
-                alternativeGlyphCache: this.renderer?.alternativeGlyphCache ? { ...this.renderer.alternativeGlyphCache } : {}
-            };
+            // Create new default preset with all random caches
+            const presetData = this.collectPresetData();
             this.presetManager.savePreset('New', presetData);
         } else {
             // Update existing New preset if text is outdated
@@ -2200,12 +2196,8 @@ class VoidTypeface {
                                     return;
                                 }
                             } else {
-                                // Update current preset
-                                // Include alternative glyph cache in preset
-                                const presetData = {
-                                    ...this.settings.values,
-                                    alternativeGlyphCache: this.renderer?.alternativeGlyphCache ? { ...this.renderer.alternativeGlyphCache } : {}
-                                };
+                                // Update current preset with all random caches
+                                const presetData = this.collectPresetData();
                                 this.presetManager.updatePreset(this.currentPresetName, presetData);
                                 this.updatePresetList();
                             }
@@ -2460,9 +2452,12 @@ class VoidTypeface {
         // Set preset name BEFORE applying parameters so tracking knows current preset
         this.currentPresetName = name;
 
-        // Apply all parameters from preset
+        // List of cache keys that should not be applied to settings
+        const cacheKeys = ['createdAt', 'updatedAt', 'alternativeGlyphCache', 'moduleTypeCache', 'moduleValueCache', 'colorPalette', 'moduleColorCache'];
+        
+        // Apply all parameters from preset (excluding cache data)
         Object.keys(preset).forEach(key => {
-            if (key !== 'createdAt' && key !== 'updatedAt' && key !== 'alternativeGlyphCache' && this.settings.values.hasOwnProperty(key)) {
+            if (!cacheKeys.includes(key) && this.settings.values.hasOwnProperty(key)) {
                 this.settings.set(key, preset[key]);
             }
         });
@@ -2475,34 +2470,52 @@ class VoidTypeface {
             this.renderer.alternativeGlyphCache = {};
         }
         
+        // Restore module type cache (random values for each module type)
+        if (preset.moduleTypeCache && this.renderer) {
+            this.renderer.moduleTypeCache = { ...preset.moduleTypeCache };
+        } else if (this.renderer) {
+            this.renderer.moduleTypeCache = {};
+        }
+        
+        // Restore module value cache (random values for each module in full random mode)
+        if (preset.moduleValueCache && this.renderer) {
+            this.renderer.moduleValueCache = { ...preset.moduleValueCache };
+        } else if (this.renderer) {
+            this.renderer.moduleValueCache = {};
+        }
+        
         // Check if Color Chaos is enabled in loaded preset
         const colorChaos = preset.colorChaos;
         const randomColorChaos = preset.randomColorChaos;
         const mode = preset.mode;
         const hasColorChaos = colorChaos || (randomColorChaos && mode === 'random');
         
-        // Clear Color Chaos palette and cache if it's not enabled in loaded preset
+        // Restore or clear Color Chaos palette and cache
         if (!hasColorChaos) {
             this.colorPalette = [];
             this.moduleColorCache = new Map();
             this.globalModuleIndex = 0;
+        } else if (preset.colorPalette && preset.colorPalette.length > 0) {
+            // Restore saved palette and module color cache
+            this.colorPalette = [...preset.colorPalette];
+            if (preset.moduleColorCache) {
+                // Convert object back to Map
+                this.moduleColorCache = new Map(Object.entries(preset.moduleColorCache).map(([k, v]) => [parseInt(k), v]));
+            } else {
+                this.moduleColorCache = new Map();
+            }
+            this.globalModuleIndex = this.moduleColorCache.size;
         } else {
-            // If Color Chaos is enabled, regenerate palette
+            // If Color Chaos is enabled but no saved palette, generate new one
             this.generateColorPalette();
         }
         
         if (updateUI) {
-            // Clear random values cache before updating renderer
-            // to use correct values from loaded preset
-            if (this.renderer && this.renderer.clearModuleTypeCache) {
-                this.renderer.clearModuleTypeCache();
-            }
-            
             // Update UI (still with isLoadingPreset = true to prevent markAsChanged)
             this.updateUIFromSettings();
             
-            // Update renderer
-            this.updateRenderer();
+            // Update renderer with skipCacheClear=true to preserve restored caches
+            this.updateRenderer(true);
         }
         
         // Reset changes flag and loading flag AFTER all UI updates
@@ -2833,8 +2846,9 @@ class VoidTypeface {
 
     /**
      * Update renderer with current settings
+     * @param {boolean} skipCacheClear - if true, don't clear random caches (used when loading preset with saved caches)
      */
-    updateRenderer() {
+    updateRenderer(skipCacheClear = false) {
         // Don't update renderer in editor mode
         const currentMode = this.settings.get('currentMode') || 'normal';
         if (currentMode === 'editor') return;
@@ -2891,7 +2905,7 @@ class VoidTypeface {
         };
         
 
-        this.renderer.updateParams(params);
+        this.renderer.updateParams(params, skipCacheClear);
         
         // Set text from settings
         this.renderer.setText(this.settings.get('text'));
@@ -2957,11 +2971,8 @@ class VoidTypeface {
                 return this.saveCurrentPreset(); // Re-prompt
             }
             
-            // Include alternative glyph cache in preset
-            const presetData = {
-                ...this.settings.values,
-                alternativeGlyphCache: this.renderer?.alternativeGlyphCache ? { ...this.renderer.alternativeGlyphCache } : {}
-            };
+            // Save preset with all random caches for exact layout reproduction
+            const presetData = this.collectPresetData();
             result = this.presetManager.savePreset(name, presetData);
         } else {
             // For custom preset: ask to update or save as new
@@ -2972,13 +2983,9 @@ class VoidTypeface {
             }
             
             if (action === 'update') {
-                // Update current preset
+                // Update current preset with all random caches
                 name = this.currentPresetName;
-                // Include alternative glyph cache in preset
-                const presetData = {
-                    ...this.settings.values,
-                    alternativeGlyphCache: this.renderer?.alternativeGlyphCache ? { ...this.renderer.alternativeGlyphCache } : {}
-                };
+                const presetData = this.collectPresetData();
                 result = this.presetManager.updatePreset(name, presetData);
             } else if (action === 'new') {
                 // Save as new preset
@@ -2995,12 +3002,9 @@ class VoidTypeface {
                     return this.saveCurrentPreset(); // Re-prompt
                 }
                 
-                // Include alternative glyph cache in preset
-            const presetData = {
-                ...this.settings.values,
-                alternativeGlyphCache: this.renderer?.alternativeGlyphCache ? { ...this.renderer.alternativeGlyphCache } : {}
-            };
-            result = this.presetManager.savePreset(name, presetData);
+                // Save preset with all random caches for exact layout reproduction
+                const presetData = this.collectPresetData();
+                result = this.presetManager.savePreset(name, presetData);
             }
         }
         
@@ -3022,6 +3026,26 @@ class VoidTypeface {
         } else if (result && !result.success) {
             await this.modalManager.showError(result.error || 'Failed to save preset.');
         }
+    }
+
+    /**
+     * Collect all preset data including random caches for exact layout reproduction
+     * @returns {Object} Complete preset data object
+     */
+    collectPresetData() {
+        return {
+            ...this.settings.values,
+            // Alternative glyph cache (which alternative is selected for each letter position)
+            alternativeGlyphCache: this.renderer?.alternativeGlyphCache ? { ...this.renderer.alternativeGlyphCache } : {},
+            // Module type cache (random values for each module type in byType mode)
+            moduleTypeCache: this.renderer?.moduleTypeCache ? { ...this.renderer.moduleTypeCache } : {},
+            // Module value cache (random values for each module in full random mode)
+            moduleValueCache: this.renderer?.moduleValueCache ? { ...this.renderer.moduleValueCache } : {},
+            // Color palette for Color Chaos mode
+            colorPalette: this.colorPalette ? [...this.colorPalette] : [],
+            // Module color cache (which color from palette is assigned to each module)
+            moduleColorCache: this.moduleColorCache ? Object.fromEntries(this.moduleColorCache) : {}
+        };
     }
 
     /**
