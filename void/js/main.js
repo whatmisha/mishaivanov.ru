@@ -887,6 +887,15 @@ class VoidTypeface {
             };
             const activePreview = previewMap[colorType];
             
+            // Don't allow switching to Type color if Color Chaos is enabled in Random mode
+            if (colorType === 'letter') {
+                const mode = this.settings.get('mode');
+                const colorChaosEnabled = this.settings.get('randomColorChaos');
+                if (mode === 'random' && colorChaosEnabled) {
+                    return; // Block opening Type color picker
+                }
+            }
+            
             // If clicked on already active color - close picker and remove ● symbol
             const pickerElement = this.unifiedColorPicker.elements?.picker;
             const isCurrentlyActive = this.activeColorType === colorType && 
@@ -948,6 +957,9 @@ class VoidTypeface {
         this.unifiedColorPicker.setColor(colorMap['letter']);
         // Ensure indicator is not displayed
         this.updateColorIndicator(false);
+        
+        // Update Type button state based on Color Chaos in Random mode
+        this.updateColorChaosSliderVisibility();
         
         // Randomize button
         const randomColorsBtn = document.getElementById('randomColorsBtn');
@@ -1646,14 +1658,11 @@ class VoidTypeface {
                 }
             }
             
-            // Clear cache when switching modes
+            // Clear random module cache when switching modes (so new random values generate in Random mode)
             if (this.renderer.clearModuleTypeCache) {
                 this.renderer.clearModuleTypeCache();
             }
-            // Clear alternative glyphs cache when switching modes
-            if (this.renderer.clearAlternativeGlyphCache) {
-                this.renderer.clearAlternativeGlyphCache();
-            }
+            // DON'T clear alternative glyphs cache - user-selected alternatives should persist across modes
             
             // Show/hide controls depending on mode
             // SD shows all controls (Lines, Contrast, Dash Length, Gap Length)
@@ -1930,6 +1939,16 @@ class VoidTypeface {
         if (colorChaosGroup) {
             colorChaosGroup.style.display = (mode === 'random' && colorChaosEnabled) ? 'block' : 'none';
         }
+        
+        // Update Type button (letterColorPreview) disabled state
+        // Disable Type button when Color Chaos is enabled in Random mode
+        const letterPreview = document.getElementById('letterColorPreview');
+        if (letterPreview) {
+            const shouldDisable = mode === 'random' && colorChaosEnabled;
+            letterPreview.disabled = shouldDisable;
+            letterPreview.style.opacity = shouldDisable ? '0.5' : '1';
+            letterPreview.style.cursor = shouldDisable ? 'default' : 'pointer';
+        }
     }
 
     /**
@@ -2094,28 +2113,50 @@ class VoidTypeface {
                 presetDropdownMenu.classList.remove('active');
                 
                 // Show rename modal
-                const newName = await this.modalManager.promptRename(presetName);
-                if (newName) {
+                const renameResult = await this.modalManager.promptRename(presetName);
+                if (renameResult.action === 'rename' && renameResult.newName) {
                     // Check if name already exists
-                    if (this.presetManager.hasPreset(newName)) {
-                        await this.modalManager.showError(`Preset "${newName}" already exists.`);
+                    if (this.presetManager.hasPreset(renameResult.newName)) {
+                        await this.modalManager.showError(`Preset "${renameResult.newName}" already exists.`);
                         return;
                     }
                     
-                    const result = this.presetManager.renamePreset(presetName, newName);
+                    const result = this.presetManager.renamePreset(presetName, renameResult.newName);
                     if (result.success) {
                         // Update current preset name if it was renamed
                         if (this.currentPresetName === presetName) {
-                            this.currentPresetName = newName;
+                            this.currentPresetName = renameResult.newName;
                         }
                         this.updatePresetList();
                         
                         // Update dropdown text if current preset was renamed
-                        if (this.currentPresetName === newName) {
-                            presetDropdownText.textContent = this.getDisplayName(newName);
+                        if (this.currentPresetName === renameResult.newName) {
+                            presetDropdownText.textContent = this.getDisplayName(renameResult.newName);
                         }
                     } else {
                         await this.modalManager.showError(result.error || 'Failed to rename preset.');
+                    }
+                } else if (renameResult.action === 'delete') {
+                    // Delete preset from rename modal
+                    const confirmed = await this.modalManager.confirmDelete(presetName);
+                    if (confirmed) {
+                        if (this.presetManager.deletePreset(presetName)) {
+                            // Update preset list first
+                            this.updatePresetList();
+                            
+                            // Switch to New if deleted preset was current
+                            if (this.currentPresetName === presetName) {
+                                this.loadPreset('New');
+                            }
+                            
+                            // Update dropdown UI
+                            presetDropdownText.textContent = 'New';
+                            const defaultItem = Array.from(presetDropdownMenu.children).find(el => el.dataset.value === 'New');
+                            if (defaultItem) {
+                                presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
+                                defaultItem.classList.add('selected');
+                            }
+                        }
                     }
                 }
                 return;
@@ -2463,25 +2504,32 @@ class VoidTypeface {
         });
         
         // Restore alternative glyph cache if present in preset
-        if (preset.alternativeGlyphCache && this.renderer) {
-            this.renderer.alternativeGlyphCache = { ...preset.alternativeGlyphCache };
-        } else if (this.renderer) {
-            // Clear cache if not present in preset
-            this.renderer.alternativeGlyphCache = {};
+        if (this.renderer) {
+            if (preset.alternativeGlyphCache && typeof preset.alternativeGlyphCache === 'object') {
+                this.renderer.alternativeGlyphCache = JSON.parse(JSON.stringify(preset.alternativeGlyphCache));
+            } else {
+                this.renderer.alternativeGlyphCache = {};
+            }
         }
         
         // Restore module type cache (random values for each module type)
-        if (preset.moduleTypeCache && this.renderer) {
-            this.renderer.moduleTypeCache = { ...preset.moduleTypeCache };
-        } else if (this.renderer) {
-            this.renderer.moduleTypeCache = {};
+        if (this.renderer) {
+            if (preset.moduleTypeCache && typeof preset.moduleTypeCache === 'object') {
+                // Deep copy to avoid reference issues
+                this.renderer.moduleTypeCache = JSON.parse(JSON.stringify(preset.moduleTypeCache));
+            } else {
+                this.renderer.moduleTypeCache = {};
+            }
         }
         
         // Restore module value cache (random values for each module in full random mode)
-        if (preset.moduleValueCache && this.renderer) {
-            this.renderer.moduleValueCache = { ...preset.moduleValueCache };
-        } else if (this.renderer) {
-            this.renderer.moduleValueCache = {};
+        if (this.renderer) {
+            if (preset.moduleValueCache && typeof preset.moduleValueCache === 'object') {
+                // Deep copy to avoid reference issues
+                this.renderer.moduleValueCache = JSON.parse(JSON.stringify(preset.moduleValueCache));
+            } else {
+                this.renderer.moduleValueCache = {};
+            }
         }
         
         // Check if Color Chaos is enabled in loaded preset
@@ -2510,13 +2558,28 @@ class VoidTypeface {
             this.generateColorPalette();
         }
         
+        // Store caches to pass to updateRenderer
+        this.pendingCacheRestore = {
+            moduleTypeCache: this.renderer?.moduleTypeCache ? JSON.parse(JSON.stringify(this.renderer.moduleTypeCache)) : null,
+            moduleValueCache: this.renderer?.moduleValueCache ? JSON.parse(JSON.stringify(this.renderer.moduleValueCache)) : null,
+            alternativeGlyphCache: this.renderer?.alternativeGlyphCache ? JSON.parse(JSON.stringify(this.renderer.alternativeGlyphCache)) : null
+        };
+        
         if (updateUI) {
+            // Clear layout cache to ensure fresh render with restored caches
+            if (this.renderer && this.renderer.clearLayoutCache) {
+                this.renderer.clearLayoutCache();
+            }
+            
             // Update UI (still with isLoadingPreset = true to prevent markAsChanged)
             this.updateUIFromSettings();
             
             // Update renderer with skipCacheClear=true to preserve restored caches
             this.updateRenderer(true);
         }
+        
+        // Clear pending cache restore
+        this.pendingCacheRestore = null;
         
         // Reset changes flag and loading flag AFTER all UI updates
         this.hasUnsavedChanges = false;
@@ -2907,6 +2970,19 @@ class VoidTypeface {
 
         this.renderer.updateParams(params, skipCacheClear);
         
+        // Restore caches from pending if available (used when loading preset)
+        if (this.pendingCacheRestore) {
+            if (this.pendingCacheRestore.moduleTypeCache && Object.keys(this.pendingCacheRestore.moduleTypeCache).length > 0) {
+                this.renderer.moduleTypeCache = this.pendingCacheRestore.moduleTypeCache;
+            }
+            if (this.pendingCacheRestore.moduleValueCache && Object.keys(this.pendingCacheRestore.moduleValueCache).length > 0) {
+                this.renderer.moduleValueCache = this.pendingCacheRestore.moduleValueCache;
+            }
+            if (this.pendingCacheRestore.alternativeGlyphCache && Object.keys(this.pendingCacheRestore.alternativeGlyphCache).length > 0) {
+                this.renderer.alternativeGlyphCache = this.pendingCacheRestore.alternativeGlyphCache;
+            }
+        }
+        
         // Set text from settings
         this.renderer.setText(this.settings.get('text'));
         
@@ -3033,14 +3109,29 @@ class VoidTypeface {
      * @returns {Object} Complete preset data object
      */
     collectPresetData() {
+        // Use deep copy for caches to avoid reference issues
+        let alternativeGlyphCache = {};
+        let moduleTypeCache = {};
+        let moduleValueCache = {};
+        
+        if (this.renderer?.alternativeGlyphCache) {
+            alternativeGlyphCache = JSON.parse(JSON.stringify(this.renderer.alternativeGlyphCache));
+        }
+        if (this.renderer?.moduleTypeCache) {
+            moduleTypeCache = JSON.parse(JSON.stringify(this.renderer.moduleTypeCache));
+        }
+        if (this.renderer?.moduleValueCache) {
+            moduleValueCache = JSON.parse(JSON.stringify(this.renderer.moduleValueCache));
+        }
+        
         return {
             ...this.settings.values,
             // Alternative glyph cache (which alternative is selected for each letter position)
-            alternativeGlyphCache: this.renderer?.alternativeGlyphCache ? { ...this.renderer.alternativeGlyphCache } : {},
+            alternativeGlyphCache,
             // Module type cache (random values for each module type in byType mode)
-            moduleTypeCache: this.renderer?.moduleTypeCache ? { ...this.renderer.moduleTypeCache } : {},
+            moduleTypeCache,
             // Module value cache (random values for each module in full random mode)
-            moduleValueCache: this.renderer?.moduleValueCache ? { ...this.renderer.moduleValueCache } : {},
+            moduleValueCache,
             // Color palette for Color Chaos mode
             colorPalette: this.colorPalette ? [...this.colorPalette] : [],
             // Module color cache (which color from palette is assigned to each module)

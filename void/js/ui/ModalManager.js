@@ -156,24 +156,70 @@ export class ModalManager {
     /**
      * Prompt for renaming a preset
      * @param {string} currentName - Current preset name
-     * @returns {Promise<string|null>} - New name or null if cancelled
+     * @returns {Promise<{action: 'rename'|'delete'|'cancel', newName?: string}>} - Action and new name if renamed
      */
     async promptRename(currentName) {
-        const result = await this.show({
-            title: 'Rename Preset',
-            showInput: true,
-            inputValue: currentName,
-            inputPlaceholder: 'Preset name',
-            buttons: [
-                { id: 'save', text: 'Rename', type: 'primary' },
-                { id: 'cancel', text: 'Cancel', type: 'ghost' }
-            ]
+        // Set content
+        this.titleEl.textContent = 'Rename Preset';
+        this.textEl.textContent = '';
+        
+        // Handle input
+        this.inputEl.style.display = 'block';
+        this.inputEl.value = currentName;
+        this.inputEl.placeholder = 'Preset name';
+        
+        // Create buttons with special layout: Rename and Cancel on left, Delete on right
+        this.buttonsEl.innerHTML = '';
+        this.buttonsEl.style.display = 'flex';
+        this.buttonsEl.style.justifyContent = 'space-between';
+        this.buttonsEl.style.alignItems = 'center';
+        this.buttonsEl.style.gap = 'var(--spacing-md)';
+        
+        // Left group: Rename and Cancel
+        const leftGroup = document.createElement('div');
+        leftGroup.style.display = 'flex';
+        leftGroup.style.gap = 'var(--spacing-md)';
+        leftGroup.style.flex = '1';
+        
+        const renameBtn = document.createElement('button');
+        renameBtn.className = 'modal-btn modal-btn-primary';
+        renameBtn.textContent = 'Rename';
+        renameBtn.addEventListener('click', () => this.close('save'));
+        leftGroup.appendChild(renameBtn);
+        
+        const cancelBtn = document.createElement('button');
+        cancelBtn.className = 'modal-btn modal-btn-ghost';
+        cancelBtn.textContent = 'Cancel';
+        cancelBtn.addEventListener('click', () => this.close('cancel'));
+        leftGroup.appendChild(cancelBtn);
+        
+        // Right group: Delete
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'modal-btn modal-btn-danger';
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.addEventListener('click', () => this.close('delete'));
+        
+        this.buttonsEl.appendChild(leftGroup);
+        this.buttonsEl.appendChild(deleteBtn);
+        
+        // Show modal
+        this.modal.showModal();
+        
+        // Focus input
+        this.inputEl.focus();
+        this.inputEl.select();
+        
+        // Return promise
+        const result = await new Promise(resolve => {
+            this.resolvePromise = resolve;
         });
         
         if (result.action === 'save' && result.inputValue && result.inputValue !== currentName) {
-            return result.inputValue;
+            return { action: 'rename', newName: result.inputValue };
+        } else if (result.action === 'delete') {
+            return { action: 'delete' };
         }
-        return null;
+        return { action: 'cancel' };
     }
 
     /**
