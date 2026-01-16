@@ -24,7 +24,7 @@ class VoidTypeface {
                 stemMultiplier: 0.5, // module size multiplier (actual value)
                 moduleSize: 24,
                 letterSpacingMultiplier: 1,
-                lineHeightMultiplier: 2,
+                lineHeightMultiplier: 1,
                 strokesNum: 2,
                 strokeGapRatio: 1.0,
                 mode: 'fill',
@@ -49,9 +49,11 @@ class VoidTypeface {
                 randomCloseEnds: true, // closing lines at ends in Random mode
                 randomDash: false, // dashed lines in Random mode
                 randomColor: false, // randomize colors in Random mode
-                randomColorChaos: false, // color chaos mode (each module gets unique color from palette)
+                randomColorChaos: false, // color chaos mode (each module gets unique color from palette) - for Random mode
                 randomColorChaosMin: 3, // minimum colors in palette
                 randomColorChaosMax: 6, // maximum colors in palette
+                colorChaos: false, // color chaos mode for Colors panel (works in any mode)
+                colorChaosColors: 4, // exact number of colors in palette for Colors panel
                 roundedCaps: false, // rounded line ends (Rounded)
                 closeEnds: false, // closing lines at ends in Stripes mode
                 dashLength: 0.10, // dash length for Dash mode (multiplier of stem)
@@ -142,7 +144,7 @@ class VoidTypeface {
             }
             
             // Initialize color palette if Color Chaos is enabled
-            if (this.settings.get('randomColorChaos')) {
+            if (this.settings.get('colorChaos') || (this.settings.get('randomColorChaos') && this.settings.get('mode') === 'random')) {
                 this.generateColorPalette();
             }
             
@@ -299,7 +301,7 @@ class VoidTypeface {
             
             // Use current multiplier values from settings
             const letterSpacingMultiplier = this.settings.get('letterSpacingMultiplier') || 1;
-            const lineHeightMultiplier = this.settings.get('lineHeightMultiplier') || 2;
+            const lineHeightMultiplier = this.settings.get('lineHeightMultiplier') || 1;
             
             // Account for padding (10% on each side for safety)
             const padding = 0.1;
@@ -512,7 +514,7 @@ class VoidTypeface {
         const input = document.getElementById(inputId);
         if (!input) return;
         
-        const { setting, min, max, step } = config;
+        const { setting, min, max, step, onUpdate } = config;
         
         // Set initial value
         input.value = this.settings.get(setting);
@@ -524,7 +526,11 @@ class VoidTypeface {
             value = Math.max(min, Math.min(max, value));
             input.value = value;
             this.settings.set(setting, value);
-            this.updateRenderer();
+            if (onUpdate) {
+                onUpdate();
+            } else {
+                this.updateRenderer();
+            }
             this.markAsChanged();
         };
         
@@ -644,7 +650,7 @@ class VoidTypeface {
             minValueId: 'randomColorChaosMinValue',
             maxValueId: 'randomColorChaosMaxValue',
             min: 3,
-            max: 12,
+            max: 32,
             decimals: 0,
             baseStep: 1,
             shiftStep: 1,
@@ -916,8 +922,8 @@ class VoidTypeface {
                     // Picker already open - add ● symbol only to new active color
                     this.updateColorIndicator(true);
                 }
-                // Update button position after picker state changes
-                setTimeout(() => this.updateRandomColorsButtonPosition(), 0);
+                // Update randomize controls position after picker state changes
+                setTimeout(() => this.updateRandomizeControlsPosition(), 0);
             }
             // If openPicker = false, ● symbol already removed above
         };
@@ -943,23 +949,90 @@ class VoidTypeface {
         // Ensure indicator is not displayed
         this.updateColorIndicator(false);
         
-        // Random colors button
+        // Randomize button
         const randomColorsBtn = document.getElementById('randomColorsBtn');
         if (randomColorsBtn) {
             randomColorsBtn.addEventListener('click', () => {
-                this.randomizeColors();
+                if (this.settings.get('colorChaos')) {
+                    // If Color Chaos is enabled, regenerate palette
+                    this.generateColorPalette();
+                    this.updateRenderer();
+                } else {
+                    // Otherwise, randomize colors normally
+                    this.randomizeColors();
+                }
             });
         }
         
-        // Store original parent and next sibling for random button repositioning
-        this.randomBtnOriginalParent = randomColorsBtn?.parentElement;
-        this.randomBtnOriginalNextSibling = randomColorsBtn?.nextElementSibling;
+        // Color Chaos toggle on Colors panel
+        const colorChaosCheckbox = document.getElementById('colorChaosCheckbox');
+        const colorChaosColorsInput = document.getElementById('colorChaosColorsValue');
+        if (colorChaosCheckbox) {
+            const updateInputState = (enabled) => {
+                if (colorChaosColorsInput) {
+                    colorChaosColorsInput.disabled = !enabled;
+                }
+            };
+            
+            colorChaosCheckbox.addEventListener('change', () => {
+                const enabled = colorChaosCheckbox.checked;
+                this.settings.set('colorChaos', enabled);
+                
+                // Update input disabled state (input is always visible now)
+                updateInputState(enabled);
+                
+                if (enabled) {
+                    // Generate palette and update
+                    this.generateColorPalette();
+                    this.updateRenderer();
+                } else {
+                    // Clear color chaos and use normal colors
+                    this.updateRenderer();
+                }
+                this.markAsChanged();
+            });
+            
+            // Set initial state
+            const currentMode = this.settings.get('mode');
+            const isRandomMode = currentMode === 'random';
+            if (isRandomMode) {
+                // Disable Color Chaos in Random mode
+                colorChaosCheckbox.checked = false;
+                this.settings.set('colorChaos', false);
+                colorChaosCheckbox.disabled = true;
+                updateInputState(false);
+            } else {
+                colorChaosCheckbox.checked = this.settings.get('colorChaos') || false;
+                colorChaosCheckbox.disabled = false;
+                updateInputState(colorChaosCheckbox.checked);
+            }
+        }
         
-        // Track picker open/close to move random button
+        // Color Chaos colors input (exact number)
+        this.initCompactInput('colorChaosColorsValue', {
+            setting: 'colorChaosColors',
+            min: 3,
+            max: 32,
+            step: 1,
+            onUpdate: () => {
+                // Regenerate palette when number changes
+                if (this.settings.get('colorChaos')) {
+                    this.generateColorPalette();
+                    this.updateRenderer();
+                }
+            }
+        });
+        
+        // Store original parent and next sibling for randomize controls container repositioning
+        const randomizeContainer = document.getElementById('randomizeControlsContainer');
+        this.randomizeContainerOriginalParent = randomizeContainer?.parentElement;
+        this.randomizeContainerOriginalNextSibling = randomizeContainer?.nextElementSibling;
+        
+        // Track picker open/close to move randomize controls container
         const pickerElement = this.unifiedColorPicker.elements?.picker;
-        if (pickerElement && randomColorsBtn) {
+        if (pickerElement && randomizeContainer) {
             const observer = new MutationObserver(() => {
-                this.updateRandomColorsButtonPosition();
+                this.updateRandomizeControlsPosition();
             });
             observer.observe(pickerElement, {
                 attributes: true,
@@ -969,28 +1042,28 @@ class VoidTypeface {
     }
     
     /**
-     * Update position of random colors button based on picker state
+     * Update position of randomize controls container based on picker state
      */
-    updateRandomColorsButtonPosition() {
-        const randomColorsBtn = document.getElementById('randomColorsBtn');
+    updateRandomizeControlsPosition() {
+        const randomizeContainer = document.getElementById('randomizeControlsContainer');
         const pickerContainer = document.getElementById('unifiedColorPickerContainer');
         
-        if (!randomColorsBtn || !pickerContainer) return;
+        if (!randomizeContainer || !pickerContainer) return;
         
         const isOpen = this.unifiedColorPicker?.isOpen();
         
         if (isOpen) {
-            // Move button inside picker container (after hsb-picker)
-            if (randomColorsBtn.parentElement !== pickerContainer) {
-                pickerContainer.appendChild(randomColorsBtn);
+            // Move container inside picker container (after hsb-picker)
+            if (randomizeContainer.parentElement !== pickerContainer) {
+                pickerContainer.appendChild(randomizeContainer);
             }
         } else {
-            // Move button back to original position
-            if (randomColorsBtn.parentElement !== this.randomBtnOriginalParent) {
-                if (this.randomBtnOriginalNextSibling) {
-                    this.randomBtnOriginalParent.insertBefore(randomColorsBtn, this.randomBtnOriginalNextSibling);
+            // Move container back to original position
+            if (randomizeContainer.parentElement !== this.randomizeContainerOriginalParent) {
+                if (this.randomizeContainerOriginalNextSibling) {
+                    this.randomizeContainerOriginalParent.insertBefore(randomizeContainer, this.randomizeContainerOriginalNextSibling);
                 } else {
-                    this.randomBtnOriginalParent.appendChild(randomColorsBtn);
+                    this.randomizeContainerOriginalParent.appendChild(randomizeContainer);
                 }
             }
         }
@@ -1049,9 +1122,23 @@ class VoidTypeface {
      * Generate color palette for Color Chaos mode
      */
     generateColorPalette() {
-        const min = this.settings.get('randomColorChaosMin');
-        const max = this.settings.get('randomColorChaosMax');
-        const numColors = Math.floor(Math.random() * (max - min + 1)) + min;
+        // Priority: Random mode settings > Colors panel settings
+        // Use range from Random mode if randomColorChaos is enabled, otherwise use exact number from Colors panel
+        let numColors;
+        const randomColorChaos = this.settings.get('randomColorChaos');
+        const mode = this.settings.get('mode');
+        if (randomColorChaos && mode === 'random') {
+            // Priority: Random mode settings
+            const min = this.settings.get('randomColorChaosMin');
+            const max = this.settings.get('randomColorChaosMax');
+            numColors = Math.floor(Math.random() * (max - min + 1)) + min;
+        } else if (this.settings.get('colorChaos')) {
+            // Fallback: Colors panel settings
+            numColors = this.settings.get('colorChaosColors') || 4;
+        } else {
+            // Default fallback
+            numColors = 4;
+        }
         
         this.colorPalette = [];
         for (let i = 0; i < numColors; i++) {
@@ -1098,7 +1185,8 @@ class VoidTypeface {
      * @returns {string} Color from palette
      */
     getModuleColor() {
-        if (!this.settings.get('randomColorChaos') || !this.colorPalette || this.colorPalette.length === 0) {
+        const colorChaosEnabled = this.settings.get('colorChaos') || (this.settings.get('randomColorChaos') && this.settings.get('mode') === 'random');
+        if (!colorChaosEnabled || !this.colorPalette || this.colorPalette.length === 0) {
             return this.settings.get('letterColor');
         }
         
@@ -1529,6 +1617,35 @@ class VoidTypeface {
             
             this.settings.set('mode', mode);
             
+            // If Random mode is enabled, disable Color Chaos from Colors panel
+            const colorChaosCheckbox = document.getElementById('colorChaosCheckbox');
+            if (mode === 'random') {
+                if (colorChaosCheckbox && colorChaosCheckbox.checked) {
+                    // Disable Color Chaos from Colors panel
+                    colorChaosCheckbox.checked = false;
+                    this.settings.set('colorChaos', false);
+                    // Update input state
+                    const colorChaosColorsInput = document.getElementById('colorChaosColorsValue');
+                    if (colorChaosColorsInput) {
+                        colorChaosColorsInput.disabled = true;
+                    }
+                }
+                // Disable checkbox
+                if (colorChaosCheckbox) {
+                    colorChaosCheckbox.disabled = true;
+                }
+            } else {
+                // Enable checkbox in other modes
+                if (colorChaosCheckbox) {
+                    colorChaosCheckbox.disabled = false;
+                    // Update input state based on checkbox state
+                    const colorChaosColorsInput = document.getElementById('colorChaosColorsValue');
+                    if (colorChaosColorsInput) {
+                        colorChaosColorsInput.disabled = !colorChaosCheckbox.checked;
+                    }
+                }
+            }
+            
             // Clear cache when switching modes
             if (this.renderer.clearModuleTypeCache) {
                 this.renderer.clearModuleTypeCache();
@@ -1557,9 +1674,11 @@ class VoidTypeface {
                 document.getElementById('randomControlGroupStem'),
                 document.getElementById('randomControlGroup2'),
                 document.getElementById('randomControlGroup3'),
-                document.getElementById('randomControlGroupDashLength'),
-                document.getElementById('randomControlGroupGapLength'),
-                document.getElementById('randomControlGroupColorChaos'),
+                // Dash Length and Gap Length groups are controlled by updateRandomDashSlidersState()
+                // document.getElementById('randomControlGroupDashLength'),
+                // document.getElementById('randomControlGroupGapLength'),
+                // Color Chaos group is controlled by updateColorChaosSliderVisibility()
+                // document.getElementById('randomControlGroupColorChaos'),
                 document.getElementById('randomControlGroup5'),
                 document.getElementById('randomControlGroup6')
             ];
@@ -1571,6 +1690,15 @@ class VoidTypeface {
                     group.style.display = mode === 'random' ? displayValue : 'none';
                 }
             });
+            
+            // Hide Dash Length and Gap Length groups initially (they will be shown by updateRandomDashSlidersState if needed)
+            const dashLengthGroup = document.getElementById('randomControlGroupDashLength');
+            const gapLengthGroup = document.getElementById('randomControlGroupGapLength');
+            if (dashLengthGroup) dashLengthGroup.style.display = 'none';
+            if (gapLengthGroup) gapLengthGroup.style.display = 'none';
+            
+            // Update Color Chaos slider visibility (must be called after mode is set)
+            this.updateColorChaosSliderVisibility();
             
             // Initialize toggle for random mode
             const randomFullRandomCheckbox = document.getElementById('randomFullRandomCheckbox');
@@ -1606,7 +1734,7 @@ class VoidTypeface {
             // Update Dash Length and Gap Length sliders state
             this.updateRandomDashSlidersState();
             
-            // Update Color Chaos slider visibility
+            // Update Color Chaos slider visibility (must be called after mode is set)
             this.updateColorChaosSliderVisibility();
             
             // Disable/enable Stem Weight in Metrics panel in Random mode
@@ -1794,11 +1922,13 @@ class VoidTypeface {
      * Update Color Chaos slider visibility
      */
     updateColorChaosSliderVisibility() {
+        const mode = this.settings.get('mode');
         const colorChaosEnabled = this.settings.get('randomColorChaos');
         const colorChaosGroup = document.getElementById('randomControlGroupColorChaos');
         
+        // Only show slider in Random mode AND when Color Chaos is enabled
         if (colorChaosGroup) {
-            colorChaosGroup.style.display = colorChaosEnabled ? 'block' : 'none';
+            colorChaosGroup.style.display = (mode === 'random' && colorChaosEnabled) ? 'block' : 'none';
         }
     }
 
@@ -1808,68 +1938,29 @@ class VoidTypeface {
     updateRandomDashSlidersState() {
         const randomDashEnabled = this.settings.get('randomDash') ?? false;
         const mode = this.settings.get('mode');
-        const isDisabled = mode !== 'random' || !randomDashEnabled;
+        const shouldShow = mode === 'random' && randomDashEnabled;
 
         const dashLengthMinInput = document.getElementById('randomDashLengthMinValue');
         const dashLengthMaxInput = document.getElementById('randomDashLengthMaxValue');
         const gapLengthMinInput = document.getElementById('randomGapLengthMinValue');
         const gapLengthMaxInput = document.getElementById('randomGapLengthMaxValue');
 
+        const isDisabled = !shouldShow;
         if (dashLengthMinInput) dashLengthMinInput.disabled = isDisabled;
         if (dashLengthMaxInput) dashLengthMaxInput.disabled = isDisabled;
         if (gapLengthMinInput) gapLengthMinInput.disabled = isDisabled;
         if (gapLengthMaxInput) gapLengthMaxInput.disabled = isDisabled;
 
-        // Disable range sliders and their containers
+        // Hide/show range sliders and their containers
         const dashLengthGroup = document.getElementById('randomControlGroupDashLength');
         const gapLengthGroup = document.getElementById('randomControlGroupGapLength');
         
         if (dashLengthGroup) {
-            dashLengthGroup.style.opacity = isDisabled ? '0.5' : '1';
-            dashLengthGroup.style.pointerEvents = isDisabled ? 'none' : 'auto';
-            
-            // Disable label visually
-            const dashLabel = dashLengthGroup.querySelector('label span:first-child');
-            if (dashLabel) dashLabel.style.opacity = isDisabled ? '0.5' : '1';
-            
-            const dashLengthSlider = document.getElementById('randomDashLengthRangeSlider');
-            if (dashLengthSlider) {
-                const thumbs = dashLengthSlider.querySelectorAll('.range-slider-thumb');
-                const track = dashLengthSlider.querySelector('.range-slider-track');
-                const activeRange = dashLengthSlider.querySelector('.range-slider-active');
-                
-                thumbs.forEach(thumb => {
-                    thumb.style.pointerEvents = isDisabled ? 'none' : 'auto';
-                    thumb.style.opacity = isDisabled ? '0.5' : '1';
-                });
-                
-                if (track) track.style.opacity = isDisabled ? '0.5' : '1';
-                if (activeRange) activeRange.style.opacity = isDisabled ? '0.5' : '1';
-            }
+            dashLengthGroup.style.display = shouldShow ? 'block' : 'none';
         }
         
         if (gapLengthGroup) {
-            gapLengthGroup.style.opacity = isDisabled ? '0.5' : '1';
-            gapLengthGroup.style.pointerEvents = isDisabled ? 'none' : 'auto';
-            
-            // Disable label visually
-            const gapLabel = gapLengthGroup.querySelector('label span:first-child');
-            if (gapLabel) gapLabel.style.opacity = isDisabled ? '0.5' : '1';
-            
-            const gapLengthSlider = document.getElementById('randomGapLengthRangeSlider');
-            if (gapLengthSlider) {
-                const thumbs = gapLengthSlider.querySelectorAll('.range-slider-thumb');
-                const track = gapLengthSlider.querySelector('.range-slider-track');
-                const activeRange = gapLengthSlider.querySelector('.range-slider-active');
-                
-                thumbs.forEach(thumb => {
-                    thumb.style.pointerEvents = isDisabled ? 'none' : 'auto';
-                    thumb.style.opacity = isDisabled ? '0.5' : '1';
-                });
-                
-                if (track) track.style.opacity = isDisabled ? '0.5' : '1';
-                if (activeRange) activeRange.style.opacity = isDisabled ? '0.5' : '1';
-            }
+            gapLengthGroup.style.display = shouldShow ? 'block' : 'none';
         }
     }
 
@@ -1940,7 +2031,8 @@ class VoidTypeface {
                 defaultPreset.randomRounded !== false ||
                 defaultPreset.randomCloseEnds !== true ||
                 defaultPreset.randomDash !== false ||
-                defaultPreset.useAlternativesInRandom !== true;
+                defaultPreset.useAlternativesInRandom !== true ||
+                defaultPreset.lineHeightMultiplier !== 1;
             
             if (needsUpdate) {
                 // Update values in preset
@@ -1958,6 +2050,7 @@ class VoidTypeface {
                 defaultPreset.randomCloseEnds = true;
                 defaultPreset.randomDash = false;
                 defaultPreset.useAlternativesInRandom = true;
+                defaultPreset.lineHeightMultiplier = 1;
                 this.presetManager.presets['New'] = defaultPreset;
                 this.presetManager.savePresets();
             }
@@ -2200,10 +2293,17 @@ class VoidTypeface {
             const normalizedDefaultLetter = this.normalizeColor(defaultLetterColor);
             const normalizedDefaultBg = this.normalizeColor(defaultBgColor);
             
+            // Check if Color Chaos is enabled
+            const colorChaos = this.settings.get('colorChaos');
+            const randomColorChaos = this.settings.get('randomColorChaos');
+            const mode = this.settings.get('mode');
+            const hasColorChaos = colorChaos || (randomColorChaos && mode === 'random');
+            
             if (letterColor !== normalizedDefaultLetter || bgColor !== normalizedDefaultBg) {
                 return { 
                     letterColor: this.settings.get('letterColor'), 
-                    bgColor: this.settings.get('bgColor') 
+                    bgColor: this.settings.get('bgColor'),
+                    hasColorChaos: hasColorChaos
                 };
             }
             return null;
@@ -2225,11 +2325,18 @@ class VoidTypeface {
         const normalizedDefaultLetter = this.normalizeColor(defaultLetterColor);
         const normalizedDefaultBg = this.normalizeColor(defaultBgColor);
         
+        // Check if Color Chaos is enabled in preset
+        const colorChaos = preset.colorChaos;
+        const randomColorChaos = preset.randomColorChaos;
+        const mode = preset.mode;
+        const hasColorChaos = colorChaos || (randomColorChaos && mode === 'random');
+        
         // Check if colors differ from defaults
         if (letterColor !== normalizedDefaultLetter || bgColor !== normalizedDefaultBg) {
             return { 
                 letterColor: preset.letterColor || defaultLetterColor, 
-                bgColor: preset.bgColor || defaultBgColor 
+                bgColor: preset.bgColor || defaultBgColor,
+                hasColorChaos: hasColorChaos
             };
         }
         
@@ -2280,8 +2387,14 @@ class VoidTypeface {
                 colorIndicators.className = 'preset-dropdown-item-colors';
                 
                 const typeDot = document.createElement('span');
-                typeDot.textContent = '●';
-                typeDot.style.color = colors.letterColor;
+                // Use white ◎ if Color Chaos is enabled, otherwise use colored ●
+                if (colors.hasColorChaos) {
+                    typeDot.textContent = '◎';
+                    typeDot.style.color = '#ffffff';
+                } else {
+                    typeDot.textContent = '●';
+                    typeDot.style.color = colors.letterColor;
+                }
                 
                 const backDot = document.createElement('span');
                 backDot.textContent = '●';
@@ -2443,6 +2556,33 @@ class VoidTypeface {
         // By default, if mode is undefined, choose fill
         else if (fillBtn) fillBtn.classList.add('active');
         
+        // Update Color Chaos checkbox state based on mode
+        const colorChaosCheckbox = document.getElementById('colorChaosCheckbox');
+        const colorChaosColorsInput = document.getElementById('colorChaosColorsValue');
+        if (mode === 'random') {
+            // Disable Color Chaos checkbox in Random mode
+            if (colorChaosCheckbox) {
+                // If Color Chaos was enabled, disable it
+                if (colorChaosCheckbox.checked) {
+                    colorChaosCheckbox.checked = false;
+                    this.settings.set('colorChaos', false);
+                }
+                colorChaosCheckbox.disabled = true;
+            }
+            if (colorChaosColorsInput) {
+                colorChaosColorsInput.disabled = true;
+            }
+        } else {
+            // Enable Color Chaos checkbox in other modes
+            if (colorChaosCheckbox) {
+                colorChaosCheckbox.disabled = false;
+                // Update input disabled state based on checkbox state
+                if (colorChaosColorsInput) {
+                    colorChaosColorsInput.disabled = !colorChaosCheckbox.checked;
+                }
+            }
+        }
+        
         // SD shows all controls (Lines, Contrast, Dash Length, Gap Length)
         const showStripes = mode === 'stripes' || mode === 'sd';
         const showDash = mode === 'dash' || mode === 'sd';
@@ -2465,26 +2605,37 @@ class VoidTypeface {
         }
         this.updateRoundedCapsVisibility();
         
-        const randomGroups = [
-            document.getElementById('randomControlGroup'),
-            document.getElementById('randomControlGroup4'),
-            document.getElementById('randomControlGroupStem'),
-            document.getElementById('randomControlGroup2'),
-            document.getElementById('randomControlGroup3'),
-            document.getElementById('randomControlGroupDashLength'),
-            document.getElementById('randomControlGroupGapLength'),
-            document.getElementById('randomControlGroupColorChaos'),
-            document.getElementById('randomControlGroup5'),
-            document.getElementById('randomControlGroup6')
-        ];
-        randomGroups.forEach(group => {
-            if (group) {
-                // toggle-group-row elements use flex
-                const isToggleRow = group.id === 'randomControlGroup' || group.id === 'randomControlGroup4' || group.id === 'randomControlGroup6';
-                const displayValue = isToggleRow ? 'flex' : 'block';
-                group.style.display = mode === 'random' ? displayValue : 'none';
-            }
-        });
+            const randomGroups = [
+                document.getElementById('randomControlGroup'),
+                document.getElementById('randomControlGroup4'),
+                document.getElementById('randomControlGroupStem'),
+                document.getElementById('randomControlGroup2'),
+                document.getElementById('randomControlGroup3'),
+                // Dash Length and Gap Length groups are controlled by updateRandomDashSlidersState()
+                // document.getElementById('randomControlGroupDashLength'),
+                // document.getElementById('randomControlGroupGapLength'),
+                // Color Chaos group is controlled by updateColorChaosSliderVisibility()
+                // document.getElementById('randomControlGroupColorChaos'),
+                document.getElementById('randomControlGroup5'),
+                document.getElementById('randomControlGroup6')
+            ];
+            randomGroups.forEach(group => {
+                if (group) {
+                    // toggle-group-row elements use flex
+                    const isToggleRow = group.id === 'randomControlGroup' || group.id === 'randomControlGroup4' || group.id === 'randomControlGroup6';
+                    const displayValue = isToggleRow ? 'flex' : 'block';
+                    group.style.display = mode === 'random' ? displayValue : 'none';
+                }
+            });
+            
+            // Hide Dash Length and Gap Length groups initially (they will be shown by updateRandomDashSlidersState if needed)
+            const dashLengthGroup = document.getElementById('randomControlGroupDashLength');
+            const gapLengthGroup = document.getElementById('randomControlGroupGapLength');
+            if (dashLengthGroup) dashLengthGroup.style.display = 'none';
+            if (gapLengthGroup) gapLengthGroup.style.display = 'none';
+            
+            // Update Color Chaos slider visibility (must be called after mode is set)
+            this.updateColorChaosSliderVisibility();
 
         // Update Rounded visibility in Random mode (after showing groups)
         this.updateRandomRoundedVisibility();
@@ -2694,7 +2845,7 @@ class VoidTypeface {
             randomColorChaos: this.settings.get('randomColorChaos') !== undefined ? this.settings.get('randomColorChaos') : false,
             randomColorChaosMin: this.settings.get('randomColorChaosMin'),
             randomColorChaosMax: this.settings.get('randomColorChaosMax'),
-            useColorChaos: this.settings.get('randomColorChaos') && this.settings.get('mode') === 'random',
+            useColorChaos: this.settings.get('colorChaos') || (this.settings.get('randomColorChaos') && this.settings.get('mode') === 'random'),
             roundedCaps: this.settings.get('roundedCaps') || false,
             closeEnds: this.settings.get('closeEnds') || false,
             dashLength: this.settings.get('dashLength') || 0.10,
@@ -2721,6 +2872,12 @@ class VoidTypeface {
      * Экспорт в SVG
      */
     exportSVG() {
+        // Ensure color palette is generated if Color Chaos is enabled
+        if (this.settings.get('colorChaos') || (this.settings.get('randomColorChaos') && this.settings.get('mode') === 'random')) {
+            if (!this.colorPalette || this.colorPalette.length === 0) {
+                this.generateColorPalette();
+            }
+        }
         // Reset global module index for Color Chaos consistency
         this.globalModuleIndex = 0;
         this.exporter.exportToSVG();
@@ -2730,6 +2887,12 @@ class VoidTypeface {
      * Копировать SVG в буфер обмена
      */
     async copySVG() {
+        // Ensure color palette is generated if Color Chaos is enabled
+        if (this.settings.get('colorChaos') || (this.settings.get('randomColorChaos') && this.settings.get('mode') === 'random')) {
+            if (!this.colorPalette || this.colorPalette.length === 0) {
+                this.generateColorPalette();
+            }
+        }
         // Reset global module index for Color Chaos consistency
         this.globalModuleIndex = 0;
         await this.exporter.copySVG();

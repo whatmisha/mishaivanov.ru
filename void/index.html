@@ -395,10 +395,30 @@ Code</textarea>
                             </button>
                         </div>
                         
-                        <!-- Random Colors Button (shown by default, hidden when picker is open) -->
-                        <button type="button" class="btn-random-colors" id="randomColorsBtn" aria-label="Randomize colors">
-                            Randomize Colors
-                        </button>
+                        <!-- Randomize Button and Color Chaos Controls Container -->
+                        <div id="randomizeControlsContainer">
+                            <!-- Color Chaos Toggle and Colors Input -->
+                            <div class="control-group" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                                <label class="checkbox-label" for="colorChaosCheckbox" style="margin-bottom: 0; flex-shrink: 0;">
+                                    <input type="checkbox" id="colorChaosCheckbox">
+                                    <span>Color Chaos</span>
+                                </label>
+                                <div class="compact-input-group" id="colorChaosColorsInputGroup" title="Colors" style="flex-shrink: 0; margin-left: auto;">
+                                    <svg class="compact-input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <circle cx="4" cy="4" r="2" fill="currentColor"/>
+                                        <circle cx="12" cy="4" r="2" fill="currentColor"/>
+                                        <circle cx="4" cy="12" r="2" fill="currentColor"/>
+                                        <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                                    </svg>
+                                    <input type="number" class="compact-input" id="colorChaosColorsValue" value="4" min="3" max="32" step="1">
+                                </div>
+                            </div>
+                            
+                            <!-- Randomize Button (shown by default, hidden when picker is open) -->
+                            <button type="button" class="btn-secondary" id="randomColorsBtn" aria-label="Randomize colors" style="width: 100%;">
+                                Randomize
+                            </button>
+                        </div>
                         
                         <!-- Unified Color Picker -->
                         <div id="unifiedColorPickerContainer"></div>

@@ -361,7 +361,8 @@ body {
     transition: max-height var(--duration-expand) var(--easing-standard), 
                 opacity var(--duration-fade) var(--easing-decelerate),
                 padding-top var(--duration-expand) var(--easing-standard),
-                padding-bottom var(--duration-expand) var(--easing-standard);
+                padding-bottom var(--duration-expand) var(--easing-standard),
+                margin-top var(--duration-expand) var(--easing-standard);
 }
 
 .controls-panel.panel-collapsed .panel-content {
@@ -369,11 +370,13 @@ body {
     opacity: 0;
     padding-top: 0;
     padding-bottom: 0;
+    margin-top: 0;
     overflow: hidden;
     transition: max-height var(--duration-collapse) var(--easing-standard), 
                 opacity var(--duration-fade) var(--easing-accelerate),
                 padding-top var(--duration-collapse) var(--easing-standard),
-                padding-bottom var(--duration-collapse) var(--easing-standard);
+                padding-bottom var(--duration-collapse) var(--easing-standard),
+                margin-top var(--duration-collapse) var(--easing-standard);
 }
 
 /* Panel Header Actions - buttons in header (Hide, Duplicate, Delete) */
@@ -628,6 +631,20 @@ body {
 
 .compact-input-group:focus-within {
     border-color: var(--color-text);
+}
+
+.compact-input-group:has(input:disabled) {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.compact-input-group:has(input:disabled) .compact-input-icon {
+    opacity: 0.4;
+}
+
+.compact-input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .compact-input-icon {
@@ -1639,6 +1656,7 @@ legend {
     font-size: 0.9rem;
     line-height: 1;
     font-weight: 400;
+    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     border: none;
     border-radius: 999px; /* Fully rounded */
     cursor: pointer;
@@ -1661,7 +1679,6 @@ legend {
     /* Active state: white background, black text */
     background: var(--color-text);
     color: var(--color-bg);
-    font-weight: 500;
 }
 
 .style-button:focus {
@@ -1728,39 +1745,6 @@ legend {
     margin-bottom: 4px;
 }
 
-/* Random Colors Button */
-.btn-random-colors {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 16px;
-    background: var(--color-bg);
-    border: none;
-    border-radius: 18px;
-    color: var(--color-text-secondary);
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition-normal);
-    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    margin-bottom: 15px;
-}
-
-/* When button is inside picker container (moved there when picker opens) */
-#unifiedColorPickerContainer .btn-random-colors {
-    margin-top: 15px;
-    margin-bottom: 15px;
-}
-
-.btn-random-colors:hover {
-    background: var(--color-text);
-    color: var(--color-bg);
-}
-
-.btn-random-colors:active {
-    transform: scale(0.98);
-}
 
 .segmented-control input[type="radio"].hidden,
 .segmented-control label.hidden {
@@ -1875,6 +1859,26 @@ legend {
 
 .checkbox-label:hover::before {
     opacity: 0.9;
+}
+
+/* Disabled checkbox state */
+.checkbox-label:has(input[type="checkbox"]:disabled) {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.checkbox-label:has(input[type="checkbox"]:disabled) span {
+    opacity: 0.5;
+    color: var(--color-text-secondary);
+}
+
+.checkbox-label:has(input[type="checkbox"]:disabled)::before {
+    opacity: 0.5;
+}
+
+.checkbox-label:has(input[type="checkbox"]:disabled)::after {
+    opacity: 0.5;
 }
 
 /* ============================================

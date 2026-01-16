@@ -96,10 +96,11 @@ export class VoidExporter {
             if (this.settings.get('closeEnds') !== undefined) {
                 params.closeEnds = this.settings.get('closeEnds');
             }
-            // Get Color Chaos settings
-            if (this.settings.get('randomColorChaos') !== undefined) {
-                params.useColorChaos = this.settings.get('randomColorChaos') && this.settings.get('mode') === 'random';
-            }
+            // Get Color Chaos settings (from Colors panel or Random mode)
+            const colorChaos = this.settings.get('colorChaos');
+            const randomColorChaos = this.settings.get('randomColorChaos');
+            const mode = this.settings.get('mode');
+            params.useColorChaos = colorChaos || (randomColorChaos && mode === 'random');
         } else if (params.includeGridToExport === undefined) {
             // If settings unavailable, use showGrid from params
             params.includeGridToExport = params.showGrid || false;
