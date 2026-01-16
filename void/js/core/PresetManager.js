@@ -160,7 +160,17 @@ export class PresetManager {
      * @returns {string[]} - array of preset names
      */
     getPresetNames() {
-        return Object.keys(this.presets).sort();
+        const names = Object.keys(this.presets);
+        const sorted = names.sort();
+        
+        // Always put "New" first if it exists
+        const newIndex = sorted.indexOf('New');
+        if (newIndex > 0) {
+            sorted.splice(newIndex, 1);
+            sorted.unshift('New');
+        }
+        
+        return sorted;
     }
 
     /**
