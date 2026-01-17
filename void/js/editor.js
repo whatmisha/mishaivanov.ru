@@ -1347,10 +1347,6 @@ class GlyphEditorApp {
                 .sort((a, b) => a - b);
             
             keys.forEach(index => {
-                // Fill gaps with empty glyphs (if indices are not sequential)
-                while (charAlts.length < index - 1) {
-                    charAlts.push('E0'.repeat(25));
-                }
                 charAlts.push(editedGlyphs[char][String(index)]);
             });
             
