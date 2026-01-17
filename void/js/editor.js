@@ -1158,9 +1158,19 @@ class GlyphEditorApp {
         const alphabetMatch = text.match(/export\s+const\s+VOID_ALPHABET\s*=\s*\{([^}]+(?:\}[^}]+)*)\};/s);
         if (alphabetMatch) {
             const content = alphabetMatch[1];
-            const entries = content.matchAll(/"([^"]+)":\s*"([^"]+)"/g);
-            for (const [, char, glyph] of entries) {
+            // Support both "char": and 'char': formats
+            // First try double quotes, then single quotes
+            const doubleQuoteEntries = content.matchAll(/"([^"]+)":\s*"([^"]+)"/g);
+            for (const [, char, glyph] of doubleQuoteEntries) {
                 result.base[char] = glyph;
+            }
+            // Then try single quotes (for cases like '"':)
+            const singleQuoteEntries = content.matchAll(/'([^']+)':\s*"([^"]+)"/g);
+            for (const [, char, glyph] of singleQuoteEntries) {
+                // Only add if not already added (avoid duplicates)
+                if (!result.base[char]) {
+                    result.base[char] = glyph;
+                }
             }
         }
         
@@ -1169,8 +1179,10 @@ class GlyphEditorApp {
         if (altMatch) {
             const content = altMatch[1];
             // Find each character with its alternatives array
-            const charMatches = content.matchAll(/"([^"]+)":\s*\[([\s\S]*?)\]/g);
-            for (const [, char, altsContent] of charMatches) {
+            // Support both "char": and 'char': formats
+            // First try double quotes
+            const doubleQuoteMatches = content.matchAll(/"([^"]+)":\s*\[([\s\S]*?)\]/g);
+            for (const [, char, altsContent] of doubleQuoteMatches) {
                 const glyphs = [];
                 const glyphMatches = altsContent.matchAll(/"([^"]+)"/g);
                 for (const [, glyph] of glyphMatches) {
@@ -1178,6 +1190,21 @@ class GlyphEditorApp {
                 }
                 if (glyphs.length > 0) {
                     result.alternatives[char] = glyphs;
+                }
+            }
+            // Then try single quotes (for cases like '"':)
+            const singleQuoteMatches = content.matchAll(/'([^']+)':\s*\[([\s\S]*?)\]/g);
+            for (const [, char, altsContent] of singleQuoteMatches) {
+                // Only add if not already added (avoid duplicates)
+                if (!result.alternatives[char]) {
+                    const glyphs = [];
+                    const glyphMatches = altsContent.matchAll(/"([^"]+)"/g);
+                    for (const [, glyph] of glyphMatches) {
+                        glyphs.push(glyph);
+                    }
+                    if (glyphs.length > 0) {
+                        result.alternatives[char] = glyphs;
+                    }
                 }
             }
         }
@@ -1209,6 +1236,19 @@ class GlyphEditorApp {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+    }
+    
+    /**
+     * Format character key for export (use single quotes for double quote, double quotes for others)
+     */
+    formatCharKey(char) {
+        if (char === '"') {
+            return "'\"'";
+        } else if (char === "'") {
+            return '"\'"';
+        } else {
+            return `"${char}"`;
+        }
     }
     
     /**
@@ -1260,7 +1300,7 @@ class GlyphEditorApp {
             code += '    // Latin\n';
             latin.forEach((char, i) => {
                 const comma = (i < latin.length - 1 || cyrillic.length > 0 || digits.length > 0 || symbols.length > 0) ? ',' : '';
-                code += `    "${char}": "${allBaseGlyphs[char]}"${comma}\n`;
+                code += `    ${this.formatCharKey(char)}: "${allBaseGlyphs[char]}"${comma}\n`;
             });
             code += '    \n';
         }
@@ -1270,7 +1310,7 @@ class GlyphEditorApp {
             code += '    // Cyrillic\n';
             cyrillic.forEach((char, i) => {
                 const comma = (i < cyrillic.length - 1 || digits.length > 0 || symbols.length > 0) ? ',' : '';
-                code += `    "${char}": "${allBaseGlyphs[char]}"${comma}\n`;
+                code += `    ${this.formatCharKey(char)}: "${allBaseGlyphs[char]}"${comma}\n`;
             });
             code += '    \n';
         }
@@ -1280,7 +1320,7 @@ class GlyphEditorApp {
             code += '    // Digits\n';
             digits.forEach((char, i) => {
                 const comma = (i < digits.length - 1 || symbols.length > 0) ? ',' : '';
-                code += `    "${char}": "${allBaseGlyphs[char]}"${comma}\n`;
+                code += `    ${this.formatCharKey(char)}: "${allBaseGlyphs[char]}"${comma}\n`;
             });
             code += '    \n';
         }
@@ -1290,7 +1330,7 @@ class GlyphEditorApp {
             code += '    // Symbols\n';
             symbols.forEach((char, i) => {
                 const comma = i < symbols.length - 1 ? ',' : '';
-                code += `    "${char}": "${allBaseGlyphs[char]}"${comma}\n`;
+                code += `    ${this.formatCharKey(char)}: "${allBaseGlyphs[char]}"${comma}\n`;
             });
         }
         
@@ -1350,7 +1390,7 @@ class GlyphEditorApp {
             code += '    // Latin\n';
             altLatin.forEach((char, i) => {
                 const comma = (i < altLatin.length - 1 || altCyrillic.length > 0 || altDigits.length > 0 || altSymbols.length > 0) ? ',' : '';
-                code += `    "${char}": [\n`;
+                code += `    ${this.formatCharKey(char)}: [\n`;
                 allAlternatives[char].forEach((glyph, j) => {
                     const glyphComma = j < allAlternatives[char].length - 1 ? ',' : '';
                     code += `        "${glyph}"${glyphComma}\n`;
@@ -1365,7 +1405,7 @@ class GlyphEditorApp {
             code += '    // Cyrillic\n';
             altCyrillic.forEach((char, i) => {
                 const comma = (i < altCyrillic.length - 1 || altDigits.length > 0 || altSymbols.length > 0) ? ',' : '';
-                code += `    "${char}": [\n`;
+                code += `    ${this.formatCharKey(char)}: [\n`;
                 allAlternatives[char].forEach((glyph, j) => {
                     const glyphComma = j < allAlternatives[char].length - 1 ? ',' : '';
                     code += `        "${glyph}"${glyphComma}\n`;
@@ -1380,7 +1420,7 @@ class GlyphEditorApp {
             code += '    // Digits\n';
             altDigits.forEach((char, i) => {
                 const comma = (i < altDigits.length - 1 || altSymbols.length > 0) ? ',' : '';
-                code += `    "${char}": [\n`;
+                code += `    ${this.formatCharKey(char)}: [\n`;
                 allAlternatives[char].forEach((glyph, j) => {
                     const glyphComma = j < allAlternatives[char].length - 1 ? ',' : '';
                     code += `        "${glyph}"${glyphComma}\n`;
@@ -1395,7 +1435,7 @@ class GlyphEditorApp {
             code += '    // Symbols\n';
             altSymbols.forEach((char, i) => {
                 const comma = i < altSymbols.length - 1 ? ',' : '';
-                code += `    "${char}": [\n`;
+                code += `    ${this.formatCharKey(char)}: [\n`;
                 allAlternatives[char].forEach((glyph, j) => {
                     const glyphComma = j < allAlternatives[char].length - 1 ? ',' : '';
                     code += `        "${glyph}"${glyphComma}\n`;
