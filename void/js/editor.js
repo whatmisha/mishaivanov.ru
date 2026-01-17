@@ -586,8 +586,8 @@ class GlyphEditorApp {
         }
         
         item.addEventListener('click', (e) => {
-            // Don't select alternative when clicking delete button
-            if (!e.target.classList.contains('alternative-delete')) {
+            // Don't select alternative when clicking delete or duplicate button
+            if (!e.target.classList.contains('alternative-delete') && !e.target.classList.contains('alternative-duplicate')) {
                 if (this.selectedChar) {
                     this.selectAlternative(alternativeIndex);
                 }
@@ -607,6 +607,17 @@ class GlyphEditorApp {
             
             preview.appendChild(canvas);
             item.appendChild(preview);
+            
+            // Duplicate button for alternative (for cells with glyph)
+            const duplicateBtn = document.createElement('div');
+            duplicateBtn.className = 'alternative-duplicate';
+            duplicateBtn.innerHTML = '⧉';
+            duplicateBtn.title = 'Duplicate alternative';
+            duplicateBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.duplicateAlternative(this.selectedChar, alternativeIndex);
+            });
+            item.appendChild(duplicateBtn);
             
             // Delete button for alternative (for cells with glyph)
             const deleteBtn = document.createElement('div');
@@ -631,8 +642,18 @@ class GlyphEditorApp {
             fallback.textContent = label;
             item.appendChild(fallback);
             
-            // Delete button for empty alternative (only if it exists in storage)
+            // Duplicate and delete buttons for empty alternative (only if it exists in storage)
             if (existsInStorage && this.selectedChar) {
+                const duplicateBtn = document.createElement('div');
+                duplicateBtn.className = 'alternative-duplicate';
+                duplicateBtn.innerHTML = '⧉';
+                duplicateBtn.title = 'Duplicate alternative';
+                duplicateBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.duplicateAlternative(this.selectedChar, alternativeIndex);
+                });
+                item.appendChild(duplicateBtn);
+                
                 const deleteBtn = document.createElement('div');
                 deleteBtn.className = 'alternative-delete';
                 deleteBtn.innerHTML = '×';
@@ -965,6 +986,53 @@ class GlyphEditorApp {
             
             console.log('[GlyphEditorApp] Alternative deleted:', char, alternativeIndex);
         }
+    }
+    
+    /**
+     * Duplicate specific alternative
+     */
+    duplicateAlternative(char, alternativeIndex) {
+        if (!char) return;
+        
+        const editedGlyphs = this.getEditedGlyphs();
+        if (!editedGlyphs[char]) return;
+        
+        const key = alternativeIndex === null ? 'base' : String(alternativeIndex);
+        const sourceGlyph = editedGlyphs[char][key];
+        
+        if (!sourceGlyph) return;
+        
+        // Find next free index for alternative
+        let maxIndex = 0;
+        if (editedGlyphs[char]) {
+            Object.keys(editedGlyphs[char]).forEach(k => {
+                if (k !== 'base') {
+                    const index = parseInt(k);
+                    if (index > maxIndex) {
+                        maxIndex = index;
+                    }
+                }
+            });
+        }
+        
+        const newIndex = maxIndex + 1;
+        
+        // Create new alternative with copy of source glyph
+        if (!editedGlyphs[char]) {
+            editedGlyphs[char] = {};
+        }
+        
+        editedGlyphs[char][String(newIndex)] = sourceGlyph;
+        this.saveEditedGlyphs(editedGlyphs);
+        
+        // Update UI
+        this.updateAlternativesPanel();
+        
+        // Automatically select new alternative for editing
+        this.selectAlternative(newIndex);
+        
+        const label = alternativeIndex === null ? 'Base' : `Alt ${alternativeIndex}`;
+        console.log(`[GlyphEditorApp] Duplicated ${char} ${label} to Alt ${newIndex}`);
     }
     
     /**
