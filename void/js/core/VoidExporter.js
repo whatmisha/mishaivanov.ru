@@ -347,7 +347,13 @@ export class VoidExporter {
         // Layer for points (if endpoints enabled)
         if (params.showEndpoints && (allConnections.length > 0 || allEndpoints.length > 0)) {
             svgContent += `  <g id="points">\n`;
-            svgContent += this.renderEndpointsToSVG(allConnections, allEndpoints, moduleSize, params.color || '#ffffff');
+            svgContent += this.renderEndpointsToSVG(
+                allConnections, 
+                allEndpoints, 
+                moduleSize, 
+                params.color || '#ffffff',
+                params.bgColor || '#000000'
+            );
             svgContent += `  </g>\n`;
         }
 
@@ -1823,15 +1829,17 @@ export class VoidExporter {
 
     /**
      * Render endpoints and joints to SVG
+     * Uses colors from palette: joints use backgroundColor, endpoints use letterColor
      */
-    renderEndpointsToSVG(connections, endpoints, moduleSize, strokeColor = '#ffffff') {
+    renderEndpointsToSVG(connections, endpoints, moduleSize, letterColor = '#ffffff', backgroundColor = '#000000') {
         const pointRadius = 6;
         const strokeWidth = 2;
         let svg = '';
         
         // Group for joints (blue circles)
+        // Fill: Background Color, Stroke: Letter Color (matching canvas rendering)
         if (connections.length > 0) {
-            svg += `    <g id="connections" fill="#0088ff" stroke="${strokeColor}" stroke-width="${strokeWidth}">\n`;
+            svg += `    <g id="connections" fill="${backgroundColor}" stroke="${letterColor}" stroke-width="${strokeWidth}">\n`;
             connections.forEach(conn => {
                 const point = this.endpointDetector.getPointCoordinates(conn.col1, conn.row1, conn.side1, moduleSize);
                 const cx = conn.offsetX + point.x;
@@ -1842,8 +1850,9 @@ export class VoidExporter {
         }
         
         // Group for endpoints (red circles)
+        // Fill: Letter Color, Stroke: Letter Color (matching canvas rendering)
         if (endpoints.length > 0) {
-            svg += `    <g id="endpoints" fill="#ff0044" stroke="${strokeColor}" stroke-width="${strokeWidth}">\n`;
+            svg += `    <g id="endpoints" fill="${letterColor}" stroke="${letterColor}" stroke-width="${strokeWidth}">\n`;
             endpoints.forEach(ep => {
                 const point = this.endpointDetector.getPointCoordinates(ep.col, ep.row, ep.side, moduleSize);
                 const cx = ep.offsetX + point.x;
