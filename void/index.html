@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Void Typeface — Misha Ivanov</title>
+    <!-- Preload fonts to prevent FOUT -->
+    <link rel="preload" href="https://mishaivanov.ru/fonts/CoFoSans-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://mishaivanov.ru/fonts/CoFoSans-Medium.woff2" as="font" type="font/woff2" crossorigin="anonymous">
     <link rel="stylesheet" href="styles.css">
     <script>
         // Check mobile device and hide panels before main JS loads
@@ -271,7 +274,7 @@ Code</textarea>
                                     <div id="randomStrokesRangeSlider" class="range-slider-container"></div>
                                     <div class="range-slider-values">
                                         <input type="text" class="value-display" id="randomStrokesMinValue" value="1">
-                                        <input type="text" class="value-display" id="randomStrokesMaxValue" value="8">
+                                        <input type="text" class="value-display" id="randomStrokesMaxValue" value="4">
                                     </div>
                                 </div>
                             </div>
@@ -281,8 +284,8 @@ Code</textarea>
                                 <div class="range-slider-wrapper">
                                     <div id="randomContrastRangeSlider" class="range-slider-container"></div>
                                     <div class="range-slider-values">
-                                        <input type="text" class="value-display" id="randomContrastMinValue" value="0.5">
-                                        <input type="text" class="value-display" id="randomContrastMaxValue" value="1.0">
+                                        <input type="text" class="value-display" id="randomContrastMinValue" value="0.1">
+                                        <input type="text" class="value-display" id="randomContrastMaxValue" value="2.0">
                                     </div>
                                 </div>
                             </div>
@@ -355,11 +358,22 @@ Code</textarea>
                             <div class="control-group toggle-group-row" id="randomControlGroup6" style="display: flex;">
                                 <label class="checkbox-label" for="randomColorCheckbox">
                                     <input type="checkbox" id="randomColorCheckbox">
-                                    <span>Color Random</span>
+                                    <span>Random</span>
                                 </label>
                                 <label class="checkbox-label" for="randomColorChaosCheckbox">
                                     <input type="checkbox" id="randomColorChaosCheckbox">
-                                    <span>Color Chaos</span>
+                                    <span>Chaos</span>
+                                </label>
+                            </div>
+                            
+                            <div class="control-group toggle-group-row" id="randomControlGroupColorChaosKeepBg" style="display: flex;">
+                                <label class="checkbox-label" id="randomColorChaosKeepBgLabel" for="randomColorChaosKeepBgCheckbox">
+                                    <input type="checkbox" id="randomColorChaosKeepBgCheckbox">
+                                    <span>Lock Back</span>
+                                </label>
+                                <label class="checkbox-label" id="randomColorChaosKeepGridLabel" for="randomColorChaosKeepGridCheckbox">
+                                    <input type="checkbox" id="randomColorChaosKeepGridCheckbox">
+                                    <span>Lock Grid</span>
                                 </label>
                             </div>
                             
@@ -435,7 +449,7 @@ Code</textarea>
                                         <circle cx="4" cy="12" r="2" fill="currentColor"/>
                                         <circle cx="12" cy="12" r="2" fill="currentColor"/>
                                     </svg>
-                                    <input type="number" class="compact-input" id="colorChaosColorsValue" value="4" min="3" max="32" step="1">
+                                    <input type="number" class="compact-input" id="colorChaosColorsValue" value="16" min="3" max="32" step="1">
                                 </div>
                             </div>
                             

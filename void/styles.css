@@ -23,7 +23,7 @@
          url('https://mishaivanov.ru/fonts/CoFoSans-Regular.woff') format('woff');
     font-weight: 400;
     font-style: normal;
-    font-display: swap;
+    font-display: block;
 }
 
 @font-face {
@@ -32,7 +32,7 @@
          url('https://mishaivanov.ru/fonts/CoFoSans-Medium.woff') format('woff');
     font-weight: 500;
     font-style: normal;
-    font-display: swap;
+    font-display: block;
 }
 
 /* ============================================
@@ -1788,8 +1788,12 @@ legend {
     margin-bottom: 0;
 }
 
-/* Color Random|Color Chaos and Dashes|Chess Order rows have smaller bottom margin */
-#randomControlGroup6.toggle-group-row,
+/* Color Random|Color Chaos row doesn't need bottom margin (followed by Lock Background Color) */
+#randomControlGroup6.toggle-group-row {
+    margin-bottom: 0;
+}
+
+/* Dashes|Chess Order row has smaller bottom margin */
 #randomDashSection.toggle-group-row {
     margin-bottom: 8px;
 }

@@ -37,9 +37,9 @@ class VoidTypeface {
                 randomStemMin: 0.5,
                 randomStemMax: 1.0,
                 randomStrokesMin: 1,
-                randomStrokesMax: 8,
-                randomContrastMin: 0.5,
-                randomContrastMax: 1.0,
+                randomStrokesMax: 4,
+                randomContrastMin: 0.1,
+                randomContrastMax: 2.0,
                 randomDashLengthMin: 1.0,
                 randomDashLengthMax: 1.5,
                 randomGapLengthMin: 1.0,
@@ -52,8 +52,10 @@ class VoidTypeface {
                 randomColorChaos: false, // color chaos mode (each module gets unique color from palette) - for Random mode
                 randomColorChaosMin: 16, // minimum colors in palette
                 randomColorChaosMax: 32, // maximum colors in palette
+                randomColorChaosKeepBg: false, // keep background color from Colors panel instead of randomizing it
+                randomColorChaosKeepGrid: false, // keep grid color from Colors panel instead of randomizing it
                 colorChaos: false, // color chaos mode for Colors panel (works in any mode)
-                colorChaosColors: 4, // exact number of colors in palette for Colors panel
+                colorChaosColors: 16, // exact number of colors in palette for Colors panel
                 roundedCaps: false, // rounded line ends (Rounded)
                 closeEnds: false, // closing lines at ends in Stripes mode
                 dashLength: 0.10, // dash length for Dash mode (multiplier of stem)
@@ -1175,7 +1177,7 @@ class VoidTypeface {
             numColors = Math.floor(Math.random() * (max - min + 1)) + min;
         } else if (this.settings.get('colorChaos')) {
             // Fallback: Colors panel settings
-            numColors = this.settings.get('colorChaosColors') || 4;
+            numColors = this.settings.get('colorChaosColors') || 16;
         } else {
             // Default fallback
             numColors = 4;
@@ -1186,12 +1188,28 @@ class VoidTypeface {
             this.colorPalette.push(this.generateRandomColor());
         }
         
-        // Also randomize background and grid colors
-        const bgColor = this.generateRandomColor();
-        const gridColor = this.generateRandomColor();
+        // Randomize background and grid colors
+        // Lock Back and Lock Grid options only apply in Random mode with randomColorChaos enabled
+        const isRandomModeWithChaos = mode === 'random' && randomColorChaos;
+        const keepBg = isRandomModeWithChaos && this.settings.get('randomColorChaosKeepBg');
+        let bgColor;
+        if (!keepBg) {
+            bgColor = this.generateRandomColor();
+            this.settings.set('bgColor', bgColor);
+        } else {
+            // Use background color from Colors panel
+            bgColor = this.settings.get('bgColor');
+        }
         
-        this.settings.set('bgColor', bgColor);
-        this.settings.set('gridColor', gridColor);
+        const keepGrid = isRandomModeWithChaos && this.settings.get('randomColorChaosKeepGrid');
+        let gridColor;
+        if (!keepGrid) {
+            gridColor = this.generateRandomColor();
+            this.settings.set('gridColor', gridColor);
+        } else {
+            // Use grid color from Colors panel
+            gridColor = this.settings.get('gridColor');
+        }
         
         // Update previews
         const bgPreview = document.getElementById('bgColorPreview');
@@ -1772,6 +1790,16 @@ class VoidTypeface {
             if (randomColorChaosCheckbox && mode === 'random') {
                 randomColorChaosCheckbox.checked = this.settings.get('randomColorChaos') ?? false;
             }
+            
+            const randomColorChaosKeepBgCheckbox = document.getElementById('randomColorChaosKeepBgCheckbox');
+            if (randomColorChaosKeepBgCheckbox && mode === 'random') {
+                randomColorChaosKeepBgCheckbox.checked = this.settings.get('randomColorChaosKeepBg') ?? false;
+            }
+            
+            const randomColorChaosKeepGridCheckbox = document.getElementById('randomColorChaosKeepGridCheckbox');
+            if (randomColorChaosKeepGridCheckbox && mode === 'random') {
+                randomColorChaosKeepGridCheckbox.checked = this.settings.get('randomColorChaosKeepGrid') ?? false;
+            }
 
             // Update Dash Length and Gap Length sliders state
             this.updateRandomDashSlidersState();
@@ -1961,6 +1989,42 @@ class VoidTypeface {
                 this.markAsChanged();
             });
         }
+        
+        // Toggle for keeping background color in Color Chaos mode
+        const randomColorChaosKeepBgCheckbox = document.getElementById('randomColorChaosKeepBgCheckbox');
+        if (randomColorChaosKeepBgCheckbox) {
+            randomColorChaosKeepBgCheckbox.addEventListener('change', () => {
+                // Don't process if checkbox is disabled
+                if (randomColorChaosKeepBgCheckbox.disabled) {
+                    return;
+                }
+                this.settings.set('randomColorChaosKeepBg', randomColorChaosKeepBgCheckbox.checked);
+                // If Color Chaos is enabled, regenerate palette with new setting
+                if (this.settings.get('randomColorChaos')) {
+                    this.generateColorPalette();
+                    this.updateRenderer();
+                }
+                this.markAsChanged();
+            });
+        }
+        
+        // Toggle for keeping grid color in Color Chaos mode
+        const randomColorChaosKeepGridCheckbox = document.getElementById('randomColorChaosKeepGridCheckbox');
+        if (randomColorChaosKeepGridCheckbox) {
+            randomColorChaosKeepGridCheckbox.addEventListener('change', () => {
+                // Don't process if checkbox is disabled
+                if (randomColorChaosKeepGridCheckbox.disabled) {
+                    return;
+                }
+                this.settings.set('randomColorChaosKeepGrid', randomColorChaosKeepGridCheckbox.checked);
+                // If Color Chaos is enabled, regenerate palette with new setting
+                if (this.settings.get('randomColorChaos')) {
+                    this.generateColorPalette();
+                    this.updateRenderer();
+                }
+                this.markAsChanged();
+            });
+        }
     }
     
     /**
@@ -1970,10 +2034,32 @@ class VoidTypeface {
         const mode = this.settings.get('mode');
         const colorChaosEnabled = this.settings.get('randomColorChaos');
         const colorChaosGroup = document.getElementById('randomControlGroupColorChaos');
+        const keepBgLabel = document.getElementById('randomColorChaosKeepBgLabel');
         
         // Add disabled class when Color Chaos is not enabled in Random mode
         if (colorChaosGroup) {
             colorChaosGroup.classList.toggle('disabled', !(mode === 'random' && colorChaosEnabled));
+        }
+        
+        // Make Keep Background and Keep Grid checkboxes inactive when Color Chaos is disabled (like Chess Order)
+        const keepBgCheckbox = document.getElementById('randomColorChaosKeepBgCheckbox');
+        const keepGridLabel = document.getElementById('randomColorChaosKeepGridLabel');
+        const keepGridCheckbox = document.getElementById('randomColorChaosKeepGridCheckbox');
+        
+        if (keepBgLabel) {
+            const shouldBeInactive = !(mode === 'random' && colorChaosEnabled);
+            keepBgLabel.classList.toggle('inactive', shouldBeInactive);
+            if (keepBgCheckbox) {
+                keepBgCheckbox.disabled = shouldBeInactive;
+            }
+        }
+        
+        if (keepGridLabel) {
+            const shouldBeInactive = !(mode === 'random' && colorChaosEnabled);
+            keepGridLabel.classList.toggle('inactive', shouldBeInactive);
+            if (keepGridCheckbox) {
+                keepGridCheckbox.disabled = shouldBeInactive;
+            }
         }
         
         // Update Type button (letterColorPreview) disabled state
@@ -2056,7 +2142,7 @@ class VoidTypeface {
         if (mode !== 'random') return;
 
         const minLines = this.settings.get('randomStrokesMin') ?? 1;
-        const maxLines = this.settings.get('randomStrokesMax') ?? 8;
+        const maxLines = this.settings.get('randomStrokesMax') ?? 4;
         
         // Close is inactive only if both min and max are 1
         const isInactive = minLines === 1 && maxLines === 1;
@@ -2125,9 +2211,9 @@ class VoidTypeface {
                 defaultPreset.randomStemMin !== 0.5 ||
                 defaultPreset.randomStemMax !== 1.0 ||
                 defaultPreset.randomStrokesMin !== 1 ||
-                defaultPreset.randomStrokesMax !== 8 ||
-                defaultPreset.randomContrastMin !== 0.5 ||
-                defaultPreset.randomContrastMax !== 1.0 ||
+                defaultPreset.randomStrokesMax !== 4 ||
+                defaultPreset.randomContrastMin !== 0.1 ||
+                defaultPreset.randomContrastMax !== 2.0 ||
                 defaultPreset.randomDashLengthMin !== 1.0 ||
                 defaultPreset.randomDashLengthMax !== 1.5 ||
                 defaultPreset.randomGapLengthMin !== 1.0 ||
@@ -2143,9 +2229,9 @@ class VoidTypeface {
                 defaultPreset.randomStemMin = 0.5;
                 defaultPreset.randomStemMax = 1.0;
                 defaultPreset.randomStrokesMin = 1;
-                defaultPreset.randomStrokesMax = 8;
-                defaultPreset.randomContrastMin = 0.5;
-                defaultPreset.randomContrastMax = 1.0;
+                defaultPreset.randomStrokesMax = 4;
+                defaultPreset.randomContrastMin = 0.1;
+                defaultPreset.randomContrastMax = 2.0;
                 defaultPreset.randomDashLengthMin = 1.0;
                 defaultPreset.randomDashLengthMax = 1.5;
                 defaultPreset.randomGapLengthMin = 1.0;
@@ -3022,6 +3108,8 @@ class VoidTypeface {
             randomColorChaos: this.settings.get('randomColorChaos') !== undefined ? this.settings.get('randomColorChaos') : false,
             randomColorChaosMin: this.settings.get('randomColorChaosMin'),
             randomColorChaosMax: this.settings.get('randomColorChaosMax'),
+            randomColorChaosKeepBg: this.settings.get('randomColorChaosKeepBg') !== undefined ? this.settings.get('randomColorChaosKeepBg') : false,
+            randomColorChaosKeepGrid: this.settings.get('randomColorChaosKeepGrid') !== undefined ? this.settings.get('randomColorChaosKeepGrid') : false,
             useColorChaos: this.settings.get('colorChaos') || (this.settings.get('randomColorChaos') && this.settings.get('mode') === 'random'),
             roundedCaps: this.settings.get('roundedCaps') || false,
             closeEnds: this.settings.get('closeEnds') || false,

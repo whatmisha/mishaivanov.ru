@@ -15,7 +15,7 @@ export class RandomUtils {
         const stemMin = params.randomStemMin !== undefined ? params.randomStemMin : 0.5;
         const stemMax = params.randomStemMax !== undefined ? params.randomStemMax : 1.0;
         const strokesMin = params.randomStrokesMin !== undefined ? params.randomStrokesMin : 1;
-        const strokesMax = params.randomStrokesMax !== undefined ? params.randomStrokesMax : 8;
+        const strokesMax = params.randomStrokesMax !== undefined ? params.randomStrokesMax : 4;
         const contrastMin = params.randomContrastMin !== undefined ? params.randomContrastMin : 0.5;
         const contrastMax = params.randomContrastMax !== undefined ? params.randomContrastMax : 1.0;
         const dashLengthMin = params.randomDashLengthMin !== undefined ? params.randomDashLengthMin : 1.0;
