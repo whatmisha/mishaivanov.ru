@@ -1798,19 +1798,14 @@ legend {
     margin-bottom: 0;
 }
 
-/* Color Random|Color Chaos row doesn't need bottom margin (followed by Lock Back Lock Grid) */
+/* Random|Chaos|BW row doesn't need bottom margin (followed by Lock Back Lock Grid) */
 #randomControlGroup6.toggle-group-row {
     margin-bottom: 0;
 }
 
-/* Lock Back Lock Grid row doesn't need bottom margin (followed by Grayscale) */
+/* Lock Back Lock Grid row doesn't need bottom margin (followed by Colors slider) */
 #randomControlGroupColorChaosKeepBg.toggle-group-row {
     margin-bottom: 0;
-}
-
-/* Grayscale row has smaller bottom margin */
-#randomControlGroupColorChaosGrayscale.toggle-group-row {
-    margin-bottom: 8px;
 }
 
 /* Dashes|Chess Order row has smaller bottom margin */
