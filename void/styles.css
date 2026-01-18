@@ -635,6 +635,10 @@ body {
 
 .compact-input-group:has(input:disabled) {
     opacity: 0.5;
+    /* pointer-events kept for tooltip support */
+}
+
+.compact-input-group:has(input:disabled) input {
     pointer-events: none;
 }
 
@@ -644,7 +648,7 @@ body {
 
 .compact-input:disabled {
     opacity: 0.5;
-    cursor: not-allowed;
+    cursor: default;
 }
 
 .compact-input-icon {
@@ -795,18 +799,18 @@ input[name="textAlign"]:checked + .align-icon-btn {
 /* Disabled State для слайдеров */
 .control-group input[type="range"]:disabled {
     opacity: 0.4;
-    cursor: not-allowed;
+    cursor: default;
 }
 
 .control-group input[type="range"]:disabled::-webkit-slider-thumb {
     background: var(--color-text-muted);
-    cursor: not-allowed;
+    cursor: default;
     transform: none;
 }
 
 .control-group input[type="range"]:disabled::-moz-range-thumb {
     background: var(--color-text-muted);
-    cursor: not-allowed;
+    cursor: default;
     transform: none;
 }
 
@@ -977,7 +981,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
 
 .value-display:disabled {
     opacity: 0.4;
-    cursor: not-allowed;
+    cursor: default;
     color: var(--color-text-muted);
 }
 
@@ -1370,7 +1374,7 @@ input[name="textAlign"]:checked + .align-icon-btn {
 .btn-secondary:disabled,
 .btn-fixed:disabled {
     opacity: 0.5;
-    cursor: not-allowed;
+    cursor: default;
 }
 
 /* Fixed Buttons - for bottom bar */
@@ -1816,11 +1820,22 @@ legend {
 /* Disabled state for control groups */
 .control-group.disabled {
     opacity: 0.4;
+    /* pointer-events kept for tooltip support, children handle input blocking */
+}
+
+.control-group.disabled input,
+.control-group.disabled select,
+.control-group.disabled button,
+.control-group.disabled textarea {
     pointer-events: none;
 }
 
 .control-group.disabled label {
-    cursor: default;
+    cursor: default !important;
+}
+
+.control-group.disabled * {
+    cursor: default !important;
 }
 
 .control-group.disabled .checkbox-label {
@@ -1830,10 +1845,16 @@ legend {
 /* Keep interactive but dimmed - for Chess which depends on Dash */
 .checkbox-label.inactive {
     opacity: 0.4;
+    cursor: default !important;
 }
 
 .checkbox-label.inactive:hover {
     opacity: 0.4;
+    cursor: default !important;
+}
+
+.checkbox-label.inactive * {
+    cursor: default !important;
 }
 
 .checkbox-label.inactive span {
@@ -2018,8 +2039,18 @@ legend {
 .checkbox-label:has(input[type="checkbox"]:disabled),
 .checkbox-label.disabled {
     opacity: 0.4;
-    cursor: default;
+    cursor: default !important;
+    /* pointer-events kept for tooltip support */
+}
+
+.checkbox-label:has(input[type="checkbox"]:disabled) input,
+.checkbox-label.disabled input {
     pointer-events: none;
+}
+
+.checkbox-label:has(input[type="checkbox"]:disabled) *,
+.checkbox-label.disabled * {
+    cursor: default !important;
 }
 
 .checkbox-label:has(input[type="checkbox"]:disabled) span,
@@ -3371,6 +3402,48 @@ textarea::-moz-selection {
 .modal-btn-ghost:hover:not(:disabled) {
     background: var(--color-text);
     color: var(--color-bg);
+}
+
+/* ============================================
+   CUSTOM TOOLTIPS (cursor-following)
+   ============================================ */
+
+/* Global tooltip element (created via JS) */
+.cursor-tooltip {
+    position: fixed;
+    padding: 6px 10px;
+    background: #1a1a1a;
+    color: var(--color-text);
+    font-size: 0.75rem;
+    font-weight: 400;
+    white-space: nowrap;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 100000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.1s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.cursor-tooltip.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Mark elements with tooltip for hover detection */
+[data-tooltip] {
+    /* No pseudo-elements needed - handled by JS */
+}
+
+/* ============================================
+   ROUND CAPS CONTROL GROUP SPACING
+   ============================================ */
+
+/* Round Caps container in Monoline and other modes */
+#roundedCapsControlGroup {
+    margin-top: 20px;
+    margin-bottom: 0;
 }
 
 /* ============================================

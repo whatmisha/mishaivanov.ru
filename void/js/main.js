@@ -139,6 +139,7 @@ class VoidTypeface {
             this.initExport();
             this.initResize();
             this.initMIDI();
+            this.initCursorTooltips();
             
             // Clear random values cache before first render
             // to use correct values from settings
@@ -1008,10 +1009,19 @@ class VoidTypeface {
         // Color Chaos toggle on Colors panel
         const colorChaosCheckbox = document.getElementById('colorChaosCheckbox');
         const colorChaosColorsInput = document.getElementById('colorChaosColorsValue');
+        const colorChaosColorsInputGroup = document.getElementById('colorChaosColorsInputGroup');
         if (colorChaosCheckbox) {
             const updateInputState = (enabled) => {
                 if (colorChaosColorsInput) {
                     colorChaosColorsInput.disabled = !enabled;
+                }
+                // Update tooltip on parent group
+                if (colorChaosColorsInputGroup) {
+                    if (!enabled) {
+                        colorChaosColorsInputGroup.setAttribute('data-tooltip', 'Enable Chaos toggle');
+                    } else {
+                        colorChaosColorsInputGroup.removeAttribute('data-tooltip');
+                    }
                 }
             };
             
@@ -1833,8 +1843,18 @@ class VoidTypeface {
             const stemValue = document.getElementById('stemValue');
             if (stemSlider && stemValue) {
                 const isDisabled = mode === 'random';
+                const stemTooltipMessage = 'Use Style panel in Random mode';
                 stemSlider.disabled = isDisabled;
                 stemValue.disabled = isDisabled;
+                // Set data-tooltip on parent control group only
+                const stemControlGroup = stemSlider.closest('.control-group');
+                if (stemControlGroup) {
+                    if (isDisabled) {
+                        stemControlGroup.setAttribute('data-tooltip', stemTooltipMessage);
+                    } else {
+                        stemControlGroup.removeAttribute('data-tooltip');
+                    }
+                }
             }
             
             // Update Rounded visibility
@@ -2071,10 +2091,17 @@ class VoidTypeface {
         const colorChaosEnabled = this.settings.get('randomColorChaos');
         const colorChaosGroup = document.getElementById('randomControlGroupColorChaos');
         const keepBgLabel = document.getElementById('randomColorChaosKeepBgLabel');
+        const tooltipMessageChaos = 'Enable Chaos toggle';
         
         // Add disabled class when Color Chaos is not enabled in Random mode
         if (colorChaosGroup) {
-            colorChaosGroup.classList.toggle('disabled', !(mode === 'random' && colorChaosEnabled));
+            const isDisabled = !(mode === 'random' && colorChaosEnabled);
+            colorChaosGroup.classList.toggle('disabled', isDisabled);
+            if (isDisabled && mode === 'random') {
+                colorChaosGroup.setAttribute('data-tooltip', tooltipMessageChaos);
+            } else {
+                colorChaosGroup.removeAttribute('data-tooltip');
+            }
         }
         
         // Make Keep Background, Keep Grid and Grayscale checkboxes inactive when Color Chaos is disabled (like Chess Order)
@@ -2090,6 +2117,11 @@ class VoidTypeface {
             if (keepBgCheckbox) {
                 keepBgCheckbox.disabled = shouldBeInactive;
             }
+            if (shouldBeInactive && mode === 'random') {
+                keepBgLabel.setAttribute('data-tooltip', tooltipMessageChaos);
+            } else {
+                keepBgLabel.removeAttribute('data-tooltip');
+            }
         }
         
         if (keepGridLabel) {
@@ -2098,6 +2130,11 @@ class VoidTypeface {
             if (keepGridCheckbox) {
                 keepGridCheckbox.disabled = shouldBeInactive;
             }
+            if (shouldBeInactive && mode === 'random') {
+                keepGridLabel.setAttribute('data-tooltip', tooltipMessageChaos);
+            } else {
+                keepGridLabel.removeAttribute('data-tooltip');
+            }
         }
         
         if (grayscaleLabel) {
@@ -2105,6 +2142,11 @@ class VoidTypeface {
             grayscaleLabel.classList.toggle('inactive', shouldBeInactive);
             if (grayscaleCheckbox) {
                 grayscaleCheckbox.disabled = shouldBeInactive;
+            }
+            if (shouldBeInactive && mode === 'random') {
+                grayscaleLabel.setAttribute('data-tooltip', tooltipMessageChaos);
+            } else {
+                grayscaleLabel.removeAttribute('data-tooltip');
             }
         }
         
@@ -2116,14 +2158,30 @@ class VoidTypeface {
             letterPreview.disabled = shouldDisable;
             letterPreview.style.opacity = shouldDisable ? '0.5' : '1';
             letterPreview.style.cursor = shouldDisable ? 'default' : 'pointer';
+            if (shouldDisable) {
+                letterPreview.setAttribute('data-tooltip', 'Disable Chaos toggle in Style panel');
+            } else {
+                letterPreview.removeAttribute('data-tooltip');
+            }
         }
         
         // In Random mode, disable Color panel controls (Chaos, Random, Randomize button)
         const isRandomMode = mode === 'random';
+        const tooltipMessageRandomStyle = 'Use Style panel in Random mode';
         const colorChaosCheckbox = document.getElementById('colorChaosCheckbox');
         const colorRandomCheckbox = document.getElementById('colorRandomCheckbox');
         const randomColorsBtn = document.getElementById('randomColorsBtn');
         const colorChaosColorsInput = document.getElementById('colorChaosColorsValue');
+        
+        // Set tooltip on the entire randomize controls container
+        const randomizeControlsContainer = document.getElementById('randomizeControlsContainer');
+        if (randomizeControlsContainer) {
+            if (isRandomMode) {
+                randomizeControlsContainer.setAttribute('data-tooltip', tooltipMessageRandomStyle);
+            } else {
+                randomizeControlsContainer.removeAttribute('data-tooltip');
+            }
+        }
         
         if (colorChaosCheckbox) {
             colorChaosCheckbox.disabled = isRandomMode;
@@ -2146,7 +2204,8 @@ class VoidTypeface {
         }
         
         if (colorChaosColorsInput) {
-            colorChaosColorsInput.disabled = isRandomMode || !colorChaosCheckbox?.checked;
+            const isDisabled = isRandomMode || !colorChaosCheckbox?.checked;
+            colorChaosColorsInput.disabled = isDisabled;
         }
     }
 
@@ -2159,6 +2218,7 @@ class VoidTypeface {
         const mode = this.settings.get('mode');
         const isRandomMode = mode === 'random';
         const isEnabled = isRandomMode && randomDashEnabled;
+        const tooltipMessage = 'Enable Dashes toggle';
 
         // Update disabled state for Dash Length and Gap Length groups
         const dashLengthGroup = document.getElementById('randomControlGroupDashLength');
@@ -2166,16 +2226,31 @@ class VoidTypeface {
         
         if (dashLengthGroup) {
             dashLengthGroup.classList.toggle('disabled', !isEnabled);
+            if (!isEnabled && isRandomMode) {
+                dashLengthGroup.setAttribute('data-tooltip', tooltipMessage);
+            } else {
+                dashLengthGroup.removeAttribute('data-tooltip');
+            }
         }
         
         if (gapLengthGroup) {
             gapLengthGroup.classList.toggle('disabled', !isEnabled);
+            if (!isEnabled && isRandomMode) {
+                gapLengthGroup.setAttribute('data-tooltip', tooltipMessage);
+            } else {
+                gapLengthGroup.removeAttribute('data-tooltip');
+            }
         }
 
         // Update Chess toggle inactive state (Chess only works with Dash enabled)
         const chessLabel = document.getElementById('dashChessLabelRandom');
         if (chessLabel) {
             chessLabel.classList.toggle('inactive', !randomDashEnabled);
+            if (!randomDashEnabled && isRandomMode) {
+                chessLabel.setAttribute('data-tooltip', tooltipMessage);
+            } else {
+                chessLabel.removeAttribute('data-tooltip');
+            }
         }
     }
 
@@ -2192,10 +2267,16 @@ class VoidTypeface {
         
         // Close is inactive only if both min and max are 1
         const isInactive = minLines === 1 && maxLines === 1;
+        const tooltipMessage = 'Set Lines to more than 1';
         
         const closeLabel = document.getElementById('randomCloseEndsLabel');
         if (closeLabel) {
             closeLabel.classList.toggle('inactive', isInactive);
+            if (isInactive) {
+                closeLabel.setAttribute('data-tooltip', tooltipMessage);
+            } else {
+                closeLabel.removeAttribute('data-tooltip');
+            }
         }
     }
 
@@ -3009,8 +3090,18 @@ class VoidTypeface {
         const stemValue = document.getElementById('stemValue');
         if (stemSlider && stemValue) {
             const isDisabled = mode === 'random';
+            const stemTooltipMessage = 'Use Style panel in Random mode';
             stemSlider.disabled = isDisabled;
             stemValue.disabled = isDisabled;
+            // Set data-tooltip on parent control group only
+            const stemControlGroup = stemSlider.closest('.control-group');
+            if (stemControlGroup) {
+                if (isDisabled) {
+                    stemControlGroup.setAttribute('data-tooltip', stemTooltipMessage);
+                } else {
+                    stemControlGroup.removeAttribute('data-tooltip');
+                }
+            }
         }
 
         // Update colors
@@ -3683,6 +3774,128 @@ class VoidTypeface {
         } catch (error) {
             console.error('[VoidTypeface] Failed to initialize MIDI controller:', error);
         }
+    }
+
+    /**
+     * Initialize cursor-following tooltips system
+     * Creates a global tooltip element that follows the cursor
+     */
+    initCursorTooltips() {
+        // Create tooltip element
+        const tooltip = document.createElement('div');
+        tooltip.className = 'cursor-tooltip';
+        tooltip.id = 'cursorTooltip';
+        document.body.appendChild(tooltip);
+        
+        this.tooltipElement = tooltip;
+        this.tooltipVisible = false;
+        
+        // Track mouse position
+        let mouseX = 0;
+        let mouseY = 0;
+        
+        // Update tooltip position on mouse move
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            
+            if (this.tooltipVisible) {
+                this.positionTooltip(mouseX, mouseY);
+            }
+        });
+        
+        // Delegate event listeners for elements with data-tooltip
+        document.addEventListener('mouseenter', (e) => {
+            const target = e.target.closest('[data-tooltip]');
+            if (target) {
+                const tooltipText = target.getAttribute('data-tooltip');
+                if (tooltipText) {
+                    this.showTooltip(tooltipText, mouseX, mouseY);
+                }
+            }
+        }, true);
+        
+        document.addEventListener('mouseleave', (e) => {
+            const target = e.target.closest('[data-tooltip]');
+            if (target) {
+                this.hideTooltip();
+            }
+        }, true);
+        
+        // Also listen for mouseover/mouseout for better detection on nested elements
+        document.addEventListener('mouseover', (e) => {
+            const target = e.target.closest('[data-tooltip]');
+            if (target) {
+                const tooltipText = target.getAttribute('data-tooltip');
+                if (tooltipText) {
+                    this.showTooltip(tooltipText, mouseX, mouseY);
+                }
+            }
+        });
+        
+        document.addEventListener('mouseout', (e) => {
+            const target = e.target;
+            const relatedTarget = e.relatedTarget;
+            
+            // Check if we're leaving a tooltip element
+            if (target.closest && target.closest('[data-tooltip]')) {
+                // Check if we're moving to a child or parent with the same tooltip
+                const targetTooltipEl = target.closest('[data-tooltip]');
+                const relatedTooltipEl = relatedTarget?.closest?.('[data-tooltip]');
+                
+                if (targetTooltipEl !== relatedTooltipEl) {
+                    this.hideTooltip();
+                }
+            }
+        });
+    }
+    
+    /**
+     * Show tooltip with text at cursor position
+     */
+    showTooltip(text, x, y) {
+        if (!this.tooltipElement) return;
+        
+        this.tooltipElement.textContent = text;
+        this.tooltipVisible = true;
+        this.positionTooltip(x, y);
+        this.tooltipElement.classList.add('visible');
+    }
+    
+    /**
+     * Hide tooltip
+     */
+    hideTooltip() {
+        if (!this.tooltipElement) return;
+        
+        this.tooltipVisible = false;
+        this.tooltipElement.classList.remove('visible');
+    }
+    
+    /**
+     * Position tooltip near cursor
+     */
+    positionTooltip(x, y) {
+        if (!this.tooltipElement) return;
+        
+        const offset = 12; // Offset from cursor
+        const tooltipRect = this.tooltipElement.getBoundingClientRect();
+        
+        let left = x + offset;
+        let top = y + offset;
+        
+        // Keep tooltip within viewport
+        if (left + tooltipRect.width > window.innerWidth) {
+            left = x - tooltipRect.width - offset;
+        }
+        if (top + tooltipRect.height > window.innerHeight) {
+            top = y - tooltipRect.height - offset;
+        }
+        if (left < 0) left = offset;
+        if (top < 0) top = offset;
+        
+        this.tooltipElement.style.left = `${left}px`;
+        this.tooltipElement.style.top = `${top}px`;
     }
 }
 
