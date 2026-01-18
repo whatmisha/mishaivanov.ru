@@ -1764,6 +1764,11 @@ legend {
     padding-right: var(--spacing-3xl);
 }
 
+/* Dashes section has smaller top margin */
+#randomSectionDash {
+    margin-top: 10px !important;
+}
+
 /* Section header */
 .random-section-header {
     font-size: 0.75rem;
