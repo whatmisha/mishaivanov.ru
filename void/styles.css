@@ -821,28 +821,59 @@ input[name="textAlign"]:checked + .align-icon-btn {
 /* Range Slider - slider with two handles */
 .range-slider-container {
     width: 100%;
-    margin-top: var(--spacing-md); /* +2px from regular slider */
-    margin-bottom: 26px; /* Increased bottom margin for range sliders */
+    margin-top: var(--spacing-md);
+    margin-bottom: 6px;
     position: relative;
     height: 10px; /* Clickable area */
 }
 
-/* Range value display block (min–max) */
-.range-value-display {
+/* Range slider wrapper with values below */
+.range-slider-wrapper {
     display: flex;
-    align-items: center;
-    flex-shrink: 0;
-    background: #131313;
-    border-radius: 2px;
+    flex-direction: column;
+    margin-top: 0;
+    margin-bottom: 12px;
 }
 
-.range-value-display .value-display {
-    width: 32px;
+/* Control group with range slider has top margin */
+.control-group:has(.range-slider-wrapper) {
+    margin-top: 12px;
+}
+
+/* Additional spacing between consecutive range sliders */
+.control-group:has(.range-slider-wrapper) + .control-group:has(.range-slider-wrapper) {
+    margin-top: 18px;
+}
+
+.range-slider-wrapper .range-slider-container {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+/* Range values below slider */
+.range-slider-values {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2px;
+}
+
+.range-slider-values .value-display {
+    width: auto;
+    min-width: 28px;
+}
+
+.range-slider-values .value-display:first-child {
+    text-align: left;
+}
+
+.range-slider-values .value-display:last-child {
     text-align: right;
 }
 
-.range-value-display .value-display:last-child {
-    text-align: left;
+/* Legacy range-value-display (in label) - hide when new structure is used */
+.range-value-display {
+    display: none;
 }
 
 .range-separator {
@@ -873,24 +904,27 @@ input[name="textAlign"]:checked + .align-icon-btn {
 .range-slider-thumb {
     position: absolute;
     width: 8px;
-    height: 10px;
+    height: 10px; /* Active area stays 10px for easier dragging */
     background: var(--color-text);
     cursor: grab;
     top: 50%;
     transition: opacity var(--transition-fast);
     outline: none;
+    /* Visual height is reduced via clip-path */
 }
 
 /* Min thumb (left) — triangle points right, tip (right edge) at value */
 .range-slider-thumb-min {
     transform: translate(-100%, -50%); /* Shift left by 100% width so right edge is at position */
-    clip-path: polygon(100% 50%, 0 0, 0 100%);
+    /* Visual height reduced by 2px (from 10px to 8px), but active area stays 10px */
+    clip-path: polygon(100% 50%, 0 1px, 0 calc(100% - 1px));
 }
 
 /* Max thumb (right) — triangle points left, tip (left edge) at value */
 .range-slider-thumb-max {
     transform: translateY(-50%); /* Left edge at position */
-    clip-path: polygon(0 50%, 100% 0, 100% 100%);
+    /* Visual height reduced by 2px (from 10px to 8px), but active area stays 10px */
+    clip-path: polygon(0 50%, 100% 1px, 100% calc(100% - 1px));
 }
 
 .range-slider-thumb:hover {
@@ -1646,9 +1680,9 @@ legend {
 .style-buttons-container {
     display: flex;
     flex-wrap: wrap;
-    column-gap: 3px;
-    row-gap: 6px;
+    gap: 3px;
     margin-top: 0;
+    width: 100%;
 }
 
 .style-button {
@@ -1664,11 +1698,16 @@ legend {
     user-select: none;
     /* Prevent double-tap zoom on mobile */
     touch-action: manipulation;
-    /* Width depends on content */
     white-space: nowrap;
     /* Inactive state: black background, white text */
     background: var(--color-bg);
     color: var(--color-text);
+    /* Each button grows to fill space */
+    flex: 1 1 auto;
+}
+
+.style-button-spacer {
+    display: none;
 }
 
 .style-button:hover {
@@ -1686,9 +1725,104 @@ legend {
     outline-offset: 2px;
 }
 
-/* Increase spacing between tab switcher and first slider on Random tab */
-#randomControlGroupStem {
-    margin-top: 18px;
+/* First random section needs top margin after style buttons */
+#randomSectionGeneral {
+    margin-top: 12px;
+}
+
+/* Button section has no header, just needs the divider */
+#randomSectionButton .control-group {
+    margin-bottom: 0;
+}
+
+/* ============================================
+   RANDOM MODE SECTIONS
+   ============================================ */
+
+/* Random mode section container */
+.random-section {
+    display: none;
+}
+
+.random-section.visible {
+    display: block;
+}
+
+/* Section with divider line above */
+.random-section + .random-section {
+    border-top: 1px solid var(--color-border);
+    margin-top: 20px;
+    padding-top: 16px;
+    margin-left: calc(-1 * var(--spacing-3xl));
+    margin-right: calc(-1 * var(--spacing-3xl));
+    padding-left: var(--spacing-3xl);
+    padding-right: var(--spacing-3xl);
+}
+
+/* Section header */
+.random-section-header {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+/* Control groups inside sections */
+.random-section .control-group {
+    margin-bottom: 12px;
+}
+
+.random-section .control-group:last-child {
+    margin-bottom: 0;
+}
+
+/* Toggle rows inside sections need more bottom margin when followed by sliders */
+.random-section .control-group.toggle-group-row {
+    margin-bottom: 14px;
+}
+
+/* Chaos Alt row doesn't need bottom margin (followed by Round Close) */
+#randomControlGroup.toggle-group-row {
+    margin-bottom: 0;
+}
+
+/* Color Random|Color Chaos and Dashes|Chess Order rows have smaller bottom margin */
+#randomControlGroup6.toggle-group-row,
+#randomDashSection.toggle-group-row {
+    margin-bottom: 8px;
+}
+
+/* Disabled state for control groups */
+.control-group.disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.control-group.disabled label {
+    cursor: default;
+}
+
+.control-group.disabled .checkbox-label {
+    cursor: default;
+}
+
+/* Keep interactive but dimmed - for Chess which depends on Dash */
+.checkbox-label.inactive {
+    opacity: 0.4;
+}
+
+.checkbox-label.inactive:hover {
+    opacity: 0.4;
+}
+
+.checkbox-label.inactive span {
+    color: var(--color-text-muted);
+}
+
+.checkbox-label.inactive:hover span {
+    color: var(--color-text-muted);
 }
 
 /* Container for color picker group */
@@ -1823,10 +1957,10 @@ legend {
 .checkbox-label::before {
     content: '';
     display: inline-block;
-    width: 33px;
-    height: 18px;
+    width: 28px;
+    height: 16px;
     background-color: #3a3a3a;
-    border-radius: 9px;
+    border-radius: 8px;
     margin-right: 0;
     transition: background-color 0.3s ease;
     position: relative;
@@ -1839,8 +1973,8 @@ legend {
     left: 2px;
     top: 50%;
     transform: translateY(-50%);
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
     background-color: #d2d2d2;
     border-radius: 50%;
     transition: left 0.3s ease;
@@ -1853,7 +1987,7 @@ legend {
 
 .control-group input[type="checkbox"]:checked + .checkbox-label::after,
 .checkbox-label:has(input[type="checkbox"]:checked)::after {
-    left: 17px;
+    left: 14px; /* 28px width - 12px circle - 2px left margin = 14px */
     background-color: #d2d2d2;
 }
 
@@ -1862,23 +1996,27 @@ legend {
 }
 
 /* Disabled checkbox state */
-.checkbox-label:has(input[type="checkbox"]:disabled) {
-    opacity: 0.5;
-    cursor: not-allowed;
+.checkbox-label:has(input[type="checkbox"]:disabled),
+.checkbox-label.disabled {
+    opacity: 0.4;
+    cursor: default;
     pointer-events: none;
 }
 
-.checkbox-label:has(input[type="checkbox"]:disabled) span {
-    opacity: 0.5;
-    color: var(--color-text-secondary);
+.checkbox-label:has(input[type="checkbox"]:disabled) span,
+.checkbox-label.disabled span {
+    opacity: 0.4;
+    color: var(--color-text-muted);
 }
 
-.checkbox-label:has(input[type="checkbox"]:disabled)::before {
-    opacity: 0.5;
+.checkbox-label:has(input[type="checkbox"]:disabled)::before,
+.checkbox-label.disabled::before {
+    opacity: 0.4;
 }
 
-.checkbox-label:has(input[type="checkbox"]:disabled)::after {
-    opacity: 0.5;
+.checkbox-label:has(input[type="checkbox"]:disabled)::after,
+.checkbox-label.disabled::after {
+    opacity: 0.4;
 }
 
 /* ============================================

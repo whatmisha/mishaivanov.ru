@@ -186,7 +186,7 @@ Code</textarea>
                             <div class="style-buttons-container">
                                 <button type="button" class="style-button active" data-mode="fill" id="modeFill">Monoline</button>
                                 <button type="button" class="style-button" data-mode="stripes" id="modeStripes">Stripes</button>
-                                <button type="button" class="style-button" data-mode="dash" id="modeDash">Dash</button>
+                                <button type="button" class="style-button" data-mode="dash" id="modeDash">Dashes</button>
                                 <button type="button" class="style-button" data-mode="sd" id="modeSD">Dashed Stripes</button>
                                 <button type="button" class="style-button" data-mode="random" id="modeRandom">Random</button>
                             </div>
@@ -210,7 +210,7 @@ Code</textarea>
                             <input type="range" id="strokeGapRatioSlider" min="0.1" max="8" value="1.0" step="0.1">
                         </div>
 
-                        <!-- Dash Length (for Dash mode only) -->
+                        <!-- Dash Length (for Dashes mode only) -->
                         <div class="control-group" id="dashLengthControlGroup" style="display: none; margin-top: 18px;">
                             <label for="dashLengthSlider">
                                 <span>Dash Length</span>
@@ -219,7 +219,7 @@ Code</textarea>
                             <input type="range" id="dashLengthSlider" min="0.01" max="8" value="0.10" step="0.01">
                         </div>
 
-                        <!-- Gap Length (for Dash mode only) -->
+                        <!-- Gap Length (for Dashes mode only) -->
                         <div class="control-group" id="gapLengthControlGroup" style="display: none;">
                             <label for="gapLengthSlider">
                                 <span>Gap Length</span>
@@ -228,139 +228,160 @@ Code</textarea>
                             <input type="range" id="gapLengthSlider" min="0.01" max="8" value="0.30" step="0.01">
                         </div>
 
-                        <!-- Round, Close Ends and Chess -->
+                        <!-- Round Caps, Close Stems and Chess Order -->
                         <div class="control-group toggle-group-row" id="roundedCapsControlGroup" style="display: none;">
                             <label class="checkbox-label" id="roundedCapsLabel" for="roundedCapsCheckbox">
                                 <input type="checkbox" id="roundedCapsCheckbox">
-                                <span>Round</span>
+                                <span>Round Caps</span>
                             </label>
                             <label class="checkbox-label" id="closeEndsLabel" for="closeEndsCheckbox">
                                 <input type="checkbox" id="closeEndsCheckbox">
-                                <span>Close</span>
+                                <span>Close Stems</span>
                             </label>
                             <label class="checkbox-label hidden" id="dashChessLabel" for="dashChessCheckboxPD">
                                 <input type="checkbox" id="dashChessCheckboxPD">
-                                <span>Chess</span>
+                                <span>Chess Order</span>
+                            </label>
+                        </div>
+                        <div class="control-group toggle-group-row" id="dashChessControlGroup" style="display: none;">
+                            <label class="checkbox-label hidden" id="dashChessLabelSD" for="dashChessCheckboxSD">
+                                <input type="checkbox" id="dashChessCheckboxSD">
+                                <span>Chess Order</span>
                             </label>
                         </div>
 
-                        <div class="control-group" id="randomControlGroupStem" style="display: none;">
-                            <label>
-                                <span>Stem Weight <span class="unit">mod</span></span>
-                                <div class="range-value-display">
-                                    <input type="text" class="value-display" id="randomStemMinValue" value="0.5">
-                                    <span class="range-separator">–</span>
-                                    <input type="text" class="value-display" id="randomStemMaxValue" value="1.0">
+                        <!-- ========== RANDOM: GENERAL SECTION ========== -->
+                        <div class="random-section" id="randomSectionGeneral">
+                            <div class="random-section-header">General</div>
+                            
+                            <div class="control-group" id="randomControlGroupStem">
+                                <label><span>Stem Weight <span class="unit">mod</span></span></label>
+                                <div class="range-slider-wrapper">
+                                    <div id="randomStemRangeSlider" class="range-slider-container"></div>
+                                    <div class="range-slider-values">
+                                        <input type="text" class="value-display" id="randomStemMinValue" value="0.5">
+                                        <input type="text" class="value-display" id="randomStemMaxValue" value="1.0">
+                                    </div>
                                 </div>
-                            </label>
-                            <div id="randomStemRangeSlider" class="range-slider-container"></div>
-                        </div>
+                            </div>
 
-                        <div class="control-group" id="randomControlGroup2" style="display: none;">
-                            <label>
-                                <span>Lines</span>
-                                <div class="range-value-display">
-                                    <input type="text" class="value-display" id="randomStrokesMinValue" value="1">
-                                    <span class="range-separator">–</span>
-                                    <input type="text" class="value-display" id="randomStrokesMaxValue" value="8">
+                            <div class="control-group" id="randomControlGroup2">
+                                <label><span>Lines</span></label>
+                                <div class="range-slider-wrapper">
+                                    <div id="randomStrokesRangeSlider" class="range-slider-container"></div>
+                                    <div class="range-slider-values">
+                                        <input type="text" class="value-display" id="randomStrokesMinValue" value="1">
+                                        <input type="text" class="value-display" id="randomStrokesMaxValue" value="8">
+                                    </div>
                                 </div>
-                            </label>
-                            <div id="randomStrokesRangeSlider" class="range-slider-container"></div>
-                        </div>
+                            </div>
 
-                        <div class="control-group" id="randomControlGroup3" style="display: none;">
-                            <label>
-                                <span>Contrast</span>
-                                <div class="range-value-display">
-                                    <input type="text" class="value-display" id="randomContrastMinValue" value="0.5">
-                                    <span class="range-separator">–</span>
-                                    <input type="text" class="value-display" id="randomContrastMaxValue" value="1.0">
+                            <div class="control-group" id="randomControlGroup3">
+                                <label><span>Contrast</span></label>
+                                <div class="range-slider-wrapper">
+                                    <div id="randomContrastRangeSlider" class="range-slider-container"></div>
+                                    <div class="range-slider-values">
+                                        <input type="text" class="value-display" id="randomContrastMinValue" value="0.5">
+                                        <input type="text" class="value-display" id="randomContrastMaxValue" value="1.0">
+                                    </div>
                                 </div>
-                            </label>
-                            <div id="randomContrastRangeSlider" class="range-slider-container"></div>
-                        </div>
+                            </div>
 
-                        <div class="control-group" id="randomControlGroupDashLength" style="display: none;">
-                            <label>
-                                <span>Dash Length <span class="unit">mod</span></span>
-                                <div class="range-value-display">
-                                    <input type="text" class="value-display" id="randomDashLengthMinValue" value="1.0">
-                                    <span class="range-separator">–</span>
-                                    <input type="text" class="value-display" id="randomDashLengthMaxValue" value="1.5">
-                                </div>
+                            <div class="control-group toggle-group-row" id="randomControlGroup" style="display: flex;">
+                                <label class="checkbox-label" for="randomFullRandomCheckbox">
+                                    <input type="checkbox" id="randomFullRandomCheckbox">
+                                    <span>Chaos</span>
                                 </label>
-                            <div id="randomDashLengthRangeSlider" class="range-slider-container"></div>
-                        </div>
-
-                        <div class="control-group" id="randomControlGroupGapLength" style="display: none;">
-                            <label>
-                                <span>Gap Length <span class="unit">mod</span></span>
-                                <div class="range-value-display">
-                                    <input type="text" class="value-display" id="randomGapLengthMinValue" value="1.0">
-                                    <span class="range-separator">–</span>
-                                    <input type="text" class="value-display" id="randomGapLengthMaxValue" value="1.5">
-                                </div>
+                                <label class="checkbox-label" for="alternativeGlyphsCheckbox">
+                                    <input type="checkbox" id="alternativeGlyphsCheckbox" checked>
+                                    <span>Alt Glyphs</span>
                                 </label>
-                            <div id="randomGapLengthRangeSlider" class="range-slider-container"></div>
+                            </div>
+
+                            <div class="control-group toggle-group-row" id="randomControlGroup4" style="display: flex;">
+                                <label class="checkbox-label" id="randomRoundedLabel" for="randomRoundedCheckbox">
+                                    <input type="checkbox" id="randomRoundedCheckbox">
+                                    <span>Round Caps</span>
+                                </label>
+                                <label class="checkbox-label" id="randomCloseEndsLabel" for="randomCloseEndsCheckbox">
+                                    <input type="checkbox" id="randomCloseEndsCheckbox" checked>
+                                    <span>Close Stems</span>
+                                </label>
+                            </div>
                         </div>
-                        
-                        <div class="control-group" id="randomControlGroupColorChaos" style="display: none;">
-                            <label>
-                                <span>Colors</span>
-                                <div class="range-value-display">
-                                    <input type="text" class="value-display" id="randomColorChaosMinValue" value="3">
-                                    <span class="range-separator">–</span>
-                                    <input type="text" class="value-display" id="randomColorChaosMaxValue" value="6">
+
+                        <!-- ========== RANDOM: DASH SECTION ========== -->
+                        <div class="random-section" id="randomSectionDash">
+                            <div class="random-section-header">Dashes</div>
+                            
+                            <div class="control-group toggle-group-row" id="randomDashSection" style="display: flex;">
+                                <label class="checkbox-label" for="randomDashCheckbox">
+                                    <input type="checkbox" id="randomDashCheckbox">
+                                    <span>Dashes</span>
+                                </label>
+                                <label class="checkbox-label" id="dashChessLabelRandom" for="dashChessCheckboxRandom">
+                                    <input type="checkbox" id="dashChessCheckboxRandom">
+                                    <span>Chess Order</span>
+                                </label>
+                            </div>
+
+                            <div class="control-group" id="randomControlGroupDashLength">
+                                <label><span>Dash Length <span class="unit">mod</span></span></label>
+                                <div class="range-slider-wrapper">
+                                    <div id="randomDashLengthRangeSlider" class="range-slider-container"></div>
+                                    <div class="range-slider-values">
+                                        <input type="text" class="value-display" id="randomDashLengthMinValue" value="1.0">
+                                        <input type="text" class="value-display" id="randomDashLengthMaxValue" value="1.5">
+                                    </div>
                                 </div>
-                            </label>
-                            <div id="randomColorChaosRangeSlider" class="range-slider-container"></div>
+                            </div>
+
+                            <div class="control-group" id="randomControlGroupGapLength">
+                                <label><span>Gap Length <span class="unit">mod</span></span></label>
+                                <div class="range-slider-wrapper">
+                                    <div id="randomGapLengthRangeSlider" class="range-slider-container"></div>
+                                    <div class="range-slider-values">
+                                        <input type="text" class="value-display" id="randomGapLengthMinValue" value="1.0">
+                                        <input type="text" class="value-display" id="randomGapLengthMaxValue" value="1.5">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Random Mode Controls: Chaos/Alt/Chess -->
-                        <div class="control-group toggle-group-row" id="randomControlGroup" style="display: none;">
-                            <label class="checkbox-label" for="randomFullRandomCheckbox">
-                                <input type="checkbox" id="randomFullRandomCheckbox">
-                                <span>Chaos</span>
-                            </label>
-                            <label class="checkbox-label" for="alternativeGlyphsCheckbox">
-                                <input type="checkbox" id="alternativeGlyphsCheckbox" checked>
-                                <span>Alt</span>
-                            </label>
-                            <label class="checkbox-label" id="dashChessLabelRandom" for="dashChessCheckboxRandom">
-                                <input type="checkbox" id="dashChessCheckboxRandom">
-                                <span>Chess</span>
-                            </label>
-                        </div>
-                        <div class="control-group toggle-group-row" id="randomControlGroup4" style="display: none;">
-                            <label class="checkbox-label" id="randomRoundedLabel" for="randomRoundedCheckbox">
-                                <input type="checkbox" id="randomRoundedCheckbox">
-                                <span>Round</span>
-                            </label>
-                            <label class="checkbox-label" for="randomCloseEndsCheckbox">
-                                <input type="checkbox" id="randomCloseEndsCheckbox" checked>
-                                <span>Close</span>
-                            </label>
-                            <label class="checkbox-label" for="randomDashCheckbox">
-                                <input type="checkbox" id="randomDashCheckbox">
-                                <span>Dash</span>
-                            </label>
-                        </div>
-                        
-                        <!-- Random Mode Controls: Color/Color Chaos -->
-                        <div class="control-group toggle-group-row" id="randomControlGroup6" style="display: none;">
-                            <label class="checkbox-label" for="randomColorCheckbox">
-                                <input type="checkbox" id="randomColorCheckbox">
-                                <span>Color</span>
-                            </label>
-                            <label class="checkbox-label" for="randomColorChaosCheckbox">
-                                <input type="checkbox" id="randomColorChaosCheckbox">
-                                <span>Color Chaos</span>
-                            </label>
+                        <!-- ========== RANDOM: COLOR SECTION ========== -->
+                        <div class="random-section" id="randomSectionColor">
+                            <div class="random-section-header">Color</div>
+                            
+                            <div class="control-group toggle-group-row" id="randomControlGroup6" style="display: flex;">
+                                <label class="checkbox-label" for="randomColorCheckbox">
+                                    <input type="checkbox" id="randomColorCheckbox">
+                                    <span>Color Random</span>
+                                </label>
+                                <label class="checkbox-label" for="randomColorChaosCheckbox">
+                                    <input type="checkbox" id="randomColorChaosCheckbox">
+                                    <span>Color Chaos</span>
+                                </label>
+                            </div>
+                            
+                            <div class="control-group" id="randomControlGroupColorChaos">
+                                <label><span>Colors</span></label>
+                                <div class="range-slider-wrapper">
+                                    <div id="randomColorChaosRangeSlider" class="range-slider-container"></div>
+                                    <div class="range-slider-values">
+                                        <input type="text" class="value-display" id="randomColorChaosMinValue" value="16">
+                                        <input type="text" class="value-display" id="randomColorChaosMaxValue" value="32">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="control-group" id="randomControlGroup5" style="display: none; margin-top: 24px;">
-                            <button type="button" class="btn-secondary" id="renewRandomBtn" style="width: 100%;">Randomize</button>
+                        <!-- ========== RANDOM: RANDOMIZE BUTTON ========== -->
+                        <div class="random-section" id="randomSectionButton">
+                            <div class="control-group" id="randomControlGroup5">
+                                <button type="button" class="btn-secondary" id="renewRandomBtn" style="width: 100%;">Randomize</button>
+                            </div>
                         </div>
+
                     </section>
                 </div>
             </aside>
@@ -397,11 +418,15 @@ Code</textarea>
                         
                         <!-- Randomize Button and Color Chaos Controls Container -->
                         <div id="randomizeControlsContainer">
-                            <!-- Color Chaos Toggle and Colors Input -->
-                            <div class="control-group" style="margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                            <!-- Random and Chaos Toggles and Colors Input -->
+                            <div class="control-group toggle-group-row" style="margin-bottom: 12px; display: flex; align-items: center; gap: 15px;">
+                                <label class="checkbox-label" for="colorRandomCheckbox" style="margin-bottom: 0; flex-shrink: 0;">
+                                    <input type="checkbox" id="colorRandomCheckbox">
+                                    <span>Random</span>
+                                </label>
                                 <label class="checkbox-label" for="colorChaosCheckbox" style="margin-bottom: 0; flex-shrink: 0;">
                                     <input type="checkbox" id="colorChaosCheckbox">
-                                    <span>Color Chaos</span>
+                                    <span>Chaos</span>
                                 </label>
                                 <div class="compact-input-group" id="colorChaosColorsInputGroup" title="Colors" style="flex-shrink: 0; margin-left: auto;">
                                     <svg class="compact-input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -477,7 +502,7 @@ Code</textarea>
 
     <!-- Bottom Action Buttons -->
     <nav class="bottom-buttons">
-        <button class="btn-fixed" id="copyBtn">Copy SVG ⌘C</button>
+        <button class="btn-fixed" id="copyBtn">Copy SVG</button>
         <button class="btn-fixed" id="exportBtn">Export SVG ⌘E</button>
         <button class="btn-fixed" id="renewBtn" style="display: none;">Update</button>
     </nav>

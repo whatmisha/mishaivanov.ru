@@ -50,8 +50,8 @@ class VoidTypeface {
                 randomDash: false, // dashed lines in Random mode
                 randomColor: false, // randomize colors in Random mode
                 randomColorChaos: false, // color chaos mode (each module gets unique color from palette) - for Random mode
-                randomColorChaosMin: 3, // minimum colors in palette
-                randomColorChaosMax: 6, // maximum colors in palette
+                randomColorChaosMin: 16, // minimum colors in palette
+                randomColorChaosMax: 32, // maximum colors in palette
                 colorChaos: false, // color chaos mode for Colors panel (works in any mode)
                 colorChaosColors: 4, // exact number of colors in palette for Colors panel
                 roundedCaps: false, // rounded line ends (Rounded)
@@ -505,6 +505,7 @@ class VoidTypeface {
                 this.markAsChanged();
             }
         });
+
     }
 
     /**
@@ -582,6 +583,7 @@ class VoidTypeface {
                 if (this.renderer.clearModuleTypeCache) {
                     this.renderer.clearModuleTypeCache();
                 }
+                this.updateCloseEndsState();
                 this.throttledUpdateRenderer();
             }
         });
@@ -965,6 +967,9 @@ class VoidTypeface {
         const randomColorsBtn = document.getElementById('randomColorsBtn');
         if (randomColorsBtn) {
             randomColorsBtn.addEventListener('click', () => {
+                // Don't process if disabled (Random mode)
+                if (randomColorsBtn.disabled) return;
+                
                 if (this.settings.get('colorChaos')) {
                     // If Color Chaos is enabled, regenerate palette
                     this.generateColorPalette();
@@ -972,6 +977,27 @@ class VoidTypeface {
                 } else {
                     // Otherwise, randomize colors normally
                     this.randomizeColors();
+                }
+            });
+        }
+        
+        // Color Random toggle on Colors panel
+        const colorRandomCheckbox = document.getElementById('colorRandomCheckbox');
+        if (colorRandomCheckbox) {
+            colorRandomCheckbox.addEventListener('change', () => {
+                // Don't process if disabled (Random mode)
+                if (colorRandomCheckbox.disabled) return;
+                
+                if (colorRandomCheckbox.checked) {
+                    // Randomize colors when Random is enabled
+                    if (this.settings.get('colorChaos')) {
+                        // If Color Chaos is enabled, regenerate palette
+                        this.generateColorPalette();
+                        this.updateRenderer();
+                    } else {
+                        // Otherwise, randomize colors normally
+                        this.randomizeColors();
+                    }
                 }
             });
         }
@@ -987,6 +1013,9 @@ class VoidTypeface {
             };
             
             colorChaosCheckbox.addEventListener('change', () => {
+                // Don't process if disabled (Random mode)
+                if (colorChaosCheckbox.disabled) return;
+                
                 const enabled = colorChaosCheckbox.checked;
                 this.settings.set('colorChaos', enabled);
                 
@@ -1441,6 +1470,7 @@ class VoidTypeface {
      */
     initDashChessToggle() {
         const dashChessCheckboxPD = document.getElementById('dashChessCheckboxPD');
+        const dashChessCheckboxSD = document.getElementById('dashChessCheckboxSD');
         const dashChessCheckboxRandom = document.getElementById('dashChessCheckboxRandom');
         
         if (!dashChessCheckboxPD || !dashChessCheckboxRandom) {
@@ -1448,9 +1478,12 @@ class VoidTypeface {
             return;
         }
         
-        // Function to sync state of both checkboxes
-        const syncCheckboxes = (sourceCheckbox, targetCheckbox) => {
-            targetCheckbox.checked = sourceCheckbox.checked;
+        // Function to sync state of all checkboxes
+        const syncAllCheckboxes = (sourceCheckbox) => {
+            const value = sourceCheckbox.checked;
+            if (dashChessCheckboxPD && dashChessCheckboxPD !== sourceCheckbox) dashChessCheckboxPD.checked = value;
+            if (dashChessCheckboxSD && dashChessCheckboxSD !== sourceCheckbox) dashChessCheckboxSD.checked = value;
+            if (dashChessCheckboxRandom && dashChessCheckboxRandom !== sourceCheckbox) dashChessCheckboxRandom.checked = value;
         };
         
         // Function to update settings and renderer
@@ -1463,19 +1496,29 @@ class VoidTypeface {
         // Set initial value
         const initialValue = this.settings.get('dashChess') || false;
         dashChessCheckboxPD.checked = initialValue;
+        if (dashChessCheckboxSD) dashChessCheckboxSD.checked = initialValue;
         dashChessCheckboxRandom.checked = initialValue;
         
-        // Change handler for PD checkbox
+        // Change handler for PD checkbox (Dash mode)
         dashChessCheckboxPD.addEventListener('change', (e) => {
-            syncCheckboxes(e.target, dashChessCheckboxRandom);
+            syncAllCheckboxes(e.target);
             updateDashChess(e.target.checked);
         });
+        
+        // Change handler for SD checkbox
+        if (dashChessCheckboxSD) {
+            dashChessCheckboxSD.addEventListener('change', (e) => {
+                syncAllCheckboxes(e.target);
+                updateDashChess(e.target.checked);
+            });
+        }
         
         // Change handler for Random checkbox
         dashChessCheckboxRandom.addEventListener('change', (e) => {
-            syncCheckboxes(e.target, dashChessCheckboxPD);
+            syncAllCheckboxes(e.target);
             updateDashChess(e.target.checked);
         });
+        
     }
 
     /**
@@ -1512,14 +1555,22 @@ class VoidTypeface {
             }
         }
         
-        // Chess for PD (sd) - show in roundedCapsControlGroup
+        // Chess for PD (sd) - show in separate dashChessControlGroup
+        // Chess Order is NOT shown in Dash mode (only in Dashed Stripes)
+        const dashChessGroup = document.getElementById('dashChessControlGroup');
         const dashChessLabel = document.getElementById('dashChessLabel');
-        if (dashChessLabel) {
-            if (mode === 'sd') {
-                dashChessLabel.classList.remove('hidden');
-            } else {
-                dashChessLabel.classList.add('hidden');
-            }
+        const dashChessLabelSD = document.getElementById('dashChessLabelSD');
+        
+        if (mode === 'sd') {
+            // In SD mode, show in separate group
+            if (dashChessGroup) dashChessGroup.style.display = 'flex';
+            if (dashChessLabel) dashChessLabel.classList.add('hidden');
+            if (dashChessLabelSD) dashChessLabelSD.classList.remove('hidden');
+        } else {
+            // Hide in all other modes (including Dash)
+            if (dashChessGroup) dashChessGroup.style.display = 'none';
+            if (dashChessLabel) dashChessLabel.classList.add('hidden');
+            if (dashChessLabelSD) dashChessLabelSD.classList.add('hidden');
         }
         
         // Chess for Random - show in randomControlGroup
@@ -1677,37 +1728,19 @@ class VoidTypeface {
             // Update visibility of Round, Close Ends and Chess
             this.updateRoundedCapsVisibility();
             
-            const randomGroups = [
-                document.getElementById('randomControlGroup'),
-                document.getElementById('randomControlGroup4'),
-                document.getElementById('randomControlGroupStem'),
-                document.getElementById('randomControlGroup2'),
-                document.getElementById('randomControlGroup3'),
-                // Dash Length and Gap Length groups are controlled by updateRandomDashSlidersState()
-                // document.getElementById('randomControlGroupDashLength'),
-                // document.getElementById('randomControlGroupGapLength'),
-                // Color Chaos group is controlled by updateColorChaosSliderVisibility()
-                // document.getElementById('randomControlGroupColorChaos'),
-                document.getElementById('randomControlGroup5'),
-                document.getElementById('randomControlGroup6')
+            // Show/hide random mode sections
+            const randomSections = [
+                document.getElementById('randomSectionGeneral'),
+                document.getElementById('randomSectionDash'),
+                document.getElementById('randomSectionColor'),
+                document.getElementById('randomSectionButton')
             ];
-            randomGroups.forEach(group => {
-                if (group) {
-                    // toggle-group-row elements use flex
-                    const isToggleRow = group.id === 'randomControlGroup' || group.id === 'randomControlGroup4' || group.id === 'randomControlGroup6';
-                    const displayValue = isToggleRow ? 'flex' : 'block';
-                    group.style.display = mode === 'random' ? displayValue : 'none';
+            randomSections.forEach(section => {
+                if (section) {
+                    section.classList.toggle('visible', mode === 'random');
                 }
             });
             
-            // Hide Dash Length and Gap Length groups initially (they will be shown by updateRandomDashSlidersState if needed)
-            const dashLengthGroup = document.getElementById('randomControlGroupDashLength');
-            const gapLengthGroup = document.getElementById('randomControlGroupGapLength');
-            if (dashLengthGroup) dashLengthGroup.style.display = 'none';
-            if (gapLengthGroup) gapLengthGroup.style.display = 'none';
-            
-            // Update Color Chaos slider visibility (must be called after mode is set)
-            this.updateColorChaosSliderVisibility();
             
             // Initialize toggle for random mode
             const randomFullRandomCheckbox = document.getElementById('randomFullRandomCheckbox');
@@ -1742,6 +1775,9 @@ class VoidTypeface {
 
             // Update Dash Length and Gap Length sliders state
             this.updateRandomDashSlidersState();
+            
+            // Update Close toggle state based on Lines range
+            this.updateCloseEndsState();
             
             // Update Color Chaos slider visibility (must be called after mode is set)
             this.updateColorChaosSliderVisibility();
@@ -1935,9 +1971,9 @@ class VoidTypeface {
         const colorChaosEnabled = this.settings.get('randomColorChaos');
         const colorChaosGroup = document.getElementById('randomControlGroupColorChaos');
         
-        // Only show slider in Random mode AND when Color Chaos is enabled
+        // Add disabled class when Color Chaos is not enabled in Random mode
         if (colorChaosGroup) {
-            colorChaosGroup.style.display = (mode === 'random' && colorChaosEnabled) ? 'block' : 'none';
+            colorChaosGroup.classList.toggle('disabled', !(mode === 'random' && colorChaosEnabled));
         }
         
         // Update Type button (letterColorPreview) disabled state
@@ -1949,37 +1985,85 @@ class VoidTypeface {
             letterPreview.style.opacity = shouldDisable ? '0.5' : '1';
             letterPreview.style.cursor = shouldDisable ? 'default' : 'pointer';
         }
+        
+        // In Random mode, disable Color panel controls (Chaos, Random, Randomize button)
+        const isRandomMode = mode === 'random';
+        const colorChaosCheckbox = document.getElementById('colorChaosCheckbox');
+        const colorRandomCheckbox = document.getElementById('colorRandomCheckbox');
+        const randomColorsBtn = document.getElementById('randomColorsBtn');
+        const colorChaosColorsInput = document.getElementById('colorChaosColorsValue');
+        
+        if (colorChaosCheckbox) {
+            colorChaosCheckbox.disabled = isRandomMode;
+            const chaosLabel = colorChaosCheckbox.closest('.checkbox-label');
+            if (chaosLabel) {
+                chaosLabel.classList.toggle('disabled', isRandomMode);
+            }
+        }
+        
+        if (colorRandomCheckbox) {
+            colorRandomCheckbox.disabled = isRandomMode;
+            const randomLabel = colorRandomCheckbox.closest('.checkbox-label');
+            if (randomLabel) {
+                randomLabel.classList.toggle('disabled', isRandomMode);
+            }
+        }
+        
+        if (randomColorsBtn) {
+            randomColorsBtn.disabled = isRandomMode;
+        }
+        
+        if (colorChaosColorsInput) {
+            colorChaosColorsInput.disabled = isRandomMode || !colorChaosCheckbox?.checked;
+        }
     }
 
     /**
      * Update Dash Length and Gap Length sliders state in Random mode
+     * Also updates Chess toggle inactive state (depends on Dash)
      */
     updateRandomDashSlidersState() {
         const randomDashEnabled = this.settings.get('randomDash') ?? false;
         const mode = this.settings.get('mode');
-        const shouldShow = mode === 'random' && randomDashEnabled;
+        const isRandomMode = mode === 'random';
+        const isEnabled = isRandomMode && randomDashEnabled;
 
-        const dashLengthMinInput = document.getElementById('randomDashLengthMinValue');
-        const dashLengthMaxInput = document.getElementById('randomDashLengthMaxValue');
-        const gapLengthMinInput = document.getElementById('randomGapLengthMinValue');
-        const gapLengthMaxInput = document.getElementById('randomGapLengthMaxValue');
-
-        const isDisabled = !shouldShow;
-        if (dashLengthMinInput) dashLengthMinInput.disabled = isDisabled;
-        if (dashLengthMaxInput) dashLengthMaxInput.disabled = isDisabled;
-        if (gapLengthMinInput) gapLengthMinInput.disabled = isDisabled;
-        if (gapLengthMaxInput) gapLengthMaxInput.disabled = isDisabled;
-
-        // Hide/show range sliders and their containers
+        // Update disabled state for Dash Length and Gap Length groups
         const dashLengthGroup = document.getElementById('randomControlGroupDashLength');
         const gapLengthGroup = document.getElementById('randomControlGroupGapLength');
         
         if (dashLengthGroup) {
-            dashLengthGroup.style.display = shouldShow ? 'block' : 'none';
+            dashLengthGroup.classList.toggle('disabled', !isEnabled);
         }
         
         if (gapLengthGroup) {
-            gapLengthGroup.style.display = shouldShow ? 'block' : 'none';
+            gapLengthGroup.classList.toggle('disabled', !isEnabled);
+        }
+
+        // Update Chess toggle inactive state (Chess only works with Dash enabled)
+        const chessLabel = document.getElementById('dashChessLabelRandom');
+        if (chessLabel) {
+            chessLabel.classList.toggle('inactive', !randomDashEnabled);
+        }
+    }
+
+    /**
+     * Update Close toggle state based on Lines range
+     * Close only works when Lines > 1
+     */
+    updateCloseEndsState() {
+        const mode = this.settings.get('mode');
+        if (mode !== 'random') return;
+
+        const minLines = this.settings.get('randomStrokesMin') ?? 1;
+        const maxLines = this.settings.get('randomStrokesMax') ?? 8;
+        
+        // Close is inactive only if both min and max are 1
+        const isInactive = minLines === 1 && maxLines === 1;
+        
+        const closeLabel = document.getElementById('randomCloseEndsLabel');
+        if (closeLabel) {
+            closeLabel.classList.toggle('inactive', isInactive);
         }
     }
 
@@ -2704,9 +2788,12 @@ class VoidTypeface {
         if (roundedCapsControlGroup) {
             roundedCapsControlGroup.style.display = (mode === 'fill' || mode === 'stripes' || mode === 'dash' || mode === 'sd') ? 'flex' : 'none';
         }
+        const dashChessControlGroup = document.getElementById('dashChessControlGroup');
+        if (dashChessControlGroup) {
+            dashChessControlGroup.style.display = (mode === 'sd' || mode === 'dash') ? 'flex' : 'none';
+        }
         document.getElementById('dashLengthControlGroup').style.display = showDash ? 'block' : 'none';
         document.getElementById('gapLengthControlGroup').style.display = showDash ? 'block' : 'none';
-        
         
         // Update Rounded
         const roundedCapsCheckbox = document.getElementById('roundedCapsCheckbox');
@@ -2715,37 +2802,32 @@ class VoidTypeface {
         }
         this.updateRoundedCapsVisibility();
         
-            const randomGroups = [
-                document.getElementById('randomControlGroup'),
-                document.getElementById('randomControlGroup4'),
-                document.getElementById('randomControlGroupStem'),
-                document.getElementById('randomControlGroup2'),
-                document.getElementById('randomControlGroup3'),
-                // Dash Length and Gap Length groups are controlled by updateRandomDashSlidersState()
-                // document.getElementById('randomControlGroupDashLength'),
-                // document.getElementById('randomControlGroupGapLength'),
-                // Color Chaos group is controlled by updateColorChaosSliderVisibility()
-                // document.getElementById('randomControlGroupColorChaos'),
-                document.getElementById('randomControlGroup5'),
-                document.getElementById('randomControlGroup6')
-            ];
-            randomGroups.forEach(group => {
-                if (group) {
-                    // toggle-group-row elements use flex
-                    const isToggleRow = group.id === 'randomControlGroup' || group.id === 'randomControlGroup4' || group.id === 'randomControlGroup6';
-                    const displayValue = isToggleRow ? 'flex' : 'block';
-                    group.style.display = mode === 'random' ? displayValue : 'none';
-                }
-            });
-            
-            // Hide Dash Length and Gap Length groups initially (they will be shown by updateRandomDashSlidersState if needed)
-            const dashLengthGroup = document.getElementById('randomControlGroupDashLength');
-            const gapLengthGroup = document.getElementById('randomControlGroupGapLength');
-            if (dashLengthGroup) dashLengthGroup.style.display = 'none';
-            if (gapLengthGroup) gapLengthGroup.style.display = 'none';
-            
-            // Update Color Chaos slider visibility (must be called after mode is set)
-            this.updateColorChaosSliderVisibility();
+        // Show/hide random mode sections
+        const randomSections = [
+            document.getElementById('randomSectionGeneral'),
+            document.getElementById('randomSectionDash'),
+            document.getElementById('randomSectionColor'),
+            document.getElementById('randomSectionButton')
+        ];
+        randomSections.forEach(section => {
+            if (section) {
+                section.classList.toggle('visible', mode === 'random');
+            }
+        });
+        
+        // Show/hide test mode sections
+        const testSections = [
+            document.getElementById('testSectionGeneral'),
+            document.getElementById('testSectionDash')
+        ];
+        testSections.forEach(section => {
+            if (section) {
+                section.classList.toggle('visible', mode === 'test');
+            }
+        });
+        
+        // Update Color Chaos slider visibility (must be called after mode is set)
+        this.updateColorChaosSliderVisibility();
 
         // Update Rounded visibility in Random mode (after showing groups)
         this.updateRandomRoundedVisibility();
@@ -2783,6 +2865,9 @@ class VoidTypeface {
 
         // Update Dash Length and Gap Length sliders state
         this.updateRandomDashSlidersState();
+        
+        // Update Close toggle state based on Lines range
+        this.updateCloseEndsState();
         
         // Update Color Chaos slider visibility
         this.updateColorChaosSliderVisibility();
@@ -2874,25 +2959,6 @@ class VoidTypeface {
                 this.exportSVG();
             }
             
-            // Shortcut ⌘C (Cmd on Mac, Ctrl on Windows/Linux)
-            if ((e.metaKey || e.ctrlKey) && e.key === 'c') {
-                // Don't copy in editor mode
-                const currentMode = this.settings.get('currentMode') || 'normal';
-                if (currentMode === 'editor') return;
-                
-                // Check that text is not selected in input/textarea
-                const activeElement = document.activeElement;
-                const isInputFocused = activeElement && (
-                    activeElement.tagName === 'INPUT' ||
-                    activeElement.tagName === 'TEXTAREA' ||
-                    activeElement.isContentEditable
-                );
-                
-                if (!isInputFocused) {
-                    e.preventDefault();
-                    this.copySVG();
-                }
-            }
         });
     }
 
