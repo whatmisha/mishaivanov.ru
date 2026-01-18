@@ -54,6 +54,7 @@ class VoidTypeface {
                 randomColorChaosMax: 32, // maximum colors in palette
                 randomColorChaosKeepBg: false, // keep background color from Colors panel instead of randomizing it
                 randomColorChaosKeepGrid: false, // keep grid color from Colors panel instead of randomizing it
+                randomColorChaosGrayscale: false, // generate only grayscale (black and white) colors
                 colorChaos: false, // color chaos mode for Colors panel (works in any mode)
                 colorChaosColors: 16, // exact number of colors in palette for Colors panel
                 roundedCaps: false, // rounded line ends (Rounded)
@@ -1162,6 +1163,14 @@ class VoidTypeface {
     }
     
     /**
+     * Generate random grayscale color (black and white shades)
+     */
+    generateRandomGrayscaleColor() {
+        const gray = Math.floor(Math.random() * 256);
+        return '#' + [gray, gray, gray].map(x => x.toString(16).padStart(2, '0')).join('');
+    }
+    
+    /**
      * Generate color palette for Color Chaos mode
      */
     generateColorPalette() {
@@ -1183,18 +1192,22 @@ class VoidTypeface {
             numColors = 4;
         }
         
+        // Check if grayscale mode is enabled (only in Random mode with randomColorChaos)
+        const isRandomModeWithChaos = mode === 'random' && randomColorChaos;
+        const isGrayscale = isRandomModeWithChaos && this.settings.get('randomColorChaosGrayscale');
+        const generateColor = isGrayscale ? () => this.generateRandomGrayscaleColor() : () => this.generateRandomColor();
+        
         this.colorPalette = [];
         for (let i = 0; i < numColors; i++) {
-            this.colorPalette.push(this.generateRandomColor());
+            this.colorPalette.push(generateColor());
         }
         
         // Randomize background and grid colors
         // Lock Back and Lock Grid options only apply in Random mode with randomColorChaos enabled
-        const isRandomModeWithChaos = mode === 'random' && randomColorChaos;
         const keepBg = isRandomModeWithChaos && this.settings.get('randomColorChaosKeepBg');
         let bgColor;
         if (!keepBg) {
-            bgColor = this.generateRandomColor();
+            bgColor = generateColor();
             this.settings.set('bgColor', bgColor);
         } else {
             // Use background color from Colors panel
@@ -1204,7 +1217,7 @@ class VoidTypeface {
         const keepGrid = isRandomModeWithChaos && this.settings.get('randomColorChaosKeepGrid');
         let gridColor;
         if (!keepGrid) {
-            gridColor = this.generateRandomColor();
+            gridColor = generateColor();
             this.settings.set('gridColor', gridColor);
         } else {
             // Use grid color from Colors panel
@@ -1800,6 +1813,11 @@ class VoidTypeface {
             if (randomColorChaosKeepGridCheckbox && mode === 'random') {
                 randomColorChaosKeepGridCheckbox.checked = this.settings.get('randomColorChaosKeepGrid') ?? false;
             }
+            
+            const randomColorChaosGrayscaleCheckbox = document.getElementById('randomColorChaosGrayscaleCheckbox');
+            if (randomColorChaosGrayscaleCheckbox && mode === 'random') {
+                randomColorChaosGrayscaleCheckbox.checked = this.settings.get('randomColorChaosGrayscale') ?? false;
+            }
 
             // Update Dash Length and Gap Length sliders state
             this.updateRandomDashSlidersState();
@@ -2025,6 +2043,24 @@ class VoidTypeface {
                 this.markAsChanged();
             });
         }
+        
+        // Toggle for grayscale mode in Color Chaos
+        const randomColorChaosGrayscaleCheckbox = document.getElementById('randomColorChaosGrayscaleCheckbox');
+        if (randomColorChaosGrayscaleCheckbox) {
+            randomColorChaosGrayscaleCheckbox.addEventListener('change', () => {
+                // Don't process if checkbox is disabled
+                if (randomColorChaosGrayscaleCheckbox.disabled) {
+                    return;
+                }
+                this.settings.set('randomColorChaosGrayscale', randomColorChaosGrayscaleCheckbox.checked);
+                // If Color Chaos is enabled, regenerate palette with new setting
+                if (this.settings.get('randomColorChaos')) {
+                    this.generateColorPalette();
+                    this.updateRenderer();
+                }
+                this.markAsChanged();
+            });
+        }
     }
     
     /**
@@ -2041,10 +2077,12 @@ class VoidTypeface {
             colorChaosGroup.classList.toggle('disabled', !(mode === 'random' && colorChaosEnabled));
         }
         
-        // Make Keep Background and Keep Grid checkboxes inactive when Color Chaos is disabled (like Chess Order)
+        // Make Keep Background, Keep Grid and Grayscale checkboxes inactive when Color Chaos is disabled (like Chess Order)
         const keepBgCheckbox = document.getElementById('randomColorChaosKeepBgCheckbox');
         const keepGridLabel = document.getElementById('randomColorChaosKeepGridLabel');
         const keepGridCheckbox = document.getElementById('randomColorChaosKeepGridCheckbox');
+        const grayscaleLabel = document.getElementById('randomColorChaosGrayscaleLabel');
+        const grayscaleCheckbox = document.getElementById('randomColorChaosGrayscaleCheckbox');
         
         if (keepBgLabel) {
             const shouldBeInactive = !(mode === 'random' && colorChaosEnabled);
@@ -2059,6 +2097,14 @@ class VoidTypeface {
             keepGridLabel.classList.toggle('inactive', shouldBeInactive);
             if (keepGridCheckbox) {
                 keepGridCheckbox.disabled = shouldBeInactive;
+            }
+        }
+        
+        if (grayscaleLabel) {
+            const shouldBeInactive = !(mode === 'random' && colorChaosEnabled);
+            grayscaleLabel.classList.toggle('inactive', shouldBeInactive);
+            if (grayscaleCheckbox) {
+                grayscaleCheckbox.disabled = shouldBeInactive;
             }
         }
         
@@ -3110,6 +3156,7 @@ class VoidTypeface {
             randomColorChaosMax: this.settings.get('randomColorChaosMax'),
             randomColorChaosKeepBg: this.settings.get('randomColorChaosKeepBg') !== undefined ? this.settings.get('randomColorChaosKeepBg') : false,
             randomColorChaosKeepGrid: this.settings.get('randomColorChaosKeepGrid') !== undefined ? this.settings.get('randomColorChaosKeepGrid') : false,
+            randomColorChaosGrayscale: this.settings.get('randomColorChaosGrayscale') !== undefined ? this.settings.get('randomColorChaosGrayscale') : false,
             useColorChaos: this.settings.get('colorChaos') || (this.settings.get('randomColorChaos') && this.settings.get('mode') === 'random'),
             roundedCaps: this.settings.get('roundedCaps') || false,
             closeEnds: this.settings.get('closeEnds') || false,

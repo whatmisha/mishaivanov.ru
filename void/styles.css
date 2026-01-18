@@ -349,7 +349,7 @@ body {
 
 /* Panel Content - panel content with collapse animation */
 .panel-content {
-    margin-top: 10px;
+    margin-top: 0;
     padding-left: var(--spacing-3xl);
     padding-right: var(--spacing-3xl);
     padding-bottom: var(--spacing-3xl);
@@ -1725,6 +1725,11 @@ legend {
     outline-offset: 2px;
 }
 
+/* Control group with style buttons has smaller bottom margin */
+.control-group:has(.style-buttons-container) {
+    margin-bottom: 8px;
+}
+
 /* First random section needs top margin after style buttons */
 #randomSectionGeneral {
     margin-top: 12px;
@@ -1788,9 +1793,19 @@ legend {
     margin-bottom: 0;
 }
 
-/* Color Random|Color Chaos row doesn't need bottom margin (followed by Lock Background Color) */
+/* Color Random|Color Chaos row doesn't need bottom margin (followed by Lock Back Lock Grid) */
 #randomControlGroup6.toggle-group-row {
     margin-bottom: 0;
+}
+
+/* Lock Back Lock Grid row doesn't need bottom margin (followed by Grayscale) */
+#randomControlGroupColorChaosKeepBg.toggle-group-row {
+    margin-bottom: 0;
+}
+
+/* Grayscale row has smaller bottom margin */
+#randomControlGroupColorChaosGrayscale.toggle-group-row {
+    margin-bottom: 8px;
 }
 
 /* Dashes|Chess Order row has smaller bottom margin */
