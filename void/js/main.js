@@ -925,20 +925,6 @@ class VoidTypeface {
     updateColorPreview(preview, color) {
         if (preview) {
             preview.style.backgroundColor = color;
-            
-            // Determine text color based on background brightness
-            const label = preview.querySelector('.color-label-inside');
-            if (label) {
-                const luminance = ColorUtils.getLuminance(color);
-                label.style.color = luminance > 0.5 ? '#000000' : '#ffffff';
-                
-                // Save original text in data attribute if not already saved
-                if (!label.dataset.originalText) {
-                    // Remove ● symbol if present when saving original text
-                    const text = label.textContent.trim();
-                    label.dataset.originalText = text.startsWith('●') ? text.substring(1).trim() : text;
-                }
-            }
         }
     }
 
@@ -955,35 +941,13 @@ class VoidTypeface {
             'gradientEnd': document.getElementById('gradientEndColorPreview')
         };
         
-        // Process all colors
+        // Toggle .active class on circle swatches
         Object.keys(previewMap).forEach(colorType => {
             const preview = previewMap[colorType];
             if (!preview) return;
             
-            const label = preview.querySelector('.color-label-inside');
-            if (!label) return;
-            
-            // Save original text if not already saved
-            if (!label.dataset.originalText) {
-                const text = label.textContent.trim();
-                label.dataset.originalText = text.startsWith('●') ? text.substring(1).trim() : text;
-            }
-            
-            const originalText = label.dataset.originalText;
-            const isActive = colorType === this.activeColorType;
-            
-            if (show && isActive) {
-                // Add ● symbol only to active color if not already present
-                if (!label.textContent.trim().startsWith('●')) {
-                    label.textContent = '● ' + originalText;
-                }
-            } else {
-                // Remove ● symbol from all colors
-                const currentText = label.textContent.trim();
-                if (currentText.startsWith('●')) {
-                    label.textContent = originalText;
-                }
-            }
+            const isActive = show && colorType === this.activeColorType;
+            preview.classList.toggle('active', isActive);
         });
     }
 
@@ -1246,7 +1210,6 @@ class VoidTypeface {
         if (letterPreview) {
             const disableLetter = ['chaos', 'randomChaos', 'gradient', 'randomGradient'].includes(colorMode);
             letterPreview.disabled = disableLetter;
-            letterPreview.style.opacity = disableLetter ? '0.3' : '1';
         }
         
         // Chaos controls
@@ -2147,13 +2110,7 @@ class VoidTypeface {
                     if (wobblyEffect) {
                         wobblyEffect.reseed();
                     }
-                    // Randomize colors based on current color mode
-                    const colorMode = this.settings.get('colorMode') || 'manual';
-                    if (colorMode === 'random' || colorMode === 'randomGradient') {
-                        this.randomizeColors();
-                    } else if (colorMode === 'chaos' || colorMode === 'randomChaos') {
-                        this.generateColorPalette();
-                    }
+                    // Colors are NOT randomized here — color management is handled by the Colors panel
                     this.updateRenderer();
                     this.markAsChanged();
                 }

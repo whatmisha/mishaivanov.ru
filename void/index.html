@@ -449,21 +449,21 @@ Code</textarea>
                         </div>
                     </div>
 
-                    <!-- Shared: Color Pickers Row (visible in manual, random, gradient modes) -->
+                    <!-- Shared: Color Swatches Row (visible in manual, random, gradient modes) -->
                     <div class="control-group" id="colorPickersGroup">
-                        <div class="color-pickers-compact-row">
-                            <!-- Letter Color -->
-                            <button type="button" class="color-preview-rect" id="letterColorPreview" aria-label="Letters Color">
-                                <span class="color-label-inside">Type</span>
-                            </button>
-                            <!-- Background Color -->
-                            <button type="button" class="color-preview-rect" id="bgColorPreview" aria-label="Background Color">
-                                <span class="color-label-inside">Back</span>
-                            </button>
-                            <!-- Grid Color -->
-                            <button type="button" class="color-preview-rect" id="gridColorPreview" aria-label="Grid Color">
-                                <span class="color-label-inside">Grid</span>
-                            </button>
+                        <div class="color-swatches-row">
+                            <div class="color-swatch-item">
+                                <button type="button" class="color-swatch" id="letterColorPreview" aria-label="Letters Color"></button>
+                                <span class="color-swatch-label">Type</span>
+                            </div>
+                            <div class="color-swatch-item">
+                                <button type="button" class="color-swatch" id="bgColorPreview" aria-label="Background Color"></button>
+                                <span class="color-swatch-label">Back</span>
+                            </div>
+                            <div class="color-swatch-item">
+                                <button type="button" class="color-swatch" id="gridColorPreview" aria-label="Grid Color"></button>
+                                <span class="color-swatch-label">Grid</span>
+                            </div>
                         </div>
                     </div>
 
@@ -514,13 +514,15 @@ Code</textarea>
                     <!-- ========== GRADIENT MODE CONTROLS ========== -->
                     <div id="colorGradientControls" style="display: none;">
                         <div class="control-group">
-                            <div class="color-pickers-compact-row">
-                                <button type="button" class="color-preview-rect" id="gradientStartColorPreview" aria-label="Gradient Start" style="background: #ff0000;">
-                                    <span class="color-label-inside">Start</span>
-                                </button>
-                                <button type="button" class="color-preview-rect" id="gradientEndColorPreview" aria-label="Gradient End" style="background: #0000ff;">
-                                    <span class="color-label-inside">End</span>
-                                </button>
+                            <div class="color-swatches-row">
+                                <div class="color-swatch-item">
+                                    <button type="button" class="color-swatch" id="gradientStartColorPreview" aria-label="Gradient Start" style="background: #ff0000;"></button>
+                                    <span class="color-swatch-label">Start</span>
+                                </div>
+                                <div class="color-swatch-item">
+                                    <button type="button" class="color-swatch" id="gradientEndColorPreview" aria-label="Gradient End" style="background: #0000ff;"></button>
+                                    <span class="color-swatch-label">End</span>
+                                </div>
                             </div>
                         </div>
                     </div>
