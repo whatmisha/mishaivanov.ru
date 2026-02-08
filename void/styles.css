@@ -238,6 +238,7 @@ body {
     top: var(--spacing-3xl);
     right: var(--spacing-3xl);
     width: 300px;
+    max-height: calc(100vh - var(--spacing-3xl) * 2);
     background: var(--color-bg-panel);
     border-radius: var(--radius);
     box-shadow: 0 12px 48px rgba(0, 0, 0, 0.7);
@@ -262,6 +263,7 @@ body {
     right: auto;
     top: auto;
     bottom: var(--spacing-3xl);
+    max-height: calc(100vh - var(--spacing-3xl) * 2);
 }
 
 /* Presets panel (bottom right) */
@@ -270,6 +272,7 @@ body {
     left: auto;
     top: auto;
     bottom: var(--spacing-3xl);
+    max-height: calc(100vh - var(--spacing-3xl) * 2);
 }
 
 /* Paragraph settings panel - modal panel for object settings */
@@ -1734,12 +1737,55 @@ legend {
     margin-bottom: 8px;
 }
 
+/* ============================================
+   WOBBLY SECTION (non-random modes)
+   ============================================ */
+
+.wobbly-section {
+    border-top: 1px solid var(--color-border);
+    margin-top: 20px;
+    padding-top: 16px;
+    margin-left: calc(-1 * var(--spacing-3xl));
+    margin-right: calc(-1 * var(--spacing-3xl));
+    padding-left: var(--spacing-3xl);
+    padding-right: var(--spacing-3xl);
+}
+
+.wobbly-section-header {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--color-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.wobbly-section .control-group {
+    margin-bottom: 12px;
+}
+
+.wobbly-section .control-group:last-child {
+    margin-bottom: 0;
+}
+
+/* Disabled state for controls when their toggle is off */
+.controls-disabled {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
 /* First random section needs top margin after style buttons */
 #randomSectionGeneral {
     margin-top: 12px;
 }
 
-/* Button section has no header, just needs the divider */
+/* Button section - fixed at the bottom of the panel, outside scroll area */
+#randomSectionButton {
+    flex-shrink: 0;
+    padding: 16px var(--spacing-3xl) var(--spacing-3xl);
+    border-top: 1px solid var(--color-border);
+}
+
 #randomSectionButton .control-group {
     margin-bottom: 0;
 }
@@ -2774,21 +2820,22 @@ textarea::-moz-selection {
 
 /* Panel Content Scrollbar */
 .panel-content::-webkit-scrollbar {
-    width: var(--spacing-md);
+    width: 6px;
 }
 
 .panel-content::-webkit-scrollbar-track {
-    background: var(--color-bg-panel);
-    border-radius: var(--radius);
+    background: transparent;
 }
 
 .panel-content::-webkit-scrollbar-thumb {
-    background: var(--color-text);
-    border-radius: var(--radius);
+    background: #000;
+    border-radius: 3px;
+    border-right: 1px solid #1a1a1a;
 }
 
 .panel-content::-webkit-scrollbar-thumb:hover {
-    background: var(--color-text);
+    background: #000;
+    border-right: 1px solid #1a1a1a;
 }
 
 /* Dropdown Menu Scrollbar */
@@ -2864,6 +2911,7 @@ textarea::-moz-selection {
         width: 260px;
         top: var(--spacing-lg);
         right: var(--spacing-lg);
+        max-height: calc(100vh - var(--spacing-lg) * 2);
     }
     
     .controls-panel-text {
@@ -2875,6 +2923,10 @@ textarea::-moz-selection {
         padding-right: 16px;
         padding-top: var(--spacing-xl);
         padding-bottom: var(--spacing-xl);
+    }
+    
+    #randomSectionButton {
+        padding: var(--spacing-xl) 16px;
     }
     
     .bottom-buttons {

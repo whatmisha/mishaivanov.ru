@@ -375,6 +375,21 @@ export class VoidRenderer {
             this.params.gapLength || 0.30,
             this.params.dashChess || false
         );
+        
+        // Update wobbly effect parameters
+        this.moduleDrawer.setWobblyParams(
+            this.params.wobblyEnabled || false,
+            this.params.wobblyAmount || 0,
+            this.params.wobblyFrequency || 0.1
+        );
+        
+        // Update gradient stroke parameters
+        const isGradientMode = this.params.gradientMode === 'gradient' || this.params.gradientMode === 'randomGradient';
+        this.moduleDrawer.setGradientParams(
+            isGradientMode,
+            this.params.gradientStartColor || '#ff0000',
+            this.params.gradientEndColor || '#0000ff'
+        );
     }
 
     /**
@@ -622,7 +637,7 @@ export class VoidRenderer {
                 }
                 
                 // Get color for this module (supports Color Chaos mode)
-                const moduleColor = (this.params.useColorChaos && this.getColorForModule) 
+                const moduleColor = (this.params.useCustomModuleColor && this.getColorForModule) 
                     ? this.getColorForModule()
                     : this.params.color;
                 

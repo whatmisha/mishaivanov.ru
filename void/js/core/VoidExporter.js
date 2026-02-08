@@ -15,6 +15,8 @@ export class VoidExporter {
         // Cache for values by module type (for random byType mode)
         this.moduleTypeCache = {};
         this.endpointDetector = new EndpointDetector();
+        // Wobbly effect reference (shared with renderer's ModuleDrawer)
+        this.wobblyEffect = null;
     }
 
     /**
@@ -54,6 +56,9 @@ export class VoidExporter {
     getSVGContent() {
         // DON'T clear cache - use same values as during rendering
         // this.clearModuleTypeCache();
+        
+        // Reset gradient counter for fresh gradient IDs
+        this._gradientCounter = 0;
         
         const params = this.renderer.params;
         // Get current values from settings if available
@@ -96,11 +101,9 @@ export class VoidExporter {
             if (this.settings.get('closeEnds') !== undefined) {
                 params.closeEnds = this.settings.get('closeEnds');
             }
-            // Get Color Chaos settings (from Colors panel or Random mode)
-            const colorChaos = this.settings.get('colorChaos');
-            const randomColorChaos = this.settings.get('randomColorChaos');
-            const mode = this.settings.get('mode');
-            params.useColorChaos = colorChaos || (randomColorChaos && mode === 'random');
+            // Get custom module color mode (chaos only; gradient handled separately)
+            const colorMode = this.settings.get('colorMode') || 'manual';
+            params.useCustomModuleColor = ['chaos', 'randomChaos'].includes(colorMode);
         } else if (params.includeGridToExport === undefined) {
             // If settings unavailable, use showGrid from params
             params.includeGridToExport = params.showGrid || false;
@@ -124,6 +127,16 @@ export class VoidExporter {
         // Ensure roundedCaps is set
         if (params.roundedCaps === undefined) {
             params.roundedCaps = false;
+        }
+        // Get wobbly settings
+        if (this.settings) {
+            params.wobblyEnabled = this.settings.get('wobblyEnabled') || false;
+            params.wobblyAmount = this.settings.get('wobblyAmount') || 0;
+            params.wobblyFrequency = this.settings.get('wobblyFrequency') || 0.1;
+        }
+        // Get wobbly effect from renderer's ModuleDrawer (shared noise state)
+        if (this.renderer && this.renderer.moduleDrawer) {
+            this.wobblyEffect = this.renderer.moduleDrawer.getWobblyEffect();
         }
         // Ensure randomRounded is set
         if (params.randomRounded === undefined) {
@@ -202,9 +215,11 @@ export class VoidExporter {
             svgContent += this.renderGridToSVG(svgSize, svgSize, params, offsetX, offsetY);
         }
 
-        // Group for letters (use color from settings, unless Color Chaos is enabled)
-        if (params.useColorChaos) {
-            // In Color Chaos mode, each module will have its own stroke color
+        // Group for letters (use color from settings, unless custom module color or gradient is enabled)
+        const colorMode = this.settings ? (this.settings.get('colorMode') || 'manual') : 'manual';
+        const isGradientMode = colorMode === 'gradient' || colorMode === 'randomGradient';
+        if (params.useCustomModuleColor || isGradientMode) {
+            // In custom color/gradient mode, each element will have its own stroke
             svgContent += `  <g id="typo" fill="none">\n`;
         } else {
             svgContent += `  <g id="typo" stroke="${params.color || '#ffffff'}" fill="none">\n`;
@@ -603,9 +618,9 @@ export class VoidExporter {
                 }
                 const actualStrokesNum = params.mode === 'fill' ? 1 : strokesNum;
                 
-                // Get color for this module if Color Chaos is enabled
+                // Get color for this module if custom module color is enabled (Color Chaos)
                 let moduleColor = null;
-                if (params.useColorChaos && this.renderer && this.renderer.getColorForModule) {
+                if (params.useCustomModuleColor && this.renderer && this.renderer.getColorForModule) {
                     moduleColor = this.renderer.getColorForModule();
                 }
                 
@@ -765,10 +780,369 @@ export class VoidExporter {
 
         if (!paths) return '';
 
+        // Apply wobbly effect to SVG paths if enabled
+        if (this.wobblyEffect && this.wobblyEffect.enabled && this.wobblyEffect.amplitude > 0) {
+            // World-space offset for noise (module center in absolute coords)
+            const worldOffsetX = centerX;
+            const worldOffsetY = centerY;
+            // The angle in degrees for coordinate transformation
+            const angleRad = rotation * Math.PI / 2;
+            paths = this._applyWobblyToSVG(paths, worldOffsetX, worldOffsetY, angleRad);
+        }
+
+        // Apply per-stroke gradient if gradient mode is enabled
+        const colorMode = this.settings ? (this.settings.get('colorMode') || 'manual') : 'manual';
+        let gradientDefs = '';
+        if (colorMode === 'gradient' || colorMode === 'randomGradient') {
+            const startColor = this.settings.get('gradientStartColor') || '#ff0000';
+            const endColor = this.settings.get('gradientEndColor') || '#0000ff';
+            const result = this._applyGradientToSVG(paths, startColor, endColor);
+            gradientDefs = result.defs;
+            paths = result.paths;
+        }
+
         // Wrap in group with transformation
         // Add stroke attribute if color is provided (for Color Chaos mode)
         const strokeAttr = color ? ` stroke="${color}"` : '';
-        return `      <g transform="translate(${centerX}, ${centerY}) rotate(${angle})"${strokeAttr}>\n${paths}      </g>\n`;
+        return `      <g transform="translate(${centerX}, ${centerY}) rotate(${angle})"${strokeAttr}>\n${gradientDefs}${paths}      </g>\n`;
+    }
+
+    /**
+     * Apply per-stroke linear gradient to SVG elements
+     * Creates <linearGradient> defs for each <line> and <path> element
+     * @param {string} svgPaths - SVG paths string
+     * @param {string} startColor - gradient start color
+     * @param {string} endColor - gradient end color
+     * @returns {Object} {defs, paths} - gradient defs string and modified paths
+     */
+    _applyGradientToSVG(svgPaths, startColor, endColor) {
+        if (!this._gradientCounter) this._gradientCounter = 0;
+        
+        let defs = '';
+        let paths = svgPaths;
+        
+        // Process <line> elements
+        paths = paths.replace(
+            /<line\s+x1="([^"]+)"\s+y1="([^"]+)"\s+x2="([^"]+)"\s+y2="([^"]+)"([^/]*?)\/>/g,
+            (match, x1, y1, x2, y2, attrs) => {
+                const gradId = `sg${this._gradientCounter++}`;
+                defs += `        <defs><linearGradient id="${gradId}" gradientUnits="userSpaceOnUse" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"><stop offset="0" stop-color="${startColor}"/><stop offset="1" stop-color="${endColor}"/></linearGradient></defs>\n`;
+                // Remove any existing stroke attribute and add gradient stroke
+                const cleanAttrs = attrs.replace(/\s*stroke="[^"]*"/g, '');
+                return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"${cleanAttrs} stroke="url(#${gradId})"/>`;
+            }
+        );
+        
+        // Process <path> elements - extract first M and last point for gradient direction
+        paths = paths.replace(
+            /<path\s+d="([^"]+)"([^/]*?)\/>/g,
+            (match, d, attrs) => {
+                const points = this._extractPathEndpoints(d);
+                if (!points) return match; // can't determine endpoints
+                
+                const gradId = `sg${this._gradientCounter++}`;
+                defs += `        <defs><linearGradient id="${gradId}" gradientUnits="userSpaceOnUse" x1="${points.x1}" y1="${points.y1}" x2="${points.x2}" y2="${points.y2}"><stop offset="0" stop-color="${startColor}"/><stop offset="1" stop-color="${endColor}"/></linearGradient></defs>\n`;
+                const cleanAttrs = attrs.replace(/\s*stroke="[^"]*"/g, '');
+                return `<path d="${d}"${cleanAttrs} stroke="url(#${gradId})"/>`;
+            }
+        );
+        
+        return { defs, paths };
+    }
+
+    /**
+     * Extract first and last coordinates from SVG path data
+     * @param {string} d - path d attribute
+     * @returns {Object|null} {x1, y1, x2, y2} or null
+     */
+    _extractPathEndpoints(d) {
+        // Find first M command
+        const firstM = d.match(/M\s*([-\d.]+)[,\s]+([-\d.]+)/);
+        if (!firstM) return null;
+        
+        // Find all coordinate pairs (from M, L, or space-separated)
+        const coords = [];
+        const re = /([ML])\s*([-\d.]+)[,\s]+([-\d.]+)/g;
+        let m;
+        while ((m = re.exec(d)) !== null) {
+            coords.push({ x: parseFloat(m[2]), y: parseFloat(m[3]) });
+        }
+        
+        // Also try to find arc endpoints (A command)
+        const arcRe = /A\s*[-\d.]+[,\s]+[-\d.]+[,\s]+[-\d.]+[,\s]+[01][,\s]+[01][,\s]+([-\d.]+)[,\s]+([-\d.]+)/g;
+        while ((m = arcRe.exec(d)) !== null) {
+            coords.push({ x: parseFloat(m[1]), y: parseFloat(m[2]) });
+        }
+        
+        if (coords.length < 2) {
+            // Single point — no gradient possible
+            if (coords.length === 1) return null;
+            return null;
+        }
+        
+        const first = coords[0];
+        const last = coords[coords.length - 1];
+        
+        return {
+            x1: Math.round(first.x * 100) / 100,
+            y1: Math.round(first.y * 100) / 100,
+            x2: Math.round(last.x * 100) / 100,
+            y2: Math.round(last.y * 100) / 100
+        };
+    }
+
+    /**
+     * Apply wobbly displacement to SVG path/line elements
+     * Transforms <line> and <path> elements by densifying and displacing points
+     * @param {string} svgPaths - SVG path string containing <line> and <path> elements
+     * @param {number} worldOffsetX - world-space X offset for noise
+     * @param {number} worldOffsetY - world-space Y offset for noise
+     * @param {number} rotationAngle - module rotation in radians
+     * @returns {string} transformed SVG paths
+     */
+    _applyWobblyToSVG(svgPaths, worldOffsetX, worldOffsetY, rotationAngle) {
+        const effect = this.wobblyEffect;
+        const cos = Math.cos(rotationAngle);
+        const sin = Math.sin(rotationAngle);
+        
+        // Transform local coords to world-space (considering rotation around center)
+        const toWorld = (lx, ly) => ({
+            x: worldOffsetX + lx * cos - ly * sin,
+            y: worldOffsetY + lx * sin + ly * cos
+        });
+
+        // Helper: clean attributes - strip fill attr to avoid duplication (keep dash attrs for dashed lines)
+        const cleanAttributes = (attrs) => {
+            return attrs.replace(/\s*fill="[^"]*"/g, '');
+        };
+
+        // Step 1: Replace <path> elements first (before <line> creates new <path> elements)
+        let result = svgPaths.replace(
+            /<path\s+d="([^"]+)"([^/]*?)\/>/g,
+            (match, d, attrs) => {
+                const newD = this._wobblySVGPath(d, worldOffsetX, worldOffsetY);
+                const cleanAttrs = cleanAttributes(attrs);
+                return `<path d="${newD}"${cleanAttrs} fill="none"/>`;
+            }
+        );
+
+        // Step 2: Replace <line> elements with wobbly <path>
+        result = result.replace(
+            /<line\s+x1="([^"]+)"\s+y1="([^"]+)"\s+x2="([^"]+)"\s+y2="([^"]+)"([^/]*?)\/>/g,
+            (match, x1s, y1s, x2s, y2s, attrs) => {
+                const x1 = parseFloat(x1s), y1 = parseFloat(y1s);
+                const x2 = parseFloat(x2s), y2 = parseFloat(y2s);
+                const pathD = effect.getWobblyLinePath(x1, y1, x2, y2, worldOffsetX, worldOffsetY);
+                const cleanAttrs = cleanAttributes(attrs);
+                return `<path d="${pathD}"${cleanAttrs} fill="none"/>`;
+            }
+        );
+
+        // Step 3: Replace <polyline> elements
+        result = result.replace(
+            /<polyline\s+points="([^"]+)"([^/]*?)\/>/g,
+            (match, pointsStr, attrs) => {
+                const points = pointsStr.trim().split(/\s+/).map(p => {
+                    const [x, y] = p.split(',').map(Number);
+                    return { x, y };
+                });
+                const pathD = effect.getWobblyPolylinePath(points, worldOffsetX, worldOffsetY);
+                const cleanAttrs = cleanAttributes(attrs);
+                return `<path d="${pathD}"${cleanAttrs} fill="none"/>`;
+            }
+        );
+
+        return result;
+    }
+
+    /**
+     * Transform an SVG path d attribute to wobbly version
+     * Parses M, L, A commands and densifies/displaces them
+     * @param {string} d - SVG path d attribute
+     * @param {number} worldOffsetX
+     * @param {number} worldOffsetY
+     * @returns {string} wobbly path d attribute
+     */
+    _wobblySVGPath(d, worldOffsetX, worldOffsetY) {
+        const effect = this.wobblyEffect;
+        const detail = effect.detail;
+        const tokens = d.trim().split(/\s+/);
+        
+        let newD = '';
+        let currentX = 0, currentY = 0;
+        let i = 0;
+        
+        while (i < tokens.length) {
+            const cmd = tokens[i];
+            
+            if (cmd === 'M') {
+                const x = parseFloat(tokens[i + 1]);
+                const y = parseFloat(tokens[i + 2]);
+                const offset = effect.getDisplacement(worldOffsetX + x, worldOffsetY + y);
+                const rx = Math.round((x + offset.dx) * 100) / 100;
+                const ry = Math.round((y + offset.dy) * 100) / 100;
+                newD += `M ${rx} ${ry}`;
+                currentX = x;
+                currentY = y;
+                i += 3;
+            } else if (cmd === 'L') {
+                const x = parseFloat(tokens[i + 1]);
+                const y = parseFloat(tokens[i + 2]);
+                // Densify line segment
+                const dx = x - currentX;
+                const dy = y - currentY;
+                const len = Math.sqrt(dx * dx + dy * dy);
+                const segs = Math.max(2, Math.ceil(len / detail));
+                
+                for (let s = 1; s <= segs; s++) {
+                    const t = s / segs;
+                    const px = currentX + dx * t;
+                    const py = currentY + dy * t;
+                    const offset = effect.getDisplacement(worldOffsetX + px, worldOffsetY + py);
+                    const rx = Math.round((px + offset.dx) * 100) / 100;
+                    const ry = Math.round((py + offset.dy) * 100) / 100;
+                    newD += ` L ${rx} ${ry}`;
+                }
+                
+                currentX = x;
+                currentY = y;
+                i += 3;
+            } else if (cmd === 'A') {
+                // A rx ry x-rotation large-arc-flag sweep-flag x y
+                const radius = parseFloat(tokens[i + 1]);
+                // tokens[i+2] = ry (same as rx for circles)
+                // tokens[i+3] = x-rotation
+                // tokens[i+4] = large-arc-flag
+                // tokens[i+5] = sweep-flag
+                const endX = parseFloat(tokens[i + 6]);
+                const endY = parseFloat(tokens[i + 7]);
+                
+                // Calculate arc center and angles from current point and end point
+                // For our 90-degree arcs, we can approximate
+                const arcPath = this._arcToWobblyPath(
+                    currentX, currentY, endX, endY, radius,
+                    worldOffsetX, worldOffsetY
+                );
+                newD += arcPath;
+                
+                currentX = endX;
+                currentY = endY;
+                i += 8;
+            } else if (cmd === 'Q') {
+                // Quadratic Bezier - pass through unchanged (unlikely in our case)
+                newD += ` Q ${tokens[i + 1]} ${tokens[i + 2]} ${tokens[i + 3]} ${tokens[i + 4]}`;
+                currentX = parseFloat(tokens[i + 3]);
+                currentY = parseFloat(tokens[i + 4]);
+                i += 5;
+            } else if (cmd === 'Z' || cmd === 'z') {
+                newD += ' Z';
+                i += 1;
+            } else {
+                // Unknown - try to skip
+                i += 1;
+            }
+        }
+        
+        return newD;
+    }
+
+    /**
+     * Convert an SVG arc to wobbly line segments
+     * Reconstructs the arc from start/end points and radius, then densifies
+     * @param {number} x1 - start X
+     * @param {number} y1 - start Y
+     * @param {number} x2 - end X
+     * @param {number} y2 - end Y
+     * @param {number} radius - arc radius
+     * @param {number} worldOffsetX
+     * @param {number} worldOffsetY
+     * @returns {string} SVG path segments (L commands)
+     */
+    _arcToWobblyPath(x1, y1, x2, y2, radius, worldOffsetX, worldOffsetY) {
+        const effect = this.wobblyEffect;
+        const detail = effect.detail;
+        
+        // Find center of the arc (for our specific 90-degree arcs in upper-right quadrant)
+        // The arc goes from (x1,y1) to (x2,y2) with given radius
+        // For our module arcs, the center is at the corner (w/2, -h/2)
+        // Using geometric reconstruction: center is at intersection of two circles
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        
+        if (dist < 0.001 || radius < 0.001) {
+            const offset = effect.getDisplacement(worldOffsetX + x2, worldOffsetY + y2);
+            const rx = Math.round((x2 + offset.dx) * 100) / 100;
+            const ry = Math.round((y2 + offset.dy) * 100) / 100;
+            return ` L ${rx} ${ry}`;
+        }
+        
+        // Find midpoint
+        const mx = (x1 + x2) / 2;
+        const my = (y1 + y2) / 2;
+        
+        // Distance from midpoint to center
+        const h = Math.sqrt(Math.max(0, radius * radius - (dist / 2) * (dist / 2)));
+        
+        // Perpendicular direction
+        const px = -dy / dist;
+        const py = dx / dist;
+        
+        // Center (sweep-flag = 1 means counter-clockwise in SVG)
+        // For our arcs, center is to the left of the line from start to end
+        const cx = mx + h * px;
+        const cy = my + h * py;
+        
+        // Calculate start and end angles
+        const startAngle = Math.atan2(y1 - cy, x1 - cx);
+        const endAngle = Math.atan2(y2 - cy, x2 - cx);
+        
+        // Determine arc direction (we use sweep-flag=1 which is clockwise in screen coords)
+        let angleDiff = endAngle - startAngle;
+        if (angleDiff < 0) angleDiff += 2 * Math.PI;
+        if (angleDiff > Math.PI) {
+            // Try the other center
+            const cx2 = mx - h * px;
+            const cy2 = my - h * py;
+            const startAngle2 = Math.atan2(y1 - cy2, x1 - cx2);
+            const endAngle2 = Math.atan2(y2 - cy2, x2 - cx2);
+            let angleDiff2 = endAngle2 - startAngle2;
+            if (angleDiff2 < 0) angleDiff2 += 2 * Math.PI;
+            
+            return this._generateWobblyArcSegments(
+                cx2, cy2, radius, startAngle2, angleDiff2,
+                worldOffsetX, worldOffsetY, detail
+            );
+        }
+        
+        return this._generateWobblyArcSegments(
+            cx, cy, radius, startAngle, angleDiff,
+            worldOffsetX, worldOffsetY, detail
+        );
+    }
+
+    /**
+     * Generate wobbly L segments for an arc
+     */
+    _generateWobblyArcSegments(cx, cy, radius, startAngle, angleDiff, worldOffsetX, worldOffsetY, detail) {
+        const effect = this.wobblyEffect;
+        const arcLength = Math.abs(radius * angleDiff);
+        const segments = Math.max(4, Math.ceil(arcLength / detail));
+        const angleStep = angleDiff / segments;
+        
+        let path = '';
+        
+        for (let i = 1; i <= segments; i++) {
+            const angle = startAngle + i * angleStep;
+            const px = cx + radius * Math.cos(angle);
+            const py = cy + radius * Math.sin(angle);
+            const offset = effect.getDisplacement(worldOffsetX + px, worldOffsetY + py);
+            const rx = Math.round((px + offset.dx) * 100) / 100;
+            const ry = Math.round((py + offset.dy) * 100) / 100;
+            path += ` L ${rx} ${ry}`;
+        }
+        
+        return path;
     }
 
     /**

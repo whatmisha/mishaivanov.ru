@@ -55,14 +55,25 @@ class VoidTypeface {
                 randomColorChaosKeepBg: false, // keep background color from Colors panel instead of randomizing it
                 randomColorChaosKeepGrid: false, // keep grid color from Colors panel instead of randomizing it
                 randomColorChaosGrayscale: false, // generate only grayscale (black and white) colors
-                colorChaos: false, // color chaos mode for Colors panel (works in any mode)
+                randomWobblyEnabled: false, // wobbly/jittery lines effect in Random mode
+                randomWobblyAmountMin: 0, // minimum wobbly displacement (px)
+                randomWobblyAmountMax: 10, // maximum wobbly displacement (px)
+                randomWobblyFrequencyMin: 0.05, // minimum wobbly noise frequency/scale
+                randomWobblyFrequencyMax: 0.2, // maximum wobbly noise frequency/scale
+                colorMode: 'manual', // color mode: 'manual', 'random', 'chaos', 'randomChaos', 'gradient', 'randomGradient'
+                colorChaos: false, // color chaos mode for Colors panel (works in any mode) [legacy, derived from colorMode]
                 colorChaosColors: 16, // exact number of colors in palette for Colors panel
+                gradientStartColor: '#ff0000', // gradient start color
+                gradientEndColor: '#0000ff', // gradient end color
                 roundedCaps: false, // rounded line ends (Rounded)
                 closeEnds: false, // closing lines at ends in Stripes mode
                 dashLength: 0.10, // dash length for Dash mode (multiplier of stem)
                 gapLength: 0.30, // gap length for Dash mode (multiplier of stem)
                 dashChess: false, // chess pattern for Dash mode (alternating dash starts)
                 useAlternativesInRandom: true, // use alternative glyphs in Random mode
+                wobblyEnabled: false, // wobbly/jittery lines effect
+                wobblyAmount: 3, // wobbly displacement amount (px)
+                wobblyFrequency: 0.1, // wobbly noise frequency/scale
                 currentMode: 'normal' // 'normal' or 'editor'
             },
             get(key) { return this.values[key]; },
@@ -118,15 +129,17 @@ class VoidTypeface {
             this.initRoundedCapsToggle();
             this.initCloseEndsToggle();
             this.initDashChessToggle();
+            this.initWobblyToggle();
             this.initGridToggle();
             // this.initGlyphEditor(); // Glyph editor (DISABLED - use editor.html)
             // this.initEditorHotkey(); // Cmd+G hotkey for editor (DISABLED)
             this.initAlternativeGlyphs(); // Alternative glyphs
             
-            // Set correct Rounded visibility on initialization
+            // Set correct Rounded and Wobbly visibility on initialization
             this.updateRoundedCapsVisibility();
             this.updateRandomRoundedVisibility();
             this.updateAlternativeGlyphsVisibility();
+            this.updateWobblyVisibility();
             
             // Track changes to show Save button
             this.hasUnsavedChanges = false;
@@ -148,7 +161,8 @@ class VoidTypeface {
             }
             
             // Initialize color palette if Color Chaos is enabled
-            if (this.settings.get('colorChaos') || (this.settings.get('randomColorChaos') && this.settings.get('mode') === 'random')) {
+            const initColorMode = this.settings.get('colorMode') || 'manual';
+            if (initColorMode === 'chaos' || initColorMode === 'randomChaos') {
                 this.generateColorPalette();
             }
             
@@ -341,7 +355,7 @@ class VoidTypeface {
         const canvas = document.getElementById('mainCanvas');
         this.renderer = new VoidRenderer(canvas);
         
-        // Set color getter callback
+        // Set color getter callback for Color Chaos mode
         this.renderer.setColorGetter(() => this.getModuleColor());
         
         // Set initial parameters
@@ -510,6 +524,36 @@ class VoidTypeface {
             }
         });
 
+        // Wobble Amount
+        this.sliderController.initSlider('wobblyAmountSlider', {
+            valueId: 'wobblyAmountValue',
+            setting: 'wobblyAmount',
+            min: 0,
+            max: 20,
+            decimals: 1,
+            baseStep: 0.5,
+            shiftStep: 1,
+            onUpdate: (value) => {
+                this.throttledUpdateRenderer();
+                this.markAsChanged();
+            }
+        });
+
+        // Wobble Scale (frequency)
+        this.sliderController.initSlider('wobblyFrequencySlider', {
+            valueId: 'wobblyFrequencyValue',
+            setting: 'wobblyFrequency',
+            min: 0.01,
+            max: 0.5,
+            decimals: 2,
+            baseStep: 0.01,
+            shiftStep: 0.05,
+            onUpdate: (value) => {
+                this.throttledUpdateRenderer();
+                this.markAsChanged();
+            }
+        });
+
     }
 
     /**
@@ -662,8 +706,44 @@ class VoidTypeface {
             shiftStep: 1,
             onUpdate: (minValue, maxValue) => {
                 // Regenerate color palette when range changes
-                if (this.settings.get('randomColorChaos')) {
+                if (this.settings.get('colorMode') === 'randomChaos') {
                     this.generateColorPalette();
+                    this.updateRenderer();
+                }
+            }
+        });
+
+        // Wobbly Amount Range (for Random mode)
+        this.rangeSliderController.initRangeSlider('randomWobblyAmountRangeSlider', {
+            minSetting: 'randomWobblyAmountMin',
+            maxSetting: 'randomWobblyAmountMax',
+            minValueId: 'randomWobblyAmountMinValue',
+            maxValueId: 'randomWobblyAmountMaxValue',
+            min: 0,
+            max: 20,
+            decimals: 1,
+            baseStep: 0.5,
+            shiftStep: 1,
+            onUpdate: (minValue, maxValue) => {
+                if (this.settings.get('mode') === 'random' && this.settings.get('randomWobblyEnabled')) {
+                    this.updateRenderer();
+                }
+            }
+        });
+
+        // Wobbly Frequency Range (for Random mode)
+        this.rangeSliderController.initRangeSlider('randomWobblyFrequencyRangeSlider', {
+            minSetting: 'randomWobblyFrequencyMin',
+            maxSetting: 'randomWobblyFrequencyMax',
+            minValueId: 'randomWobblyFrequencyMinValue',
+            maxValueId: 'randomWobblyFrequencyMaxValue',
+            min: 0.01,
+            max: 0.5,
+            decimals: 2,
+            baseStep: 0.01,
+            shiftStep: 0.05,
+            onUpdate: (minValue, maxValue) => {
+                if (this.settings.get('mode') === 'random' && this.settings.get('randomWobblyEnabled')) {
                     this.updateRenderer();
                 }
             }
@@ -770,6 +850,70 @@ class VoidTypeface {
                 }
             });
         }
+
+        // Handlers for Wobbly Amount text fields
+        const wobblyAmountMinInput = document.getElementById('randomWobblyAmountMinValue');
+        const wobblyAmountMaxInput = document.getElementById('randomWobblyAmountMaxValue');
+        
+        if (wobblyAmountMinInput) {
+            wobblyAmountMinInput.addEventListener('blur', () => {
+                const value = parseFloat(wobblyAmountMinInput.value);
+                if (!isNaN(value)) {
+                    const max = this.settings.get('randomWobblyAmountMax');
+                    const clampedValue = Math.max(0, Math.min(max, value));
+                    this.rangeSliderController.setValues('randomWobblyAmountRangeSlider', clampedValue, max, true);
+                    if (this.settings.get('mode') === 'random' && this.settings.get('randomWobblyEnabled')) {
+                        this.updateRenderer();
+                    }
+                }
+            });
+        }
+
+        if (wobblyAmountMaxInput) {
+            wobblyAmountMaxInput.addEventListener('blur', () => {
+                const value = parseFloat(wobblyAmountMaxInput.value);
+                if (!isNaN(value)) {
+                    const min = this.settings.get('randomWobblyAmountMin');
+                    const clampedValue = Math.max(min, Math.min(20, value));
+                    this.rangeSliderController.setValues('randomWobblyAmountRangeSlider', min, clampedValue, true);
+                    if (this.settings.get('mode') === 'random' && this.settings.get('randomWobblyEnabled')) {
+                        this.updateRenderer();
+                    }
+                }
+            });
+        }
+
+        // Handlers for Wobbly Frequency text fields
+        const wobblyFrequencyMinInput = document.getElementById('randomWobblyFrequencyMinValue');
+        const wobblyFrequencyMaxInput = document.getElementById('randomWobblyFrequencyMaxValue');
+        
+        if (wobblyFrequencyMinInput) {
+            wobblyFrequencyMinInput.addEventListener('blur', () => {
+                const value = parseFloat(wobblyFrequencyMinInput.value);
+                if (!isNaN(value)) {
+                    const max = this.settings.get('randomWobblyFrequencyMax');
+                    const clampedValue = Math.max(0.01, Math.min(max, value));
+                    this.rangeSliderController.setValues('randomWobblyFrequencyRangeSlider', clampedValue, max, true);
+                    if (this.settings.get('mode') === 'random' && this.settings.get('randomWobblyEnabled')) {
+                        this.updateRenderer();
+                    }
+                }
+            });
+        }
+
+        if (wobblyFrequencyMaxInput) {
+            wobblyFrequencyMaxInput.addEventListener('blur', () => {
+                const value = parseFloat(wobblyFrequencyMaxInput.value);
+                if (!isNaN(value)) {
+                    const min = this.settings.get('randomWobblyFrequencyMin');
+                    const clampedValue = Math.max(min, Math.min(0.5, value));
+                    this.rangeSliderController.setValues('randomWobblyFrequencyRangeSlider', min, clampedValue, true);
+                    if (this.settings.get('mode') === 'random' && this.settings.get('randomWobblyEnabled')) {
+                        this.updateRenderer();
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -806,7 +950,9 @@ class VoidTypeface {
         const previewMap = {
             'letter': document.getElementById('letterColorPreview'),
             'bg': document.getElementById('bgColorPreview'),
-            'grid': document.getElementById('gridColorPreview')
+            'grid': document.getElementById('gridColorPreview'),
+            'gradientStart': document.getElementById('gradientStartColorPreview'),
+            'gradientEnd': document.getElementById('gradientEndColorPreview')
         };
         
         // Process all colors
@@ -846,6 +992,8 @@ class VoidTypeface {
         const letterPreview = document.getElementById('letterColorPreview');
         const bgPreview = document.getElementById('bgColorPreview');
         const gridPreview = document.getElementById('gridColorPreview');
+        const gradientStartPreview = document.getElementById('gradientStartColorPreview');
+        const gradientEndPreview = document.getElementById('gradientEndColorPreview');
         
         // Update preview color with automatic text color selection
         const updatePreview = (preview, color) => this.updateColorPreview(preview, color);
@@ -854,6 +1002,8 @@ class VoidTypeface {
         updatePreview(letterPreview, this.settings.get('letterColor'));
         updatePreview(bgPreview, this.settings.get('bgColor'));
         updatePreview(gridPreview, this.settings.get('gridColor'));
+        updatePreview(gradientStartPreview, this.settings.get('gradientStartColor'));
+        updatePreview(gradientEndPreview, this.settings.get('gradientEndColor'));
         
         // Unified color picker
         this.unifiedColorPicker = new ColorPicker({
@@ -864,12 +1014,16 @@ class VoidTypeface {
                 const settingMap = {
                     'letter': 'letterColor',
                     'bg': 'bgColor',
-                    'grid': 'gridColor'
+                    'grid': 'gridColor',
+                    'gradientStart': 'gradientStartColor',
+                    'gradientEnd': 'gradientEndColor'
                 };
                 const previewMap = {
                     'letter': letterPreview,
                     'bg': bgPreview,
-                    'grid': gridPreview
+                    'grid': gridPreview,
+                    'gradientStart': gradientStartPreview,
+                    'gradientEnd': gradientEndPreview
                 };
                 
                 const setting = settingMap[this.activeColorType];
@@ -889,16 +1043,17 @@ class VoidTypeface {
             const previewMap = {
                 'letter': letterPreview,
                 'bg': bgPreview,
-                'grid': gridPreview
+                'grid': gridPreview,
+                'gradientStart': gradientStartPreview,
+                'gradientEnd': gradientEndPreview
             };
             const activePreview = previewMap[colorType];
             
             // Don't allow switching to Type color if Color Chaos is enabled in Random mode
             if (colorType === 'letter') {
-                const mode = this.settings.get('mode');
-                const colorChaosEnabled = this.settings.get('randomColorChaos');
-                if (mode === 'random' && colorChaosEnabled) {
-                    return; // Block opening Type color picker
+                const colorMode = this.settings.get('colorMode') || 'manual';
+                if (['chaos', 'randomChaos', 'gradient', 'randomGradient'].includes(colorMode)) {
+                    return; // Block opening Type color picker in chaos/gradient modes
                 }
             }
             
@@ -922,7 +1077,9 @@ class VoidTypeface {
             const colorMap = {
                 'letter': this.settings.get('letterColor'),
                 'bg': this.settings.get('bgColor'),
-                'grid': this.settings.get('gridColor')
+                'grid': this.settings.get('gridColor'),
+                'gradientStart': this.settings.get('gradientStartColor'),
+                'gradientEnd': this.settings.get('gradientEndColor')
             };
             this.unifiedColorPicker.setColor(colorMap[colorType]);
             
@@ -937,8 +1094,6 @@ class VoidTypeface {
                     // Picker already open - add ● symbol only to new active color
                     this.updateColorIndicator(true);
                 }
-                // Update randomize controls position after picker state changes
-                setTimeout(() => this.updateRandomizeControlsPosition(), 0);
             }
             // If openPicker = false, ● symbol already removed above
         };
@@ -952,6 +1107,12 @@ class VoidTypeface {
         if (gridPreview) {
             gridPreview.addEventListener('click', () => switchColor('grid'));
         }
+        if (gradientStartPreview) {
+            gradientStartPreview.addEventListener('click', () => switchColor('gradientStart'));
+        }
+        if (gradientEndPreview) {
+            gradientEndPreview.addEventListener('click', () => switchColor('gradientEnd'));
+        }
         
         // Set initial active state (default letter color) without opening picker and without indicator
         this.activeColorType = 'letter';
@@ -964,102 +1125,35 @@ class VoidTypeface {
         // Ensure indicator is not displayed
         this.updateColorIndicator(false);
         
-        // Update Type button state based on Color Chaos in Random mode
-        this.updateColorChaosSliderVisibility();
+        // Initialize color mode buttons and controls
+        this.initColorModeButtons();
+        this.updateColorModeUI();
         
         // Randomize button
         const randomColorsBtn = document.getElementById('randomColorsBtn');
         if (randomColorsBtn) {
             randomColorsBtn.addEventListener('click', () => {
-                // Don't process if disabled (Random mode)
-                if (randomColorsBtn.disabled) return;
-                
-                if (this.settings.get('colorChaos')) {
-                    // If Color Chaos is enabled, regenerate palette
+                const colorMode = this.settings.get('colorMode') || 'manual';
+                if (colorMode === 'chaos') {
                     this.generateColorPalette();
                     this.updateRenderer();
+                } else if (colorMode === 'randomChaos') {
+                    this.generateColorPalette();
+                    this.updateRenderer();
+                } else if (colorMode === 'gradient' || colorMode === 'randomGradient') {
+                    // Randomize gradient colors
+                    this.settings.set('gradientStartColor', this.generateRandomColor());
+                    this.settings.set('gradientEndColor', this.generateRandomColor());
+                    const startPreview = document.getElementById('gradientStartColorPreview');
+                    const endPreview = document.getElementById('gradientEndColorPreview');
+                    if (startPreview) this.updateColorPreview(startPreview, this.settings.get('gradientStartColor'));
+                    if (endPreview) this.updateColorPreview(endPreview, this.settings.get('gradientEndColor'));
+                    this.randomizeColors();
                 } else {
-                    // Otherwise, randomize colors normally
+                    // manual, random — randomize 3 colors
                     this.randomizeColors();
                 }
             });
-        }
-        
-        // Color Random toggle on Colors panel
-        const colorRandomCheckbox = document.getElementById('colorRandomCheckbox');
-        if (colorRandomCheckbox) {
-            colorRandomCheckbox.addEventListener('change', () => {
-                // Don't process if disabled (Random mode)
-                if (colorRandomCheckbox.disabled) return;
-                
-                if (colorRandomCheckbox.checked) {
-                    // Randomize colors when Random is enabled
-                    if (this.settings.get('colorChaos')) {
-                        // If Color Chaos is enabled, regenerate palette
-                        this.generateColorPalette();
-                        this.updateRenderer();
-                    } else {
-                        // Otherwise, randomize colors normally
-                        this.randomizeColors();
-                    }
-                }
-            });
-        }
-        
-        // Color Chaos toggle on Colors panel
-        const colorChaosCheckbox = document.getElementById('colorChaosCheckbox');
-        const colorChaosColorsInput = document.getElementById('colorChaosColorsValue');
-        const colorChaosColorsInputGroup = document.getElementById('colorChaosColorsInputGroup');
-        if (colorChaosCheckbox) {
-            const updateInputState = (enabled) => {
-                if (colorChaosColorsInput) {
-                    colorChaosColorsInput.disabled = !enabled;
-                }
-                // Update tooltip on parent group
-                if (colorChaosColorsInputGroup) {
-                    if (!enabled) {
-                        colorChaosColorsInputGroup.setAttribute('data-tooltip', 'Enable Chaos toggle');
-                    } else {
-                        colorChaosColorsInputGroup.removeAttribute('data-tooltip');
-                    }
-                }
-            };
-            
-            colorChaosCheckbox.addEventListener('change', () => {
-                // Don't process if disabled (Random mode)
-                if (colorChaosCheckbox.disabled) return;
-                
-                const enabled = colorChaosCheckbox.checked;
-                this.settings.set('colorChaos', enabled);
-                
-                // Update input disabled state (input is always visible now)
-                updateInputState(enabled);
-                
-                if (enabled) {
-                    // Generate palette and update
-                    this.generateColorPalette();
-                    this.updateRenderer();
-                } else {
-                    // Clear color chaos and use normal colors
-                    this.updateRenderer();
-                }
-                this.markAsChanged();
-            });
-            
-            // Set initial state
-            const currentMode = this.settings.get('mode');
-            const isRandomMode = currentMode === 'random';
-            if (isRandomMode) {
-                // Disable Color Chaos in Random mode
-                colorChaosCheckbox.checked = false;
-                this.settings.set('colorChaos', false);
-                colorChaosCheckbox.disabled = true;
-                updateInputState(false);
-            } else {
-                colorChaosCheckbox.checked = this.settings.get('colorChaos') || false;
-                colorChaosCheckbox.disabled = false;
-                updateInputState(colorChaosCheckbox.checked);
-            }
         }
         
         // Color Chaos colors input (exact number)
@@ -1069,57 +1163,161 @@ class VoidTypeface {
             max: 32,
             step: 1,
             onUpdate: () => {
-                // Regenerate palette when number changes
-                if (this.settings.get('colorChaos')) {
+                if (this.settings.get('colorMode') === 'chaos') {
                     this.generateColorPalette();
                     this.updateRenderer();
                 }
             }
         });
         
-        // Store original parent and next sibling for randomize controls container repositioning
-        const randomizeContainer = document.getElementById('randomizeControlsContainer');
-        this.randomizeContainerOriginalParent = randomizeContainer?.parentElement;
-        this.randomizeContainerOriginalNextSibling = randomizeContainer?.nextElementSibling;
-        
-        // Track picker open/close to move randomize controls container
-        const pickerElement = this.unifiedColorPicker.elements?.picker;
-        if (pickerElement && randomizeContainer) {
-            const observer = new MutationObserver(() => {
-                this.updateRandomizeControlsPosition();
-            });
-            observer.observe(pickerElement, {
-                attributes: true,
-                attributeFilter: ['style']
-            });
-        }
+        // Auto (randomChaos) mode controls
+        this.initRandomChaosColorControls();
     }
     
     /**
-     * Update position of randomize controls container based on picker state
+     * Initialize color mode buttons
      */
-    updateRandomizeControlsPosition() {
-        const randomizeContainer = document.getElementById('randomizeControlsContainer');
-        const pickerContainer = document.getElementById('unifiedColorPickerContainer');
-        
-        if (!randomizeContainer || !pickerContainer) return;
-        
-        const isOpen = this.unifiedColorPicker?.isOpen();
-        
-        if (isOpen) {
-            // Move container inside picker container (after hsb-picker)
-            if (randomizeContainer.parentElement !== pickerContainer) {
-                pickerContainer.appendChild(randomizeContainer);
-            }
-        } else {
-            // Move container back to original position
-            if (randomizeContainer.parentElement !== this.randomizeContainerOriginalParent) {
-                if (this.randomizeContainerOriginalNextSibling) {
-                    this.randomizeContainerOriginalParent.insertBefore(randomizeContainer, this.randomizeContainerOriginalNextSibling);
+    initColorModeButtons() {
+        const buttons = document.querySelectorAll('#colorModeButtons .style-button');
+        buttons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const newMode = btn.dataset.colorMode;
+                if (!newMode) return;
+                
+                // Update active button
+                buttons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Set color mode
+                this.settings.set('colorMode', newMode);
+                
+                // Derive legacy settings from colorMode
+                this.settings.set('colorChaos', newMode === 'chaos' || newMode === 'randomChaos');
+                this.settings.set('randomColorChaos', newMode === 'randomChaos');
+                this.settings.set('randomColor', newMode === 'random' || newMode === 'randomGradient');
+                
+                // Update UI
+                this.updateColorModeUI();
+                
+                // Auto-actions on mode switch
+                if (newMode === 'random') {
+                    this.randomizeColors();
+                } else if (newMode === 'chaos') {
+                    this.generateColorPalette();
+                    this.updateRenderer();
+                } else if (newMode === 'randomChaos') {
+                    this.generateColorPalette();
+                    this.updateRenderer();
+                } else if (newMode === 'gradient') {
+                    // Just re-render with existing gradient colors
+                    this.updateRenderer();
+                } else if (newMode === 'randomGradient') {
+                    this.settings.set('gradientStartColor', this.generateRandomColor());
+                    this.settings.set('gradientEndColor', this.generateRandomColor());
+                    const startPrev = document.getElementById('gradientStartColorPreview');
+                    const endPrev = document.getElementById('gradientEndColorPreview');
+                    if (startPrev) this.updateColorPreview(startPrev, this.settings.get('gradientStartColor'));
+                    if (endPrev) this.updateColorPreview(endPrev, this.settings.get('gradientEndColor'));
+                    this.randomizeColors();
                 } else {
-                    this.randomizeContainerOriginalParent.appendChild(randomizeContainer);
+                    this.updateRenderer();
                 }
-            }
+                
+                this.markAsChanged();
+            });
+        });
+    }
+    
+    /**
+     * Update color mode UI - show/hide mode-specific controls
+     */
+    updateColorModeUI() {
+        const colorMode = this.settings.get('colorMode') || 'manual';
+        
+        // Pickers visible in: manual, random, gradient, randomGradient (for bg/grid editing)
+        const pickersGroup = document.getElementById('colorPickersGroup');
+        if (pickersGroup) {
+            const showPickers = ['manual', 'random', 'gradient', 'randomGradient'].includes(colorMode);
+            pickersGroup.style.display = showPickers ? 'block' : 'none';
+        }
+        
+        // Letter color picker disabled in chaos/randomChaos/gradient/randomGradient (each module has own color)
+        const letterPreview = document.getElementById('letterColorPreview');
+        if (letterPreview) {
+            const disableLetter = ['chaos', 'randomChaos', 'gradient', 'randomGradient'].includes(colorMode);
+            letterPreview.disabled = disableLetter;
+            letterPreview.style.opacity = disableLetter ? '0.3' : '1';
+        }
+        
+        // Chaos controls
+        const chaosControls = document.getElementById('colorChaosControls');
+        if (chaosControls) {
+            chaosControls.style.display = colorMode === 'chaos' ? 'block' : 'none';
+        }
+        
+        // RandomChaos (Auto) controls
+        const randomChaosControls = document.getElementById('colorRandomChaosControls');
+        if (randomChaosControls) {
+            randomChaosControls.style.display = colorMode === 'randomChaos' ? 'block' : 'none';
+        }
+        
+        // Gradient controls (show in both gradient and randomGradient modes)
+        const gradientControls = document.getElementById('colorGradientControls');
+        if (gradientControls) {
+            gradientControls.style.display = (colorMode === 'gradient' || colorMode === 'randomGradient') ? 'block' : 'none';
+        }
+        
+        // Update active button
+        const buttons = document.querySelectorAll('#colorModeButtons .style-button');
+        buttons.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.colorMode === colorMode);
+        });
+    }
+    
+    /**
+     * Initialize Auto (randomChaos) mode controls on Colors panel
+     */
+    initRandomChaosColorControls() {
+        // BW toggle
+        const grayscaleCheckbox = document.getElementById('randomColorChaosGrayscaleCheckbox');
+        if (grayscaleCheckbox) {
+            grayscaleCheckbox.checked = this.settings.get('randomColorChaosGrayscale') || false;
+            grayscaleCheckbox.addEventListener('change', () => {
+                this.settings.set('randomColorChaosGrayscale', grayscaleCheckbox.checked);
+                if (this.settings.get('colorMode') === 'randomChaos') {
+                    this.generateColorPalette();
+                    this.updateRenderer();
+                }
+                this.markAsChanged();
+            });
+        }
+        
+        // Lock Background
+        const keepBgCheckbox = document.getElementById('randomColorChaosKeepBgCheckbox');
+        if (keepBgCheckbox) {
+            keepBgCheckbox.checked = this.settings.get('randomColorChaosKeepBg') || false;
+            keepBgCheckbox.addEventListener('change', () => {
+                this.settings.set('randomColorChaosKeepBg', keepBgCheckbox.checked);
+                if (this.settings.get('colorMode') === 'randomChaos') {
+                    this.generateColorPalette();
+                    this.updateRenderer();
+                }
+                this.markAsChanged();
+            });
+        }
+        
+        // Lock Grid
+        const keepGridCheckbox = document.getElementById('randomColorChaosKeepGridCheckbox');
+        if (keepGridCheckbox) {
+            keepGridCheckbox.checked = this.settings.get('randomColorChaosKeepGrid') || false;
+            keepGridCheckbox.addEventListener('change', () => {
+                this.settings.set('randomColorChaosKeepGrid', keepGridCheckbox.checked);
+                if (this.settings.get('colorMode') === 'randomChaos') {
+                    this.generateColorPalette();
+                    this.updateRenderer();
+                }
+                this.markAsChanged();
+            });
         }
     }
     
@@ -1184,27 +1382,24 @@ class VoidTypeface {
      * Generate color palette for Color Chaos mode
      */
     generateColorPalette() {
-        // Priority: Random mode settings > Colors panel settings
-        // Use range from Random mode if randomColorChaos is enabled, otherwise use exact number from Colors panel
+        const colorMode = this.settings.get('colorMode') || 'manual';
         let numColors;
-        const randomColorChaos = this.settings.get('randomColorChaos');
-        const mode = this.settings.get('mode');
-        if (randomColorChaos && mode === 'random') {
-            // Priority: Random mode settings
+        
+        if (colorMode === 'randomChaos') {
+            // Auto mode: use range
             const min = this.settings.get('randomColorChaosMin');
             const max = this.settings.get('randomColorChaosMax');
             numColors = Math.floor(Math.random() * (max - min + 1)) + min;
-        } else if (this.settings.get('colorChaos')) {
-            // Fallback: Colors panel settings
+        } else if (colorMode === 'chaos') {
+            // Chaos mode: exact number
             numColors = this.settings.get('colorChaosColors') || 16;
         } else {
             // Default fallback
             numColors = 4;
         }
         
-        // Check if grayscale mode is enabled (only in Random mode with randomColorChaos)
-        const isRandomModeWithChaos = mode === 'random' && randomColorChaos;
-        const isGrayscale = isRandomModeWithChaos && this.settings.get('randomColorChaosGrayscale');
+        // Check if grayscale mode is enabled
+        const isGrayscale = colorMode === 'randomChaos' && this.settings.get('randomColorChaosGrayscale');
         const generateColor = isGrayscale ? () => this.generateRandomGrayscaleColor() : () => this.generateRandomColor();
         
         this.colorPalette = [];
@@ -1212,25 +1407,22 @@ class VoidTypeface {
             this.colorPalette.push(generateColor());
         }
         
-        // Randomize background and grid colors
-        // Lock Back and Lock Grid options only apply in Random mode with randomColorChaos enabled
-        const keepBg = isRandomModeWithChaos && this.settings.get('randomColorChaosKeepBg');
+        // Randomize background and grid colors (respecting lock settings)
+        const keepBg = colorMode === 'randomChaos' && this.settings.get('randomColorChaosKeepBg');
         let bgColor;
         if (!keepBg) {
             bgColor = generateColor();
             this.settings.set('bgColor', bgColor);
         } else {
-            // Use background color from Colors panel
             bgColor = this.settings.get('bgColor');
         }
         
-        const keepGrid = isRandomModeWithChaos && this.settings.get('randomColorChaosKeepGrid');
+        const keepGrid = colorMode === 'randomChaos' && this.settings.get('randomColorChaosKeepGrid');
         let gridColor;
         if (!keepGrid) {
             gridColor = generateColor();
             this.settings.set('gridColor', gridColor);
         } else {
-            // Use grid color from Colors panel
             gridColor = this.settings.get('gridColor');
         }
         
@@ -1263,11 +1455,14 @@ class VoidTypeface {
     }
     
     /**
-     * Get color for a specific module from palette
-     * @returns {string} Color from palette
+     * Get color for a specific module from palette (Color Chaos mode)
+     * @returns {string} Color for this module
      */
     getModuleColor() {
-        const colorChaosEnabled = this.settings.get('colorChaos') || (this.settings.get('randomColorChaos') && this.settings.get('mode') === 'random');
+        const colorMode = this.settings.get('colorMode') || 'manual';
+        
+        // Chaos modes: pick from palette
+        const colorChaosEnabled = colorMode === 'chaos' || colorMode === 'randomChaos';
         if (!colorChaosEnabled || !this.colorPalette || this.colorPalette.length === 0) {
             return this.settings.get('letterColor');
         }
@@ -1287,6 +1482,7 @@ class VoidTypeface {
         
         return this.moduleColorCache.get(currentIndex);
     }
+    
 
     /**
      * Initialize text input with debounce
@@ -1563,6 +1759,73 @@ class VoidTypeface {
     }
 
     /**
+     * Initialize Wobbly toggle and sliders visibility
+     */
+    initWobblyToggle() {
+        const wobblyCheckbox = document.getElementById('wobblyCheckbox');
+        if (!wobblyCheckbox) return;
+        
+        // Set initial value
+        wobblyCheckbox.checked = this.settings.get('wobblyEnabled') || false;
+        
+        // Change handler
+        wobblyCheckbox.addEventListener('change', () => {
+            this.settings.set('wobblyEnabled', wobblyCheckbox.checked);
+            this.updateWobblyVisibility();
+            this.updateRenderer();
+            this.markAsChanged();
+        });
+    }
+
+    /**
+     * Update wobbly controls visibility
+     * In Random mode: hide wobbly section wrapper, randomSectionWobbly is shown via .visible class.
+     * In other modes: show wobbly section wrapper, randomSectionWobbly is hidden via .visible class.
+     * Sliders are always visible but dimmed (disabled) when wobbly is off.
+     */
+    updateWobblyVisibility() {
+        const mode = this.settings.get('mode') || 'fill';
+        const wobblyEnabled = this.settings.get('wobblyEnabled') || false;
+        const randomWobblyEnabled = this.settings.get('randomWobblyEnabled') || false;
+        
+        const wobblySectionWrapper = document.getElementById('wobblySectionWrapper');
+        const wobblyAmountGroup = document.getElementById('wobblyAmountControlGroup');
+        const wobblyFrequencyGroup = document.getElementById('wobblyFrequencyControlGroup');
+        
+        const randomWobblyAmountGroup = document.getElementById('randomControlGroupWobblyAmount');
+        const randomWobblyFrequencyGroup = document.getElementById('randomControlGroupWobblyFrequency');
+        
+        if (mode === 'random') {
+            // Random mode: hide wobbly section wrapper
+            // randomSectionWobbly visibility is handled by .visible class toggle
+            if (wobblySectionWrapper) {
+                wobblySectionWrapper.style.display = 'none';
+            }
+            
+            // Toggle disabled state on randomWobbly sliders
+            if (randomWobblyAmountGroup) {
+                randomWobblyAmountGroup.classList.toggle('controls-disabled', !randomWobblyEnabled);
+            }
+            if (randomWobblyFrequencyGroup) {
+                randomWobblyFrequencyGroup.classList.toggle('controls-disabled', !randomWobblyEnabled);
+            }
+        } else {
+            // Other modes: show wobbly section wrapper
+            if (wobblySectionWrapper) {
+                wobblySectionWrapper.style.display = 'block';
+            }
+            
+            // Toggle disabled state on sliders
+            if (wobblyAmountGroup) {
+                wobblyAmountGroup.classList.toggle('controls-disabled', !wobblyEnabled);
+            }
+            if (wobblyFrequencyGroup) {
+                wobblyFrequencyGroup.classList.toggle('controls-disabled', !wobblyEnabled);
+            }
+        }
+    }
+
+    /**
      * Обновить видимость Rounded (для стилей Solid, Stripes и Dash)
      */
     updateRoundedCapsVisibility() {
@@ -1721,35 +1984,6 @@ class VoidTypeface {
             
             this.settings.set('mode', mode);
             
-            // If Random mode is enabled, disable Color Chaos from Colors panel
-            const colorChaosCheckbox = document.getElementById('colorChaosCheckbox');
-            if (mode === 'random') {
-                if (colorChaosCheckbox && colorChaosCheckbox.checked) {
-                    // Disable Color Chaos from Colors panel
-                    colorChaosCheckbox.checked = false;
-                    this.settings.set('colorChaos', false);
-                    // Update input state
-                    const colorChaosColorsInput = document.getElementById('colorChaosColorsValue');
-                    if (colorChaosColorsInput) {
-                        colorChaosColorsInput.disabled = true;
-                    }
-                }
-                // Disable checkbox
-                if (colorChaosCheckbox) {
-                    colorChaosCheckbox.disabled = true;
-                }
-            } else {
-                // Enable checkbox in other modes
-                if (colorChaosCheckbox) {
-                    colorChaosCheckbox.disabled = false;
-                    // Update input state based on checkbox state
-                    const colorChaosColorsInput = document.getElementById('colorChaosColorsValue');
-                    if (colorChaosColorsInput) {
-                        colorChaosColorsInput.disabled = !colorChaosCheckbox.checked;
-                    }
-                }
-            }
-            
             // Clear random module cache when switching modes (so new random values generate in Random mode)
             if (this.renderer.clearModuleTypeCache) {
                 this.renderer.clearModuleTypeCache();
@@ -1766,14 +2000,15 @@ class VoidTypeface {
             dashLengthControlGroup.style.display = showDash ? 'block' : 'none';
             gapLengthControlGroup.style.display = showDash ? 'block' : 'none';
             
-            // Update visibility of Round, Close Ends and Chess
+            // Update visibility of Round, Close Ends, Chess and Wobbly
             this.updateRoundedCapsVisibility();
+            this.updateWobblyVisibility();
             
             // Show/hide random mode sections
             const randomSections = [
                 document.getElementById('randomSectionGeneral'),
                 document.getElementById('randomSectionDash'),
-                document.getElementById('randomSectionColor'),
+                document.getElementById('randomSectionWobbly'),
                 document.getElementById('randomSectionButton')
             ];
             randomSections.forEach(section => {
@@ -1804,28 +2039,20 @@ class VoidTypeface {
                 randomDashCheckbox.checked = this.settings.get('randomDash') ?? false;
             }
             
-            const randomColorCheckbox = document.getElementById('randomColorCheckbox');
-            if (randomColorCheckbox && mode === 'random') {
-                randomColorCheckbox.checked = this.settings.get('randomColor') ?? false;
-            }
+            // Update color mode UI (buttons and controls visibility)
+            this.updateColorModeUI();
             
-            const randomColorChaosCheckbox = document.getElementById('randomColorChaosCheckbox');
-            if (randomColorChaosCheckbox && mode === 'random') {
-                randomColorChaosCheckbox.checked = this.settings.get('randomColorChaos') ?? false;
-            }
-            
+            // Update Auto (randomChaos) checkboxes
             const randomColorChaosKeepBgCheckbox = document.getElementById('randomColorChaosKeepBgCheckbox');
-            if (randomColorChaosKeepBgCheckbox && mode === 'random') {
+            if (randomColorChaosKeepBgCheckbox) {
                 randomColorChaosKeepBgCheckbox.checked = this.settings.get('randomColorChaosKeepBg') ?? false;
             }
-            
             const randomColorChaosKeepGridCheckbox = document.getElementById('randomColorChaosKeepGridCheckbox');
-            if (randomColorChaosKeepGridCheckbox && mode === 'random') {
+            if (randomColorChaosKeepGridCheckbox) {
                 randomColorChaosKeepGridCheckbox.checked = this.settings.get('randomColorChaosKeepGrid') ?? false;
             }
-            
             const randomColorChaosGrayscaleCheckbox = document.getElementById('randomColorChaosGrayscaleCheckbox');
-            if (randomColorChaosGrayscaleCheckbox && mode === 'random') {
+            if (randomColorChaosGrayscaleCheckbox) {
                 randomColorChaosGrayscaleCheckbox.checked = this.settings.get('randomColorChaosGrayscale') ?? false;
             }
 
@@ -1863,7 +2090,8 @@ class VoidTypeface {
             // Update Rounded visibility in Random mode (should be after showing randomGroups)
             this.updateRandomRoundedVisibility();
             
-            // Update Dash visibility
+            // Update Wobbly visibility
+            this.updateWobblyVisibility();
             
             // Update alternative glyphs visibility
             this.updateAlternativeGlyphsVisibility();
@@ -1914,12 +2142,16 @@ class VoidTypeface {
                     if (this.renderer.clearAlternativeGlyphCache) {
                         this.renderer.clearAlternativeGlyphCache();
                     }
-                    // Randomize colors if Color toggle is enabled
-                    if (this.settings.get('randomColor')) {
-                        this.randomizeColors();
+                    // Reseed wobbly effect for new pattern
+                    const wobblyEffect = this.renderer.moduleDrawer.getWobblyEffect();
+                    if (wobblyEffect) {
+                        wobblyEffect.reseed();
                     }
-                    // Generate new palette if Color Chaos is enabled
-                    if (this.settings.get('randomColorChaos')) {
+                    // Randomize colors based on current color mode
+                    const colorMode = this.settings.get('colorMode') || 'manual';
+                    if (colorMode === 'random' || colorMode === 'randomGradient') {
+                        this.randomizeColors();
+                    } else if (colorMode === 'chaos' || colorMode === 'randomChaos') {
                         this.generateColorPalette();
                     }
                     this.updateRenderer();
@@ -1971,6 +2203,21 @@ class VoidTypeface {
             });
         }
 
+        // Toggle for random mode (Wobbly)
+        const randomWobblyCheckbox = document.getElementById('randomWobblyCheckbox');
+        if (randomWobblyCheckbox) {
+            randomWobblyCheckbox.addEventListener('change', () => {
+                this.settings.set('randomWobblyEnabled', randomWobblyCheckbox.checked);
+                this.updateWobblyVisibility();
+                // Clear cache when switching mode
+                if (this.renderer.clearModuleTypeCache) {
+                    this.renderer.clearModuleTypeCache();
+                }
+                this.updateRenderer();
+                this.markAsChanged();
+            });
+        }
+
         // Toggle for random mode (Dash)
         const randomDashCheckbox = document.getElementById('randomDashCheckbox');
         if (randomDashCheckbox) {
@@ -1987,226 +2234,15 @@ class VoidTypeface {
             });
         }
         
-        // Toggle for random mode (Color)
-        const randomColorCheckbox = document.getElementById('randomColorCheckbox');
-        if (randomColorCheckbox) {
-            randomColorCheckbox.addEventListener('change', () => {
-                this.settings.set('randomColor', randomColorCheckbox.checked);
-                // If Color is enabled, disable Color Chaos
-                if (randomColorCheckbox.checked) {
-                    const randomColorChaosCheckbox = document.getElementById('randomColorChaosCheckbox');
-                    if (randomColorChaosCheckbox && randomColorChaosCheckbox.checked) {
-                        randomColorChaosCheckbox.checked = false;
-                        this.settings.set('randomColorChaos', false);
-                        this.updateColorChaosSliderVisibility();
-                    }
-                    this.randomizeColors();
-                }
-                this.markAsChanged();
-            });
-        }
-        
-        // Toggle for random mode (Color Chaos)
-        const randomColorChaosCheckbox = document.getElementById('randomColorChaosCheckbox');
-        if (randomColorChaosCheckbox) {
-            randomColorChaosCheckbox.addEventListener('change', () => {
-                this.settings.set('randomColorChaos', randomColorChaosCheckbox.checked);
-                // Update Color Chaos slider visibility
-                this.updateColorChaosSliderVisibility();
-                // If Color Chaos is enabled, disable Color
-                if (randomColorChaosCheckbox.checked) {
-                    const randomColorCheckbox = document.getElementById('randomColorCheckbox');
-                    if (randomColorCheckbox && randomColorCheckbox.checked) {
-                        randomColorCheckbox.checked = false;
-                        this.settings.set('randomColor', false);
-                    }
-                    // Generate palette and update
-                    this.generateColorPalette();
-                    this.updateRenderer();
-                }
-                this.markAsChanged();
-            });
-        }
-        
-        // Toggle for keeping background color in Color Chaos mode
-        const randomColorChaosKeepBgCheckbox = document.getElementById('randomColorChaosKeepBgCheckbox');
-        if (randomColorChaosKeepBgCheckbox) {
-            randomColorChaosKeepBgCheckbox.addEventListener('change', () => {
-                // Don't process if checkbox is disabled
-                if (randomColorChaosKeepBgCheckbox.disabled) {
-                    return;
-                }
-                this.settings.set('randomColorChaosKeepBg', randomColorChaosKeepBgCheckbox.checked);
-                // If Color Chaos is enabled, regenerate palette with new setting
-                if (this.settings.get('randomColorChaos')) {
-                    this.generateColorPalette();
-                    this.updateRenderer();
-                }
-                this.markAsChanged();
-            });
-        }
-        
-        // Toggle for keeping grid color in Color Chaos mode
-        const randomColorChaosKeepGridCheckbox = document.getElementById('randomColorChaosKeepGridCheckbox');
-        if (randomColorChaosKeepGridCheckbox) {
-            randomColorChaosKeepGridCheckbox.addEventListener('change', () => {
-                // Don't process if checkbox is disabled
-                if (randomColorChaosKeepGridCheckbox.disabled) {
-                    return;
-                }
-                this.settings.set('randomColorChaosKeepGrid', randomColorChaosKeepGridCheckbox.checked);
-                // If Color Chaos is enabled, regenerate palette with new setting
-                if (this.settings.get('randomColorChaos')) {
-                    this.generateColorPalette();
-                    this.updateRenderer();
-                }
-                this.markAsChanged();
-            });
-        }
-        
-        // Toggle for grayscale mode in Color Chaos
-        const randomColorChaosGrayscaleCheckbox = document.getElementById('randomColorChaosGrayscaleCheckbox');
-        if (randomColorChaosGrayscaleCheckbox) {
-            randomColorChaosGrayscaleCheckbox.addEventListener('change', () => {
-                // Don't process if checkbox is disabled
-                if (randomColorChaosGrayscaleCheckbox.disabled) {
-                    return;
-                }
-                this.settings.set('randomColorChaosGrayscale', randomColorChaosGrayscaleCheckbox.checked);
-                // If Color Chaos is enabled, regenerate palette with new setting
-                if (this.settings.get('randomColorChaos')) {
-                    this.generateColorPalette();
-                    this.updateRenderer();
-                }
-                this.markAsChanged();
-            });
-        }
+        // Color toggles from old Style panel now handled by initRandomChaosColorControls
     }
     
     /**
-     * Update Color Chaos slider visibility
+     * Update Color Chaos slider visibility (legacy — now fully handled by updateColorModeUI)
      */
     updateColorChaosSliderVisibility() {
-        const mode = this.settings.get('mode');
-        const colorChaosEnabled = this.settings.get('randomColorChaos');
-        const colorChaosGroup = document.getElementById('randomControlGroupColorChaos');
-        const keepBgLabel = document.getElementById('randomColorChaosKeepBgLabel');
-        const tooltipMessageChaos = 'Enable Chaos toggle';
-        
-        // Add disabled class when Color Chaos is not enabled in Random mode
-        if (colorChaosGroup) {
-            const isDisabled = !(mode === 'random' && colorChaosEnabled);
-            colorChaosGroup.classList.toggle('disabled', isDisabled);
-            if (isDisabled && mode === 'random') {
-                colorChaosGroup.setAttribute('data-tooltip', tooltipMessageChaos);
-            } else {
-                colorChaosGroup.removeAttribute('data-tooltip');
-            }
-        }
-        
-        // Make Keep Background, Keep Grid and Grayscale checkboxes inactive when Color Chaos is disabled (like Chess Order)
-        const keepBgCheckbox = document.getElementById('randomColorChaosKeepBgCheckbox');
-        const keepGridLabel = document.getElementById('randomColorChaosKeepGridLabel');
-        const keepGridCheckbox = document.getElementById('randomColorChaosKeepGridCheckbox');
-        const grayscaleLabel = document.getElementById('randomColorChaosGrayscaleLabel');
-        const grayscaleCheckbox = document.getElementById('randomColorChaosGrayscaleCheckbox');
-        
-        if (keepBgLabel) {
-            const shouldBeInactive = !(mode === 'random' && colorChaosEnabled);
-            keepBgLabel.classList.toggle('inactive', shouldBeInactive);
-            if (keepBgCheckbox) {
-                keepBgCheckbox.disabled = shouldBeInactive;
-            }
-            if (shouldBeInactive && mode === 'random') {
-                keepBgLabel.setAttribute('data-tooltip', tooltipMessageChaos);
-            } else {
-                keepBgLabel.removeAttribute('data-tooltip');
-            }
-        }
-        
-        if (keepGridLabel) {
-            const shouldBeInactive = !(mode === 'random' && colorChaosEnabled);
-            keepGridLabel.classList.toggle('inactive', shouldBeInactive);
-            if (keepGridCheckbox) {
-                keepGridCheckbox.disabled = shouldBeInactive;
-            }
-            if (shouldBeInactive && mode === 'random') {
-                keepGridLabel.setAttribute('data-tooltip', tooltipMessageChaos);
-            } else {
-                keepGridLabel.removeAttribute('data-tooltip');
-            }
-        }
-        
-        if (grayscaleLabel) {
-            const shouldBeInactive = !(mode === 'random' && colorChaosEnabled);
-            grayscaleLabel.classList.toggle('inactive', shouldBeInactive);
-            if (grayscaleCheckbox) {
-                grayscaleCheckbox.disabled = shouldBeInactive;
-            }
-            if (shouldBeInactive && mode === 'random') {
-                grayscaleLabel.setAttribute('data-tooltip', tooltipMessageChaos);
-            } else {
-                grayscaleLabel.removeAttribute('data-tooltip');
-            }
-        }
-        
-        // Update Type button (letterColorPreview) disabled state
-        // Disable Type button when Color Chaos is enabled in Random mode
-        const letterPreview = document.getElementById('letterColorPreview');
-        if (letterPreview) {
-            const shouldDisable = mode === 'random' && colorChaosEnabled;
-            letterPreview.disabled = shouldDisable;
-            letterPreview.style.opacity = shouldDisable ? '0.5' : '1';
-            letterPreview.style.cursor = shouldDisable ? 'default' : 'pointer';
-            if (shouldDisable) {
-                letterPreview.setAttribute('data-tooltip', 'Disable Chaos toggle in Style panel');
-            } else {
-                letterPreview.removeAttribute('data-tooltip');
-            }
-        }
-        
-        // In Random mode, disable Color panel controls (Chaos, Random, Randomize button)
-        const isRandomMode = mode === 'random';
-        const tooltipMessageRandomStyle = 'Use Style panel in Random mode';
-        const colorChaosCheckbox = document.getElementById('colorChaosCheckbox');
-        const colorRandomCheckbox = document.getElementById('colorRandomCheckbox');
-        const randomColorsBtn = document.getElementById('randomColorsBtn');
-        const colorChaosColorsInput = document.getElementById('colorChaosColorsValue');
-        
-        // Set tooltip on the entire randomize controls container
-        const randomizeControlsContainer = document.getElementById('randomizeControlsContainer');
-        if (randomizeControlsContainer) {
-            if (isRandomMode) {
-                randomizeControlsContainer.setAttribute('data-tooltip', tooltipMessageRandomStyle);
-            } else {
-                randomizeControlsContainer.removeAttribute('data-tooltip');
-            }
-        }
-        
-        if (colorChaosCheckbox) {
-            colorChaosCheckbox.disabled = isRandomMode;
-            const chaosLabel = colorChaosCheckbox.closest('.checkbox-label');
-            if (chaosLabel) {
-                chaosLabel.classList.toggle('disabled', isRandomMode);
-            }
-        }
-        
-        if (colorRandomCheckbox) {
-            colorRandomCheckbox.disabled = isRandomMode;
-            const randomLabel = colorRandomCheckbox.closest('.checkbox-label');
-            if (randomLabel) {
-                randomLabel.classList.toggle('disabled', isRandomMode);
-            }
-        }
-        
-        if (randomColorsBtn) {
-            randomColorsBtn.disabled = isRandomMode;
-        }
-        
-        if (colorChaosColorsInput) {
-            const isDisabled = isRandomMode || !colorChaosCheckbox?.checked;
-            colorChaosColorsInput.disabled = isDisabled;
-        }
+        // Now handled by updateColorModeUI
+        this.updateColorModeUI();
     }
 
     /**
@@ -2634,10 +2670,8 @@ class VoidTypeface {
             const normalizedDefaultBg = this.normalizeColor(defaultBgColor);
             
             // Check if Color Chaos is enabled
-            const colorChaos = this.settings.get('colorChaos');
-            const randomColorChaos = this.settings.get('randomColorChaos');
-            const mode = this.settings.get('mode');
-            const hasColorChaos = colorChaos || (randomColorChaos && mode === 'random');
+            const currentColorMode = this.settings.get('colorMode') || 'manual';
+            const hasColorChaos = currentColorMode === 'chaos' || currentColorMode === 'randomChaos';
             
             if (letterColor !== normalizedDefaultLetter || bgColor !== normalizedDefaultBg) {
                 return { 
@@ -2666,10 +2700,8 @@ class VoidTypeface {
         const normalizedDefaultBg = this.normalizeColor(defaultBgColor);
         
         // Check if Color Chaos is enabled in preset
-        const colorChaos = preset.colorChaos;
-        const randomColorChaos = preset.randomColorChaos;
-        const mode = preset.mode;
-        const hasColorChaos = colorChaos || (randomColorChaos && mode === 'random');
+        const presetColorMode = preset.colorMode || 'manual';
+        const hasColorChaos = presetColorMode === 'chaos' || presetColorMode === 'randomChaos';
         
         // Check if colors differ from defaults
         if (letterColor !== normalizedDefaultLetter || bgColor !== normalizedDefaultBg) {
@@ -2830,10 +2862,8 @@ class VoidTypeface {
         }
         
         // Check if Color Chaos is enabled in loaded preset
-        const colorChaos = preset.colorChaos;
-        const randomColorChaos = preset.randomColorChaos;
-        const mode = preset.mode;
-        const hasColorChaos = colorChaos || (randomColorChaos && mode === 'random');
+        const loadedColorMode = preset.colorMode || 'manual';
+        const hasColorChaos = loadedColorMode === 'chaos' || loadedColorMode === 'randomChaos';
         
         // Restore or clear Color Chaos palette and cache
         if (!hasColorChaos) {
@@ -2939,6 +2969,16 @@ class VoidTypeface {
                 this.settings.get('randomColorChaosMax'), 
                 false
             );
+            this.rangeSliderController.setValues('randomWobblyAmountRangeSlider', 
+                this.settings.get('randomWobblyAmountMin'), 
+                this.settings.get('randomWobblyAmountMax'), 
+                false
+            );
+            this.rangeSliderController.setValues('randomWobblyFrequencyRangeSlider', 
+                this.settings.get('randomWobblyFrequencyMin'), 
+                this.settings.get('randomWobblyFrequencyMax'), 
+                false
+            );
         }
 
         // Update rendering mode
@@ -2963,32 +3003,8 @@ class VoidTypeface {
         // By default, if mode is undefined, choose fill
         else if (fillBtn) fillBtn.classList.add('active');
         
-        // Update Color Chaos checkbox state based on mode
-        const colorChaosCheckbox = document.getElementById('colorChaosCheckbox');
-        const colorChaosColorsInput = document.getElementById('colorChaosColorsValue');
-        if (mode === 'random') {
-            // Disable Color Chaos checkbox in Random mode
-            if (colorChaosCheckbox) {
-                // If Color Chaos was enabled, disable it
-                if (colorChaosCheckbox.checked) {
-                    colorChaosCheckbox.checked = false;
-                    this.settings.set('colorChaos', false);
-                }
-                colorChaosCheckbox.disabled = true;
-            }
-            if (colorChaosColorsInput) {
-                colorChaosColorsInput.disabled = true;
-            }
-        } else {
-            // Enable Color Chaos checkbox in other modes
-            if (colorChaosCheckbox) {
-                colorChaosCheckbox.disabled = false;
-                // Update input disabled state based on checkbox state
-                if (colorChaosColorsInput) {
-                    colorChaosColorsInput.disabled = !colorChaosCheckbox.checked;
-                }
-            }
-        }
+        // Update Color Mode UI
+        this.updateColorModeUI();
         
         // SD shows all controls (Lines, Contrast, Dash Length, Gap Length)
         const showStripes = mode === 'stripes' || mode === 'sd';
@@ -3015,11 +3031,20 @@ class VoidTypeface {
         }
         this.updateRoundedCapsVisibility();
         
+        // Update Wobbly
+        const wobblyCheckbox = document.getElementById('wobblyCheckbox');
+        if (wobblyCheckbox) {
+            wobblyCheckbox.checked = this.settings.get('wobblyEnabled') || false;
+        }
+        this.sliderController.setValue('wobblyAmountSlider', this.settings.get('wobblyAmount'), false);
+        this.sliderController.setValue('wobblyFrequencySlider', this.settings.get('wobblyFrequency'), false);
+        this.updateWobblyVisibility();
+        
         // Show/hide random mode sections
         const randomSections = [
             document.getElementById('randomSectionGeneral'),
             document.getElementById('randomSectionDash'),
-            document.getElementById('randomSectionColor'),
+            document.getElementById('randomSectionWobbly'),
             document.getElementById('randomSectionButton')
         ];
         randomSections.forEach(section => {
@@ -3074,6 +3099,11 @@ class VoidTypeface {
         const randomColorChaosCheckbox = document.getElementById('randomColorChaosCheckbox');
         if (randomColorChaosCheckbox) {
             randomColorChaosCheckbox.checked = this.settings.get('randomColorChaos') ?? false;
+        }
+
+        const randomWobblyCheckbox = document.getElementById('randomWobblyCheckbox');
+        if (randomWobblyCheckbox) {
+            randomWobblyCheckbox.checked = this.settings.get('randomWobblyEnabled') ?? false;
         }
 
         // Update Dash Length and Gap Length sliders state
@@ -3248,7 +3278,7 @@ class VoidTypeface {
             randomColorChaosKeepBg: this.settings.get('randomColorChaosKeepBg') !== undefined ? this.settings.get('randomColorChaosKeepBg') : false,
             randomColorChaosKeepGrid: this.settings.get('randomColorChaosKeepGrid') !== undefined ? this.settings.get('randomColorChaosKeepGrid') : false,
             randomColorChaosGrayscale: this.settings.get('randomColorChaosGrayscale') !== undefined ? this.settings.get('randomColorChaosGrayscale') : false,
-            useColorChaos: this.settings.get('colorChaos') || (this.settings.get('randomColorChaos') && this.settings.get('mode') === 'random'),
+            useCustomModuleColor: ['chaos', 'randomChaos'].includes(this.settings.get('colorMode')),
             roundedCaps: this.settings.get('roundedCaps') || false,
             closeEnds: this.settings.get('closeEnds') || false,
             dashLength: this.settings.get('dashLength') || 0.10,
@@ -3256,7 +3286,26 @@ class VoidTypeface {
             dashChess: this.settings.get('dashChess') || false,
             useAlternativesInRandom: this.settings.get('useAlternativesInRandom') || false,
             showEndpoints: this.settings.get('showEndpoints') || false,
-            showTestCircles: this.settings.get('showTestCircles') || false
+            showTestCircles: this.settings.get('showTestCircles') || false,
+            // Wobbly: use randomWobbly* settings in Random mode, regular wobbly* in other modes
+            wobblyEnabled: mode === 'random' 
+                ? (this.settings.get('randomWobblyEnabled') || false)
+                : (this.settings.get('wobblyEnabled') || false),
+            wobblyAmount: mode === 'random'
+                ? ((this.settings.get('randomWobblyAmountMin') + this.settings.get('randomWobblyAmountMax')) / 2)
+                : (this.settings.get('wobblyAmount') || 0),
+            wobblyFrequency: mode === 'random'
+                ? ((this.settings.get('randomWobblyFrequencyMin') + this.settings.get('randomWobblyFrequencyMax')) / 2)
+                : (this.settings.get('wobblyFrequency') || 0.1),
+            // Pass random wobbly range for potential per-module randomization (future enhancement)
+            randomWobblyAmountMin: this.settings.get('randomWobblyAmountMin') || 0,
+            randomWobblyAmountMax: this.settings.get('randomWobblyAmountMax') || 10,
+            randomWobblyFrequencyMin: this.settings.get('randomWobblyFrequencyMin') || 0.05,
+            randomWobblyFrequencyMax: this.settings.get('randomWobblyFrequencyMax') || 0.2,
+            // Gradient stroke parameters
+            gradientMode: this.settings.get('colorMode') || 'manual',
+            gradientStartColor: this.settings.get('gradientStartColor') || '#ff0000',
+            gradientEndColor: this.settings.get('gradientEndColor') || '#0000ff'
         };
         
 
@@ -3289,7 +3338,8 @@ class VoidTypeface {
      */
     exportSVG() {
         // Ensure color palette is generated if Color Chaos is enabled
-        if (this.settings.get('colorChaos') || (this.settings.get('randomColorChaos') && this.settings.get('mode') === 'random')) {
+        const colorMode = this.settings.get('colorMode') || 'manual';
+        if (colorMode === 'chaos' || colorMode === 'randomChaos') {
             if (!this.colorPalette || this.colorPalette.length === 0) {
                 this.generateColorPalette();
             }
@@ -3304,7 +3354,8 @@ class VoidTypeface {
      */
     async copySVG() {
         // Ensure color palette is generated if Color Chaos is enabled
-        if (this.settings.get('colorChaos') || (this.settings.get('randomColorChaos') && this.settings.get('mode') === 'random')) {
+        const copyColorMode = this.settings.get('colorMode') || 'manual';
+        if (copyColorMode === 'chaos' || copyColorMode === 'randomChaos') {
             if (!this.colorPalette || this.colorPalette.length === 0) {
                 this.generateColorPalette();
             }

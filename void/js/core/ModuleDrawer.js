@@ -11,6 +11,8 @@
  */
 
 import { MathUtils } from '../utils/MathUtils.js';
+import { WobblyEffect } from '../effects/WobblyEffect.js';
+import { GradientStrokeEffect } from '../effects/GradientStrokeEffect.js';
 
 export class ModuleDrawer {
     constructor(mode = 'fill') {
@@ -24,6 +26,15 @@ export class ModuleDrawer {
         this.dashChess = false; // chessboard pattern for dash mode (alternating dash start)
         this.endpointSides = null; // object {top, right, bottom, left} - sides with endpoints
         this.closeEnds = false; // closing lines at ends in Stripes mode
+        
+        // Wobbly effect
+        this.wobblyEffect = new WobblyEffect();
+        // World-space offset for current module (set before drawing)
+        this.wobblyWorldOffsetX = 0;
+        this.wobblyWorldOffsetY = 0;
+        
+        // Gradient stroke effect
+        this.gradientEffect = new GradientStrokeEffect();
     }
 
     /**
@@ -69,6 +80,66 @@ export class ModuleDrawer {
      */
     setCloseEnds(enabled) {
         this.closeEnds = enabled || false;
+    }
+
+    /**
+     * Set wobbly effect parameters
+     * @param {boolean} enabled - whether wobbly effect is active
+     * @param {number} amplitude - displacement strength in pixels
+     * @param {number} frequency - noise scale  
+     */
+    setWobblyParams(enabled, amplitude, frequency) {
+        this.wobblyEffect.setParams(enabled, amplitude, frequency);
+    }
+
+    /**
+     * Get wobbly effect instance (for seed control etc.)
+     * @returns {WobblyEffect}
+     */
+    getWobblyEffect() {
+        return this.wobblyEffect;
+    }
+
+    /**
+     * Set world-space offset for wobbly noise consistency
+     * Must be called before drawModule() with the module's absolute position
+     * @param {number} x - absolute X position of module center
+     * @param {number} y - absolute Y position of module center
+     */
+    setWobblyWorldOffset(x, y) {
+        this.wobblyWorldOffsetX = x;
+        this.wobblyWorldOffsetY = y;
+    }
+
+    /**
+     * Set gradient stroke parameters
+     * @param {boolean} enabled - whether gradient stroke is active
+     * @param {string} startColor - gradient start color (hex)
+     * @param {string} endColor - gradient end color (hex)
+     */
+    setGradientParams(enabled, startColor, endColor) {
+        this.gradientEffect.setParams(enabled, startColor, endColor);
+    }
+
+    /**
+     * Wrap canvas context with effect proxies if enabled
+     * @param {CanvasRenderingContext2D} ctx - real canvas context
+     * @returns {CanvasRenderingContext2D|Proxy} - proxy or original ctx
+     */
+    _getDrawCtx(ctx) {
+        let drawCtx = ctx;
+        
+        // First wrap with gradient proxy (inner layer)
+        if (this.gradientEffect.enabled) {
+            drawCtx = this.gradientEffect.createProxy(drawCtx);
+        }
+        
+        // Then wrap with wobbly proxy (outer layer, operates on gradient proxy)
+        if (this.wobblyEffect.enabled && this.wobblyEffect.amplitude > 0) {
+            drawCtx = this.wobblyEffect.createProxy(drawCtx, this.wobblyWorldOffsetX, this.wobblyWorldOffsetY);
+        }
+        
+        return drawCtx;
     }
 
     /**
@@ -386,28 +457,35 @@ export class ModuleDrawer {
             this.strokesNum = customStrokesNum;
         }
         
+        // Set world-space offset for wobbly noise (module center in absolute coords)
+        this.wobblyWorldOffsetX = x + w / 2;
+        this.wobblyWorldOffsetY = y + h / 2;
+        
+        // Wrap context with wobbly proxy if effect is enabled
+        const drawCtx = this._getDrawCtx(ctx);
+        
         ctx.save();
         ctx.fillStyle = color;
         ctx.strokeStyle = color;
         
         switch (type) {
             case 'S':
-                this.drawStraight(ctx, x, y, w, h, angle, stem);
+                this.drawStraight(drawCtx, x, y, w, h, angle, stem);
                 break;
             case 'C':
-                this.drawCentral(ctx, x, y, w, h, angle, stem);
+                this.drawCentral(drawCtx, x, y, w, h, angle, stem);
                 break;
             case 'J':
-                this.drawJoint(ctx, x, y, w, h, angle, stem);
+                this.drawJoint(drawCtx, x, y, w, h, angle, stem);
                 break;
             case 'L':
-                this.drawLink(ctx, x, y, w, h, angle, stem);
+                this.drawLink(drawCtx, x, y, w, h, angle, stem);
                 break;
             case 'R':
-                this.drawRound(ctx, x, y, w, h, angle, stem);
+                this.drawRound(drawCtx, x, y, w, h, angle, stem);
                 break;
             case 'B':
-                this.drawBend(ctx, x, y, w, h, angle, stem);
+                this.drawBend(drawCtx, x, y, w, h, angle, stem);
                 break;
             case 'E':
                 // Empty - don't draw anything

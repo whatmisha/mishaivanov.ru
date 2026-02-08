@@ -253,6 +253,33 @@ Code</textarea>
                             </label>
                         </div>
 
+                        <!-- ========== WOBBLY EFFECT CONTROLS ========== -->
+                        <div class="wobbly-section" id="wobblySectionWrapper" style="display: none;">
+                            <div class="wobbly-section-header">Wobbly</div>
+                            <div class="control-group toggle-group-row" id="wobblyControlGroup">
+                                <label class="checkbox-label" for="wobblyCheckbox">
+                                    <input type="checkbox" id="wobblyCheckbox">
+                                    <span>Enable</span>
+                                </label>
+                            </div>
+
+                            <div class="control-group wobbly-slider" id="wobblyAmountControlGroup">
+                                <label for="wobblyAmountSlider">
+                                    <span>Amount <span class="unit">px</span></span>
+                                    <input type="text" class="value-display" id="wobblyAmountValue" value="3">
+                                </label>
+                                <input type="range" id="wobblyAmountSlider" min="0" max="20" value="3" step="0.5">
+                            </div>
+
+                            <div class="control-group wobbly-slider" id="wobblyFrequencyControlGroup">
+                                <label for="wobblyFrequencySlider">
+                                    <span>Scale</span>
+                                    <input type="text" class="value-display" id="wobblyFrequencyValue" value="0.1">
+                                </label>
+                                <input type="range" id="wobblyFrequencySlider" min="0.01" max="0.5" value="0.1" step="0.01">
+                            </div>
+                        </div>
+
                         <!-- ========== RANDOM: GENERAL SECTION ========== -->
                         <div class="random-section" id="randomSectionGeneral">
                             <div class="random-section-header">General</div>
@@ -311,6 +338,41 @@ Code</textarea>
                                     <span>Close Stems</span>
                                 </label>
                             </div>
+
+                        </div>
+
+                        <!-- ========== RANDOM: WOBBLY SECTION ========== -->
+                        <div class="random-section" id="randomSectionWobbly">
+                            <div class="random-section-header">Wobbly</div>
+                            
+                            <div class="control-group toggle-group-row" id="randomControlGroupWobbly" style="display: flex;">
+                                <label class="checkbox-label" for="randomWobblyCheckbox">
+                                    <input type="checkbox" id="randomWobblyCheckbox">
+                                    <span>Enable</span>
+                                </label>
+                            </div>
+
+                            <div class="control-group" id="randomControlGroupWobblyAmount">
+                                <label><span>Amount <span class="unit">px</span></span></label>
+                                <div class="range-slider-wrapper">
+                                    <div id="randomWobblyAmountRangeSlider" class="range-slider-container"></div>
+                                    <div class="range-slider-values">
+                                        <input type="text" class="value-display" id="randomWobblyAmountMinValue" value="0">
+                                        <input type="text" class="value-display" id="randomWobblyAmountMaxValue" value="10">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="control-group" id="randomControlGroupWobblyFrequency">
+                                <label><span>Scale</span></label>
+                                <div class="range-slider-wrapper">
+                                    <div id="randomWobblyFrequencyRangeSlider" class="range-slider-container"></div>
+                                    <div class="range-slider-values">
+                                        <input type="text" class="value-display" id="randomWobblyFrequencyMinValue" value="0.05">
+                                        <input type="text" class="value-display" id="randomWobblyFrequencyMaxValue" value="0.2">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- ========== RANDOM: DASH SECTION ========== -->
@@ -351,56 +413,15 @@ Code</textarea>
                             </div>
                         </div>
 
-                        <!-- ========== RANDOM: COLOR SECTION ========== -->
-                        <div class="random-section" id="randomSectionColor">
-                            <div class="random-section-header">Color</div>
-                            
-                            <div class="control-group toggle-group-row" id="randomControlGroup6" style="display: flex;">
-                                <label class="checkbox-label" for="randomColorCheckbox">
-                                    <input type="checkbox" id="randomColorCheckbox">
-                                    <span>Random</span>
-                                </label>
-                                <label class="checkbox-label" for="randomColorChaosCheckbox">
-                                    <input type="checkbox" id="randomColorChaosCheckbox">
-                                    <span>Chaos</span>
-                                </label>
-                                <label class="checkbox-label" id="randomColorChaosGrayscaleLabel" for="randomColorChaosGrayscaleCheckbox">
-                                    <input type="checkbox" id="randomColorChaosGrayscaleCheckbox">
-                                    <span>BW</span>
-                                </label>
-                            </div>
-                            
-                            <div class="control-group toggle-group-row" id="randomControlGroupColorChaosKeepBg" style="display: flex;">
-                                <label class="checkbox-label" id="randomColorChaosKeepBgLabel" for="randomColorChaosKeepBgCheckbox">
-                                    <input type="checkbox" id="randomColorChaosKeepBgCheckbox">
-                                    <span>Lock Background</span>
-                                </label>
-                                <label class="checkbox-label" id="randomColorChaosKeepGridLabel" for="randomColorChaosKeepGridCheckbox">
-                                    <input type="checkbox" id="randomColorChaosKeepGridCheckbox">
-                                    <span>Lock Grid</span>
-                                </label>
-                            </div>
-                            
-                            <div class="control-group" id="randomControlGroupColorChaos">
-                                <label><span>Colors</span></label>
-                                <div class="range-slider-wrapper">
-                                    <div id="randomColorChaosRangeSlider" class="range-slider-container"></div>
-                                    <div class="range-slider-values">
-                                        <input type="text" class="value-display" id="randomColorChaosMinValue" value="16">
-                                        <input type="text" class="value-display" id="randomColorChaosMaxValue" value="32">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- ========== RANDOM: RANDOMIZE BUTTON ========== -->
-                        <div class="random-section" id="randomSectionButton">
-                            <div class="control-group" id="randomControlGroup5">
-                                <button type="button" class="btn-secondary" id="renewRandomBtn" style="width: 100%;">Randomize</button>
-                            </div>
-                        </div>
+                        <!-- Color section removed: settings moved to Colors panel -->
 
                     </section>
+                </div>
+                <!-- ========== RANDOM: RANDOMIZE BUTTON (outside scroll area) ========== -->
+                <div class="random-section" id="randomSectionButton">
+                    <div class="control-group" id="randomControlGroup5">
+                        <button type="button" class="btn-secondary" id="renewRandomBtn" style="width: 100%;">Randomize</button>
+                    </div>
                 </div>
             </aside>
 
@@ -415,57 +436,108 @@ Code</textarea>
                     </span>
                 </div>
                 <div class="panel-content">
-                    <!-- Color Pickers Group - Compact Row -->
+
+                    <!-- Color Mode Buttons -->
                     <div class="control-group">
+                        <div class="style-buttons-container" id="colorModeButtons">
+                            <button type="button" class="style-button active" data-color-mode="manual">Manual</button>
+                            <button type="button" class="style-button" data-color-mode="random">Random</button>
+                            <button type="button" class="style-button" data-color-mode="chaos">Chaos</button>
+                            <button type="button" class="style-button" data-color-mode="randomChaos">Auto</button>
+                            <button type="button" class="style-button" data-color-mode="gradient">Gradient</button>
+                            <button type="button" class="style-button" data-color-mode="randomGradient">Rand Grad</button>
+                        </div>
+                    </div>
+
+                    <!-- Shared: Color Pickers Row (visible in manual, random, gradient modes) -->
+                    <div class="control-group" id="colorPickersGroup">
                         <div class="color-pickers-compact-row">
                             <!-- Letter Color -->
                             <button type="button" class="color-preview-rect" id="letterColorPreview" aria-label="Letters Color">
                                 <span class="color-label-inside">Type</span>
                             </button>
-                            
                             <!-- Background Color -->
                             <button type="button" class="color-preview-rect" id="bgColorPreview" aria-label="Background Color">
                                 <span class="color-label-inside">Back</span>
                             </button>
-                            
                             <!-- Grid Color -->
                             <button type="button" class="color-preview-rect" id="gridColorPreview" aria-label="Grid Color">
                                 <span class="color-label-inside">Grid</span>
                             </button>
                         </div>
-                        
-                        <!-- Randomize Button and Color Chaos Controls Container -->
-                        <div id="randomizeControlsContainer">
-                            <!-- Random and Chaos Toggles and Colors Input -->
-                            <div class="control-group toggle-group-row" style="margin-bottom: 12px; display: flex; align-items: center; gap: 15px;">
-                                <label class="checkbox-label" for="colorRandomCheckbox" style="margin-bottom: 0; flex-shrink: 0;">
-                                    <input type="checkbox" id="colorRandomCheckbox">
-                                    <span>Random</span>
-                                </label>
-                                <label class="checkbox-label" for="colorChaosCheckbox" style="margin-bottom: 0; flex-shrink: 0;">
-                                    <input type="checkbox" id="colorChaosCheckbox">
-                                    <span>Chaos</span>
-                                </label>
-                                <div class="compact-input-group" id="colorChaosColorsInputGroup" title="Colors" style="flex-shrink: 0; margin-left: auto;">
-                                    <svg class="compact-input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <circle cx="4" cy="4" r="2" fill="currentColor"/>
-                                        <circle cx="12" cy="4" r="2" fill="currentColor"/>
-                                        <circle cx="4" cy="12" r="2" fill="currentColor"/>
-                                        <circle cx="12" cy="12" r="2" fill="currentColor"/>
-                                    </svg>
-                                    <input type="number" class="compact-input" id="colorChaosColorsValue" value="16" min="3" max="32" step="1">
+                    </div>
+
+                    <!-- ========== CHAOS MODE CONTROLS ========== -->
+                    <div id="colorChaosControls" style="display: none;">
+                        <div class="control-group" style="display: flex; align-items: center; gap: 10px;">
+                            <label style="margin-bottom: 0; flex: 1;"><span>Colors</span></label>
+                            <div class="compact-input-group" id="colorChaosColorsInputGroup" title="Number of colors" style="flex-shrink: 0;">
+                                <svg class="compact-input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="4" cy="4" r="2" fill="currentColor"/>
+                                    <circle cx="12" cy="4" r="2" fill="currentColor"/>
+                                    <circle cx="4" cy="12" r="2" fill="currentColor"/>
+                                    <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                                </svg>
+                                <input type="number" class="compact-input" id="colorChaosColorsValue" value="16" min="3" max="32" step="1">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========== AUTO (RANDOM CHAOS) MODE CONTROLS ========== -->
+                    <div id="colorRandomChaosControls" style="display: none;">
+                        <div class="control-group toggle-group-row" style="display: flex;">
+                            <label class="checkbox-label" for="randomColorChaosGrayscaleCheckbox">
+                                <input type="checkbox" id="randomColorChaosGrayscaleCheckbox">
+                                <span>BW</span>
+                            </label>
+                            <label class="checkbox-label" for="randomColorChaosKeepBgCheckbox">
+                                <input type="checkbox" id="randomColorChaosKeepBgCheckbox">
+                                <span>Lock Background</span>
+                            </label>
+                            <label class="checkbox-label" for="randomColorChaosKeepGridCheckbox">
+                                <input type="checkbox" id="randomColorChaosKeepGridCheckbox">
+                                <span>Lock Grid</span>
+                            </label>
+                        </div>
+                        <div class="control-group">
+                            <label><span>Colors</span></label>
+                            <div class="range-slider-wrapper">
+                                <div id="randomColorChaosRangeSlider" class="range-slider-container"></div>
+                                <div class="range-slider-values">
+                                    <input type="text" class="value-display" id="randomColorChaosMinValue" value="16">
+                                    <input type="text" class="value-display" id="randomColorChaosMaxValue" value="32">
                                 </div>
                             </div>
-                            
-                            <!-- Randomize Button (shown by default, hidden when picker is open) -->
-                            <button type="button" class="btn-secondary" id="randomColorsBtn" aria-label="Randomize colors" style="width: 100%;">
-                                Randomize
-                            </button>
                         </div>
-                        
-                        <!-- Unified Color Picker -->
-                        <div id="unifiedColorPickerContainer"></div>
                     </div>
+
+                    <!-- ========== GRADIENT MODE CONTROLS ========== -->
+                    <div id="colorGradientControls" style="display: none;">
+                        <div class="control-group">
+                            <div class="color-pickers-compact-row">
+                                <button type="button" class="color-preview-rect" id="gradientStartColorPreview" aria-label="Gradient Start" style="background: #ff0000;">
+                                    <span class="color-label-inside">Start</span>
+                                </button>
+                                <button type="button" class="color-preview-rect" id="gradientEndColorPreview" aria-label="Gradient End" style="background: #0000ff;">
+                                    <span class="color-label-inside">End</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ========== RANDOM GRADIENT MODE CONTROLS ========== -->
+                    <div id="colorRandomGradientControls" style="display: none;">
+                    </div>
+
+                    <!-- Randomize Button (always visible) -->
+                    <div class="control-group" id="colorRandomizeGroup">
+                        <button type="button" class="btn-secondary" id="randomColorsBtn" aria-label="Randomize colors" style="width: 100%;">
+                            Randomize
+                        </button>
+                    </div>
+
+                    <!-- Unified Color Picker -->
+                    <div id="unifiedColorPickerContainer"></div>
 
                 </div>
             </aside>
