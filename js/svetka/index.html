@@ -185,6 +185,12 @@
 
         // Инициализация MediaPipe Face Mesh
         function initFaceMesh() {
+            if (typeof FaceMesh === 'undefined') {
+                console.error('FaceMesh не загружен');
+                showStatus('Ошибка: библиотека Face Mesh не загружена', 'error');
+                return;
+            }
+            
             faceMesh = new FaceMesh({
                 locateFile: (file) => {
                     return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
@@ -410,6 +416,34 @@
         // Обработка случая, когда пользователь закрывает вкладку
         window.addEventListener('beforeunload', () => {
             stopCamera();
+        });
+
+        // Автоматический запуск камеры при загрузке страницы
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Показываем статус загрузки
+            showStatus('Инициализация отслеживания лица...', 'info');
+            
+            // Ждем загрузки всех библиотек MediaPipe
+            let attempts = 0;
+            const maxAttempts = 20;
+            while (typeof FaceMesh === 'undefined' && attempts < maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+            
+            if (typeof FaceMesh === 'undefined') {
+                showStatus('Ошибка: не удалось загрузить библиотеку Face Mesh', 'error');
+                return;
+            }
+            
+            // Инициализируем Face Mesh заранее
+            initFaceMesh();
+            
+            // Небольшая задержка перед запуском камеры
+            await new Promise(resolve => setTimeout(resolve, 200));
+            
+            // Запускаем камеру автоматически
+            startCamera();
         });
     </script>
 </body>
