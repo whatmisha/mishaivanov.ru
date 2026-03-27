@@ -187,6 +187,7 @@ export class PanelManager {
         panel.style.top = `${y}px`;
         panel.style.right = 'auto';
         panel.style.bottom = 'auto';
+        panel.style.transform = 'none';
 
         panelData.position = { x, y };
     }

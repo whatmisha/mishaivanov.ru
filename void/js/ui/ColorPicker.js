@@ -69,7 +69,7 @@ export class ColorPicker {
         // Create HTML structure
         this.createHTML();
         
-        // Get element references
+        // Get element references (hex/preview optional — swatch row has its own hex inputs)
         this.elements.picker = this.elements.container.querySelector('.hsb-picker');
         this.elements.preview = this.elements.container.querySelector('.color-preview');
         this.elements.hexInput = this.elements.container.querySelector('.hex-color-input');
@@ -94,12 +94,6 @@ export class ColorPicker {
     createHTML() {
         this.elements.container.innerHTML = `
             <div class="color-picker-wrapper">
-                <div class="color-input-group">
-                    <button type="button" class="color-preview" aria-label="Open color picker"></button>
-                    <input type="text" class="hex-color-input" value="#808080" placeholder="#808080" maxlength="7" aria-label="Hex color code input">
-                </div>
-                
-                <!-- Custom HSB Color Picker -->
                 <div class="hsb-picker" style="display: none;">
                     <div class="hsb-controls">
                         <div class="hsb-control-group">
@@ -135,12 +129,10 @@ export class ColorPicker {
      * Initialize event handlers
      */
     initEventListeners() {
-        // Preview - open/close picker
         if (this.elements.preview) {
             this.elements.preview.addEventListener('click', () => this.toggle());
         }
 
-        // HEX input
         if (this.elements.hexInput) {
             this.elements.hexInput.addEventListener('input', (e) => {
                 this.handleHexInput(e.target.value);
@@ -150,7 +142,6 @@ export class ColorPicker {
             });
             this.elements.hexInput.addEventListener('blur', () => {
                 this.isHexInputFocused = false;
-                // On blur update value if it was changed
                 if (this.elements.hexInput.value) {
                     this.handleHexInput(this.elements.hexInput.value);
                 }
@@ -325,10 +316,6 @@ export class ColorPicker {
         if (this.elements.picker) {
             this.elements.picker.style.display = 'block';
         }
-        // Show HEX input when opening picker
-        if (this.elements.inputGroup) {
-            this.elements.inputGroup.style.display = 'flex';
-        }
     }
 
     /**
@@ -337,10 +324,6 @@ export class ColorPicker {
     close() {
         if (this.elements.picker) {
             this.elements.picker.style.display = 'none';
-        }
-        // Hide HEX input when closing picker
-        if (this.elements.inputGroup) {
-            this.elements.inputGroup.style.display = 'none';
         }
     }
 

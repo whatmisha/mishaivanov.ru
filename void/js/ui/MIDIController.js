@@ -59,9 +59,9 @@ export default class MIDIController {
             // Random toggles (E2-E5)
             64: { type: 'toggle', setting: 'randomFullRandom' },   // E3 - Chaos
             65: { type: 'toggle', setting: 'useAlternativesInRandom' }, // F3 - Alternates
-            66: { type: 'toggle', setting: 'randomRounded' },       // F#3 - Random Round
-            67: { type: 'toggle', setting: 'randomCloseEnds' },    // G3 - Random Close
-            68: { type: 'toggle', setting: 'randomDash' },          // G#3 - Random Dash
+            66: { type: 'toggle', setting: 'roundedCaps' },         // F#3 - Round Caps (Effects)
+            67: { type: 'toggle', setting: 'closeEnds' },           // G3 - Close Stems (Effects)
+            68: { type: 'toggle', setting: 'randomizeDashLength' }, // G#3 - Dash Length dice
             
             // Actions (F1-F5)
             41: { type: 'action', action: 'renew' },              // F1 - Update
@@ -522,15 +522,17 @@ export default class MIDIController {
             case 'useAlternativesInRandom':
                 checkbox = document.getElementById('alternativeGlyphsCheckbox');
                 break;
-            case 'randomRounded':
-                checkbox = document.getElementById('randomRoundedCheckbox');
+            case 'roundedCaps':
+                checkbox = document.getElementById('roundedCapsCheckbox');
                 break;
-            case 'randomCloseEnds':
-                checkbox = document.getElementById('randomCloseEndsCheckbox');
+            case 'closeEnds':
+                checkbox = document.getElementById('closeEndsCheckbox');
                 break;
-            case 'randomDash':
-                checkbox = document.getElementById('randomDashCheckbox');
-                break;
+            case 'randomizeDashLength': {
+                const diceBtn = document.getElementById('dashLengthDiceBtn');
+                if (diceBtn) diceBtn.click();
+                return;
+            }
         }
         
         if (checkbox) {

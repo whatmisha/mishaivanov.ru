@@ -98,6 +98,14 @@ export class VoidRenderer {
     }
 
     /**
+     * Set gradient getter callback for per-module gradient pairs
+     * @param {Function} callback - Function() => {start, end} | null
+     */
+    setGradientGetter(callback) {
+        this.getGradientForModule = callback;
+    }
+
+    /**
      * Get cached glyph analysis for endpoints detection
      * @param {string} glyphCode - glyph string
      * @param {number} cols - number of columns
@@ -308,30 +316,61 @@ export class VoidRenderer {
     updateParams(newParams, skipCacheClear = false) {
         // Save old values to detect changes
         const oldMode = this.params.mode;
+        const oldIsRandom = this.params.isRandom;
+        const oldStem = this.params.stem;
+        const oldStrokesNum = this.params.strokesNum;
+        const oldStrokeGapRatio = this.params.strokeGapRatio;
+        const oldDashLength = this.params.dashLength;
+        const oldGapLength = this.params.gapLength;
         const oldStemMin = this.params.randomStemMin;
         const oldStemMax = this.params.randomStemMax;
         const oldStrokesMin = this.params.randomStrokesMin;
         const oldStrokesMax = this.params.randomStrokesMax;
         const oldContrastMin = this.params.randomContrastMin;
         const oldContrastMax = this.params.randomContrastMax;
-        const oldRandomDash = this.params.randomDash;
+        const oldDashLengthMin = this.params.randomDashLengthMin;
+        const oldDashLengthMax = this.params.randomDashLengthMax;
+        const oldGapLengthMin = this.params.randomGapLengthMin;
+        const oldGapLengthMax = this.params.randomGapLengthMax;
+        const oldDashEnabled = this.params.dashEnabled;
+        const oldRandomizeStem = this.params.randomizeStem;
+        const oldRandomizeStrokes = this.params.randomizeStrokes;
+        const oldRandomizeContrast = this.params.randomizeContrast;
+        const oldRandomizeDashLength = this.params.randomizeDashLength;
+        const oldRandomizeGapLength = this.params.randomizeGapLength;
         
         Object.assign(this.params, newParams);
         
         // If switching from non-random to random mode, clear caches (unless loading preset with saved caches)
-        if (!skipCacheClear && oldMode !== 'random' && this.params.mode === 'random') {
+        if (!skipCacheClear && !oldIsRandom && this.params.isRandom) {
             this.clearModuleTypeCache();
         }
         
-        // If random parameters changed in random mode, clear cache (unless loading preset with saved caches)
-        if (!skipCacheClear && this.params.mode === 'random' && oldMode === 'random' && (
+        // If any cached parameter changed in random mode, clear cache.
+        // Cached values include non-randomized base params (stem, strokesNum, etc.)
+        // so those must also trigger a cache clear.
+        if (!skipCacheClear && this.params.isRandom && oldIsRandom && (
+            oldStem !== this.params.stem ||
+            oldStrokesNum !== this.params.strokesNum ||
+            oldStrokeGapRatio !== this.params.strokeGapRatio ||
+            oldDashLength !== this.params.dashLength ||
+            oldGapLength !== this.params.gapLength ||
             oldStemMin !== this.params.randomStemMin ||
             oldStemMax !== this.params.randomStemMax ||
             oldStrokesMin !== this.params.randomStrokesMin ||
             oldStrokesMax !== this.params.randomStrokesMax ||
             oldContrastMin !== this.params.randomContrastMin ||
             oldContrastMax !== this.params.randomContrastMax ||
-            oldRandomDash !== this.params.randomDash
+            oldDashLengthMin !== this.params.randomDashLengthMin ||
+            oldDashLengthMax !== this.params.randomDashLengthMax ||
+            oldGapLengthMin !== this.params.randomGapLengthMin ||
+            oldGapLengthMax !== this.params.randomGapLengthMax ||
+            oldDashEnabled !== this.params.dashEnabled ||
+            oldRandomizeStem !== this.params.randomizeStem ||
+            oldRandomizeStrokes !== this.params.randomizeStrokes ||
+            oldRandomizeContrast !== this.params.randomizeContrast ||
+            oldRandomizeDashLength !== this.params.randomizeDashLength ||
+            oldRandomizeGapLength !== this.params.randomizeGapLength
         )) {
             this.clearModuleTypeCache();
         }
@@ -342,7 +381,7 @@ export class VoidRenderer {
         let actualMode;
         if (this.params.mode === 'fill') {
             actualMode = 'stripes';
-        } else if (this.params.mode === 'random') {
+        } else if (this.params.isRandom) {
             // In random mode use 'stripes' by default
             // Dash will be applied randomly for each module separately
             actualMode = 'stripes';
@@ -355,16 +394,10 @@ export class VoidRenderer {
         this.moduleDrawer.setStripesParams(actualStrokesNum, this.params.strokeGapRatio);
         this.moduleDrawer.setCornerRadius(this.params.cornerRadius || 0);
         
-        // In Random mode use randomRounded, otherwise roundedCaps
-        const shouldUseRounded = this.params.mode === 'random' 
-            ? (this.params.randomRounded || false)
-            : (this.params.roundedCaps || false);
+        // Round Caps / Close Ends from params (Effects panel)
+        const shouldUseRounded = this.params.roundedCaps || false;
+        const shouldUseCloseEnds = this.params.closeEnds !== undefined ? this.params.closeEnds : true;
         this.moduleDrawer.setRoundedCaps(shouldUseRounded);
-        
-        // In Random mode use randomCloseEnds, otherwise closeEnds
-        const shouldUseCloseEnds = this.params.mode === 'random'
-            ? (this.params.randomCloseEnds || false)
-            : (this.params.closeEnds || false);
         this.moduleDrawer.setCloseEnds(shouldUseCloseEnds);
         
         // shouldUseEndpoints = true if endpoints needed (for Round or Close Ends)
@@ -497,7 +530,7 @@ export class VoidRenderer {
         if (cacheKey && this.alternativeGlyphCache.hasOwnProperty(cacheKey)) {
             // Letter fixed in cache - use its alternative
             alternativeIndex = this.alternativeGlyphCache[cacheKey];
-        } else if (this.params.mode === 'random' && this.params.useAlternativesInRandom && cacheKey) {
+        } else if (this.params.isRandom && this.params.useAlternativesInRandom && cacheKey) {
             // In Random mode with alternatives enabled - generate random alternative once
             // and save it to cache for stability between renders
             const charUpper = char.toUpperCase();
@@ -538,15 +571,9 @@ export class VoidRenderer {
         // Base stem value for circles (used if module not found)
         const baseStem = this.params.stem;
         
-        // Determine if roundedCaps should be applied only to end modules
-        const shouldUseRounded = this.params.mode === 'random' 
-            ? (this.params.randomRounded || false)
-            : (this.params.roundedCaps || false);
-        
-        // In Random mode use randomCloseEnds, otherwise closeEnds
-        const shouldUseCloseEnds = this.params.mode === 'random'
-            ? (this.params.randomCloseEnds || false)
-            : (this.params.closeEnds || false);
+        // Round Caps / Close Ends from params (Effects panel)
+        const shouldUseRounded = this.params.roundedCaps || false;
+        const shouldUseCloseEnds = this.params.closeEnds !== undefined ? this.params.closeEnds : true;
         
         // Endpoints needed if Round OR Close Ends enabled
         const shouldUseEndpoints = shouldUseRounded || shouldUseCloseEnds;
@@ -593,7 +620,7 @@ export class VoidRenderer {
                 const originalMode = this.moduleDrawer.mode;
                 let moduleUseDash = false;
                 
-                if (this.params.mode === 'random') {
+                if (this.params.isRandom) {
                     // Create unique key for this module (position in text + position in module)
                     const cacheKey = this.params.randomModeType === 'full' && lineIndex !== null && charIndex !== null
                         ? `${lineIndex}_${charIndex}_${i}_${j}` 
@@ -641,6 +668,19 @@ export class VoidRenderer {
                     ? this.getColorForModule()
                     : this.params.color;
                 
+                // Per-module gradient pair (randomGradient mode)
+                let originalGradStart, originalGradEnd;
+                if (this.getGradientForModule) {
+                    const pair = this.getGradientForModule();
+                    if (pair) {
+                        const ge = this.moduleDrawer.gradientEffect;
+                        originalGradStart = ge.startColor;
+                        originalGradEnd = ge.endColor;
+                        ge.startColor = pair.start;
+                        ge.endColor = pair.end;
+                    }
+                }
+
                 this.moduleDrawer.drawModule(
                     this.ctx,
                     moduleType,
@@ -651,11 +691,16 @@ export class VoidRenderer {
                     moduleH,
                     stem,
                     moduleColor,
-                    this.params.mode === 'random' ? strokesNum : null
+                    this.params.isRandom ? strokesNum : null
                 );
                 
                 // Restore original values
-                if (this.params.mode === 'random') {
+                if (originalGradStart !== undefined) {
+                    const ge = this.moduleDrawer.gradientEffect;
+                    ge.startColor = originalGradStart;
+                    ge.endColor = originalGradEnd;
+                }
+                if (this.params.isRandom) {
                     this.moduleDrawer.strokeGapRatio = originalStrokeGapRatio;
                     this.moduleDrawer.dashLength = originalDashLength;
                     this.moduleDrawer.gapLength = originalGapLength;

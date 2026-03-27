@@ -1,2 +1,1397 @@
 Server running at http://localhost:3000/
 Press Ctrl+C to stop the server
+
+Shutting down server...
+Server stopped.
+npm warn exec The following package was not found and will be installed: serve@14.2.5
+ INFO  Accepting connections at http://localhost:3000
+ HTTP  2/20/2026 10:20:57 PM ::1 GET /
+ HTTP  2/20/2026 10:20:57 PM ::1 Returned 200 in 23 ms
+ HTTP  2/20/2026 10:21:23 PM ::1 GET /
+ HTTP  2/20/2026 10:21:23 PM ::1 Returned 200 in 3 ms
+ HTTP  2/20/2026 10:21:23 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:21:23 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:21:23 PM ::1 Returned 200 in 3 ms
+ HTTP  2/20/2026 10:21:23 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 3 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 4 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 4 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 4 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 4 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 4 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 4 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 404 in 2 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 404 in 2 ms
+ HTTP  2/20/2026 10:21:24 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:21:24 PM ::1 Returned 404 in 2 ms
+ HTTP  2/20/2026 10:21:28 PM ::1 GET /
+ HTTP  2/20/2026 10:21:28 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:21:28 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/20/2026 10:21:28 PM ::1 Returned 404 in 2 ms
+ HTTP  2/20/2026 10:21:28 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/20/2026 10:21:28 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:21:28 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:21:28 PM ::1 Returned 404 in 2 ms
+ HTTP  2/20/2026 10:21:28 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/20/2026 10:21:28 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:21:28 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/20/2026 10:21:28 PM ::1 Returned 404 in 0 ms
+ HTTP  2/20/2026 10:21:28 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:21:28 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:21:28 PM ::1 GET /
+ HTTP  2/20/2026 10:21:28 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:28 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/20/2026 10:21:28 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:21:28 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/20/2026 10:21:28 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:21:28 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:21:28 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:21:28 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/20/2026 10:21:28 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:21:28 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/20/2026 10:21:28 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:21:28 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:21:28 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 404 in 2 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:21:29 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:21:29 PM ::1 Returned 404 in 0 ms
+ HTTP  2/20/2026 10:34:22 PM ::1 GET /
+ HTTP  2/20/2026 10:34:22 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:34:22 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:34:22 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:34:22 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:34:22 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:34:23 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:34:23 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 200 in 4 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:38:01 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:38:01 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:39:05 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:39:05 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:39:06 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:39:06 PM ::1 Returned 404 in 2 ms
+ HTTP  2/20/2026 10:39:06 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/20/2026 10:39:06 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:39:06 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/20/2026 10:39:06 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:39:06 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:39:06 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 3 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:28 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:41:28 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:35 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:41:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:36 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:41:36 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:37 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:41:37 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:41:38 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:41:38 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/20/2026 10:41:43 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 404 in 2 ms
+ HTTP  2/20/2026 10:41:43 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 200 in 4 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 3 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 3 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 3 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 3 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 3 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 3 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:43:35 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:43:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:43:41 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:43:41 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:43:42 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:43:42 PM ::1 Returned 404 in 2 ms
+ HTTP  2/20/2026 10:43:42 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/20/2026 10:43:42 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:43:42 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/20/2026 10:43:42 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:43:42 PM ::1 Returned 404 in 2 ms
+ HTTP  2/20/2026 10:43:42 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:44:25 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:44:25 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:48:06 PM ::1 GET /
+ HTTP  2/20/2026 10:48:06 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:48:07 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:48:07 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:48:20 PM ::1 GET /
+ HTTP  2/20/2026 10:48:20 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:48:20 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:48:20 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:20 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:48:20 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:48:21 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:48:21 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:37 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:54:37 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:54:38 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:54:38 PM ::1 Returned 404 in 2 ms
+ HTTP  2/20/2026 10:54:38 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/20/2026 10:54:38 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:54:38 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/20/2026 10:54:38 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:54:38 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:54:38 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 200 in 3 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:15 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:56:15 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/20/2026 10:56:25 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:56:25 PM ::1 Returned 404 in 0 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:56:35 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:56:35 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/20/2026 10:56:41 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 404 in 3 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 404 in 2 ms
+ HTTP  2/20/2026 10:56:41 PM ::1 Returned 404 in 2 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 200 in 0 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /styles.css
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 10:57:44 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 10:57:44 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 10:58:23 PM ::1 GET /
+ HTTP  2/20/2026 10:58:23 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:58:23 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/20/2026 10:58:23 PM ::1 Returned 404 in 2 ms
+ HTTP  2/20/2026 10:58:23 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/20/2026 10:58:23 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:58:23 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:58:23 PM ::1 Returned 404 in 2 ms
+ HTTP  2/20/2026 10:58:23 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/20/2026 10:58:23 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:58:23 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/20/2026 10:58:23 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:58:23 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:58:23 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:58:23 PM ::1 GET /
+ HTTP  2/20/2026 10:58:23 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 10:58:23 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/20/2026 10:58:23 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:58:23 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/20/2026 10:58:23 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:58:23 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:58:23 PM ::1 Returned 404 in 0 ms
+ HTTP  2/20/2026 10:58:23 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/20/2026 10:58:23 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:58:23 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/20/2026 10:58:23 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 10:58:23 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 10:58:23 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /styles.css
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 200 in 1 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 404 in 2 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 404 in 0 ms
+ HTTP  2/20/2026 11:00:00 PM ::1 GET /favicon.ico
+ HTTP  2/20/2026 11:00:00 PM ::1 Returned 404 in 1 ms
+ HTTP  2/20/2026 11:00:01 PM ::1 GET /
+ HTTP  2/20/2026 11:00:01 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /styles.css
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 2 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:00:02 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 11:00:02 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 200 in 2 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /styles.css
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/main.js
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 1 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 0 ms
+ HTTP  2/20/2026 11:03:19 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/20/2026 11:03:19 PM ::1 Returned 304 in 1 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 200 in 11 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/main.js
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /styles.css
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 200 in 1 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 200 in 4 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/ui/SliderController.js
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/core/PresetManager.js
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 3 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 2 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/core/VoidExporter.js
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/core/VoidAlphabet.js
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 2 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/ui/ColorPicker.js
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/ui/PanelManager.js
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 2 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 2 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/ui/ModalManager.js
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/ui/RangeSliderController.js
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/utils/ColorUtils.js
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/utils/MathUtils.js
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/core/GlyphEditor.js
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/core/VoidRenderer.js
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 2 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 2 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/ui/MIDIController.js
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 3 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/core/GlyphLoader.js
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/utils/RandomUtils.js
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/utils/EndpointDetector.js
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 2 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 0 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/core/ModuleDrawer.js
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/effects/GradientStrokeEffect.js
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/effects/WobblyEffect.js
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 3 ms
+ HTTP  2/24/2026 3:05:36 PM ::1 GET /js/utils/NoiseGenerator.js
+ HTTP  2/24/2026 3:05:36 PM ::1 Returned 304 in 1 ms
+ HTTP  2/24/2026 3:05:37 PM ::1 GET /apple-touch-icon-precomposed.png
+ HTTP  2/24/2026 3:05:37 PM ::1 GET /apple-touch-icon.png
+ HTTP  2/24/2026 3:05:37 PM ::1 GET /favicon.ico
+ HTTP  2/24/2026 3:05:37 PM ::1 Returned 404 in 4 ms
+ HTTP  2/24/2026 3:05:37 PM ::1 Returned 404 in 3 ms
+ HTTP  2/24/2026 3:05:37 PM ::1 Returned 404 in 3 ms
+
+ INFO  Gracefully shutting down. Please wait...

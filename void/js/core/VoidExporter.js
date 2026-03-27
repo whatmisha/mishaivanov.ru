@@ -69,21 +69,15 @@ export class VoidExporter {
             if (this.settings.get('textAlign')) {
                 params.textAlign = this.settings.get('textAlign');
             }
-            // Get roundedCaps from settings
+            // Get roundedCaps and closeEnds from settings (Effects panel)
             if (this.settings.get('roundedCaps') !== undefined) {
                 params.roundedCaps = this.settings.get('roundedCaps');
             }
-            // Get randomRounded from settings for Random mode
-            if (this.settings.get('randomRounded') !== undefined) {
-                params.randomRounded = this.settings.get('randomRounded');
+            if (this.settings.get('closeEnds') !== undefined) {
+                params.closeEnds = this.settings.get('closeEnds');
             }
-            // Get randomCloseEnds from settings for Random mode
-            if (this.settings.get('randomCloseEnds') !== undefined) {
-                params.randomCloseEnds = this.settings.get('randomCloseEnds');
-            }
-            // Get randomDash from settings for Random mode
-            if (this.settings.get('randomDash') !== undefined) {
-                params.randomDash = this.settings.get('randomDash');
+            if (this.settings.get('dashEnabled') !== undefined) {
+                params.dashEnabled = this.settings.get('dashEnabled');
             }
             // Get dashChess from settings for PD and Random modes
             if (this.settings.get('dashChess') !== undefined) {
@@ -137,18 +131,6 @@ export class VoidExporter {
         // Get wobbly effect from renderer's ModuleDrawer (shared noise state)
         if (this.renderer && this.renderer.moduleDrawer) {
             this.wobblyEffect = this.renderer.moduleDrawer.getWobblyEffect();
-        }
-        // Ensure randomRounded is set
-        if (params.randomRounded === undefined) {
-            params.randomRounded = false;
-        }
-        // Ensure randomCloseEnds is set
-        if (params.randomCloseEnds === undefined) {
-            params.randomCloseEnds = false;
-        }
-        // Ensure randomDash is set
-        if (params.randomDash === undefined) {
-            params.randomDash = false;
         }
         const text = params.text;
         
@@ -484,7 +466,7 @@ export class VoidExporter {
         if (cacheKey && this.renderer.alternativeGlyphCache && this.renderer.alternativeGlyphCache.hasOwnProperty(cacheKey)) {
             // Use saved alternative
             alternativeIndex = this.renderer.alternativeGlyphCache[cacheKey];
-        } else if (params.mode === 'random' && params.useAlternativesInRandom && cacheKey) {
+        } else if (params.isRandom && params.useAlternativesInRandom && cacheKey) {
             // In Random mode with alternatives enabled - generate random alternative once
             // and save it to cache for stability during export
             const charUpper = char.toUpperCase();
@@ -529,15 +511,9 @@ export class VoidExporter {
         // Group for letter
         svg += `    <g>\n`;
 
-        // In Random mode use randomRounded, otherwise roundedCaps
-        const shouldUseRounded = params.mode === 'random' 
-            ? (params.randomRounded || false)
-            : (params.roundedCaps || false);
-        
-        // In Random mode use randomCloseEnds, otherwise closeEnds
-        const shouldUseCloseEnds = params.mode === 'random'
-            ? (params.randomCloseEnds || false)
-            : (params.closeEnds || false);
+        // Round Caps / Close Ends from params (Effects panel)
+        const shouldUseRounded = params.roundedCaps || false;
+        const shouldUseCloseEnds = params.closeEnds !== undefined ? params.closeEnds : true;
         
         // Endpoints needed if Round OR Close Ends enabled
         const shouldUseEndpoints = shouldUseRounded || shouldUseCloseEnds;
@@ -581,7 +557,7 @@ export class VoidExporter {
                 let gapLength = params.gapLength || 0.30;
                 
                 let moduleUseDash = false;
-                if (params.mode === 'random') {
+                if (params.isRandom) {
                     // Use cache from renderer instead of generating new values
                     // Use same key as during rendering (position in text + position in module)
                     const cacheKey = params.randomModeType === 'full' && lineIndex !== null && charIndex !== null
@@ -610,7 +586,7 @@ export class VoidExporter {
                 let actualMode;
                 if (params.mode === 'fill') {
                     actualMode = 'stripes';
-                } else if (params.mode === 'random') {
+                } else if (params.isRandom) {
                     // Use 'sd' only if module should use dash
                     actualMode = moduleUseDash ? 'sd' : 'stripes';
                 } else {
@@ -622,6 +598,12 @@ export class VoidExporter {
                 let moduleColor = null;
                 if (params.useCustomModuleColor && this.renderer && this.renderer.getColorForModule) {
                     moduleColor = this.renderer.getColorForModule();
+                }
+
+                // Per-module gradient pair (randomGradient mode)
+                let moduleGradientPair = null;
+                if (this.renderer && this.renderer.getGradientForModule) {
+                    moduleGradientPair = this.renderer.getGradientForModule();
                 }
                 
                 const moduleSVG = this.renderModuleToSVG(
@@ -642,7 +624,8 @@ export class VoidExporter {
                     endpointSides,
                     shouldUseCloseEnds,
                     params.dashChess !== undefined ? params.dashChess : false,
-                    moduleColor
+                    moduleColor,
+                    moduleGradientPair
                 );
                 
                 if (moduleSVG) {
@@ -658,7 +641,7 @@ export class VoidExporter {
     /**
      * Render module to SVG
      */
-    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, strokeGapRatio, cornerRadius = 0, roundedCaps = false, dashLength = 0.10, gapLength = 0.30, endpointSides = null, closeEnds = false, dashChess = false, color = null) {
+    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, strokeGapRatio, cornerRadius = 0, roundedCaps = false, dashLength = 0.10, gapLength = 0.30, endpointSides = null, closeEnds = false, dashChess = false, color = null, gradientPairOverride = null) {
         if (type === 'E') return ''; // Empty
         
         // Helper function: get local endpoint sides considering rotation
@@ -794,8 +777,8 @@ export class VoidExporter {
         const colorMode = this.settings ? (this.settings.get('colorMode') || 'manual') : 'manual';
         let gradientDefs = '';
         if (colorMode === 'gradient' || colorMode === 'randomGradient') {
-            const startColor = this.settings.get('gradientStartColor') || '#ff0000';
-            const endColor = this.settings.get('gradientEndColor') || '#0000ff';
+            const startColor = gradientPairOverride ? gradientPairOverride.start : (this.settings.get('gradientStartColor') || '#ff0000');
+            const endColor = gradientPairOverride ? gradientPairOverride.end : (this.settings.get('gradientEndColor') || '#0000ff');
             const result = this._applyGradientToSVG(paths, startColor, endColor);
             gradientDefs = result.defs;
             paths = result.paths;
@@ -2184,7 +2167,7 @@ export class VoidExporter {
         
         if (cacheKey && this.renderer.alternativeGlyphCache && this.renderer.alternativeGlyphCache.hasOwnProperty(cacheKey)) {
             return this.renderer.alternativeGlyphCache[cacheKey];
-        } else if (params.mode === 'random' && params.useAlternativesInRandom && cacheKey) {
+        } else if (params.isRandom && params.useAlternativesInRandom && cacheKey) {
             const charUpper = char.toUpperCase();
             const alternatives = VOID_ALPHABET_ALTERNATIVES[charUpper];
             if (alternatives && alternatives.length > 0) {

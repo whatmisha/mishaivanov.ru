@@ -16,6 +16,118 @@ import { MathUtils } from './utils/MathUtils.js';
 import GlyphEditor from './core/GlyphEditor.js';
 import MIDIController from './ui/MIDIController.js';
 
+/** Shared config for dice (per-param random) buttons */
+const DICE_CONFIG = {
+    stem: {
+        flag: 'randomizeStem', displayName: 'Stem',
+        diceBtnId: 'stemDiceBtn', singleValueId: 'stemValue',
+        singleWrap: 'stemSingleWrap', rangeWrap: 'stemRangeWrap',
+        singleSlider: 'stemSlider', singleSetting: 'stemMultiplier',
+        rangeSlider: 'randomStemRangeSlider',
+        minSetting: 'randomStemMin', maxSetting: 'randomStemMax',
+        min: 0.1, max: 3.0, defaultMin: 0.5, defaultMax: 1.0
+    },
+    strokes: {
+        flag: 'randomizeStrokes', displayName: 'Lines',
+        diceBtnId: 'strokesDiceBtn', singleValueId: 'strokesValue',
+        singleWrap: 'strokesSingleWrap', rangeWrap: 'strokesRangeWrap',
+        singleSlider: 'strokesSlider', singleSetting: 'strokesNum',
+        rangeSlider: 'randomStrokesRangeSlider',
+        minSetting: 'randomStrokesMin', maxSetting: 'randomStrokesMax',
+        min: 1, max: 64, defaultMin: 1, defaultMax: 4
+    },
+    contrast: {
+        flag: 'randomizeContrast', displayName: 'Contrast',
+        diceBtnId: 'contrastDiceBtn', singleValueId: 'strokeGapRatioValue',
+        singleWrap: 'contrastSingleWrap', rangeWrap: 'contrastRangeWrap',
+        singleSlider: 'strokeGapRatioSlider', singleSetting: 'strokeGapRatio',
+        rangeSlider: 'randomContrastRangeSlider',
+        minSetting: 'randomContrastMin', maxSetting: 'randomContrastMax',
+        min: 0.1, max: 8, defaultMin: 0.1, defaultMax: 2.0
+    },
+    dashLength: {
+        flag: 'randomizeDashLength', displayName: 'Dash',
+        diceBtnId: 'dashLengthDiceBtn', singleValueId: 'dashLengthValue',
+        singleWrap: 'dashLengthSingleWrap', rangeWrap: 'dashLengthRangeWrap',
+        singleSlider: 'dashLengthSlider', singleSetting: 'dashLength',
+        rangeSlider: 'randomDashLengthRangeSlider',
+        minSetting: 'randomDashLengthMin', maxSetting: 'randomDashLengthMax',
+        min: 0.1, max: 5, defaultMin: 1.0, defaultMax: 1.5
+    },
+    gapLength: {
+        flag: 'randomizeGapLength', displayName: 'Gap',
+        diceBtnId: 'gapLengthDiceBtn', singleValueId: 'gapLengthValue',
+        singleWrap: 'gapLengthSingleWrap', rangeWrap: 'gapLengthRangeWrap',
+        singleSlider: 'gapLengthSlider', singleSetting: 'gapLength',
+        rangeSlider: 'randomGapLengthRangeSlider',
+        minSetting: 'randomGapLengthMin', maxSetting: 'randomGapLengthMax',
+        min: 0.1, max: 5, defaultMin: 1.0, defaultMax: 1.5
+    },
+    wobblyAmount: {
+        flag: 'randomizeWobblyAmount', displayName: 'Wobble',
+        diceBtnId: 'wobblyAmountDiceBtn', singleValueId: 'wobblyAmountValue',
+        singleWrap: 'wobblyAmountSingleWrap', rangeWrap: 'wobblyAmountRangeWrap',
+        singleSlider: 'wobblyAmountSlider', singleSetting: 'wobblyAmount',
+        rangeSlider: 'randomWobblyAmountRangeSlider',
+        minSetting: 'randomWobblyAmountMin', maxSetting: 'randomWobblyAmountMax',
+        min: 0, max: 20, defaultMin: 0, defaultMax: 10
+    },
+    wobblyFrequency: {
+        flag: 'randomizeWobblyFrequency', displayName: 'Noise',
+        diceBtnId: 'wobblyFrequencyDiceBtn', singleValueId: 'wobblyFrequencyValue',
+        singleWrap: 'wobblyFrequencySingleWrap', rangeWrap: 'wobblyFrequencyRangeWrap',
+        singleSlider: 'wobblyFrequencySlider', singleSetting: 'wobblyFrequency',
+        rangeSlider: 'randomWobblyFrequencyRangeSlider',
+        minSetting: 'randomWobblyFrequencyMin', maxSetting: 'randomWobblyFrequencyMax',
+        min: 0.01, max: 0.5, defaultMin: 0.05, defaultMax: 0.2
+    },
+    paletteColors: {
+        flag: 'randomizePaletteColors', displayName: 'Palette',
+        diceBtnId: 'paletteColorsDiceBtn', singleValueId: 'paletteColorsValue',
+        singleWrap: 'paletteColorsSingleWrap', rangeWrap: 'paletteColorsRangeWrap',
+        singleSlider: 'paletteColorsSlider', singleSetting: 'colorChaosColors',
+        rangeSlider: 'randomPaletteColorsRangeSlider',
+        minSetting: 'randomPaletteColorsMin', maxSetting: 'randomPaletteColorsMax',
+        min: 3, max: 32, defaultMin: 3, defaultMax: 32
+    }
+};
+
+/** Effect pill-toggles: when flag is on, value is re-rolled on Randomize; shown in Random panel list */
+const EFFECT_RANDOM_CONFIG = {
+    roundedCaps: {
+        flag: 'randomizeRoundedCaps', displayName: 'Round Caps',
+        setting: 'roundedCaps', checkboxId: 'roundedCapsCheckbox', type: 'bool'
+    },
+    closeEnds: {
+        flag: 'randomizeCloseEnds', displayName: 'Stems',
+        setting: 'closeEnds', checkboxId: 'closeEndsCheckbox', type: 'bool'
+    },
+    dashChess: {
+        flag: 'randomizeDashChess', displayName: 'Chess',
+        setting: 'dashChess', checkboxId: 'dashChessCheckboxPD', type: 'bool'
+    },
+    altGlyphs: {
+        flag: 'randomizeAltGlyphs', displayName: 'Alt Glyphs',
+        setting: 'useAlternativesInRandom', checkboxId: 'alternativeGlyphsCheckbox', type: 'bool'
+    },
+    chaos: {
+        flag: 'randomizeChaosMode', displayName: 'Chaos',
+        setting: 'randomModeType', checkboxId: 'chaosCheckbox', type: 'chaos'
+    },
+    grid: {
+        flag: 'randomizeShowGrid', displayName: 'Grid',
+        setting: 'showGrid', checkboxId: 'showGridCheckbox', type: 'bool'
+    },
+    ends: {
+        flag: 'randomizeShowEndpoints', displayName: 'Joints',
+        setting: 'showEndpoints', checkboxId: 'showEndpointsCheckbox', type: 'bool'
+    },
+    pointer: {
+        flag: 'randomizeShowPointer', displayName: 'Ends',
+        setting: 'showTestCircles', checkboxId: 'showTestCheckbox', type: 'bool'
+    }
+};
+
 class VoidTypeface {
     constructor() {
         // Settings storage
@@ -25,15 +137,39 @@ class VoidTypeface {
                 moduleSize: 24,
                 letterSpacingMultiplier: 1,
                 lineHeightMultiplier: 1,
-                strokesNum: 2,
+                strokesNum: 1,
                 strokeGapRatio: 1.0,
-                mode: 'fill',
+                dashEnabled: false,
                 letterColor: '#ffffff',
                 bgColor: '#000000',
                 gridColor: '#333333',
                 text: 'Void\nTypeface\nCode',
                 textAlign: 'center',
                 showGrid: true,
+                showEndpoints: false,
+                showTestCircles: false,
+                randomizeStem: false,
+                randomizeStrokes: false,
+                randomizeContrast: false,
+                randomizeDashLength: false,
+                randomizeGapLength: false,
+                randomizeWobblyAmount: false,
+                randomizeWobblyFrequency: false,
+                randomizeRoundedCaps: false,
+                randomizeCloseEnds: false,
+                randomizeDashChess: false,
+                randomizeAltGlyphs: false,
+                randomizeChaosMode: false,
+                randomizeShowGrid: false,
+                randomizeShowEndpoints: false,
+                randomizeShowPointer: false,
+                randomizePaletteColors: false,
+                randomPaletteColorsMin: 3,
+                randomPaletteColorsMax: 32,
+                colorBW: false,
+                colorLockBg: false,
+                colorLockGrid: false,
+                colorSource: 'solid', // 'solid', 'gradient'
                 randomStemMin: 0.5,
                 randomStemMax: 1.0,
                 randomStrokesMin: 1,
@@ -45,39 +181,50 @@ class VoidTypeface {
                 randomGapLengthMin: 1.0,
                 randomGapLengthMax: 1.5,
                 randomModeType: 'byType', // 'byType' or 'full'
-                randomRounded: false, // rounded line ends in Random mode (Rounded)
-                randomCloseEnds: true, // closing lines at ends in Random mode
-                randomDash: false, // dashed lines in Random mode
-                randomColor: false, // randomize colors in Random mode
-                randomColorChaos: false, // color chaos mode (each module gets unique color from palette) - for Random mode
-                randomColorChaosMin: 16, // minimum colors in palette
-                randomColorChaosMax: 32, // maximum colors in palette
-                randomColorChaosKeepBg: false, // keep background color from Colors panel instead of randomizing it
-                randomColorChaosKeepGrid: false, // keep grid color from Colors panel instead of randomizing it
-                randomColorChaosGrayscale: false, // generate only grayscale (black and white) colors
-                randomWobblyEnabled: false, // wobbly/jittery lines effect in Random mode
                 randomWobblyAmountMin: 0, // minimum wobbly displacement (px)
                 randomWobblyAmountMax: 10, // maximum wobbly displacement (px)
                 randomWobblyFrequencyMin: 0.05, // minimum wobbly noise frequency/scale
                 randomWobblyFrequencyMax: 0.2, // maximum wobbly noise frequency/scale
-                colorMode: 'manual', // color mode: 'manual', 'random', 'chaos', 'randomChaos', 'gradient', 'randomGradient'
-                colorChaos: false, // color chaos mode for Colors panel (works in any mode) [legacy, derived from colorMode]
-                colorChaosColors: 16, // exact number of colors in palette for Colors panel
+                colorMode: 'manual', // derived: 'manual', 'randomChaos', 'gradient', 'randomGradient'
+                colorChaos: false, // legacy
+                colorChaosColors: 3, // 3 = solid manual colors; >3 = palette random mode
                 gradientStartColor: '#ff0000', // gradient start color
                 gradientEndColor: '#0000ff', // gradient end color
                 roundedCaps: false, // rounded line ends (Rounded)
                 closeEnds: false, // closing lines at ends in Stripes mode
-                dashLength: 0.10, // dash length for Dash mode (multiplier of stem)
-                gapLength: 0.30, // gap length for Dash mode (multiplier of stem)
+                dashLength: 1.00, // dash length for Dash mode (multiplier of stem)
+                gapLength: 1.50, // gap length for Dash mode (multiplier of stem)
                 dashChess: false, // chess pattern for Dash mode (alternating dash starts)
-                useAlternativesInRandom: true, // use alternative glyphs in Random mode
+                useAlternativesInRandom: false, // use alternative glyphs (auto-enabled on glyph click)
                 wobblyEnabled: false, // wobbly/jittery lines effect
                 wobblyAmount: 3, // wobbly displacement amount (px)
                 wobblyFrequency: 0.1, // wobbly noise frequency/scale
                 currentMode: 'normal' // 'normal' or 'editor'
             },
-            get(key) { return this.values[key]; },
-            set(key, value) { 
+            get(key) {
+                if (key === 'randomizeColor') {
+                    return (this.values.colorChaosColors || 3) > 3 || !!this.values.randomizePaletteColors;
+                }
+                if (key === 'isRandom') {
+                    const effectOn = Object.values(EFFECT_RANDOM_CONFIG).some(c => this.values[c.flag]);
+                    return !! (this.values.randomizeStem || this.values.randomizeStrokes ||
+                        this.values.randomizeContrast || this.values.randomizeDashLength ||
+                        this.values.randomizeGapLength || this.values.randomizeWobblyAmount ||
+                        this.values.randomizeWobblyFrequency || this.get('randomizeColor') || effectOn);
+                }
+                return this.values[key];
+            },
+            set(key, value) {
+                if (key === 'isRandom') return this.get('isRandom');
+                if (key === 'randomizeColor') {
+                    if (value) {
+                        if ((this.values.colorChaosColors || 3) <= 3) this.values.colorChaosColors = 16;
+                    } else {
+                        this.values.colorChaosColors = 3;
+                        this.values.randomizePaletteColors = false;
+                    }
+                    return this.get('randomizeColor');
+                }
                 this.values[key] = value;
                 return value;
             }
@@ -87,10 +234,12 @@ class VoidTypeface {
         this.unifiedColorPicker = null;
         this.activeColorType = 'letter'; // 'letter', 'bg', 'grid'
         
-        // Color Chaos mode
+        // Color Chaos / randomGradient mode
         this.colorPalette = [];
         this.moduleColorCache = new Map();
+        this.moduleGradientCache = new Map();
         this.globalModuleIndex = 0;
+        this.globalGradientIndex = 0;
         
         // Glyph Editor
         this.glyphEditor = null;
@@ -118,6 +267,10 @@ class VoidTypeface {
             // On mobile devices hide panels and show message
             this.initMobileView();
         } else {
+            // Preset UI + change tracking must exist before any init that calls markAsChanged (e.g. ColorPicker onChange)
+            this.currentPresetName = 'New';
+            this.hasUnsavedChanges = false;
+            this.isInitializing = true;
             // On desktop initialize everything as usual
             this.initPanels();
             this.initSliders();
@@ -125,7 +278,10 @@ class VoidTypeface {
             this.initColorPickers();
             this.initTextInput();
             this.initTextAlign();
-            this.initModeToggle();
+            this.initStyleControls();
+            this.initDiceButtons();
+            this.initRandomSection();
+            this.initResetAllDice();
             this.initRoundedCapsToggle();
             this.initCloseEndsToggle();
             this.initDashChessToggle();
@@ -137,15 +293,9 @@ class VoidTypeface {
             
             // Set correct Rounded and Wobbly visibility on initialization
             this.updateRoundedCapsVisibility();
-            this.updateRandomRoundedVisibility();
-            this.updateAlternativeGlyphsVisibility();
             this.updateWobblyVisibility();
             
-            // Track changes to show Save button
-            this.hasUnsavedChanges = false;
-            this.currentPresetName = 'New';
             this.isLoadingPreset = false;
-            this.isInitializing = true; // Initialization flag
             
             this.setupChangeTracking();
             this.initPresets();
@@ -161,13 +311,14 @@ class VoidTypeface {
             }
             
             // Initialize color palette if Color Chaos is enabled
-            const initColorMode = this.settings.get('colorMode') || 'manual';
-            if (initColorMode === 'chaos' || initColorMode === 'randomChaos') {
+            const initColorMode = this.getDerivedColorMode();
+            if (initColorMode === 'randomChaos' || initColorMode === 'randomGradient') {
                 this.generateColorPalette();
             }
             
-            // Initialize global module index counter for Color Chaos
+            // Initialize global module index counters
             this.globalModuleIndex = 0;
+            this.globalGradientIndex = 0;
             
             // First render (with correct parameter calculation)
             this.updateRenderer();
@@ -241,8 +392,14 @@ class VoidTypeface {
             });
         }
         
-        // Set Random mode and text
-        this.settings.set('mode', 'random');
+        // Enable all dice flags for mobile random display
+        this.settings.set('randomizeStem', true);
+        this.settings.set('randomizeStrokes', true);
+        this.settings.set('randomizeContrast', true);
+        this.settings.set('randomizeDashLength', true);
+        this.settings.set('randomizeGapLength', true);
+        this.settings.set('dashEnabled', true);
+        this.settings.set('useAlternativesInRandom', true);
         this.settings.set('text', 'DESK\nTOP\nONLY');
         
         // Touch event handler for switching alternative glyphs
@@ -357,6 +514,8 @@ class VoidTypeface {
         
         // Set color getter callback for Color Chaos mode
         this.renderer.setColorGetter(() => this.getModuleColor());
+        // Set per-module gradient getter for randomGradient mode
+        this.renderer.setGradientGetter(() => this.getGradientForModule());
         
         // Set initial parameters
         this.renderer.updateParams(this.settings.values);
@@ -398,6 +557,16 @@ class VoidTypeface {
         
         this.panelManager.registerPanel('variabilityPanel', {
             headerId: 'variabilityPanelHeader',
+            draggable: true,
+            persistent: true
+        });
+
+        this.panelManager.registerPanel('randomPanel', {
+            headerId: 'randomPanelHeader',
+            draggable: true,
+        });
+        this.panelManager.registerPanel('effectsPanel', {
+            headerId: 'effectsPanelHeader',
             draggable: true,
             persistent: true
         });
@@ -474,6 +643,13 @@ class VoidTypeface {
             baseStep: 1,
             shiftStep: 1,
             onUpdate: (value) => {
+                if (value === 1 && !this.linesAllowMultiLineForStyleUI()) {
+                    this.resetDiceForParam('contrast');
+                    this.updateRandomParamsList();
+                    this.updateRandomSectionVisibility();
+                }
+                this.updateStyleDimmedState();
+                this.updateRoundedCapsVisibility();
                 this.throttledUpdateRenderer();
                 this.markAsChanged();
             }
@@ -554,6 +730,26 @@ class VoidTypeface {
             }
         });
 
+        // Palette Colors
+        this.sliderController.initSlider('paletteColorsSlider', {
+            valueId: 'paletteColorsValue',
+            setting: 'colorChaosColors',
+            min: 3,
+            max: 32,
+            decimals: 0,
+            onUpdate: (value) => {
+                const cm = this.getDerivedColorMode();
+                this.settings.set('colorMode', cm);
+                if (cm === 'randomChaos' || cm === 'randomGradient') {
+                    this.generateColorPalette();
+                }
+                this.updateRandomParamsList();
+                this.updateRandomSectionVisibility();
+                this.updateRenderer();
+                this.markAsChanged();
+            }
+        });
+
     }
 
     /**
@@ -597,8 +793,14 @@ class VoidTypeface {
     initRangeSliders() {
         this.rangeSliderController = new RangeSliderController(this.settings);
 
-        // Stem Weight Range
-        this.rangeSliderController.initRangeSlider('randomStemRangeSlider', {
+        // Random mode range sliders
+        const initRangeIfExists = (id, config) => {
+            if (document.getElementById(id)) {
+                this.rangeSliderController.initRangeSlider(id, config);
+            }
+        };
+
+        initRangeIfExists('randomStemRangeSlider', {
             minSetting: 'randomStemMin',
             maxSetting: 'randomStemMax',
             minValueId: 'randomStemMinValue',
@@ -612,12 +814,12 @@ class VoidTypeface {
                 if (this.renderer.clearModuleTypeCache) {
                     this.renderer.clearModuleTypeCache();
                 }
+                this.updateParamRangeText('stem');
                 this.throttledUpdateRenderer();
             }
         });
 
-        // Strokes Range (Lines in Random mode)
-        this.rangeSliderController.initRangeSlider('randomStrokesRangeSlider', {
+        initRangeIfExists('randomStrokesRangeSlider', {
             minSetting: 'randomStrokesMin',
             maxSetting: 'randomStrokesMax',
             minValueId: 'randomStrokesMinValue',
@@ -632,12 +834,19 @@ class VoidTypeface {
                     this.renderer.clearModuleTypeCache();
                 }
                 this.updateCloseEndsState();
+                if (!this.linesAllowMultiLineForStyleUI()) {
+                    this.resetDiceForParam('contrast');
+                    this.updateRandomParamsList();
+                    this.updateRandomSectionVisibility();
+                }
+                this.updateStyleDimmedState();
+                this.updateRoundedCapsVisibility();
+                this.updateParamRangeText('strokes');
                 this.throttledUpdateRenderer();
             }
         });
 
-        // Contrast Range
-        this.rangeSliderController.initRangeSlider('randomContrastRangeSlider', {
+        initRangeIfExists('randomContrastRangeSlider', {
             minSetting: 'randomContrastMin',
             maxSetting: 'randomContrastMax',
             minValueId: 'randomContrastMinValue',
@@ -651,12 +860,12 @@ class VoidTypeface {
                 if (this.renderer.clearModuleTypeCache) {
                     this.renderer.clearModuleTypeCache();
                 }
+                this.updateParamRangeText('contrast');
                 this.throttledUpdateRenderer();
             }
         });
 
-        // Dash Length Range
-        this.rangeSliderController.initRangeSlider('randomDashLengthRangeSlider', {
+        initRangeIfExists('randomDashLengthRangeSlider', {
             minSetting: 'randomDashLengthMin',
             maxSetting: 'randomDashLengthMax',
             minValueId: 'randomDashLengthMinValue',
@@ -670,12 +879,12 @@ class VoidTypeface {
                 if (this.renderer.clearModuleTypeCache) {
                     this.renderer.clearModuleTypeCache();
                 }
+                this.updateParamRangeText('dashLength');
                 this.throttledUpdateRenderer();
             }
         });
 
-        // Gap Length Range
-        this.rangeSliderController.initRangeSlider('randomGapLengthRangeSlider', {
+        initRangeIfExists('randomGapLengthRangeSlider', {
             minSetting: 'randomGapLengthMin',
             maxSetting: 'randomGapLengthMax',
             minValueId: 'randomGapLengthMinValue',
@@ -689,32 +898,31 @@ class VoidTypeface {
                 if (this.renderer.clearModuleTypeCache) {
                     this.renderer.clearModuleTypeCache();
                 }
+                this.updateParamRangeText('gapLength');
                 this.throttledUpdateRenderer();
             }
         });
-        
-        // Color Chaos Range (number of colors in palette)
-        this.rangeSliderController.initRangeSlider('randomColorChaosRangeSlider', {
-            minSetting: 'randomColorChaosMin',
-            maxSetting: 'randomColorChaosMax',
-            minValueId: 'randomColorChaosMinValue',
-            maxValueId: 'randomColorChaosMaxValue',
+
+        initRangeIfExists('randomPaletteColorsRangeSlider', {
+            minSetting: 'randomPaletteColorsMin',
+            maxSetting: 'randomPaletteColorsMax',
+            minValueId: 'randomPaletteColorsMinValue',
+            maxValueId: 'randomPaletteColorsMaxValue',
             min: 3,
             max: 32,
             decimals: 0,
             baseStep: 1,
             shiftStep: 1,
             onUpdate: (minValue, maxValue) => {
-                // Regenerate color palette when range changes
-                if (this.settings.get('colorMode') === 'randomChaos') {
+                const cm = this.getDerivedColorMode();
+                if (cm === 'randomChaos' || cm === 'randomGradient') {
                     this.generateColorPalette();
                     this.updateRenderer();
                 }
             }
         });
 
-        // Wobbly Amount Range (for Random mode)
-        this.rangeSliderController.initRangeSlider('randomWobblyAmountRangeSlider', {
+        initRangeIfExists('randomWobblyAmountRangeSlider', {
             minSetting: 'randomWobblyAmountMin',
             maxSetting: 'randomWobblyAmountMax',
             minValueId: 'randomWobblyAmountMinValue',
@@ -725,14 +933,14 @@ class VoidTypeface {
             baseStep: 0.5,
             shiftStep: 1,
             onUpdate: (minValue, maxValue) => {
-                if (this.settings.get('mode') === 'random' && this.settings.get('randomWobblyEnabled')) {
+                this.updateParamRangeText('wobblyAmount');
+                if (this.settings.get('isRandom')) {
                     this.updateRenderer();
                 }
             }
         });
 
-        // Wobbly Frequency Range (for Random mode)
-        this.rangeSliderController.initRangeSlider('randomWobblyFrequencyRangeSlider', {
+        initRangeIfExists('randomWobblyFrequencyRangeSlider', {
             minSetting: 'randomWobblyFrequencyMin',
             maxSetting: 'randomWobblyFrequencyMax',
             minValueId: 'randomWobblyFrequencyMinValue',
@@ -743,7 +951,8 @@ class VoidTypeface {
             baseStep: 0.01,
             shiftStep: 0.05,
             onUpdate: (minValue, maxValue) => {
-                if (this.settings.get('mode') === 'random' && this.settings.get('randomWobblyEnabled')) {
+                this.updateParamRangeText('wobblyFrequency');
+                if (this.settings.get('isRandom')) {
                     this.updateRenderer();
                 }
             }
@@ -862,7 +1071,7 @@ class VoidTypeface {
                     const max = this.settings.get('randomWobblyAmountMax');
                     const clampedValue = Math.max(0, Math.min(max, value));
                     this.rangeSliderController.setValues('randomWobblyAmountRangeSlider', clampedValue, max, true);
-                    if (this.settings.get('mode') === 'random' && this.settings.get('randomWobblyEnabled')) {
+                    if (this.settings.get('isRandom')) {
                         this.updateRenderer();
                     }
                 }
@@ -876,7 +1085,7 @@ class VoidTypeface {
                     const min = this.settings.get('randomWobblyAmountMin');
                     const clampedValue = Math.max(min, Math.min(20, value));
                     this.rangeSliderController.setValues('randomWobblyAmountRangeSlider', min, clampedValue, true);
-                    if (this.settings.get('mode') === 'random' && this.settings.get('randomWobblyEnabled')) {
+                    if (this.settings.get('isRandom')) {
                         this.updateRenderer();
                     }
                 }
@@ -894,7 +1103,7 @@ class VoidTypeface {
                     const max = this.settings.get('randomWobblyFrequencyMax');
                     const clampedValue = Math.max(0.01, Math.min(max, value));
                     this.rangeSliderController.setValues('randomWobblyFrequencyRangeSlider', clampedValue, max, true);
-                    if (this.settings.get('mode') === 'random' && this.settings.get('randomWobblyEnabled')) {
+                    if (this.settings.get('isRandom')) {
                         this.updateRenderer();
                     }
                 }
@@ -908,7 +1117,7 @@ class VoidTypeface {
                     const min = this.settings.get('randomWobblyFrequencyMin');
                     const clampedValue = Math.max(min, Math.min(0.5, value));
                     this.rangeSliderController.setValues('randomWobblyFrequencyRangeSlider', min, clampedValue, true);
-                    if (this.settings.get('mode') === 'random' && this.settings.get('randomWobblyEnabled')) {
+                    if (this.settings.get('isRandom')) {
                         this.updateRenderer();
                     }
                 }
@@ -932,153 +1141,157 @@ class VoidTypeface {
      * Update active color indicator (● symbol)
      * @param {boolean} show - whether to show indicator (true - show on active, false - remove from all)
      */
+    highlightActiveSwatch(activeType) {
+        for (const [type, info] of Object.entries(this.colorTypeMap)) {
+            const item = document.getElementById(info.itemId);
+            if (item) {
+                item.classList.toggle('active', type === activeType);
+                const row = item.closest('.color-swatch-row');
+                if (row) row.classList.toggle('active', type === activeType);
+            }
+        }
+    }
+
     updateColorIndicator(show) {
-        const previewMap = {
-            'letter': document.getElementById('letterColorPreview'),
-            'bg': document.getElementById('bgColorPreview'),
-            'grid': document.getElementById('gridColorPreview'),
-            'gradientStart': document.getElementById('gradientStartColorPreview'),
-            'gradientEnd': document.getElementById('gradientEndColorPreview')
+        this.highlightActiveSwatch(show ? this.activeColorType : null);
+    }
+
+    /** Map of color types → {setting, dotId, hexId, itemId, hsbSlotId} */
+    get colorTypeMap() {
+        return {
+            'letter':       { setting: 'letterColor',        dotId: 'letterColorPreview',       hexId: 'letterColorHex',       itemId: 'letterColorItem',       hsbSlotId: 'letterColorHsbSlot' },
+            'bg':           { setting: 'bgColor',            dotId: 'bgColorPreview',           hexId: 'bgColorHex',           itemId: 'bgColorItem',           hsbSlotId: 'bgColorHsbSlot' },
+            'grid':         { setting: 'gridColor',          dotId: 'gridColorPreview',         hexId: 'gridColorHex',         itemId: 'gridColorItem',         hsbSlotId: 'gridColorHsbSlot' },
+            'gradientStart':{ setting: 'gradientStartColor', dotId: 'gradientStartColorPreview',hexId: 'gradientStartColorHex',itemId: 'gradientStartColorItem', hsbSlotId: 'gradientStartColorHsbSlot' },
+            'gradientEnd':  { setting: 'gradientEndColor',   dotId: 'gradientEndColorPreview',  hexId: 'gradientEndColorHex',  itemId: 'gradientEndColorItem',   hsbSlotId: 'gradientEndColorHsbSlot' },
+            'gradientBg':   { setting: 'bgColor',            dotId: 'gradientBgColorPreview',   hexId: 'gradientBgColorHex',   itemId: 'gradientBgColorItem',     hsbSlotId: 'gradientBgColorHsbSlot' },
+            'gradientGrid': { setting: 'gridColor',          dotId: 'gradientGridColorPreview', hexId: 'gradientGridColorHex', itemId: 'gradientGridColorItem',   hsbSlotId: 'gradientGridColorHsbSlot' }
         };
-        
-        // Toggle .active class on circle swatches
-        Object.keys(previewMap).forEach(colorType => {
-            const preview = previewMap[colorType];
-            if (!preview) return;
-            
-            const isActive = show && colorType === this.activeColorType;
-            preview.classList.toggle('active', isActive);
-        });
+    }
+
+    /** Lines > 1 in single mode, or Lines ↔ range with max > 1 */
+    linesAllowMultiLineForStyleUI() {
+        if (this.settings.get('randomizeStrokes')) {
+            return (this.settings.get('randomStrokesMax') ?? 1) > 1;
+        }
+        return (this.settings.get('strokesNum') ?? 1) > 1;
+    }
+
+    dockUnifiedColorPickerForType(colorType) {
+        const info = this.colorTypeMap[colorType];
+        if (!info?.hsbSlotId) return;
+        const slot = document.getElementById(info.hsbSlotId);
+        const container = document.getElementById('unifiedColorPickerContainer');
+        if (slot && container && container.parentElement !== slot) {
+            slot.appendChild(container);
+        }
+    }
+
+    /** Apply hex from swatch row input; returns true if valid and applied */
+    applySwatchHexInput(colorType, raw) {
+        const info = this.colorTypeMap[colorType];
+        if (!info) return false;
+        let v = (raw || '').trim();
+        if (v && !v.startsWith('#')) v = '#' + v;
+        if (!/^#[0-9A-F]{6}$/i.test(v)) return false;
+        const hex = v.toLowerCase();
+        if (!ColorUtils.hexToRgb(hex)) return false;
+        this.settings.set(info.setting, hex);
+        this.updateSwatchDisplay(colorType, hex);
+        if (colorType === 'bg') this.updateSwatchDisplay('gradientBg', hex);
+        else if (colorType === 'gradientBg') this.updateSwatchDisplay('bg', hex);
+        else if (colorType === 'grid') this.updateSwatchDisplay('gradientGrid', hex);
+        else if (colorType === 'gradientGrid') this.updateSwatchDisplay('grid', hex);
+        if (this.unifiedColorPicker && this.activeColorType === colorType) {
+            this.unifiedColorPicker.setColor(hex);
+        }
+        this.updateRenderer();
+        this.markAsChanged();
+        return true;
+    }
+
+    /** Update a compact swatch dot + hex input value */
+    updateSwatchDisplay(colorType, color) {
+        const info = this.colorTypeMap[colorType];
+        if (!info) return;
+        const dot = document.getElementById(info.dotId);
+        const hexEl = document.getElementById(info.hexId);
+        if (dot) dot.style.background = color;
+        if (hexEl) {
+            if (hexEl.tagName === 'INPUT') hexEl.value = color;
+            else hexEl.textContent = color;
+        }
     }
 
     initColorPickers() {
-        // Initialize preview buttons
-        const letterPreview = document.getElementById('letterColorPreview');
-        const bgPreview = document.getElementById('bgColorPreview');
-        const gridPreview = document.getElementById('gridColorPreview');
-        const gradientStartPreview = document.getElementById('gradientStartColorPreview');
-        const gradientEndPreview = document.getElementById('gradientEndColorPreview');
-        
-        // Update preview color with automatic text color selection
-        const updatePreview = (preview, color) => this.updateColorPreview(preview, color);
-        
-        // Initialize previews with current colors
-        updatePreview(letterPreview, this.settings.get('letterColor'));
-        updatePreview(bgPreview, this.settings.get('bgColor'));
-        updatePreview(gridPreview, this.settings.get('gridColor'));
-        updatePreview(gradientStartPreview, this.settings.get('gradientStartColor'));
-        updatePreview(gradientEndPreview, this.settings.get('gradientEndColor'));
-        
-        // Unified color picker
+        for (const [type, info] of Object.entries(this.colorTypeMap)) {
+            const color = this.settings.get(info.setting);
+            this.updateSwatchDisplay(type, color);
+        }
+
         this.unifiedColorPicker = new ColorPicker({
             containerId: 'unifiedColorPickerContainer',
             initialColor: this.settings.get('letterColor'),
             onChange: (color) => {
-                // Update active color
-                const settingMap = {
-                    'letter': 'letterColor',
-                    'bg': 'bgColor',
-                    'grid': 'gridColor',
-                    'gradientStart': 'gradientStartColor',
-                    'gradientEnd': 'gradientEndColor'
-                };
-                const previewMap = {
-                    'letter': letterPreview,
-                    'bg': bgPreview,
-                    'grid': gridPreview,
-                    'gradientStart': gradientStartPreview,
-                    'gradientEnd': gradientEndPreview
-                };
-                
-                const setting = settingMap[this.activeColorType];
-                const preview = previewMap[this.activeColorType];
-                
-                if (setting) {
-                    this.settings.set(setting, color);
-                    this.updateColorPreview(preview, color);
-                    this.updateRenderer();
-                }
+                const info = this.colorTypeMap[this.activeColorType];
+                if (!info) return;
+                this.settings.set(info.setting, color);
+                this.updateSwatchDisplay(this.activeColorType, color);
+                if (this.activeColorType === 'bg') this.updateSwatchDisplay('gradientBg', color);
+                else if (this.activeColorType === 'gradientBg') this.updateSwatchDisplay('bg', color);
+                else if (this.activeColorType === 'grid') this.updateSwatchDisplay('gradientGrid', color);
+                else if (this.activeColorType === 'gradientGrid') this.updateSwatchDisplay('grid', color);
+                this.updateRenderer();
+                this.markAsChanged();
             }
         });
         this.unifiedColorPicker.init();
-        
-        // Click handlers for previews
-        const switchColor = (colorType, openPicker = true) => {
-            const previewMap = {
-                'letter': letterPreview,
-                'bg': bgPreview,
-                'grid': gridPreview,
-                'gradientStart': gradientStartPreview,
-                'gradientEnd': gradientEndPreview
-            };
-            const activePreview = previewMap[colorType];
-            
-            // Don't allow switching to Type color if Color Chaos is enabled in Random mode
-            if (colorType === 'letter') {
-                const colorMode = this.settings.get('colorMode') || 'manual';
-                if (['chaos', 'randomChaos', 'gradient', 'randomGradient'].includes(colorMode)) {
-                    return; // Block opening Type color picker in chaos/gradient modes
-                }
-            }
-            
-            // If clicked on already active color - close picker and remove ● symbol
-            const pickerElement = this.unifiedColorPicker.elements?.picker;
-            const isCurrentlyActive = this.activeColorType === colorType && 
-                pickerElement && pickerElement.style.display !== 'none';
-            if (isCurrentlyActive && openPicker) {
-                this.unifiedColorPicker.toggle();
-                // Remove ● symbol when closing picker
-                this.updateColorIndicator(false);
-                return;
-            }
-            
-            // Remove ● symbol from all colors before switching
-            this.updateColorIndicator(false);
-            
-            this.activeColorType = colorType;
-            
-            // Load color into picker
-            const colorMap = {
-                'letter': this.settings.get('letterColor'),
-                'bg': this.settings.get('bgColor'),
-                'grid': this.settings.get('gridColor'),
-                'gradientStart': this.settings.get('gradientStartColor'),
-                'gradientEnd': this.settings.get('gradientEndColor')
-            };
-            this.unifiedColorPicker.setColor(colorMap[colorType]);
-            
-            // Open picker only if needed and not already open
-            if (openPicker) {
+
+        for (const [type, info] of Object.entries(this.colorTypeMap)) {
+            const toggleUnifiedPicker = () => {
                 const pickerElement = this.unifiedColorPicker.elements?.picker;
-                if (pickerElement && pickerElement.style.display === 'none') {
-                    this.unifiedColorPicker.toggle();
-                    // After opening picker add ● symbol only to new active color
-                    this.updateColorIndicator(true);
-                } else if (pickerElement && pickerElement.style.display !== 'none') {
-                    // Picker already open - add ● symbol only to new active color
-                    this.updateColorIndicator(true);
+                const isCurrentlyActive = this.activeColorType === type &&
+                    pickerElement && pickerElement.style.display !== 'none';
+                if (isCurrentlyActive) {
+                    this.unifiedColorPicker.close();
+                    this.highlightActiveSwatch(null);
+                    return;
                 }
+                this.activeColorType = type;
+                this.dockUnifiedColorPickerForType(type);
+                this.unifiedColorPicker.setColor(this.settings.get(info.setting));
+                this.unifiedColorPicker.open();
+                this.highlightActiveSwatch(type);
+            };
+
+            const dot = document.getElementById(info.dotId);
+            if (dot) {
+                dot.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleUnifiedPicker();
+                });
             }
-            // If openPicker = false, ● symbol already removed above
-        };
-        
-        if (letterPreview) {
-            letterPreview.addEventListener('click', () => switchColor('letter'));
+            const row = document.getElementById(info.itemId);
+            if (row) {
+                row.addEventListener('click', (e) => {
+                    if (e.target.closest('.color-swatch-hex')) return;
+                    e.preventDefault();
+                    toggleUnifiedPicker();
+                });
+            }
+            const hexIn = document.getElementById(info.hexId);
+            if (hexIn && hexIn.tagName === 'INPUT') {
+                hexIn.addEventListener('click', (e) => e.stopPropagation());
+                hexIn.addEventListener('keydown', (e) => e.stopPropagation());
+                hexIn.addEventListener('blur', () => {
+                    if (!this.applySwatchHexInput(type, hexIn.value)) {
+                        hexIn.value = this.settings.get(info.setting);
+                    }
+                });
+            }
         }
-        if (bgPreview) {
-            bgPreview.addEventListener('click', () => switchColor('bg'));
-        }
-        if (gridPreview) {
-            gridPreview.addEventListener('click', () => switchColor('grid'));
-        }
-        if (gradientStartPreview) {
-            gradientStartPreview.addEventListener('click', () => switchColor('gradientStart'));
-        }
-        if (gradientEndPreview) {
-            gradientEndPreview.addEventListener('click', () => switchColor('gradientEnd'));
-        }
-        
-        // Set initial active state (default letter color) without opening picker and without indicator
+
         this.activeColorType = 'letter';
         const colorMap = {
             'letter': this.settings.get('letterColor'),
@@ -1089,104 +1302,54 @@ class VoidTypeface {
         // Ensure indicator is not displayed
         this.updateColorIndicator(false);
         
-        // Initialize color mode buttons and controls
-        this.initColorModeButtons();
+        // Initialize color source buttons and dice
+        this.initColorSourceButtons();
         this.updateColorModeUI();
         
-        // Randomize button
-        const randomColorsBtn = document.getElementById('randomColorsBtn');
-        if (randomColorsBtn) {
-            randomColorsBtn.addEventListener('click', () => {
-                const colorMode = this.settings.get('colorMode') || 'manual';
-                if (colorMode === 'chaos') {
-                    this.generateColorPalette();
-                    this.updateRenderer();
-                } else if (colorMode === 'randomChaos') {
-                    this.generateColorPalette();
-                    this.updateRenderer();
-                } else if (colorMode === 'gradient' || colorMode === 'randomGradient') {
-                    // Randomize gradient colors
-                    this.settings.set('gradientStartColor', this.generateRandomColor());
-                    this.settings.set('gradientEndColor', this.generateRandomColor());
-                    const startPreview = document.getElementById('gradientStartColorPreview');
-                    const endPreview = document.getElementById('gradientEndColorPreview');
-                    if (startPreview) this.updateColorPreview(startPreview, this.settings.get('gradientStartColor'));
-                    if (endPreview) this.updateColorPreview(endPreview, this.settings.get('gradientEndColor'));
-                    this.randomizeColors();
-                } else {
-                    // manual, random — randomize 3 colors
-                    this.randomizeColors();
-                }
-            });
-        }
-        
-        // Color Chaos colors input (exact number)
-        this.initCompactInput('colorChaosColorsValue', {
-            setting: 'colorChaosColors',
-            min: 3,
-            max: 32,
-            step: 1,
-            onUpdate: () => {
-                if (this.settings.get('colorMode') === 'chaos') {
-                    this.generateColorPalette();
-                    this.updateRenderer();
-                }
-            }
-        });
-        
-        // Auto (randomChaos) mode controls
-        this.initRandomChaosColorControls();
+        this.initPaletteOptions();
     }
     
     /**
-     * Initialize color mode buttons
+     * Compute colorMode from colorSource + randomizeColor
      */
-    initColorModeButtons() {
-        const buttons = document.querySelectorAll('#colorModeButtons .style-button');
+    getDerivedColorMode() {
+        const source = this.settings.get('colorSource') || 'solid';
+        const hasPalette = this.settings.get('randomizeColor');
+        if (source === 'gradient' && hasPalette) return 'randomGradient';
+        if (source === 'gradient') return 'gradient';
+        if (hasPalette) return 'randomChaos';
+        return 'manual';
+    }
+
+    /**
+     * Apply actions when color mode changes (generate palette, randomize, etc.)
+     */
+    applyColorMode(mode) {
+        if (mode === 'randomChaos' || mode === 'randomGradient') {
+            this.generateColorPalette();
+        }
+        this.updateRenderer();
+    }
+
+    /**
+     * Initialize color source buttons (Solid / Gradient)
+     */
+    initColorSourceButtons() {
+        const buttons = document.querySelectorAll('#colorSourceButtons .style-button');
         buttons.forEach(btn => {
             btn.addEventListener('click', () => {
-                const newMode = btn.dataset.colorMode;
-                if (!newMode) return;
-                
-                // Update active button
+                const newSource = btn.dataset.colorSource;
+                if (!newSource) return;
                 buttons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                
-                // Set color mode
-                this.settings.set('colorMode', newMode);
-                
-                // Derive legacy settings from colorMode
-                this.settings.set('colorChaos', newMode === 'chaos' || newMode === 'randomChaos');
-                this.settings.set('randomColorChaos', newMode === 'randomChaos');
-                this.settings.set('randomColor', newMode === 'random' || newMode === 'randomGradient');
-                
-                // Update UI
+                this.settings.set('colorSource', newSource);
+                // Close picker and deselect swatch when switching tabs
+                if (this.unifiedColorPicker) this.unifiedColorPicker.close();
+                this.highlightActiveSwatch(null);
+                const colorMode = this.getDerivedColorMode();
+                this.settings.set('colorMode', colorMode);
+                this.applyColorMode(colorMode);
                 this.updateColorModeUI();
-                
-                // Auto-actions on mode switch
-                if (newMode === 'random') {
-                    this.randomizeColors();
-                } else if (newMode === 'chaos') {
-                    this.generateColorPalette();
-                    this.updateRenderer();
-                } else if (newMode === 'randomChaos') {
-                    this.generateColorPalette();
-                    this.updateRenderer();
-                } else if (newMode === 'gradient') {
-                    // Just re-render with existing gradient colors
-                    this.updateRenderer();
-                } else if (newMode === 'randomGradient') {
-                    this.settings.set('gradientStartColor', this.generateRandomColor());
-                    this.settings.set('gradientEndColor', this.generateRandomColor());
-                    const startPrev = document.getElementById('gradientStartColorPreview');
-                    const endPrev = document.getElementById('gradientEndColorPreview');
-                    if (startPrev) this.updateColorPreview(startPrev, this.settings.get('gradientStartColor'));
-                    if (endPrev) this.updateColorPreview(endPrev, this.settings.get('gradientEndColor'));
-                    this.randomizeColors();
-                } else {
-                    this.updateRenderer();
-                }
-                
                 this.markAsChanged();
             });
         });
@@ -1196,118 +1359,85 @@ class VoidTypeface {
      * Update color mode UI - show/hide mode-specific controls
      */
     updateColorModeUI() {
-        const colorMode = this.settings.get('colorMode') || 'manual';
-        
-        // Pickers visible in: manual, random, gradient, randomGradient (for bg/grid editing)
-        const pickersGroup = document.getElementById('colorPickersGroup');
-        if (pickersGroup) {
-            const showPickers = ['manual', 'random', 'gradient', 'randomGradient'].includes(colorMode);
-            pickersGroup.style.display = showPickers ? 'block' : 'none';
-        }
-        
-        // Letter color picker disabled in chaos/randomChaos/gradient/randomGradient (each module has own color)
-        const letterPreview = document.getElementById('letterColorPreview');
-        if (letterPreview) {
-            const disableLetter = ['chaos', 'randomChaos', 'gradient', 'randomGradient'].includes(colorMode);
-            letterPreview.disabled = disableLetter;
-        }
-        
-        // Chaos controls
-        const chaosControls = document.getElementById('colorChaosControls');
-        if (chaosControls) {
-            chaosControls.style.display = colorMode === 'chaos' ? 'block' : 'none';
-        }
-        
-        // RandomChaos (Auto) controls
-        const randomChaosControls = document.getElementById('colorRandomChaosControls');
-        if (randomChaosControls) {
-            randomChaosControls.style.display = colorMode === 'randomChaos' ? 'block' : 'none';
-        }
-        
-        // Gradient controls (show in both gradient and randomGradient modes)
+        const colorSource = this.settings.get('colorSource') || 'solid';
+        const isGradient = colorSource === 'gradient';
+
+        const solidControls = document.getElementById('colorSolidControls');
         const gradientControls = document.getElementById('colorGradientControls');
-        if (gradientControls) {
-            gradientControls.style.display = (colorMode === 'gradient' || colorMode === 'randomGradient') ? 'block' : 'none';
+        if (solidControls) solidControls.style.display = isGradient ? 'none' : '';
+        if (gradientControls) gradientControls.style.display = isGradient ? '' : 'none';
+
+        // Sync gradient Back/Grid dot colors
+        if (isGradient) {
+            const gradBg = document.getElementById('gradientBgColorPreview');
+            const gradGrid = document.getElementById('gradientGridColorPreview');
+            if (gradBg) gradBg.style.background = this.settings.get('bgColor');
+            if (gradGrid) gradGrid.style.background = this.settings.get('gridColor');
+            // Sync hex spans
+            const gradBgHex = document.getElementById('gradientBgColorHex');
+            const gradGridHex = document.getElementById('gradientGridColorHex');
+            if (gradBgHex) gradBgHex.textContent = this.settings.get('bgColor');
+            if (gradGridHex) gradGridHex.textContent = this.settings.get('gridColor');
         }
-        
-        // Update active button
-        const buttons = document.querySelectorAll('#colorModeButtons .style-button');
+
+        // Update active source buttons
+        const buttons = document.querySelectorAll('#colorSourceButtons .style-button');
         buttons.forEach(btn => {
-            btn.classList.toggle('active', btn.dataset.colorMode === colorMode);
+            btn.classList.toggle('active', btn.dataset.colorSource === colorSource);
         });
+
+        // Update palette slider display value
+        const paletteVal = document.getElementById('paletteColorsValue');
+        if (paletteVal) paletteVal.value = this.settings.get('colorChaosColors') || 3;
     }
     
-    /**
-     * Initialize Auto (randomChaos) mode controls on Colors panel
-     */
-    initRandomChaosColorControls() {
-        // BW toggle
-        const grayscaleCheckbox = document.getElementById('randomColorChaosGrayscaleCheckbox');
-        if (grayscaleCheckbox) {
-            grayscaleCheckbox.checked = this.settings.get('randomColorChaosGrayscale') || false;
-            grayscaleCheckbox.addEventListener('change', () => {
-                this.settings.set('randomColorChaosGrayscale', grayscaleCheckbox.checked);
-                if (this.settings.get('colorMode') === 'randomChaos') {
-                    this.generateColorPalette();
-                    this.updateRenderer();
-                }
-                this.markAsChanged();
-            });
+    /** Unified palette options: BW, Lock BG, Lock Grid (shared between Solid/Gradient) */
+    initPaletteOptions() {
+        const regenIfNeeded = () => {
+            const cm = this.getDerivedColorMode();
+            if (cm === 'randomChaos' || cm === 'randomGradient') {
+                this.generateColorPalette();
+                this.updateRenderer();
+            }
+            this.markAsChanged();
+        };
+        const bwCb = document.getElementById('randomColorBWCheckbox');
+        if (bwCb) {
+            bwCb.checked = this.settings.get('colorBW') || false;
+            bwCb.addEventListener('change', () => { this.settings.set('colorBW', bwCb.checked); regenIfNeeded(); });
         }
-        
-        // Lock Background
-        const keepBgCheckbox = document.getElementById('randomColorChaosKeepBgCheckbox');
-        if (keepBgCheckbox) {
-            keepBgCheckbox.checked = this.settings.get('randomColorChaosKeepBg') || false;
-            keepBgCheckbox.addEventListener('change', () => {
-                this.settings.set('randomColorChaosKeepBg', keepBgCheckbox.checked);
-                if (this.settings.get('colorMode') === 'randomChaos') {
-                    this.generateColorPalette();
-                    this.updateRenderer();
-                }
-                this.markAsChanged();
-            });
+        const lockBgCb = document.getElementById('randomColorLockBgCheckbox');
+        if (lockBgCb) {
+            lockBgCb.checked = this.settings.get('colorLockBg') || false;
+            lockBgCb.addEventListener('change', () => { this.settings.set('colorLockBg', lockBgCb.checked); regenIfNeeded(); });
         }
-        
-        // Lock Grid
-        const keepGridCheckbox = document.getElementById('randomColorChaosKeepGridCheckbox');
-        if (keepGridCheckbox) {
-            keepGridCheckbox.checked = this.settings.get('randomColorChaosKeepGrid') || false;
-            keepGridCheckbox.addEventListener('change', () => {
-                this.settings.set('randomColorChaosKeepGrid', keepGridCheckbox.checked);
-                if (this.settings.get('colorMode') === 'randomChaos') {
-                    this.generateColorPalette();
-                    this.updateRenderer();
-                }
-                this.markAsChanged();
-            });
+        const lockGridCb = document.getElementById('randomColorLockGridCheckbox');
+        if (lockGridCb) {
+            lockGridCb.checked = this.settings.get('colorLockGrid') || false;
+            lockGridCb.addEventListener('change', () => { this.settings.set('colorLockGrid', lockGridCb.checked); regenIfNeeded(); });
         }
-    }
+
     
+    }
+
     /**
      * Generate random colors for type, background and grid
      */
     randomizeColors() {
-        // Generate random colors
         const letterColor = this.generateRandomColor();
         const bgColor = this.generateRandomColor();
         const gridColor = this.generateRandomColor();
         
-        // Apply colors
         this.settings.set('letterColor', letterColor);
         this.settings.set('bgColor', bgColor);
         this.settings.set('gridColor', gridColor);
         
-        // Update previews
-        const letterPreview = document.getElementById('letterColorPreview');
-        const bgPreview = document.getElementById('bgColorPreview');
-        const gridPreview = document.getElementById('gridColorPreview');
+        this.updateSwatchDisplay('letter', letterColor);
+        this.updateSwatchDisplay('bg', bgColor);
+        this.updateSwatchDisplay('grid', gridColor);
+        this.updateSwatchDisplay('gradientBg', bgColor);
+        this.updateSwatchDisplay('gradientGrid', gridColor);
         
-        this.updateColorPreview(letterPreview, letterColor);
-        this.updateColorPreview(bgPreview, bgColor);
-        this.updateColorPreview(gridPreview, gridColor);
-        
-        // Update picker if open
         if (this.unifiedColorPicker) {
             const colorMap = {
                 'letter': letterColor,
@@ -1345,24 +1475,10 @@ class VoidTypeface {
      * Generate color palette for Color Chaos mode
      */
     generateColorPalette() {
-        const colorMode = this.settings.get('colorMode') || 'manual';
-        let numColors;
+        const colorMode = this.getDerivedColorMode();
+        const numColors = this.settings.get('colorChaosColors') || 16;
         
-        if (colorMode === 'randomChaos') {
-            // Auto mode: use range
-            const min = this.settings.get('randomColorChaosMin');
-            const max = this.settings.get('randomColorChaosMax');
-            numColors = Math.floor(Math.random() * (max - min + 1)) + min;
-        } else if (colorMode === 'chaos') {
-            // Chaos mode: exact number
-            numColors = this.settings.get('colorChaosColors') || 16;
-        } else {
-            // Default fallback
-            numColors = 4;
-        }
-        
-        // Check if grayscale mode is enabled
-        const isGrayscale = colorMode === 'randomChaos' && this.settings.get('randomColorChaosGrayscale');
+        const isGrayscale = this.settings.get('colorBW');
         const generateColor = isGrayscale ? () => this.generateRandomGrayscaleColor() : () => this.generateRandomColor();
         
         this.colorPalette = [];
@@ -1370,8 +1486,7 @@ class VoidTypeface {
             this.colorPalette.push(generateColor());
         }
         
-        // Randomize background and grid colors (respecting lock settings)
-        const keepBg = colorMode === 'randomChaos' && this.settings.get('randomColorChaosKeepBg');
+        const keepBg = this.settings.get('colorLockBg');
         let bgColor;
         if (!keepBg) {
             bgColor = generateColor();
@@ -1380,7 +1495,7 @@ class VoidTypeface {
             bgColor = this.settings.get('bgColor');
         }
         
-        const keepGrid = colorMode === 'randomChaos' && this.settings.get('randomColorChaosKeepGrid');
+        const keepGrid = this.settings.get('colorLockGrid');
         let gridColor;
         if (!keepGrid) {
             gridColor = generateColor();
@@ -1389,18 +1504,24 @@ class VoidTypeface {
             gridColor = this.settings.get('gridColor');
         }
         
-        // Update previews
-        const bgPreview = document.getElementById('bgColorPreview');
-        const gridPreview = document.getElementById('gridColorPreview');
-        
-        if (bgPreview) {
-            this.updateColorPreview(bgPreview, bgColor);
+        if (colorMode === 'randomGradient') {
+            this.settings.set('gradientStartColor', generateColor());
+            this.settings.set('gradientEndColor', generateColor());
+            this.updateSwatchDisplay('gradientStart', this.settings.get('gradientStartColor'));
+            this.updateSwatchDisplay('gradientEnd', this.settings.get('gradientEndColor'));
+            // Generate N/2 gradient pairs for multi-gradient mode
+            const pairCount = Math.max(1, Math.floor(numColors / 2));
+            this.gradientPairs = [];
+            for (let i = 0; i < pairCount; i++) {
+                this.gradientPairs.push({ start: generateColor(), end: generateColor() });
+            }
         }
-        if (gridPreview) {
-            this.updateColorPreview(gridPreview, gridColor);
-        }
         
-        // Update picker if needed
+        this.updateSwatchDisplay('bg', bgColor);
+        this.updateSwatchDisplay('grid', gridColor);
+        this.updateSwatchDisplay('gradientBg', bgColor);
+        this.updateSwatchDisplay('gradientGrid', gridColor);
+        
         if (this.unifiedColorPicker) {
             const colorMap = {
                 'letter': this.settings.get('letterColor'),
@@ -1412,20 +1533,46 @@ class VoidTypeface {
             }
         }
         
-        // Clear color cache when regenerating palette
+        // Clear caches when regenerating palette
         this.moduleColorCache = new Map();
-        this.globalModuleIndex = 0; // Reset global counter
+        this.moduleGradientCache = new Map();
+        this.globalModuleIndex = 0;
+        this.globalGradientIndex = 0;
     }
     
+    /** Get gradient pair for a module in randomGradient multi-pair mode */
+    getModuleGradient(moduleIndex) {
+        if (!this.gradientPairs || this.gradientPairs.length === 0) {
+            return { start: this.settings.get('gradientStartColor'), end: this.settings.get('gradientEndColor') };
+        }
+        return this.gradientPairs[moduleIndex % this.gradientPairs.length];
+    }
+
+    /**
+     * Return per-module gradient pair (called by renderer for each module).
+     * Returns null when not in randomGradient mode.
+     */
+    getGradientForModule() {
+        if (this.getDerivedColorMode() !== 'randomGradient') return null;
+        if (!this.gradientPairs || this.gradientPairs.length === 0) return null;
+        if (!this.globalGradientIndex) this.globalGradientIndex = 0;
+        const idx = this.globalGradientIndex++;
+        if (!this.moduleGradientCache) this.moduleGradientCache = new Map();
+        if (!this.moduleGradientCache.has(idx)) {
+            const pairIdx = Math.floor(Math.random() * this.gradientPairs.length);
+            this.moduleGradientCache.set(idx, this.gradientPairs[pairIdx]);
+        }
+        return this.moduleGradientCache.get(idx);
+    }
+
     /**
      * Get color for a specific module from palette (Color Chaos mode)
      * @returns {string} Color for this module
      */
     getModuleColor() {
-        const colorMode = this.settings.get('colorMode') || 'manual';
+        const colorMode = this.getDerivedColorMode();
         
-        // Chaos modes: pick from palette
-        const colorChaosEnabled = colorMode === 'chaos' || colorMode === 'randomChaos';
+        const colorChaosEnabled = colorMode === 'randomChaos' || colorMode === 'randomGradient';
         if (!colorChaosEnabled || !this.colorPalette || this.colorPalette.length === 0) {
             return this.settings.get('letterColor');
         }
@@ -1499,13 +1646,10 @@ class VoidTypeface {
         const alternativeGlyphsCheckbox = document.getElementById('alternativeGlyphsCheckbox');
         if (!alternativeGlyphsCheckbox) return;
         
-        // Set initial value
-        alternativeGlyphsCheckbox.checked = this.settings.get('useAlternativesInRandom') ?? true;
+        alternativeGlyphsCheckbox.checked = this.settings.get('useAlternativesInRandom') ?? false;
         
-        // Change handler
         alternativeGlyphsCheckbox.addEventListener('change', () => {
             this.settings.set('useAlternativesInRandom', alternativeGlyphsCheckbox.checked);
-            // Clear alternative glyphs cache when Alt Glyphs is disabled
             if (!alternativeGlyphsCheckbox.checked && this.renderer.clearAlternativeGlyphCache) {
                 this.renderer.clearAlternativeGlyphCache();
             }
@@ -1609,6 +1753,11 @@ class VoidTypeface {
                 if (position) {
                     const toggled = this.renderer.toggleLetterAlternative(position.lineIndex, position.charIndex);
                     if (toggled) {
+                        if (!this.settings.get('useAlternativesInRandom')) {
+                            this.settings.set('useAlternativesInRandom', true);
+                            const cb = document.getElementById('alternativeGlyphsCheckbox');
+                            if (cb) cb.checked = true;
+                        }
                         this.updateRenderer();
                         this.markAsChanged();
                     }
@@ -1617,15 +1766,8 @@ class VoidTypeface {
         }
     }
 
-    /**
-     * Обновить видимость элементов управления альтернативными глифами
-     */
-    updateAlternativeGlyphsVisibility() {
-        // Alternative glyphs are now merged with randomControlGroup, so this function is no longer needed
-        // Keep empty for compatibility
-        return;
-        alternativeGlyphsGroup.style.display = shouldShow ? 'block' : 'none';
-    }
+
+
 
     /**
      * Инициализация тогла Rounded
@@ -1635,12 +1777,25 @@ class VoidTypeface {
         const roundedCapsCheckbox = document.getElementById('roundedCapsCheckbox');
         if (!roundedCapsCheckbox) return;
         
-        // Set initial value
         roundedCapsCheckbox.checked = this.settings.get('roundedCaps') || false;
         
-        // Change handler — just change Rounded Caps, don't touch Close Ends
         roundedCapsCheckbox.addEventListener('change', () => {
-                this.settings.set('roundedCaps', roundedCapsCheckbox.checked);
+            this.settings.set('roundedCaps', roundedCapsCheckbox.checked);
+            this.updateRenderer();
+            this.markAsChanged();
+        });
+    }
+
+    initChaosToggle() {
+        const chaosCheckbox = document.getElementById('chaosCheckbox');
+        if (!chaosCheckbox) return;
+
+        chaosCheckbox.checked = this.settings.get('randomModeType') === 'full';
+
+        chaosCheckbox.addEventListener('change', () => {
+            const mode = chaosCheckbox.checked ? 'full' : 'byType';
+            this.settings.set('randomModeType', mode);
+            if (this.renderer.clearModuleTypeCache) this.renderer.clearModuleTypeCache();
             this.updateRenderer();
             this.markAsChanged();
         });
@@ -1669,56 +1824,16 @@ class VoidTypeface {
      * Инициализация тогла Dash Chess
      */
     initDashChessToggle() {
-        const dashChessCheckboxPD = document.getElementById('dashChessCheckboxPD');
-        const dashChessCheckboxSD = document.getElementById('dashChessCheckboxSD');
-        const dashChessCheckboxRandom = document.getElementById('dashChessCheckboxRandom');
-        
-        if (!dashChessCheckboxPD || !dashChessCheckboxRandom) {
-            console.warn('[Main] dashChessCheckbox not found');
-            return;
-        }
-        
-        // Function to sync state of all checkboxes
-        const syncAllCheckboxes = (sourceCheckbox) => {
-            const value = sourceCheckbox.checked;
-            if (dashChessCheckboxPD && dashChessCheckboxPD !== sourceCheckbox) dashChessCheckboxPD.checked = value;
-            if (dashChessCheckboxSD && dashChessCheckboxSD !== sourceCheckbox) dashChessCheckboxSD.checked = value;
-            if (dashChessCheckboxRandom && dashChessCheckboxRandom !== sourceCheckbox) dashChessCheckboxRandom.checked = value;
-        };
-        
-        // Function to update settings and renderer
-        const updateDashChess = (checked) => {
-            this.settings.set('dashChess', checked);
+        const dashChessCheckbox = document.getElementById('dashChessCheckboxPD');
+        if (!dashChessCheckbox) return;
+
+        dashChessCheckbox.checked = this.settings.get('dashChess') || false;
+
+        dashChessCheckbox.addEventListener('change', () => {
+            this.settings.set('dashChess', dashChessCheckbox.checked);
             this.updateRenderer();
             this.markAsChanged();
-        };
-        
-        // Set initial value
-        const initialValue = this.settings.get('dashChess') || false;
-        dashChessCheckboxPD.checked = initialValue;
-        if (dashChessCheckboxSD) dashChessCheckboxSD.checked = initialValue;
-        dashChessCheckboxRandom.checked = initialValue;
-        
-        // Change handler for PD checkbox (Dash mode)
-        dashChessCheckboxPD.addEventListener('change', (e) => {
-            syncAllCheckboxes(e.target);
-            updateDashChess(e.target.checked);
         });
-        
-        // Change handler for SD checkbox
-        if (dashChessCheckboxSD) {
-            dashChessCheckboxSD.addEventListener('change', (e) => {
-                syncAllCheckboxes(e.target);
-                updateDashChess(e.target.checked);
-            });
-        }
-        
-        // Change handler for Random checkbox
-        dashChessCheckboxRandom.addEventListener('change', (e) => {
-            syncAllCheckboxes(e.target);
-            updateDashChess(e.target.checked);
-        });
-        
     }
 
     /**
@@ -1733,7 +1848,14 @@ class VoidTypeface {
         
         // Change handler
         wobblyCheckbox.addEventListener('change', () => {
-            this.settings.set('wobblyEnabled', wobblyCheckbox.checked);
+            const enabled = wobblyCheckbox.checked;
+            this.settings.set('wobblyEnabled', enabled);
+            if (!enabled) {
+                this.resetDiceForParam('wobblyAmount');
+                this.resetDiceForParam('wobblyFrequency');
+                this.updateRandomParamsList();
+                this.updateRandomSectionVisibility();
+            }
             this.updateWobblyVisibility();
             this.updateRenderer();
             this.markAsChanged();
@@ -1741,50 +1863,22 @@ class VoidTypeface {
     }
 
     /**
-     * Update wobbly controls visibility
-     * In Random mode: hide wobbly section wrapper, randomSectionWobbly is shown via .visible class.
-     * In other modes: show wobbly section wrapper, randomSectionWobbly is hidden via .visible class.
-     * Sliders are always visible but dimmed (disabled) when wobbly is off.
+     * Update wobbly controls visibility (dimmed when wobbly is off)
      */
     updateWobblyVisibility() {
-        const mode = this.settings.get('mode') || 'fill';
         const wobblyEnabled = this.settings.get('wobblyEnabled') || false;
-        const randomWobblyEnabled = this.settings.get('randomWobblyEnabled') || false;
+        const isRandom = this.settings.get('isRandom');
+        const hasWobblyDice = this.settings.get('randomizeWobblyAmount') || this.settings.get('randomizeWobblyFrequency');
+        const effectiveWobblyEnabled = wobblyEnabled || (isRandom && hasWobblyDice);
         
-        const wobblySectionWrapper = document.getElementById('wobblySectionWrapper');
         const wobblyAmountGroup = document.getElementById('wobblyAmountControlGroup');
         const wobblyFrequencyGroup = document.getElementById('wobblyFrequencyControlGroup');
         
-        const randomWobblyAmountGroup = document.getElementById('randomControlGroupWobblyAmount');
-        const randomWobblyFrequencyGroup = document.getElementById('randomControlGroupWobblyFrequency');
-        
-        if (mode === 'random') {
-            // Random mode: hide wobbly section wrapper
-            // randomSectionWobbly visibility is handled by .visible class toggle
-            if (wobblySectionWrapper) {
-                wobblySectionWrapper.style.display = 'none';
-            }
-            
-            // Toggle disabled state on randomWobbly sliders
-            if (randomWobblyAmountGroup) {
-                randomWobblyAmountGroup.classList.toggle('controls-disabled', !randomWobblyEnabled);
-            }
-            if (randomWobblyFrequencyGroup) {
-                randomWobblyFrequencyGroup.classList.toggle('controls-disabled', !randomWobblyEnabled);
-            }
-        } else {
-            // Other modes: show wobbly section wrapper
-            if (wobblySectionWrapper) {
-                wobblySectionWrapper.style.display = 'block';
-            }
-            
-            // Toggle disabled state on sliders
-            if (wobblyAmountGroup) {
-                wobblyAmountGroup.classList.toggle('controls-disabled', !wobblyEnabled);
-            }
-            if (wobblyFrequencyGroup) {
-                wobblyFrequencyGroup.classList.toggle('controls-disabled', !wobblyEnabled);
-            }
+        if (wobblyAmountGroup) {
+            wobblyAmountGroup.classList.toggle('controls-disabled', !effectiveWobblyEnabled);
+        }
+        if (wobblyFrequencyGroup) {
+            wobblyFrequencyGroup.classList.toggle('controls-disabled', !effectiveWobblyEnabled);
         }
     }
 
@@ -1792,81 +1886,25 @@ class VoidTypeface {
      * Обновить видимость Rounded (для стилей Solid, Stripes и Dash)
      */
     updateRoundedCapsVisibility() {
-        const roundedCapsGroup = document.getElementById('roundedCapsControlGroup');
-        if (!roundedCapsGroup) return;
-        
-        const mode = this.settings.get('mode') || 'fill';
-        
-        // Round (roundedCapsControlGroup) show for fill, stripes, dash, sd, random
-        const shouldShow = mode === 'fill' || mode === 'stripes' || mode === 'dash' || mode === 'sd' || mode === 'random';
-        roundedCapsGroup.style.display = shouldShow ? 'flex' : 'none';
-        
-        // Round show for fill, stripes, dash, sd (NOT for random)
-        const roundedCapsLabel = document.getElementById('roundedCapsLabel');
-        if (roundedCapsLabel) {
-            if (mode === 'random') {
-                roundedCapsLabel.classList.add('hidden');
-            } else {
-                roundedCapsLabel.classList.remove('hidden');
-            }
-        }
-        
-        // Close Ends show in Stripes and SD modes (NOT for random)
-        // Use hidden class because CSS has display: flex !important for .checkbox-label
+        const multiLine = this.linesAllowMultiLineForStyleUI();
+        const dashEnabled = this.settings.get('dashEnabled') ?? false;
+
+        // Close Stems: dimmed when multi-line is impossible (single Lines=1 and no range above 1)
         const closeEndsLabel = document.getElementById('closeEndsLabel');
-        if (closeEndsLabel) {
-            if (mode === 'stripes' || mode === 'sd') {
-                closeEndsLabel.classList.remove('hidden');
-            } else {
-                closeEndsLabel.classList.add('hidden');
-            }
-        }
-        
-        // Chess for PD (sd) - show in separate dashChessControlGroup
-        // Chess Order is NOT shown in Dash mode (only in Dashed Stripes)
-        const dashChessGroup = document.getElementById('dashChessControlGroup');
+        const closeEndsCheckbox = document.getElementById('closeEndsCheckbox');
+        const closeDimmed = !multiLine;
+        if (closeEndsLabel) closeEndsLabel.classList.toggle('controls-disabled', closeDimmed);
+        if (closeEndsCheckbox) closeEndsCheckbox.disabled = closeDimmed;
+
+        // Chess Order: dimmed when Dashes off or multi-line impossible
         const dashChessLabel = document.getElementById('dashChessLabel');
-        const dashChessLabelSD = document.getElementById('dashChessLabelSD');
-        
-        if (mode === 'sd') {
-            // In SD mode, show in separate group
-            if (dashChessGroup) dashChessGroup.style.display = 'flex';
-            if (dashChessLabel) dashChessLabel.classList.add('hidden');
-            if (dashChessLabelSD) dashChessLabelSD.classList.remove('hidden');
-        } else {
-            // Hide in all other modes (including Dash)
-            if (dashChessGroup) dashChessGroup.style.display = 'none';
-            if (dashChessLabel) dashChessLabel.classList.add('hidden');
-            if (dashChessLabelSD) dashChessLabelSD.classList.add('hidden');
-        }
-        
-        // Chess for Random - show in randomControlGroup
-        const dashChessLabelRandom = document.getElementById('dashChessLabelRandom');
-        if (dashChessLabelRandom) {
-            if (mode === 'random') {
-                dashChessLabelRandom.classList.remove('hidden');
-            } else {
-                dashChessLabelRandom.classList.add('hidden');
-            }
-        }
+        const dashChessCheckbox = document.getElementById('dashChessCheckboxPD');
+        const chessDimmed = !dashEnabled || !multiLine;
+        if (dashChessLabel) dashChessLabel.classList.toggle('controls-disabled', chessDimmed);
+        if (dashChessCheckbox) dashChessCheckbox.disabled = chessDimmed;
     }
 
-    /**
-     * Update Rounded visibility in Random mode
-     */
-    updateRandomRoundedVisibility() {
-        const randomRoundedLabel = document.getElementById('randomRoundedLabel');
-        if (!randomRoundedLabel) return;
-        
-        const mode = this.settings.get('mode') || 'fill';
-        
-        // Show only in Random mode
-        if (mode === 'random') {
-            randomRoundedLabel.classList.remove('hidden');
-        } else {
-            randomRoundedLabel.classList.add('hidden');
-        }
-    }
+
 
     /**
      * Apply default values for SD mode
@@ -1913,309 +1951,615 @@ class VoidTypeface {
     }
 
     /**
-     * Initialize rendering mode toggle
+     * Update dimmed/disabled state of style controls (Contrast when Lines=1, Dashes when disabled)
      */
-    initModeToggle() {
-        const fillButton = document.getElementById('modeFill');
-        const stripesButton = document.getElementById('modeStripes');
-        const dashButton = document.getElementById('modeDash');
-        const sdButton = document.getElementById('modeSD');
-        const randomButton = document.getElementById('modeRandom');
-        const strokesControlGroup = document.getElementById('strokesControlGroup');
-        const strokeGapRatioControlGroup = document.getElementById('strokeGapRatioControlGroup');
-        const dashLengthControlGroup = document.getElementById('dashLengthControlGroup');
-        const gapLengthControlGroup = document.getElementById('gapLengthControlGroup');
-        const closeEndsControlGroup = document.getElementById('closeEndsControlGroup');
+    updateStyleDimmedState() {
+        const multiLine = this.linesAllowMultiLineForStyleUI();
+        const dashEnabled = this.settings.get('dashEnabled') ?? false;
 
-        // Function to set active button
-        const setActiveButton = (activeButton) => {
-            // Remove active class from all buttons
-            [fillButton, stripesButton, dashButton, sdButton, randomButton].forEach(btn => {
-                if (btn) btn.classList.remove('active');
-            });
-            // Add active class to selected button
-            if (activeButton) activeButton.classList.add('active');
-        };
+        const strokeGapRatioGroup = document.getElementById('strokeGapRatioControlGroup');
+        const strokeGapRatioSlider = document.getElementById('strokeGapRatioSlider');
+        if (strokeGapRatioGroup) strokeGapRatioGroup.classList.toggle('controls-disabled', !multiLine);
+        if (strokeGapRatioSlider) strokeGapRatioSlider.disabled = !multiLine;
 
-        const updateMode = () => {
-            let mode = 'fill';
-            if (fillButton && fillButton.classList.contains('active')) mode = 'fill';
-            else if (stripesButton && stripesButton.classList.contains('active')) mode = 'stripes';
-            else if (dashButton && dashButton.classList.contains('active')) mode = 'dash';
-            else if (sdButton && sdButton.classList.contains('active')) mode = 'sd';
-            else if (randomButton && randomButton.classList.contains('active')) mode = 'random';
-            
-            this.settings.set('mode', mode);
-            
-            // Clear random module cache when switching modes (so new random values generate in Random mode)
-            if (this.renderer.clearModuleTypeCache) {
-                this.renderer.clearModuleTypeCache();
-            }
-            // DON'T clear alternative glyphs cache - user-selected alternatives should persist across modes
-            
-            // Show/hide controls depending on mode
-            // SD shows all controls (Lines, Contrast, Dash Length, Gap Length)
-            const showStripes = mode === 'stripes' || mode === 'sd';
-            const showDash = mode === 'dash' || mode === 'sd';
-            
-            strokesControlGroup.style.display = showStripes ? 'block' : 'none';
-            strokeGapRatioControlGroup.style.display = showStripes ? 'block' : 'none';
-            dashLengthControlGroup.style.display = showDash ? 'block' : 'none';
-            gapLengthControlGroup.style.display = showDash ? 'block' : 'none';
-            
-            // Update visibility of Round, Close Ends, Chess and Wobbly
+        const dashesSectionContent = document.getElementById('dashesSectionContent');
+        if (dashesSectionContent) dashesSectionContent.classList.toggle('controls-disabled', !dashEnabled);
+            const dashLengthSlider = document.getElementById('dashLengthSlider');
+            const gapLengthSlider = document.getElementById('gapLengthSlider');
+            if (dashLengthSlider) dashLengthSlider.disabled = !dashEnabled;
+            if (gapLengthSlider) gapLengthSlider.disabled = !dashEnabled;
+            // Chess Order disabled state handled in updateRoundedCapsVisibility
+    }
+
+    /**
+     * Compute mode from Lines and Dashes settings (no manual mode selection)
+     */
+    getDerivedMode() {
+        const lines = this.settings.get('strokesNum') ?? 2;
+        const dash = this.settings.get('dashEnabled') ?? false;
+        if (dash && lines > 1) return 'sd';
+        if (dash) return 'dash';
+        if (lines > 1) return 'stripes';
+        return 'fill';
+    }
+
+    /**
+     * Initialize style controls (Lines, Contrast, Dashes toggle)
+     */
+    initStyleControls() {
+        const dashEnabledCheckbox = document.getElementById('dashEnabledCheckbox');
+
+        const updateStyleVisibility = () => {
+            this.updateStyleDimmedState();
             this.updateRoundedCapsVisibility();
             this.updateWobblyVisibility();
-            
-            // Show/hide random mode sections
-            const randomSections = [
-                document.getElementById('randomSectionGeneral'),
-                document.getElementById('randomSectionDash'),
-                document.getElementById('randomSectionWobbly'),
-                document.getElementById('randomSectionButton')
-            ];
-            randomSections.forEach(section => {
-                if (section) {
-                    section.classList.toggle('visible', mode === 'random');
-                }
-            });
-            
-            
-            // Initialize toggle for random mode
-            const randomFullRandomCheckbox = document.getElementById('randomFullRandomCheckbox');
-            if (randomFullRandomCheckbox && mode === 'random') {
-                randomFullRandomCheckbox.checked = this.settings.get('randomModeType') === 'full';
-            }
-            
-            const randomRoundedCheckbox = document.getElementById('randomRoundedCheckbox');
-            if (randomRoundedCheckbox && mode === 'random') {
-                randomRoundedCheckbox.checked = this.settings.get('randomRounded') ?? false;
-            }
-
-            const randomCloseEndsCheckbox = document.getElementById('randomCloseEndsCheckbox');
-            if (randomCloseEndsCheckbox && mode === 'random') {
-                randomCloseEndsCheckbox.checked = this.settings.get('randomCloseEnds') ?? true;
-            }
-
-            const randomDashCheckbox = document.getElementById('randomDashCheckbox');
-            if (randomDashCheckbox && mode === 'random') {
-                randomDashCheckbox.checked = this.settings.get('randomDash') ?? false;
-            }
-            
-            // Update color mode UI (buttons and controls visibility)
-            this.updateColorModeUI();
-            
-            // Update Auto (randomChaos) checkboxes
-            const randomColorChaosKeepBgCheckbox = document.getElementById('randomColorChaosKeepBgCheckbox');
-            if (randomColorChaosKeepBgCheckbox) {
-                randomColorChaosKeepBgCheckbox.checked = this.settings.get('randomColorChaosKeepBg') ?? false;
-            }
-            const randomColorChaosKeepGridCheckbox = document.getElementById('randomColorChaosKeepGridCheckbox');
-            if (randomColorChaosKeepGridCheckbox) {
-                randomColorChaosKeepGridCheckbox.checked = this.settings.get('randomColorChaosKeepGrid') ?? false;
-            }
-            const randomColorChaosGrayscaleCheckbox = document.getElementById('randomColorChaosGrayscaleCheckbox');
-            if (randomColorChaosGrayscaleCheckbox) {
-                randomColorChaosGrayscaleCheckbox.checked = this.settings.get('randomColorChaosGrayscale') ?? false;
-            }
-
-            // Update Dash Length and Gap Length sliders state
-            this.updateRandomDashSlidersState();
-            
-            // Update Close toggle state based on Lines range
-            this.updateCloseEndsState();
-            
-            // Update Color Chaos slider visibility (must be called after mode is set)
-            this.updateColorChaosSliderVisibility();
-            
-            // Disable/enable Stem Weight in Metrics panel in Random mode
-            const stemSlider = document.getElementById('stemSlider');
-            const stemValue = document.getElementById('stemValue');
-            if (stemSlider && stemValue) {
-                const isDisabled = mode === 'random';
-                const stemTooltipMessage = 'Use Style panel in Random mode';
-                stemSlider.disabled = isDisabled;
-                stemValue.disabled = isDisabled;
-                // Set data-tooltip on parent control group only
-                const stemControlGroup = stemSlider.closest('.control-group');
-                if (stemControlGroup) {
-                    if (isDisabled) {
-                        stemControlGroup.setAttribute('data-tooltip', stemTooltipMessage);
-                    } else {
-                        stemControlGroup.removeAttribute('data-tooltip');
-                    }
-                }
-            }
-            
-            // Update Rounded visibility
-            this.updateRoundedCapsVisibility();
-            
-            // Update Rounded visibility in Random mode (should be after showing randomGroups)
-            this.updateRandomRoundedVisibility();
-            
-            // Update Wobbly visibility
-            this.updateWobblyVisibility();
-            
-            // Update alternative glyphs visibility
-            this.updateAlternativeGlyphsVisibility();
-            
-            this.updateRenderer();
         };
 
-        fillButton.addEventListener('click', () => {
-            setActiveButton(fillButton);
-            updateMode();
-            this.markAsChanged();
-        });
-        stripesButton.addEventListener('click', () => {
-            setActiveButton(stripesButton);
-            updateMode();
-            this.markAsChanged();
-        });
-        dashButton.addEventListener('click', () => {
-            setActiveButton(dashButton);
-            updateMode();
-            this.markAsChanged();
-        });
-        if (sdButton) {
-            sdButton.addEventListener('click', () => {
-                setActiveButton(sdButton);
-                // Set default values for SD mode
-                this.applySDDefaults();
-                updateMode();
-                this.markAsChanged();
+        // Dash enabled toggle (defer render to avoid blocking UI)
+        if (dashEnabledCheckbox) {
+            dashEnabledCheckbox.checked = this.settings.get('dashEnabled') ?? false;
+            dashEnabledCheckbox.addEventListener('change', () => {
+                const enabled = dashEnabledCheckbox.checked;
+                this.settings.set('dashEnabled', enabled);
+                if (enabled) {
+                    // Apply defaults when first enabling Dashes
+                    this.settings.set('dashLength', 1.00);
+                    this.settings.set('gapLength', 1.50);
+                    this.sliderController.setValue('dashLengthSlider', 1.00, false);
+                    this.sliderController.setValue('gapLengthSlider', 1.50, false);
+                } else {
+                    // Reset dice for Dash Length and Gap Length
+                    this.resetDiceForParam('dashLength');
+                    this.resetDiceForParam('gapLength');
+                    this.updateRandomParamsList();
+                    this.updateRandomSectionVisibility();
+                }
+                updateStyleVisibility();
+                requestAnimationFrame(() => {
+                    this.updateRenderer();
+                    this.markAsChanged();
+                });
             });
         }
-        randomButton.addEventListener('click', () => {
-            setActiveButton(randomButton);
-            updateMode();
-            this.markAsChanged();
-        });
 
-        // Update button for random mode
+        // Initial visibility
+        updateStyleVisibility();
+
+        // Randomize button
         const renewBtn = document.getElementById('renewRandomBtn');
         if (renewBtn) {
             renewBtn.addEventListener('click', () => {
-                if (this.settings.get('mode') === 'random') {
-                    // Clear module type cache
+                if (this.settings.get('isRandom')) {
                     if (this.renderer.clearModuleTypeCache) {
                         this.renderer.clearModuleTypeCache();
                     }
-                    // Clear alternative glyphs cache (to generate new random alternatives)
                     if (this.renderer.clearAlternativeGlyphCache) {
                         this.renderer.clearAlternativeGlyphCache();
                     }
-                    // Reseed wobbly effect for new pattern
-                    const wobblyEffect = this.renderer.moduleDrawer.getWobblyEffect();
-                    if (wobblyEffect) {
-                        wobblyEffect.reseed();
+                    const wobblyEffect = this.renderer.moduleDrawer?.getWobblyEffect();
+                    if (wobblyEffect) wobblyEffect.reseed();
+                    const cm = this.getDerivedColorMode();
+                    if (cm === 'randomChaos' || cm === 'randomGradient') {
+                        this.generateColorPalette();
                     }
-                    // Colors are NOT randomized here — color management is handled by the Colors panel
+                    this.rollEffectRandomValues();
                     this.updateRenderer();
                     this.markAsChanged();
                 }
             });
         }
+    }
 
-        // Toggle for random mode (Full Random)
-        const randomFullRandomCheckbox = document.getElementById('randomFullRandomCheckbox');
-        if (randomFullRandomCheckbox) {
-            randomFullRandomCheckbox.addEventListener('change', () => {
-                const isFullRandom = randomFullRandomCheckbox.checked;
-                this.settings.set('randomModeType', isFullRandom ? 'full' : 'byType');
-                // Clear cache when switching mode
-                if (this.renderer.clearModuleTypeCache) {
-                    this.renderer.clearModuleTypeCache();
+    /**
+     * Reset dice for a single param (when parent toggle is disabled, e.g. Dashes off → reset dash dice)
+     */
+    resetDiceForParam(param) {
+        const cfg = DICE_CONFIG[param];
+        if (!cfg) return;
+        this.settings.set(cfg.flag, false);
+        const singleWrap = document.getElementById(cfg.singleWrap);
+        const rangeWrap = document.getElementById(cfg.rangeWrap);
+        const diceBtn = cfg.diceBtnId ? document.getElementById(cfg.diceBtnId) : null;
+        const singleValueEl = cfg.singleValueId ? document.getElementById(cfg.singleValueId) : null;
+        if (singleWrap) singleWrap.style.display = '';
+        if (rangeWrap) rangeWrap.style.display = 'none';
+        if (singleValueEl) singleValueEl.style.display = '';
+        if (diceBtn) diceBtn.classList.remove('active');
+        // Restore single value from range average
+        const min = this.settings.get(cfg.minSetting);
+        const max = this.settings.get(cfg.maxSetting);
+        let val = (min + max) / 2;
+        if (Number.isInteger(cfg.min) && Number.isInteger(cfg.max)) {
+            val = Math.round(val);
+        }
+        this.settings.set(cfg.singleSetting, val);
+        if (this.sliderController && this.sliderController.setValue) {
+            this.sliderController.setValue(cfg.singleSlider, val, false);
+        }
+    }
+
+    resetEffectRandomParam(key) {
+        const cfg = EFFECT_RANDOM_CONFIG[key];
+        if (!cfg) return;
+        this.settings.set(cfg.flag, false);
+    }
+
+    /**
+     * Re-roll effect pill values when their randomize flags are on (Randomize button)
+     */
+    rollEffectRandomValues() {
+        const coin = () => Math.random() < 0.5;
+        for (const cfg of Object.values(EFFECT_RANDOM_CONFIG)) {
+            if (!this.settings.get(cfg.flag)) continue;
+            if (cfg.type === 'chaos') {
+                const mode = coin() ? 'full' : 'byType';
+                this.settings.set('randomModeType', mode);
+                const chaosCb = document.getElementById('chaosCheckbox');
+                if (chaosCb) chaosCb.checked = mode === 'full';
+                if (this.renderer.clearModuleTypeCache) this.renderer.clearModuleTypeCache();
+            } else {
+                const v = coin();
+                this.settings.set(cfg.setting, v);
+                const cb = document.getElementById(cfg.checkboxId);
+                if (cb) cb.checked = v;
+            }
+        }
+    }
+
+    /**
+     * Initialize dice buttons (toggle per-parameter random)
+     */
+    initDiceButtons() {
+        const toggleDice = (param) => {
+            const cfg = DICE_CONFIG[param];
+            if (!cfg) return;
+            const enabled = !this.settings.get(cfg.flag);
+            this.settings.set(cfg.flag, enabled);
+            const singleWrap = document.getElementById(cfg.singleWrap);
+            const rangeWrap = document.getElementById(cfg.rangeWrap);
+            const diceBtn = cfg.diceBtnId ? document.getElementById(cfg.diceBtnId) : null;
+            const singleValueEl = cfg.singleValueId ? document.getElementById(cfg.singleValueId) : null;
+            if (singleWrap) singleWrap.style.display = enabled ? 'none' : '';
+            if (rangeWrap) rangeWrap.style.display = enabled ? 'block' : 'none';
+            if (singleValueEl) singleValueEl.style.display = enabled ? 'none' : '';
+            if (diceBtn) diceBtn.classList.toggle('active', enabled);
+            if (enabled) {
+                const dMin = cfg.defaultMin !== undefined ? cfg.defaultMin : cfg.min;
+                const dMax = cfg.defaultMax !== undefined ? cfg.defaultMax : cfg.max;
+                this.settings.set(cfg.minSetting, dMin);
+                this.settings.set(cfg.maxSetting, dMax);
+                if (this.rangeSliderController && this.rangeSliderController.ranges.has(cfg.rangeSlider)) {
+                    this.rangeSliderController.setValues(cfg.rangeSlider, dMin, dMax, false);
                 }
+            } else {
+                const min = this.settings.get(cfg.minSetting);
+                const max = this.settings.get(cfg.maxSetting);
+                let val = (min + max) / 2;
+                if (Number.isInteger(cfg.min) && Number.isInteger(cfg.max)) {
+                    val = Math.round(val);
+                }
+                this.settings.set(cfg.singleSetting, val);
+                this.sliderController.setValue(cfg.singleSlider, val, false);
+            }
+            // Special handling for palette colors dice
+            if (param === 'paletteColors') {
+                const cm = this.getDerivedColorMode();
+                this.settings.set('colorMode', cm);
+                if (cm === 'randomChaos' || cm === 'randomGradient') {
+                    this.generateColorPalette();
+                }
+                this.updateColorModeUI();
+            }
+            this.updateRandomParamsList();
+            this.updateRandomSectionVisibility();
+            if (param === 'strokes') {
+                this.updateStyleDimmedState();
+                this.updateRoundedCapsVisibility();
+                this.updateCloseEndsState();
+            }
+            this.updateRenderer();
+            this.markAsChanged();
+        };
+
+        for (const param of Object.keys(DICE_CONFIG)) {
+            const cfg = DICE_CONFIG[param];
+            const btn = cfg.diceBtnId ? document.getElementById(cfg.diceBtnId) : null;
+            if (btn) {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleDice(param);
+                });
+            }
+
+            const group = btn ? btn.closest('.dice-slider-group') : null;
+            if (group) {
+                const labelEl = group.querySelector('label');
+                const nameSpan = labelEl ? labelEl.querySelector(':scope > span:first-child') : null;
+                if (nameSpan) {
+                    nameSpan.style.cursor = 'pointer';
+                    nameSpan.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleDice(param);
+                    });
+                }
+            }
+
+            const enabled = this.settings.get(cfg.flag);
+            const singleWrap = document.getElementById(cfg.singleWrap);
+            const rangeWrap = document.getElementById(cfg.rangeWrap);
+            const singleValueEl = cfg.singleValueId ? document.getElementById(cfg.singleValueId) : null;
+            if (singleWrap) singleWrap.style.display = enabled ? 'none' : '';
+            if (rangeWrap) rangeWrap.style.display = enabled ? 'block' : 'none';
+            if (singleValueEl) singleValueEl.style.display = enabled ? 'none' : '';
+            if (btn) btn.classList.toggle('active', enabled);
+        }
+    }
+
+    /**
+     * Initialize Random section (Scope, Alternatives, Randomize)
+     */
+    initRandomSection() {
+        const randomPanel = document.getElementById('randomPanel');
+        if (!randomPanel) return;
+
+        this.initChaosToggle();
+
+        this.initShuffle();
+        this.updateRandomParamsList();
+        this.updateRandomSectionVisibility();
+    }
+
+    /**
+     * Build/rebuild the active-params list inside Random panel (pill-style items)
+     */
+    updateRandomParamsList() {
+        const container = document.getElementById('randomParamsList');
+        if (!container) return;
+        container.innerHTML = '';
+
+        for (const [param, cfg] of Object.entries(DICE_CONFIG)) {
+            if (!this.settings.get(cfg.flag)) continue;
+
+            const item = document.createElement('div');
+            item.className = 'random-param-pill';
+            item.dataset.param = param;
+
+            const text = document.createElement('span');
+            text.className = 'random-param-pill-text';
+            text.textContent = cfg.displayName;
+
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'random-param-pill-close';
+            closeBtn.textContent = '×';
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.resetDiceForParam(param);
+                this.updateRandomParamsList();
+                this.updateRandomSectionVisibility();
                 this.updateRenderer();
                 this.markAsChanged();
             });
+
+            item.append(text, closeBtn);
+            container.appendChild(item);
         }
 
-        // Toggle for random mode (Rounded)
-        const randomRoundedCheckbox = document.getElementById('randomRoundedCheckbox');
-        if (randomRoundedCheckbox) {
-            randomRoundedCheckbox.addEventListener('change', () => {
-                this.settings.set('randomRounded', randomRoundedCheckbox.checked);
-                // Clear cache when switching mode
-                if (this.renderer.clearModuleTypeCache) {
-                    this.renderer.clearModuleTypeCache();
-                }
+        for (const [key, cfg] of Object.entries(EFFECT_RANDOM_CONFIG)) {
+            if (!this.settings.get(cfg.flag)) continue;
+
+            const item = document.createElement('div');
+            item.className = 'random-param-pill';
+            item.dataset.param = `effect:${key}`;
+
+            const text = document.createElement('span');
+            text.className = 'random-param-pill-text';
+            text.textContent = cfg.displayName;
+
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'random-param-pill-close';
+            closeBtn.textContent = '×';
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.resetEffectRandomParam(key);
+                this.updateRandomParamsList();
+                this.updateRandomSectionVisibility();
                 this.updateRenderer();
                 this.markAsChanged();
             });
+
+            item.append(text, closeBtn);
+            container.appendChild(item);
         }
 
-        // Toggle for random mode (Close Ends)
-        const randomCloseEndsCheckbox = document.getElementById('randomCloseEndsCheckbox');
-        if (randomCloseEndsCheckbox) {
-            randomCloseEndsCheckbox.addEventListener('change', () => {
-                this.settings.set('randomCloseEnds', randomCloseEndsCheckbox.checked);
-                // Clear cache when switching mode
-                if (this.renderer.clearModuleTypeCache) {
-                    this.renderer.clearModuleTypeCache();
-                }
+        if (this.settings.get('randomizeColor')) {
+            const item = document.createElement('div');
+            item.className = 'random-param-pill';
+            item.dataset.param = 'color';
+
+            const text = document.createElement('span');
+            text.className = 'random-param-pill-text';
+            text.textContent = 'Colors';
+
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'random-param-pill-close';
+            closeBtn.textContent = '×';
+            closeBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.resetDiceForParam('paletteColors');
+                this.settings.set('colorChaosColors', 3);
+                const paletteSlider = document.getElementById('paletteColorsSlider');
+                if (paletteSlider) paletteSlider.value = 3;
+                const paletteVal = document.getElementById('paletteColorsValue');
+                if (paletteVal) paletteVal.value = 3;
+                const cm = this.getDerivedColorMode();
+                this.settings.set('colorMode', cm);
+                this.updateColorModeUI();
+                this.updateRandomParamsList();
+                this.updateRandomSectionVisibility();
                 this.updateRenderer();
                 this.markAsChanged();
             });
-        }
 
-        // Toggle for random mode (Wobbly)
-        const randomWobblyCheckbox = document.getElementById('randomWobblyCheckbox');
-        if (randomWobblyCheckbox) {
-            randomWobblyCheckbox.addEventListener('change', () => {
-                this.settings.set('randomWobblyEnabled', randomWobblyCheckbox.checked);
-                this.updateWobblyVisibility();
-                // Clear cache when switching mode
-                if (this.renderer.clearModuleTypeCache) {
-                    this.renderer.clearModuleTypeCache();
-                }
-                this.updateRenderer();
-                this.markAsChanged();
-            });
-        }
+            item.append(text, closeBtn);
+            container.appendChild(item);
 
-        // Toggle for random mode (Dash)
-        const randomDashCheckbox = document.getElementById('randomDashCheckbox');
-        if (randomDashCheckbox) {
-            randomDashCheckbox.addEventListener('change', () => {
-                this.settings.set('randomDash', randomDashCheckbox.checked);
-                // Update sliders state
-                this.updateRandomDashSlidersState();
-                // Clear cache when switching mode
-                if (this.renderer.clearModuleTypeCache) {
-                    this.renderer.clearModuleTypeCache();
+            const regenPaletteIfNeeded = () => {
+                const cm = this.getDerivedColorMode();
+                if (cm === 'randomChaos' || cm === 'randomGradient') {
+                    this.generateColorPalette();
                 }
-                this.updateRenderer();
-                this.markAsChanged();
-            });
+            };
+
+            const addColorOptPill = (label, settingKey, checkboxId) => {
+                if (!this.settings.get(settingKey)) return;
+                const opt = document.createElement('div');
+                opt.className = 'random-param-pill';
+                opt.dataset.param = `colorOpt:${settingKey}`;
+                const t = document.createElement('span');
+                t.className = 'random-param-pill-text';
+                t.textContent = label;
+                const x = document.createElement('button');
+                x.className = 'random-param-pill-close';
+                x.textContent = '×';
+                x.addEventListener('click', (ev) => {
+                    ev.stopPropagation();
+                    this.settings.set(settingKey, false);
+                    const cb = document.getElementById(checkboxId);
+                    if (cb) cb.checked = false;
+                    regenPaletteIfNeeded();
+                    this.updateRandomParamsList();
+                    this.updateRandomSectionVisibility();
+                    this.updateRenderer();
+                    this.markAsChanged();
+                });
+                opt.append(t, x);
+                container.appendChild(opt);
+            };
+
+            addColorOptPill('BW', 'colorBW', 'randomColorBWCheckbox');
+            addColorOptPill('Lock BG', 'colorLockBg', 'randomColorLockBgCheckbox');
+            addColorOptPill('Lock Grid', 'colorLockGrid', 'randomColorLockGridCheckbox');
         }
-        
-        // Color toggles from old Style panel now handled by initRandomChaosColorControls
+    }
+
+    /**
+     * Pills show param name only; range changes do not alter the label.
+     */
+    updateParamRangeText() {}
+
+    /**
+     * 🎲 Shuffle: fully randomize except text, module size, letter spacing, line height, align
+     */
+    initShuffle() {
+        const btn = document.getElementById('shuffleBtn');
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+            const rand = (min, max) => min + Math.random() * (max - min);
+            const randInt = (min, max) => Math.floor(rand(min, max + 1));
+            const coin = () => Math.random() < 0.5;
+
+            // For each dice param: randomly enable/disable range, random values
+            for (const [param, cfg] of Object.entries(DICE_CONFIG)) {
+                const useRange = coin();
+                this.settings.set(cfg.flag, useRange);
+
+                if (useRange) {
+                    let rMin = rand(cfg.min, cfg.max);
+                    let rMax = rand(cfg.min, cfg.max);
+                    if (rMin > rMax) [rMin, rMax] = [rMax, rMin];
+                    if (Number.isInteger(cfg.min)) { rMin = Math.round(rMin); rMax = Math.round(rMax); }
+                    this.settings.set(cfg.minSetting, rMin);
+                    this.settings.set(cfg.maxSetting, rMax);
+                    if (this.rangeSliderController && this.rangeSliderController.ranges.has(cfg.rangeSlider)) {
+                        this.rangeSliderController.setValues(cfg.rangeSlider, rMin, rMax, false);
+                    }
+                    const singleWrap = document.getElementById(cfg.singleWrap);
+                    const rangeWrap = document.getElementById(cfg.rangeWrap);
+                    const singleValueEl = cfg.singleValueId ? document.getElementById(cfg.singleValueId) : null;
+                    const diceBtn = cfg.diceBtnId ? document.getElementById(cfg.diceBtnId) : null;
+                    if (singleWrap) singleWrap.style.display = 'none';
+                    if (rangeWrap) rangeWrap.style.display = 'block';
+                    if (singleValueEl) singleValueEl.style.display = 'none';
+                    if (diceBtn) diceBtn.classList.add('active');
+                } else {
+                    let val = rand(cfg.min, cfg.max);
+                    if (Number.isInteger(cfg.min)) val = Math.round(val);
+                    this.settings.set(cfg.singleSetting, val);
+                    if (this.sliderController) this.sliderController.setValue(cfg.singleSlider, val, false);
+                    const singleWrap = document.getElementById(cfg.singleWrap);
+                    const rangeWrap = document.getElementById(cfg.rangeWrap);
+                    const singleValueEl = cfg.singleValueId ? document.getElementById(cfg.singleValueId) : null;
+                    const diceBtn = cfg.diceBtnId ? document.getElementById(cfg.diceBtnId) : null;
+                    if (singleWrap) singleWrap.style.display = '';
+                    if (rangeWrap) rangeWrap.style.display = 'none';
+                    if (singleValueEl) singleValueEl.style.display = '';
+                    if (diceBtn) diceBtn.classList.remove('active');
+                }
+            }
+
+            // Random toggles
+            this.settings.set('dashEnabled', coin());
+            const dashCb = document.getElementById('dashEnabledCheckbox');
+            if (dashCb) dashCb.checked = this.settings.get('dashEnabled');
+
+            this.settings.set('wobblyEnabled', coin());
+            const wobblyCb = document.getElementById('wobblyCheckbox');
+            if (wobblyCb) wobblyCb.checked = this.settings.get('wobblyEnabled');
+
+            for (const cfg of Object.values(EFFECT_RANDOM_CONFIG)) {
+                const on = coin();
+                this.settings.set(cfg.flag, on);
+                if (!on) continue;
+                if (cfg.type === 'chaos') {
+                    const mode = coin() ? 'full' : 'byType';
+                    this.settings.set('randomModeType', mode);
+                    const chaosCb = document.getElementById('chaosCheckbox');
+                    if (chaosCb) chaosCb.checked = mode === 'full';
+                } else {
+                    const v = coin();
+                    this.settings.set(cfg.setting, v);
+                    const cb = document.getElementById(cfg.checkboxId);
+                    if (cb) cb.checked = v;
+                }
+            }
+
+            // Random colors
+            const randColor = () => '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+            this.settings.set('colorSource', coin() ? 'gradient' : 'solid');
+            this.settings.set('colorChaosColors', coin() ? (Math.floor(Math.random() * 29) + 4) : 3);
+            this.settings.set('randomizePaletteColors', coin());
+            this.settings.set('colorBW', coin());
+            this.settings.set('letterColor', randColor());
+            this.settings.set('bgColor', randColor());
+            this.settings.set('gridColor', randColor());
+            this.settings.set('gradientStartColor', randColor());
+            this.settings.set('gradientEndColor', randColor());
+
+            if (this.renderer.clearModuleTypeCache) this.renderer.clearModuleTypeCache();
+            if (this.renderer.clearAlternativeGlyphCache) this.renderer.clearAlternativeGlyphCache();
+
+            const shuffleColorMode = this.getDerivedColorMode();
+            this.settings.set('colorMode', shuffleColorMode);
+            if (shuffleColorMode === 'randomChaos' || shuffleColorMode === 'randomGradient') {
+                this.generateColorPalette();
+            }
+
+            this.updateStyleDimmedState();
+            this.updateRoundedCapsVisibility();
+            this.updateWobblyVisibility();
+            this.updateColorModeUI();
+            this.updateUIFromSettings();
+            this.updateRandomParamsList();
+            this.updateRandomSectionVisibility();
+            this.updateRenderer();
+            this.markAsChanged();
+        });
+    }
+
+    /**
+     * Show/hide Random panel based on isRandom and update dice count badge
+     */
+    updateRandomSectionVisibility() {
+        const panel = document.getElementById('randomPanel');
+        if (!panel) return;
+        panel.style.display = '';
+
+        const badge = document.getElementById('diceCountBadge');
+        if (badge) {
+            let total = Object.values(DICE_CONFIG).filter(cfg => this.settings.get(cfg.flag)).length;
+            total += Object.values(EFFECT_RANDOM_CONFIG).filter(cfg => this.settings.get(cfg.flag)).length;
+            if (this.settings.get('randomizeColor')) total++;
+            badge.textContent = total > 0 ? (total === 1 ? '1 dice' : `${total} dices`) : '';
+        }
+    }
+
+    /**
+     * ↺ Reset: restore all settings to factory defaults (keep text)
+     */
+    initResetAllDice() {
+        const btn = document.getElementById('resetAllDiceBtn');
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+            const defaults = {
+                stemMultiplier: 0.5, strokesNum: 1, strokeGapRatio: 1.0,
+                dashEnabled: false, dashLength: 1.00, gapLength: 1.50, dashChess: false,
+                wobblyEnabled: false, wobblyAmount: 3, wobblyFrequency: 0.1,
+                roundedCaps: false, closeEnds: false, useAlternativesInRandom: false,
+                showGrid: true, showEndpoints: false, showTestCircles: false,
+                letterColor: '#ffffff', bgColor: '#000000', gridColor: '#333333',
+                colorMode: 'manual', colorSource: 'solid', randomModeType: 'byType',
+                colorChaosColors: 3, randomizePaletteColors: false,
+                randomPaletteColorsMin: 3, randomPaletteColorsMax: 32,
+                colorBW: false, colorLockBg: false, colorLockGrid: false,
+                gradientStartColor: '#ff0000', gradientEndColor: '#0000ff',
+                letterSpacingMultiplier: 1, lineHeightMultiplier: 1,
+                randomStemMin: 0.5, randomStemMax: 1.0,
+                randomStrokesMin: 1, randomStrokesMax: 4,
+                randomContrastMin: 0.1, randomContrastMax: 2.0,
+                randomDashLengthMin: 1.0, randomDashLengthMax: 1.5,
+                randomGapLengthMin: 1.0, randomGapLengthMax: 1.5,
+                randomWobblyAmountMin: 0, randomWobblyAmountMax: 10,
+                randomWobblyFrequencyMin: 0.05, randomWobblyFrequencyMax: 0.2,
+                randomizeRoundedCaps: false, randomizeCloseEnds: false, randomizeDashChess: false,
+                randomizeAltGlyphs: false, randomizeChaosMode: false, randomizeShowGrid: false,
+                randomizeShowEndpoints: false, randomizeShowPointer: false,
+            };
+
+            // Reset dice UI first — otherwise restore-from-range average overwrites colorChaosColors (e.g. 17.5) after defaults
+            for (const param of Object.keys(DICE_CONFIG)) {
+                this.resetDiceForParam(param);
+            }
+
+            for (const [key, val] of Object.entries(defaults)) {
+                this.settings.set(key, val);
+            }
+
+            // Restore single slider values to defaults
+            this.sliderController.setValue('stemSlider', 0.5, false);
+            this.sliderController.setValue('strokesSlider', 1, false);
+            this.sliderController.setValue('strokeGapRatioSlider', 1.0, false);
+            this.sliderController.setValue('dashLengthSlider', 1.00, false);
+            this.sliderController.setValue('gapLengthSlider', 1.50, false);
+            this.sliderController.setValue('wobblyAmountSlider', 3, false);
+            this.sliderController.setValue('wobblyFrequencySlider', 0.1, false);
+            this.sliderController.setValue('paletteColorsSlider', this.settings.get('colorChaosColors') || 3, false);
+
+            // Reset color mode
+            this.updateColorModeUI();
+
+            if (this.renderer.clearModuleTypeCache) this.renderer.clearModuleTypeCache();
+            if (this.renderer.clearAlternativeGlyphCache) this.renderer.clearAlternativeGlyphCache();
+
+            this.updateStyleDimmedState();
+            this.updateRoundedCapsVisibility();
+            this.updateWobblyVisibility();
+            this.updateColorModeUI();
+            this.updateUIFromSettings();
+            this.updateRandomParamsList();
+            this.updateRandomSectionVisibility();
+            this.updateRenderer();
+            this.markAsChanged();
+        });
     }
     
-    /**
-     * Update Color Chaos slider visibility (legacy — now fully handled by updateColorModeUI)
-     */
-    updateColorChaosSliderVisibility() {
-        // Now handled by updateColorModeUI
-        this.updateColorModeUI();
-    }
+
 
     /**
      * Update Dash Length and Gap Length sliders state in Random mode
      * Also updates Chess toggle inactive state (depends on Dash)
      */
     updateRandomDashSlidersState() {
-        const randomDashEnabled = this.settings.get('randomDash') ?? false;
-        const mode = this.settings.get('mode');
-        const isRandomMode = mode === 'random';
-        const isEnabled = isRandomMode && randomDashEnabled;
+        const dashEnabled = this.settings.get('dashEnabled') ?? false;
+        const randomizeDashLength = this.settings.get('randomizeDashLength') ?? false;
+        const isRandomMode = this.settings.get('isRandom');
+        const isEnabled = isRandomMode && (dashEnabled || randomizeDashLength);
         const tooltipMessage = 'Enable Dashes toggle';
 
         // Update disabled state for Dash Length and Gap Length groups
-        const dashLengthGroup = document.getElementById('randomControlGroupDashLength');
-        const gapLengthGroup = document.getElementById('randomControlGroupGapLength');
+        const dashLengthGroup = document.getElementById('dashLengthControlGroup');
+        const gapLengthGroup = document.getElementById('gapLengthControlGroup');
         
         if (dashLengthGroup) {
             dashLengthGroup.classList.toggle('disabled', !isEnabled);
@@ -2236,10 +2580,10 @@ class VoidTypeface {
         }
 
         // Update Chess toggle inactive state (Chess only works with Dash enabled)
-        const chessLabel = document.getElementById('dashChessLabelRandom');
+        const chessLabel = document.getElementById('dashChessLabel');
         if (chessLabel) {
-            chessLabel.classList.toggle('inactive', !randomDashEnabled);
-            if (!randomDashEnabled && isRandomMode) {
+            chessLabel.classList.toggle('inactive', !isEnabled);
+            if (!isEnabled && isRandomMode) {
                 chessLabel.setAttribute('data-tooltip', tooltipMessage);
             } else {
                 chessLabel.removeAttribute('data-tooltip');
@@ -2252,8 +2596,7 @@ class VoidTypeface {
      * Close only works when Lines > 1
      */
     updateCloseEndsState() {
-        const mode = this.settings.get('mode');
-        if (mode !== 'random') return;
+        if (!this.settings.get('isRandom')) return;
 
         const minLines = this.settings.get('randomStrokesMin') ?? 1;
         const maxLines = this.settings.get('randomStrokesMax') ?? 4;
@@ -2262,7 +2605,7 @@ class VoidTypeface {
         const isInactive = minLines === 1 && maxLines === 1;
         const tooltipMessage = 'Set Lines to more than 1';
         
-        const closeLabel = document.getElementById('randomCloseEndsLabel');
+        const closeLabel = document.getElementById('closeEndsLabel');
         if (closeLabel) {
             closeLabel.classList.toggle('inactive', isInactive);
             if (isInactive) {
@@ -2328,6 +2671,7 @@ class VoidTypeface {
             
             // Update random parameter values in preset if they don't match new defaults
             const needsUpdate = 
+                defaultPreset.strokesNum !== 1 ||
                 defaultPreset.randomStemMin !== 0.5 ||
                 defaultPreset.randomStemMax !== 1.0 ||
                 defaultPreset.randomStrokesMin !== 1 ||
@@ -2338,29 +2682,47 @@ class VoidTypeface {
                 defaultPreset.randomDashLengthMax !== 1.5 ||
                 defaultPreset.randomGapLengthMin !== 1.0 ||
                 defaultPreset.randomGapLengthMax !== 1.5 ||
-                defaultPreset.randomRounded !== false ||
-                defaultPreset.randomCloseEnds !== true ||
-                defaultPreset.randomDash !== false ||
-                defaultPreset.useAlternativesInRandom !== true ||
+                defaultPreset.useAlternativesInRandom !== false ||
                 defaultPreset.lineHeightMultiplier !== 1;
+
+            // Factory Colors panel for preset "New" (Solid, 3 colors, no palette random)
+            const paletteDrift =
+                (defaultPreset.colorChaosColors ?? 3) > 3 ||
+                defaultPreset.randomizePaletteColors === true;
             
-            if (needsUpdate) {
-                // Update values in preset
-                defaultPreset.randomStemMin = 0.5;
-                defaultPreset.randomStemMax = 1.0;
-                defaultPreset.randomStrokesMin = 1;
-                defaultPreset.randomStrokesMax = 4;
-                defaultPreset.randomContrastMin = 0.1;
-                defaultPreset.randomContrastMax = 2.0;
-                defaultPreset.randomDashLengthMin = 1.0;
-                defaultPreset.randomDashLengthMax = 1.5;
-                defaultPreset.randomGapLengthMin = 1.0;
-                defaultPreset.randomGapLengthMax = 1.5;
-                defaultPreset.randomRounded = false;
-                defaultPreset.randomCloseEnds = true;
-                defaultPreset.randomDash = false;
-                defaultPreset.useAlternativesInRandom = true;
-                defaultPreset.lineHeightMultiplier = 1;
+            if (needsUpdate || paletteDrift) {
+                if (needsUpdate) {
+                    defaultPreset.strokesNum = 1;
+                    defaultPreset.randomStemMin = 0.5;
+                    defaultPreset.randomStemMax = 1.0;
+                    defaultPreset.randomStrokesMin = 1;
+                    defaultPreset.randomStrokesMax = 4;
+                    defaultPreset.randomContrastMin = 0.1;
+                    defaultPreset.randomContrastMax = 2.0;
+                    defaultPreset.randomDashLengthMin = 1.0;
+                    defaultPreset.randomDashLengthMax = 1.5;
+                    defaultPreset.randomGapLengthMin = 1.0;
+                    defaultPreset.randomGapLengthMax = 1.5;
+                    defaultPreset.useAlternativesInRandom = false;
+                    defaultPreset.lineHeightMultiplier = 1;
+                }
+                if (paletteDrift) {
+                    defaultPreset.letterColor = '#ffffff';
+                    defaultPreset.bgColor = '#000000';
+                    defaultPreset.gridColor = '#333333';
+                    defaultPreset.colorSource = 'solid';
+                    defaultPreset.colorMode = 'manual';
+                    defaultPreset.colorChaosColors = 3;
+                    defaultPreset.randomizePaletteColors = false;
+                    defaultPreset.randomPaletteColorsMin = 3;
+                    defaultPreset.randomPaletteColorsMax = 32;
+                    defaultPreset.colorBW = false;
+                    defaultPreset.colorLockBg = false;
+                    defaultPreset.colorLockGrid = false;
+                    delete defaultPreset.randomizeColor;
+                    delete defaultPreset.colorPalette;
+                    delete defaultPreset.moduleColorCache;
+                }
                 this.presetManager.presets['New'] = defaultPreset;
                 this.presetManager.savePresets();
             }
@@ -2627,8 +2989,8 @@ class VoidTypeface {
             const normalizedDefaultBg = this.normalizeColor(defaultBgColor);
             
             // Check if Color Chaos is enabled
-            const currentColorMode = this.settings.get('colorMode') || 'manual';
-            const hasColorChaos = currentColorMode === 'chaos' || currentColorMode === 'randomChaos';
+            const currentColorMode = this.getDerivedColorMode();
+            const hasColorChaos = currentColorMode === 'randomChaos' || currentColorMode === 'randomGradient';
             
             if (letterColor !== normalizedDefaultLetter || bgColor !== normalizedDefaultBg) {
                 return { 
@@ -2788,6 +3150,54 @@ class VoidTypeface {
                 this.settings.set(key, preset[key]);
             }
         });
+
+        // Migrate old preset mode → dashEnabled (for presets saved before Phase 5)
+        if (preset.mode !== undefined && preset.dashEnabled === undefined) {
+            this.settings.set('dashEnabled', preset.mode === 'dash' || preset.mode === 'sd');
+        }
+        // Migrate mode === 'random' → dice flags (for presets saved before Phase 6)
+        if (preset.mode === 'random') {
+            this.settings.set('randomizeStem', preset.randomizeStem ?? true);
+            this.settings.set('randomizeStrokes', preset.randomizeStrokes ?? true);
+            this.settings.set('randomizeContrast', preset.randomizeContrast ?? true);
+            this.settings.set('randomizeDashLength', preset.randomizeDashLength ?? (preset.randomDash || false));
+            this.settings.set('randomizeGapLength', preset.randomizeGapLength ?? (preset.randomDash || false));
+            this.settings.set('randomizeWobblyAmount', preset.randomizeWobblyAmount ?? (preset.randomWobblyEnabled || false));
+            this.settings.set('randomizeWobblyFrequency', preset.randomizeWobblyFrequency ?? (preset.randomWobblyEnabled || false));
+        }
+        // Migrate randomRounded/randomCloseEnds → roundedCaps/closeEnds
+        if (preset.randomRounded !== undefined && preset.roundedCaps === undefined) {
+            this.settings.set('roundedCaps', preset.randomRounded);
+        }
+        if (preset.randomCloseEnds !== undefined && preset.closeEnds === undefined) {
+            this.settings.set('closeEnds', preset.randomCloseEnds);
+        }
+        // Migrate colorMode → colorSource + palette
+        if (preset.colorMode !== undefined && preset.colorSource === undefined) {
+            const modeMap = {
+                'manual':        { source: 'solid',    palette: false },
+                'random':        { source: 'solid',    palette: true  },
+                'chaos':         { source: 'solid',    palette: true  },
+                'randomChaos':   { source: 'solid',    palette: true  },
+                'gradient':      { source: 'gradient', palette: false },
+                'randomGradient':{ source: 'gradient', palette: true  }
+            };
+            const mapped = modeMap[preset.colorMode] || { source: 'solid', palette: false };
+            this.settings.set('colorSource', mapped.source);
+            if (mapped.palette && (this.settings.get('colorChaosColors') || 3) <= 3) {
+                this.settings.set('colorChaosColors', 16);
+            }
+        }
+        // Migrate old randomizeColor flag
+        if (preset.randomizeColor && (this.settings.get('colorChaosColors') || 3) <= 3) {
+            this.settings.set('colorChaosColors', preset.colorChaosColors || 16);
+        }
+        // Migrate old settings names
+        if (preset.randomColorChaosGrayscale !== undefined) this.settings.set('colorBW', preset.randomColorChaosGrayscale);
+        if (preset.randomColorChaosKeepBg !== undefined) this.settings.set('colorLockBg', preset.randomColorChaosKeepBg);
+        if (preset.randomColorChaosKeepGrid !== undefined) this.settings.set('colorLockGrid', preset.randomColorChaosKeepGrid);
+        if (preset.gradientKeepBg !== undefined) this.settings.set('colorLockBg', preset.gradientKeepBg);
+        if (preset.gradientKeepGrid !== undefined) this.settings.set('colorLockGrid', preset.gradientKeepGrid);
         
         // Restore alternative glyph cache if present in preset
         if (this.renderer) {
@@ -2818,15 +3228,17 @@ class VoidTypeface {
             }
         }
         
-        // Check if Color Chaos is enabled in loaded preset
-        const loadedColorMode = preset.colorMode || 'manual';
-        const hasColorChaos = loadedColorMode === 'chaos' || loadedColorMode === 'randomChaos';
+        const hasColorChaos = (preset.colorMode === 'chaos' || preset.colorMode === 'randomChaos') || 
+            (preset.colorSource === 'palette') || preset.randomizeColor ||
+            (this.settings.get('colorChaosColors') || 3) > 3;
         
         // Restore or clear Color Chaos palette and cache
         if (!hasColorChaos) {
             this.colorPalette = [];
             this.moduleColorCache = new Map();
+            this.moduleGradientCache = new Map();
             this.globalModuleIndex = 0;
+            this.globalGradientIndex = 0;
         } else if (preset.colorPalette && preset.colorPalette.length > 0) {
             // Restore saved palette and module color cache
             this.colorPalette = [...preset.colorPalette];
@@ -2877,8 +3289,36 @@ class VoidTypeface {
      * Update UI elements from settings
      */
     updateUIFromSettings() {
+        // Sync dice flags with parent toggles (e.g. dash dice off when Dashes disabled)
+        const dashEnabled = this.settings.get('dashEnabled') ?? false;
+        if (!dashEnabled) {
+            this.settings.set('randomizeDashLength', false);
+            this.settings.set('randomizeGapLength', false);
+        }
+        const wobblyEnabled = this.settings.get('wobblyEnabled') ?? false;
+        if (!wobblyEnabled) {
+            this.settings.set('randomizeWobblyAmount', false);
+            this.settings.set('randomizeWobblyFrequency', false);
+        }
+        const strokesNum = this.settings.get('strokesNum') ?? 2;
+        if (strokesNum === 1 && !this.linesAllowMultiLineForStyleUI()) {
+            this.settings.set('randomizeContrast', false);
+        }
+
         // Update sliders (without calling callbacks to avoid extra updates)
         this.sliderController.setValue('stemSlider', this.settings.get('stemMultiplier'), false);
+        for (const param of Object.keys(DICE_CONFIG)) {
+            const cfg = DICE_CONFIG[param];
+            const enabled = this.settings.get(cfg.flag);
+            const singleWrap = document.getElementById(cfg.singleWrap);
+            const rangeWrap = document.getElementById(cfg.rangeWrap);
+            const diceBtn = cfg.diceBtnId ? document.getElementById(cfg.diceBtnId) : null;
+            const singleValueEl = cfg.singleValueId ? document.getElementById(cfg.singleValueId) : null;
+            if (singleWrap) singleWrap.style.display = enabled ? 'none' : '';
+            if (rangeWrap) rangeWrap.style.display = enabled ? 'block' : 'none';
+            if (singleValueEl) singleValueEl.style.display = enabled ? 'none' : '';
+            if (diceBtn) diceBtn.classList.toggle('active', enabled);
+        }
         this.sliderController.setValue('moduleSizeSlider', this.settings.get('moduleSize'), false);
         // Update compact inputs
         if (this.compactInputs) {
@@ -2921,9 +3361,9 @@ class VoidTypeface {
                 this.settings.get('randomGapLengthMax'), 
                 false
             );
-            this.rangeSliderController.setValues('randomColorChaosRangeSlider', 
-                this.settings.get('randomColorChaosMin'), 
-                this.settings.get('randomColorChaosMax'), 
+            this.rangeSliderController.setValues('randomPaletteColorsRangeSlider', 
+                this.settings.get('randomPaletteColorsMin'), 
+                this.settings.get('randomPaletteColorsMax'), 
                 false
             );
             this.rangeSliderController.setValues('randomWobblyAmountRangeSlider', 
@@ -2938,48 +3378,19 @@ class VoidTypeface {
             );
         }
 
-        // Update rendering mode
-        const mode = this.settings.get('mode');
-        const fillBtn = document.getElementById('modeFill');
-        const stripesBtn = document.getElementById('modeStripes');
-        const dashBtn = document.getElementById('modeDash');
-        const sdBtn = document.getElementById('modeSD');
-        const randomBtn = document.getElementById('modeRandom');
+        // Update dash enabled toggle
+        const dashEnabledCheckbox = document.getElementById('dashEnabledCheckbox');
+        if (dashEnabledCheckbox) {
+            dashEnabledCheckbox.checked = this.settings.get('dashEnabled') ?? false;
+        }
         
-        // Remove active class from all buttons
-        [fillBtn, stripesBtn, dashBtn, sdBtn, randomBtn].forEach(btn => {
-            if (btn) btn.classList.remove('active');
-        });
-        
-        // Set active button depending on mode
-        if (mode === 'fill' && fillBtn) fillBtn.classList.add('active');
-        else if (mode === 'stripes' && stripesBtn) stripesBtn.classList.add('active');
-        else if (mode === 'dash' && dashBtn) dashBtn.classList.add('active');
-        else if (mode === 'sd' && sdBtn) sdBtn.classList.add('active');
-        else if (mode === 'random' && randomBtn) randomBtn.classList.add('active');
-        // By default, if mode is undefined, choose fill
-        else if (fillBtn) fillBtn.classList.add('active');
+        // Sync colorMode from colorSource + palette state
+        this.settings.set('colorMode', this.getDerivedColorMode());
         
         // Update Color Mode UI
         this.updateColorModeUI();
-        
-        // SD shows all controls (Lines, Contrast, Dash Length, Gap Length)
-        const showStripes = mode === 'stripes' || mode === 'sd';
-        const showDash = mode === 'dash' || mode === 'sd';
-        
-        document.getElementById('strokesControlGroup').style.display = showStripes ? 'block' : 'none';
-        document.getElementById('strokeGapRatioControlGroup').style.display = showStripes ? 'block' : 'none';
-        // closeEndsControlGroup is now merged with roundedCapsControlGroup
-        const roundedCapsControlGroup = document.getElementById('roundedCapsControlGroup');
-        if (roundedCapsControlGroup) {
-            roundedCapsControlGroup.style.display = (mode === 'fill' || mode === 'stripes' || mode === 'dash' || mode === 'sd') ? 'flex' : 'none';
-        }
-        const dashChessControlGroup = document.getElementById('dashChessControlGroup');
-        if (dashChessControlGroup) {
-            dashChessControlGroup.style.display = (mode === 'sd' || mode === 'dash') ? 'flex' : 'none';
-        }
-        document.getElementById('dashLengthControlGroup').style.display = showDash ? 'block' : 'none';
-        document.getElementById('gapLengthControlGroup').style.display = showDash ? 'block' : 'none';
+
+        this.updateStyleDimmedState();
         
         // Update Rounded
         const roundedCapsCheckbox = document.getElementById('roundedCapsCheckbox');
@@ -2987,6 +3398,12 @@ class VoidTypeface {
             roundedCapsCheckbox.checked = this.settings.get('roundedCaps') || false;
         }
         this.updateRoundedCapsVisibility();
+
+        // Update Alt Glyphs
+        const altGlyphsCb = document.getElementById('alternativeGlyphsCheckbox');
+        if (altGlyphsCb) {
+            altGlyphsCb.checked = this.settings.get('useAlternativesInRandom') || false;
+        }
         
         // Update Wobbly
         const wobblyCheckbox = document.getElementById('wobblyCheckbox');
@@ -2996,124 +3413,43 @@ class VoidTypeface {
         this.sliderController.setValue('wobblyAmountSlider', this.settings.get('wobblyAmount'), false);
         this.sliderController.setValue('wobblyFrequencySlider', this.settings.get('wobblyFrequency'), false);
         this.updateWobblyVisibility();
-        
-        // Show/hide random mode sections
-        const randomSections = [
-            document.getElementById('randomSectionGeneral'),
-            document.getElementById('randomSectionDash'),
-            document.getElementById('randomSectionWobbly'),
-            document.getElementById('randomSectionButton')
-        ];
-        randomSections.forEach(section => {
-            if (section) {
-                section.classList.toggle('visible', mode === 'random');
-            }
-        });
-        
-        // Show/hide test mode sections
-        const testSections = [
-            document.getElementById('testSectionGeneral'),
-            document.getElementById('testSectionDash')
-        ];
-        testSections.forEach(section => {
-            if (section) {
-                section.classList.toggle('visible', mode === 'test');
-            }
-        });
-        
-        // Update Color Chaos slider visibility (must be called after mode is set)
-        this.updateColorChaosSliderVisibility();
+        this.updateRandomParamsList();
+        this.updateRandomSectionVisibility();
 
-        // Update Rounded visibility in Random mode (after showing groups)
-        this.updateRandomRoundedVisibility();
+        const chaosCb = document.getElementById('chaosCheckbox');
+        if (chaosCb) chaosCb.checked = this.settings.get('randomModeType') === 'full';
 
-        // Update toggle state for random mode
-        const randomFullRandomCheckbox = document.getElementById('randomFullRandomCheckbox');
-        if (randomFullRandomCheckbox) {
-            randomFullRandomCheckbox.checked = this.settings.get('randomModeType') === 'full';
+        this.updateColorModeUI();
+
+        // Update all color swatches
+        for (const [type, info] of Object.entries(this.colorTypeMap)) {
+            this.updateSwatchDisplay(type, this.settings.get(info.setting));
         }
         
-        const randomRoundedCheckbox = document.getElementById('randomRoundedCheckbox');
-        if (randomRoundedCheckbox) {
-            randomRoundedCheckbox.checked = this.settings.get('randomRounded') ?? false;
-        }
-
-        const randomCloseEndsCheckbox = document.getElementById('randomCloseEndsCheckbox');
-        if (randomCloseEndsCheckbox) {
-            randomCloseEndsCheckbox.checked = this.settings.get('randomCloseEnds') ?? true;
-        }
-
-        const randomDashCheckbox = document.getElementById('randomDashCheckbox');
-        if (randomDashCheckbox) {
-            randomDashCheckbox.checked = this.settings.get('randomDash') ?? false;
-        }
-        
-        const randomColorCheckbox = document.getElementById('randomColorCheckbox');
-        if (randomColorCheckbox) {
-            randomColorCheckbox.checked = this.settings.get('randomColor') ?? false;
-        }
-        
-        const randomColorChaosCheckbox = document.getElementById('randomColorChaosCheckbox');
-        if (randomColorChaosCheckbox) {
-            randomColorChaosCheckbox.checked = this.settings.get('randomColorChaos') ?? false;
-        }
-
-        const randomWobblyCheckbox = document.getElementById('randomWobblyCheckbox');
-        if (randomWobblyCheckbox) {
-            randomWobblyCheckbox.checked = this.settings.get('randomWobblyEnabled') ?? false;
-        }
-
-        // Update Dash Length and Gap Length sliders state
-        this.updateRandomDashSlidersState();
-        
-        // Update Close toggle state based on Lines range
-        this.updateCloseEndsState();
-        
-        // Update Color Chaos slider visibility
-        this.updateColorChaosSliderVisibility();
-
-        // Disable/enable Stem Weight in Metrics panel in Random mode
-        const stemSlider = document.getElementById('stemSlider');
-        const stemValue = document.getElementById('stemValue');
-        if (stemSlider && stemValue) {
-            const isDisabled = mode === 'random';
-            const stemTooltipMessage = 'Use Style panel in Random mode';
-            stemSlider.disabled = isDisabled;
-            stemValue.disabled = isDisabled;
-            // Set data-tooltip on parent control group only
-            const stemControlGroup = stemSlider.closest('.control-group');
-            if (stemControlGroup) {
-                if (isDisabled) {
-                    stemControlGroup.setAttribute('data-tooltip', stemTooltipMessage);
-                } else {
-                    stemControlGroup.removeAttribute('data-tooltip');
+        // Update picker if it's open
+        if (this.unifiedColorPicker && this.activeColorType) {
+            const info = this.colorTypeMap[this.activeColorType];
+            if (info) {
+                if (this.unifiedColorPicker.isOpen()) {
+                    this.dockUnifiedColorPickerForType(this.activeColorType);
                 }
+                this.unifiedColorPicker.setColor(this.settings.get(info.setting));
             }
         }
-
-        // Update colors
-        const letterColor = this.settings.get('letterColor');
-        const bgColor = this.settings.get('bgColor');
-        const gridColor = this.settings.get('gridColor');
         
-        // Update previews with automatic text color selection
-        const letterPreview = document.getElementById('letterColorPreview');
-        const bgPreview = document.getElementById('bgColorPreview');
-        const gridPreview = document.getElementById('gridColorPreview');
+        // Update palette slider
+        const paletteSlider = document.getElementById('paletteColorsSlider');
+        if (paletteSlider) paletteSlider.value = this.settings.get('colorChaosColors') || 3;
+        const paletteVal = document.getElementById('paletteColorsValue');
+        if (paletteVal) paletteVal.value = this.settings.get('colorChaosColors') || 3;
         
-        this.updateColorPreview(letterPreview, letterColor);
-        this.updateColorPreview(bgPreview, bgColor);
-        this.updateColorPreview(gridPreview, gridColor);
-        
-        // Update picker if it's open and matches active color
-        if (this.unifiedColorPicker) {
-            const colorMap = {
-                'letter': letterColor,
-                'bg': bgColor,
-                'grid': gridColor
-            };
-            this.unifiedColorPicker.setColor(colorMap[this.activeColorType]);
-        }
+        // Update palette option checkboxes
+        const bwCb = document.getElementById('randomColorBWCheckbox');
+        if (bwCb) bwCb.checked = this.settings.get('colorBW') || false;
+        const lockBgCb = document.getElementById('randomColorLockBgCheckbox');
+        if (lockBgCb) lockBgCb.checked = this.settings.get('colorLockBg') || false;
+        const lockGridCb = document.getElementById('randomColorLockGridCheckbox');
+        if (lockGridCb) lockGridCb.checked = this.settings.get('colorLockGrid') || false;
 
         // Update text
         const text = this.settings.get('text');
@@ -3129,16 +3465,8 @@ class VoidTypeface {
         // Update grid and endpoints
         document.getElementById('showGridCheckbox').checked = this.settings.get('showGrid');
         
-        // Update Dash Chess toggles (for PD and Random)
-        const dashChessCheckboxPD = document.getElementById('dashChessCheckboxPD');
-        const dashChessCheckboxRandom = document.getElementById('dashChessCheckboxRandom');
-        const dashChessValue = this.settings.get('dashChess') || false;
-        if (dashChessCheckboxPD) {
-            dashChessCheckboxPD.checked = dashChessValue;
-        }
-        if (dashChessCheckboxRandom) {
-            dashChessCheckboxRandom.checked = dashChessValue;
-        }
+        const dashChessCheckboxEl = document.getElementById('dashChessCheckboxPD');
+        if (dashChessCheckboxEl) dashChessCheckboxEl.checked = this.settings.get('dashChess') || false;
         document.getElementById('showEndpointsCheckbox').checked = this.settings.get('showEndpoints') || false;
         document.getElementById('showTestCheckbox').checked = this.settings.get('showTestCircles') || false;
     }
@@ -3148,11 +3476,18 @@ class VoidTypeface {
      */
     initExport() {
         const exportBtn = document.getElementById('exportBtn');
+        const exportPngBtn = document.getElementById('exportPngBtn');
         const copyBtn = document.getElementById('copyBtn');
         
         exportBtn.addEventListener('click', () => {
             this.exportSVG();
         });
+
+        if (exportPngBtn) {
+            exportPngBtn.addEventListener('click', () => {
+                this.exportViewportPng();
+            });
+        }
 
         copyBtn.addEventListener('click', () => {
             this.copySVG();
@@ -3198,8 +3533,9 @@ class VoidTypeface {
         const letterSpacing = moduleSize * this.settings.get('letterSpacingMultiplier');
         const lineHeight = moduleSize * this.settings.get('lineHeightMultiplier');
         
-        const mode = this.settings.get('mode');
-        
+        const mode = this.getDerivedMode();
+        const isRandom = this.settings.get('isRandom');
+
         const params = {
             stem: stem,
             moduleSize: moduleSize,
@@ -3214,6 +3550,14 @@ class VoidTypeface {
             textAlign: this.settings.get('textAlign') || 'center',
             showGrid: this.settings.get('showGrid'),
             includeGridToExport: this.settings.get('showGrid'), // Automatically export grid if visible
+            isRandom: isRandom || false,
+            randomizeStem: this.settings.get('randomizeStem') || false,
+            randomizeStrokes: this.settings.get('randomizeStrokes') || false,
+            randomizeContrast: this.settings.get('randomizeContrast') || false,
+            randomizeDashLength: this.settings.get('randomizeDashLength') || false,
+            randomizeGapLength: this.settings.get('randomizeGapLength') || false,
+            randomizeWobblyAmount: this.settings.get('randomizeWobblyAmount') || false,
+            randomizeWobblyFrequency: this.settings.get('randomizeWobblyFrequency') || false,
             randomStemMin: this.settings.get('randomStemMin'),
             randomStemMax: this.settings.get('randomStemMax'),
             randomStrokesMin: this.settings.get('randomStrokesMin'),
@@ -3225,34 +3569,27 @@ class VoidTypeface {
             randomGapLengthMin: this.settings.get('randomGapLengthMin'),
             randomGapLengthMax: this.settings.get('randomGapLengthMax'),
             randomModeType: this.settings.get('randomModeType'),
-            randomRounded: this.settings.get('randomRounded') || false,
-            randomCloseEnds: this.settings.get('randomCloseEnds') !== undefined ? this.settings.get('randomCloseEnds') : true,
-            randomDash: this.settings.get('randomDash') !== undefined ? this.settings.get('randomDash') : false,
-            randomColor: this.settings.get('randomColor') !== undefined ? this.settings.get('randomColor') : false,
-            randomColorChaos: this.settings.get('randomColorChaos') !== undefined ? this.settings.get('randomColorChaos') : false,
-            randomColorChaosMin: this.settings.get('randomColorChaosMin'),
-            randomColorChaosMax: this.settings.get('randomColorChaosMax'),
-            randomColorChaosKeepBg: this.settings.get('randomColorChaosKeepBg') !== undefined ? this.settings.get('randomColorChaosKeepBg') : false,
-            randomColorChaosKeepGrid: this.settings.get('randomColorChaosKeepGrid') !== undefined ? this.settings.get('randomColorChaosKeepGrid') : false,
-            randomColorChaosGrayscale: this.settings.get('randomColorChaosGrayscale') !== undefined ? this.settings.get('randomColorChaosGrayscale') : false,
-            useCustomModuleColor: ['chaos', 'randomChaos'].includes(this.settings.get('colorMode')),
+            colorBW: this.settings.get('colorBW') || false,
+            colorLockBg: this.settings.get('colorLockBg') || false,
+            colorLockGrid: this.settings.get('colorLockGrid') || false,
+            useCustomModuleColor: ['randomChaos', 'randomGradient'].includes(this.getDerivedColorMode()),
             roundedCaps: this.settings.get('roundedCaps') || false,
             closeEnds: this.settings.get('closeEnds') || false,
-            dashLength: this.settings.get('dashLength') || 0.10,
-            gapLength: this.settings.get('gapLength') || 0.30,
+            dashEnabled: this.settings.get('dashEnabled') ?? false,
+            dashLength: this.settings.get('dashLength') ?? 1.00,
+            gapLength: this.settings.get('gapLength') ?? 1.50,
             dashChess: this.settings.get('dashChess') || false,
             useAlternativesInRandom: this.settings.get('useAlternativesInRandom') || false,
             showEndpoints: this.settings.get('showEndpoints') || false,
             showTestCircles: this.settings.get('showTestCircles') || false,
-            // Wobbly: use randomWobbly* settings in Random mode, regular wobbly* in other modes
-            wobblyEnabled: mode === 'random' 
-                ? (this.settings.get('randomWobblyEnabled') || false)
+            wobblyEnabled: isRandom
+                ? (this.settings.get('randomizeWobblyAmount') || this.settings.get('randomizeWobblyFrequency') || this.settings.get('wobblyEnabled') || false)
                 : (this.settings.get('wobblyEnabled') || false),
-            wobblyAmount: mode === 'random'
-                ? ((this.settings.get('randomWobblyAmountMin') + this.settings.get('randomWobblyAmountMax')) / 2)
+            wobblyAmount: isRandom
+                ? (this.settings.get('randomizeWobblyAmount') ? ((this.settings.get('randomWobblyAmountMin') + this.settings.get('randomWobblyAmountMax')) / 2) : (this.settings.get('wobblyAmount') || 0))
                 : (this.settings.get('wobblyAmount') || 0),
-            wobblyFrequency: mode === 'random'
-                ? ((this.settings.get('randomWobblyFrequencyMin') + this.settings.get('randomWobblyFrequencyMax')) / 2)
+            wobblyFrequency: isRandom
+                ? (this.settings.get('randomizeWobblyFrequency') ? ((this.settings.get('randomWobblyFrequencyMin') + this.settings.get('randomWobblyFrequencyMax')) / 2) : (this.settings.get('wobblyFrequency') || 0.1))
                 : (this.settings.get('wobblyFrequency') || 0.1),
             // Pass random wobbly range for potential per-module randomization (future enhancement)
             randomWobblyAmountMin: this.settings.get('randomWobblyAmountMin') || 0,
@@ -3260,7 +3597,7 @@ class VoidTypeface {
             randomWobblyFrequencyMin: this.settings.get('randomWobblyFrequencyMin') || 0.05,
             randomWobblyFrequencyMax: this.settings.get('randomWobblyFrequencyMax') || 0.2,
             // Gradient stroke parameters
-            gradientMode: this.settings.get('colorMode') || 'manual',
+            gradientMode: this.getDerivedColorMode(),
             gradientStartColor: this.settings.get('gradientStartColor') || '#ff0000',
             gradientEndColor: this.settings.get('gradientEndColor') || '#0000ff'
         };
@@ -3284,8 +3621,9 @@ class VoidTypeface {
         // Set text from settings
         this.renderer.setText(this.settings.get('text'));
         
-        // Reset global module index counter before each render for Color Chaos stability
+        // Reset global counters before each render for Color Chaos / gradient stability
         this.globalModuleIndex = 0;
+        this.globalGradientIndex = 0;
         
         this.renderer.render();
     }
@@ -3295,14 +3633,14 @@ class VoidTypeface {
      */
     exportSVG() {
         // Ensure color palette is generated if Color Chaos is enabled
-        const colorMode = this.settings.get('colorMode') || 'manual';
-        if (colorMode === 'chaos' || colorMode === 'randomChaos') {
+        const colorMode = this.getDerivedColorMode();
+        if (colorMode === 'randomChaos' || colorMode === 'randomGradient') {
             if (!this.colorPalette || this.colorPalette.length === 0) {
                 this.generateColorPalette();
             }
         }
-        // Reset global module index for Color Chaos consistency
         this.globalModuleIndex = 0;
+        this.globalGradientIndex = 0;
         this.exporter.exportToSVG();
     }
 
@@ -3311,15 +3649,64 @@ class VoidTypeface {
      */
     async copySVG() {
         // Ensure color palette is generated if Color Chaos is enabled
-        const copyColorMode = this.settings.get('colorMode') || 'manual';
-        if (copyColorMode === 'chaos' || copyColorMode === 'randomChaos') {
+        const copyColorMode = this.getDerivedColorMode();
+        if (copyColorMode === 'randomChaos' || copyColorMode === 'randomGradient') {
             if (!this.colorPalette || this.colorPalette.length === 0) {
                 this.generateColorPalette();
             }
         }
-        // Reset global module index for Color Chaos consistency
         this.globalModuleIndex = 0;
+        this.globalGradientIndex = 0;
         await this.exporter.copySVG();
+    }
+
+    /**
+     * Экспорт PNG размером с видимую область окна (viewport): фон страницы + main canvas в его позиции.
+     */
+    exportViewportPng() {
+        const canvas = this.renderer?.canvas;
+        if (!canvas) return;
+
+        const dpr = window.devicePixelRatio || 1;
+        const vw = window.innerWidth;
+        const vh = window.innerHeight;
+        const outW = Math.max(1, Math.round(vw * dpr));
+        const outH = Math.max(1, Math.round(vh * dpr));
+
+        const out = document.createElement('canvas');
+        out.width = outW;
+        out.height = outH;
+        const ctx = out.getContext('2d');
+        if (!ctx) return;
+
+        const bodyBg = getComputedStyle(document.body).backgroundColor;
+        ctx.fillStyle = bodyBg && bodyBg !== 'rgba(0, 0, 0, 0)' ? bodyBg : '#0a0a0a';
+        ctx.fillRect(0, 0, outW, outH);
+
+        const rect = canvas.getBoundingClientRect();
+        const sx = 0;
+        const sy = 0;
+        const sw = canvas.width;
+        const sh = canvas.height;
+        const dx = rect.left * dpr;
+        const dy = rect.top * dpr;
+        const dw = rect.width * dpr;
+        const dh = rect.height * dpr;
+        ctx.drawImage(canvas, sx, sy, sw, sh, dx, dy, dw, dh);
+
+        const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+        const filename = `void-viewport-${stamp}.png`;
+
+        out.toBlob((blob) => {
+            if (!blob) return;
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.rel = 'noopener';
+            a.click();
+            URL.revokeObjectURL(url);
+        }, 'image/png');
     }
 
     /**
@@ -3445,7 +3832,7 @@ class VoidTypeface {
      */
     generatePresetName() {
         const text = this.settings.get('text') || '';
-        const mode = this.settings.get('mode') || 'fill';
+        const mode = this.getDerivedMode();
         
         // Full text (without spaces and line breaks)
         const fullText = text.replace(/\s+/g, ' ').trim();
@@ -3481,10 +3868,11 @@ class VoidTypeface {
      * Get display name for preset (max 24 characters total, including mode)
      */
     getDisplayName(fullName) {
-        const parts = fullName.split(' ');
+        if (fullName == null || fullName === '') return 'New';
+        const s = String(fullName);
+        const parts = s.split(' ');
         if (parts.length < 2) {
-            // If no mode, just truncate to 24 characters
-            return fullName.length > 24 ? fullName.substring(0, 21) + '...' : fullName;
+            return s.length > 24 ? s.substring(0, 21) + '...' : s;
         }
         
         // Last part is mode
@@ -3598,7 +3986,7 @@ class VoidTypeface {
             if (isDefaultPreset && this.hasUnsavedChanges) {
                 presetDropdownText.textContent = 'Unsaved';
             } else {
-                const displayName = this.currentPresetName === 'New' ? 'New' : this.getDisplayName(this.currentPresetName);
+                const displayName = this.currentPresetName === 'New' ? 'New' : this.getDisplayName(this.currentPresetName || 'New');
                 presetDropdownText.textContent = displayName;
             }
         }
@@ -3812,13 +4200,21 @@ class VoidTypeface {
             }
         });
         
+        const getTooltipText = (target) => {
+            const isDisabled = target.classList.contains('controls-disabled') || target.querySelector('input:disabled');
+            if (isDisabled && target.hasAttribute('data-tooltip-disabled')) {
+                return target.getAttribute('data-tooltip-disabled');
+            }
+            return target.getAttribute('data-tooltip') || null;
+        };
+
         // Delegate event listeners for elements with data-tooltip
         document.addEventListener('mouseenter', (e) => {
             const target = e.target.closest('[data-tooltip]');
             if (target) {
-                const tooltipText = target.getAttribute('data-tooltip');
-                if (tooltipText) {
-                    this.showTooltip(tooltipText, mouseX, mouseY);
+                const text = getTooltipText(target);
+                if (text) {
+                    this.showTooltip(text, mouseX, mouseY);
                 }
             }
         }, true);
@@ -3830,13 +4226,12 @@ class VoidTypeface {
             }
         }, true);
         
-        // Also listen for mouseover/mouseout for better detection on nested elements
         document.addEventListener('mouseover', (e) => {
             const target = e.target.closest('[data-tooltip]');
             if (target) {
-                const tooltipText = target.getAttribute('data-tooltip');
-                if (tooltipText) {
-                    this.showTooltip(tooltipText, mouseX, mouseY);
+                const text = getTooltipText(target);
+                if (text) {
+                    this.showTooltip(text, mouseX, mouseY);
                 }
             }
         });

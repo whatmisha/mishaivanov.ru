@@ -275,6 +275,51 @@ body {
     max-height: calc(100vh - var(--spacing-3xl) * 2);
 }
 
+/* Effects panel (bottom right) */
+.controls-panel-effects {
+    right: var(--spacing-3xl);
+    left: auto;
+    top: auto;
+    bottom: var(--spacing-3xl);
+    max-height: calc(100vh - var(--spacing-3xl) * 2);
+}
+
+/* Random panel (centered above export buttons, 20px gap) */
+.controls-panel-random {
+    left: 50%;
+    right: auto;
+    top: auto;
+    transform: translateX(-50%);
+    bottom: calc(var(--spacing-3xl) + var(--button-height) + 20px);
+    max-height: none;
+}
+
+.controls-panel-random .panel-content {
+    overflow: visible;
+}
+
+.random-panel-actions {
+    display: flex;
+    gap: 8px;
+    padding: 0 var(--spacing-3xl) var(--spacing-3xl);
+}
+
+.color-source-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.color-source-row .style-buttons-container {
+    flex: 1;
+}
+
+.dice-count-badge {
+    margin-left: 4px;
+    color: #d2d2d2;
+    font-weight: 400 !important;
+}
+
 /* Paragraph settings panel - modal panel for object settings */
 .paragraph-settings-panel {
     z-index: 1001;
@@ -542,8 +587,8 @@ body {
     margin-bottom: 12px;
 }
 
-/* Remove bottom margin from color swatches block in collapsed state */
-.control-group:has(.color-swatches-row) {
+/* Remove bottom margin from color swatches block */
+.control-group:has(.color-swatches-compact) {
     margin-bottom: 0;
 }
 
@@ -1119,16 +1164,19 @@ input[name="textAlign"]:checked + .align-icon-btn {
     outline: none;
 }
 
-/* Hide standard preview button in unified picker */
-#unifiedColorPickerContainer .color-preview {
-    display: none;
+/* Unified picker: only HSB block (hex lives on swatch rows); docked under active swatch row */
+#unifiedColorPickerContainer .color-picker-wrapper {
+    margin-top: 0;
 }
 
-/* HEX input - hidden by default, shown via JS when picker opens */
-#unifiedColorPickerContainer .color-input-group {
-    display: none;
-    gap: var(--spacing-md);
-    margin-bottom: var(--spacing-md);
+#unifiedColorPickerContainer .hsb-picker {
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+.color-hsb-slot #unifiedColorPickerContainer .hsb-picker {
+    padding-left: 8px;
+    padding-right: 8px;
 }
 
 /* HEX Input */
@@ -1370,6 +1418,15 @@ input[name="textAlign"]:checked + .align-icon-btn {
 .btn-secondary:hover:not(:disabled) {
     background: var(--color-text);
     color: var(--color-bg);
+}
+
+.btn-secondary.active {
+    background: var(--color-text);
+    color: var(--color-bg);
+}
+
+.btn-secondary.active:hover:not(:disabled) {
+    opacity: 0.85;
 }
 
 /* Disabled State */
@@ -1741,31 +1798,167 @@ legend {
    WOBBLY SECTION (non-random modes)
    ============================================ */
 
-.wobbly-section {
-    border-top: 1px solid var(--color-border);
-    margin-top: 20px;
-    padding-top: 16px;
-    margin-left: calc(-1 * var(--spacing-3xl));
-    margin-right: calc(-1 * var(--spacing-3xl));
-    padding-left: var(--spacing-3xl);
-    padding-right: var(--spacing-3xl);
+/* Dashes section (header uses .section-divider-header) */
+.dashes-section {
+    margin-top: 0;
+    border-top: none;
+    padding-top: 0;
 }
 
-.wobbly-section-header {
-    font-size: 0.75rem;
+.dashes-section-content {
+    margin-top: 8px;
+}
+
+/* Typefacer-style section title with inline power icon */
+.section-divider-header {
+    display: block;
+    margin-top: 16px;
+    margin-bottom: 10px;
+    margin-left: calc(-1 * var(--spacing-3xl));
+    margin-right: calc(-1 * var(--spacing-3xl));
+    padding-top: 14px;
+    padding-left: var(--spacing-3xl);
+    padding-right: var(--spacing-3xl);
+    border-top: 1px solid var(--color-border);
+}
+
+.section-divider-header .section-toggle-label {
+    display: inline;
+    cursor: pointer;
+    font-size: 0.7rem;
     font-weight: 500;
     color: var(--color-text-dim);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
+    letter-spacing: 1px;
+    transition: color var(--transition-fast);
 }
 
-.wobbly-section .control-group {
-    margin-bottom: 12px;
+.section-divider-header .section-toggle-label:hover {
+    color: var(--color-text-secondary);
 }
 
-.wobbly-section .control-group:last-child {
-    margin-bottom: 0;
+.section-divider-header .section-toggle-label:has(input:checked) {
+    color: var(--color-text);
+}
+
+.section-divider-header .section-toggle-icon {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    margin-left: 5px;
+    vertical-align: baseline;
+    opacity: 0.6;
+    transition: opacity var(--transition-fast);
+}
+
+.section-divider-header .section-toggle-label:hover .section-toggle-icon {
+    opacity: 0.9;
+}
+
+.section-divider-header .section-toggle-label:has(input:checked) .section-toggle-icon {
+    opacity: 1;
+}
+
+/* Row of pill toggles (Grid / Ends / …) */
+.pill-toggle-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+}
+
+/* OpenType-style pill toggle (checkbox inside label) */
+.pill-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 12px;
+    border: none;
+    border-radius: 999px;
+    background: #000;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.pill-toggle span {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    line-height: 1.2;
+    transition: color var(--transition-fast);
+}
+
+.pill-toggle:hover {
+    background: var(--color-text);
+}
+
+.pill-toggle:hover span {
+    color: var(--color-bg);
+}
+
+.pill-toggle:has(input:checked) {
+    background: var(--color-text);
+}
+
+.pill-toggle:has(input:checked) span {
+    color: var(--color-bg);
+}
+
+.pill-toggle:has(input:focus-visible) {
+    outline: 2px solid var(--color-text);
+    outline-offset: 2px;
+}
+
+.pill-toggle:has(input:disabled),
+.pill-toggle.controls-disabled {
+    opacity: 0.4;
+    cursor: default;
+    pointer-events: none;
+}
+
+.pill-toggle:has(input:disabled) span,
+.pill-toggle.controls-disabled span {
+    color: var(--color-text-muted);
+}
+
+.pill-toggle.inactive {
+    opacity: 0.4;
+    cursor: default !important;
+}
+
+.pill-toggle.inactive:hover {
+    opacity: 0.4;
+    background: #000;
+}
+
+.pill-toggle.inactive:hover span {
+    color: var(--color-text-muted);
+}
+
+.pill-toggle.inactive span {
+    color: var(--color-text-muted);
+}
+
+.pill-toggle.hidden {
+    display: none !important;
+}
+
+.control-group.disabled .pill-toggle {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+/* First section under Effects panel header — no extra top rule */
+.effects-panel-section > .section-divider-header:first-child {
+    margin-top: 0;
+    padding-top: 2px;
+    border-top: none;
+}
+
+.dashes-section-content.controls-disabled {
+    opacity: 0.3;
+    pointer-events: none;
 }
 
 /* Disabled state for controls when their toggle is off */
@@ -1774,94 +1967,105 @@ legend {
     pointer-events: none;
 }
 
-/* First random section needs top margin after style buttons */
-#randomSectionGeneral {
-    margin-top: 12px;
+/* Range toggle (↔): inline symbol after param name — always visible */
+.dice-btn {
+    display: inline;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85em;
+    padding: 0;
+    margin-left: 3px;
+    opacity: 0.35;
+    transition: color var(--transition-fast), opacity var(--transition-fast);
+    line-height: 1;
+    color: var(--color-text-dim);
+    vertical-align: baseline;
 }
 
-/* Button section - fixed at the bottom of the panel, outside scroll area */
-#randomSectionButton {
-    flex-shrink: 0;
-    padding: 16px var(--spacing-3xl) var(--spacing-3xl);
-    border-top: 1px solid var(--color-border);
+.dice-slider-group label:hover .dice-btn {
+    opacity: 0.65;
+    color: var(--color-text-secondary);
 }
 
-#randomSectionButton .control-group {
-    margin-bottom: 0;
+.dice-btn:hover {
+    opacity: 0.8;
+}
+
+.dice-btn.active {
+    opacity: 1;
+    color: var(--color-text);
+}
+
+.dice-slider-group label > span:first-child {
+    cursor: pointer;
+}
+
+.dice-slider-group label:hover > span:first-child {
+    color: var(--color-text);
+    transition: color var(--transition-fast);
+}
+
+.dice-slider-group .value-display {
+    margin-right: 4px;
+}
+
+.dice-range .range-slider-values {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
 }
 
 /* ============================================
-   RANDOM MODE SECTIONS
+   RANDOM PARAMS LIST (pill-style items)
    ============================================ */
-
-/* Random mode section container */
-.random-section {
-    display: none;
+.random-params-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 8px 0;
+    min-height: calc(6 * (28px + 4px) - 4px);
+    align-content: flex-start;
 }
 
-.random-section.visible {
-    display: block;
+.random-param-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    background: #000;
+    border: none;
+    border-radius: var(--radius-button);
+    padding: 6px 8px 6px 12px;
+    cursor: default;
+    transition: background-color var(--transition-fast);
 }
 
-/* Section with divider line above */
-.random-section + .random-section {
-    border-top: 1px solid var(--color-border);
-    margin-top: 20px;
-    padding-top: 16px;
-    margin-left: calc(-1 * var(--spacing-3xl));
-    margin-right: calc(-1 * var(--spacing-3xl));
-    padding-left: var(--spacing-3xl);
-    padding-right: var(--spacing-3xl);
+.random-param-pill-text {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    line-height: 1.2;
+    white-space: nowrap;
 }
 
-/* Dashes section has smaller top margin */
-#randomSectionDash {
-    margin-top: 10px !important;
+.random-param-pill-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    line-height: 1;
+    padding: 0 2px;
+    opacity: 0.5;
+    transition: opacity var(--transition-fast), color var(--transition-fast);
 }
 
-/* Section header */
-.random-section-header {
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--color-text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
+.random-param-pill-close:hover {
+    opacity: 1;
+    color: var(--color-text);
 }
 
-/* Control groups inside sections */
-.random-section .control-group {
-    margin-bottom: 12px;
-}
 
-.random-section .control-group:last-child {
-    margin-bottom: 0;
-}
 
-/* Toggle rows inside sections need more bottom margin when followed by sliders */
-.random-section .control-group.toggle-group-row {
-    margin-bottom: 14px;
-}
-
-/* Chaos Alt row doesn't need bottom margin (followed by Round Close) */
-#randomControlGroup.toggle-group-row {
-    margin-bottom: 0;
-}
-
-/* Random|Chaos|BW row doesn't need bottom margin (followed by Lock Back Lock Grid) */
-#randomControlGroup6.toggle-group-row {
-    margin-bottom: 0;
-}
-
-/* Lock Back Lock Grid row doesn't need bottom margin (followed by Colors slider) */
-#randomControlGroupColorChaosKeepBg.toggle-group-row {
-    margin-bottom: 0;
-}
-
-/* Dashes|Chess Order row has smaller bottom margin */
-#randomDashSection.toggle-group-row {
-    margin-bottom: 8px;
-}
 
 /* Disabled state for control groups */
 .control-group.disabled {
@@ -1884,103 +2088,126 @@ legend {
     cursor: default !important;
 }
 
-.control-group.disabled .checkbox-label {
-    cursor: default;
-}
-
-/* Keep interactive but dimmed - for Chess which depends on Dash */
-.checkbox-label.inactive {
-    opacity: 0.4;
-    cursor: default !important;
-}
-
-.checkbox-label.inactive:hover {
-    opacity: 0.4;
-    cursor: default !important;
-}
-
-.checkbox-label.inactive * {
-    cursor: default !important;
-}
-
-.checkbox-label.inactive span {
-    color: var(--color-text-muted);
-}
-
-.checkbox-label.inactive:hover span {
-    color: var(--color-text-muted);
-}
 
 /* ============================================
-   COLOR SWATCHES - Circle color pickers
+   COLOR SWATCHES - Compact inline display
    ============================================ */
 
-/* Row of circle color swatches */
-.color-swatches-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    margin-bottom: 12px;
-    justify-content: center;
-}
-
-/* Individual swatch item: circle + label */
-.color-swatch-item {
+.color-swatches-compact {
     display: flex;
     flex-direction: column;
+    gap: 2px;
+    margin-bottom: 8px;
+}
+
+.color-swatch-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+    border-radius: 8px;
+    transition: background-color var(--transition-fast);
+}
+
+.color-swatch-row.active {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.color-hsb-slot {
+    width: 100%;
+    min-height: 0;
+}
+
+.color-hsb-slot:empty {
+    display: none;
+}
+
+.color-swatch-compact {
+    display: flex;
     align-items: center;
-    gap: 6px;
-}
-
-/* Circle swatch button */
-.color-swatch {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    border: 2px solid transparent;
-    background: var(--color-bg-input);
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: var(--radius-button);
+    text-align: left;
+    width: 100%;
+    font-family: inherit;
     cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.color-swatch-compact:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.color-swatch-compact.active {
+    background: transparent;
+}
+
+/* Clickable color preview — reads as a control */
+button.color-dot,
+button.color-dot--expandable {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
     padding: 0;
-    transition: border-color var(--transition-normal), transform var(--transition-fast), box-shadow var(--transition-fast);
-    position: relative;
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 4px;
+    flex-shrink: 0;
+    cursor: pointer;
+    box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.35),
+        0 1px 2px rgba(0, 0, 0, 0.4);
+    transition: border-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.color-swatch:hover {
-    transform: scale(1.08);
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15), 0 2px 8px rgba(0, 0, 0, 0.3);
+button.color-dot--expandable:hover {
+    border-color: rgba(255, 255, 255, 0.75);
+    transform: scale(1.06);
+    box-shadow:
+        inset 0 0 0 1px rgba(0, 0, 0, 0.25),
+        0 0 0 1px rgba(255, 255, 255, 0.2),
+        0 2px 6px rgba(0, 0, 0, 0.45);
 }
 
-.color-swatch:focus {
-    outline: none;
-    border-color: var(--color-text);
+button.color-dot--expandable:focus-visible {
+    outline: 2px solid var(--color-text);
+    outline-offset: 2px;
 }
 
-/* Active state: white ring */
-.color-swatch.active {
-    border-color: var(--color-text);
-}
-
-/* Disabled state */
-.color-swatch:disabled {
-    opacity: 0.3;
-    cursor: default;
-    transform: none;
-}
-
-/* Label below swatch */
-.color-swatch-label {
-    font-size: 0.7rem;
-    color: var(--color-text-muted);
-    text-align: center;
-    letter-spacing: 0.03em;
+/* Match .control-group label (slider captions) */
+.color-swatch-compact .color-label {
+    flex: 1 1 auto;
+    min-width: 0;
     user-select: none;
-    pointer-events: none;
+    line-height: 1.25;
+    font-weight: 400;
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    cursor: pointer;
 }
 
-/* Legacy support - keep old classes working if referenced */
-.color-pickers-group {
-    margin-bottom: 4px;
+.color-swatch-hex {
+    cursor: text;
+    margin-left: auto;
+    width: 7.2em;
+    max-width: 100%;
+    flex: 0 0 auto;
+    height: 26px;
+    padding: 0 6px;
+    font-family: monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    color: var(--color-text-muted);
+    background: var(--color-bg-input);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-input);
+    transition: border-color var(--transition-fast);
+}
+
+.color-swatch-hex:focus {
+    outline: none;
+    border-color: var(--color-text-subtle);
+    color: var(--color-text);
 }
 
 
@@ -1989,149 +2216,6 @@ legend {
     display: none !important;
 }
 
-.checkbox-label.hidden {
-    display: none !important;
-}
-
-/* ============================================
-   12. CHECKBOXES & TOGGLES
-   ============================================ */
-
-/* Checkbox Label */
-.checkbox-label {
-    display: flex !important;
-    align-items: center !important;
-    cursor: pointer;
-    padding: 10px 0;
-    margin-bottom: 0 !important;
-    position: relative;
-    /* Prevent double-tap zoom on mobile */
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-}
-
-.control-group:has(.checkbox-label) {
-    margin-bottom: var(--spacing-xs);
-}
-
-/* Группы тоглов в одну строку (2 или 3 тогла) */
-/* display set via inline style: flex for visible, none for hidden */
-.control-group.toggle-group-row {
-    gap: 15px;
-    flex-wrap: nowrap;
-    align-items: center;
-}
-
-.control-group.toggle-group-row .checkbox-label {
-    flex-shrink: 0;
-    margin-bottom: 0;
-    padding: 10px 0;
-}
-
-.checkbox-label span {
-    font-size: 0.9rem;
-    color: var(--color-text-secondary);
-    display: inline-flex;
-    align-items: center;
-    gap: var(--spacing-xs);
-}
-
-.checkbox-icon {
-    flex-shrink: 0;
-    opacity: 0.7;
-    transition: opacity var(--transition-normal);
-}
-
-.checkbox-label:hover .checkbox-icon {
-    opacity: 1;
-}
-
-.checkbox-label:hover span {
-    color: var(--color-text);
-}
-
-/* Toggle Switch Styles */
-.control-group input[type="checkbox"] {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
-}
-
-.checkbox-label::before {
-    content: '';
-    display: inline-block;
-    width: 28px;
-    height: 16px;
-    background-color: #3a3a3a;
-    border-radius: 8px;
-    margin-right: 0;
-    transition: background-color 0.3s ease;
-    position: relative;
-    flex-shrink: 0;
-}
-
-.checkbox-label::after {
-    content: '';
-    position: absolute;
-    left: 2px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 12px;
-    height: 12px;
-    background-color: #d2d2d2;
-    border-radius: 50%;
-    transition: left 0.3s ease;
-}
-
-.control-group input[type="checkbox"]:checked + .checkbox-label::before,
-.checkbox-label:has(input[type="checkbox"]:checked)::before {
-    background-color: #888888;
-}
-
-.control-group input[type="checkbox"]:checked + .checkbox-label::after,
-.checkbox-label:has(input[type="checkbox"]:checked)::after {
-    left: 14px; /* 28px width - 12px circle - 2px left margin = 14px */
-    background-color: #d2d2d2;
-}
-
-.checkbox-label:hover::before {
-    opacity: 0.9;
-}
-
-/* Disabled checkbox state */
-.checkbox-label:has(input[type="checkbox"]:disabled),
-.checkbox-label.disabled {
-    opacity: 0.4;
-    cursor: default !important;
-    /* pointer-events kept for tooltip support */
-}
-
-.checkbox-label:has(input[type="checkbox"]:disabled) input,
-.checkbox-label.disabled input {
-    pointer-events: none;
-}
-
-.checkbox-label:has(input[type="checkbox"]:disabled) *,
-.checkbox-label.disabled * {
-    cursor: default !important;
-}
-
-.checkbox-label:has(input[type="checkbox"]:disabled) span,
-.checkbox-label.disabled span {
-    opacity: 0.4;
-    color: var(--color-text-muted);
-}
-
-.checkbox-label:has(input[type="checkbox"]:disabled)::before,
-.checkbox-label.disabled::before {
-    opacity: 0.4;
-}
-
-.checkbox-label:has(input[type="checkbox"]:disabled)::after,
-.checkbox-label.disabled::after {
-    opacity: 0.4;
-}
 
 /* ============================================
    13. DROPDOWNS & SELECTS
@@ -2943,10 +3027,6 @@ textarea::-moz-selection {
         padding-bottom: var(--spacing-xl);
     }
     
-    #randomSectionButton {
-        padding: var(--spacing-xl) 16px;
-    }
-    
     .bottom-buttons {
         bottom: var(--spacing-3xl);
         flex-direction: column;
@@ -2980,13 +3060,9 @@ textarea::-moz-selection {
         border-radius: calc(calc(var(--button-height) * 1.5) / 2);
     }
     
-    .color-swatch {
-        width: calc(48px * 1.5);
-        height: calc(48px * 1.5);
-    }
-    
-    .color-swatch-label {
-        font-size: calc(0.7rem * 1.5);
+    button.color-dot--expandable {
+        width: calc(18px * 1.5);
+        height: calc(18px * 1.5);
     }
     
     .modal-content {
@@ -3515,12 +3591,8 @@ textarea::-moz-selection {
     /* No pseudo-elements needed - handled by JS */
 }
 
-/* ============================================
-   ROUND CAPS CONTROL GROUP SPACING
-   ============================================ */
-
-/* Round Caps container in Monoline and other modes */
-#roundedCapsControlGroup {
+/* Effects pill toggles container */
+#effectsPillToggles {
     margin-top: 20px;
     margin-bottom: 0;
 }
