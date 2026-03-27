@@ -1910,33 +1910,32 @@ legend {
     outline-offset: 2px;
 }
 
+/* Muted pills: один тёмный вид (в т.ч. когда чекбокс был включён — без «светлой» капсулы) */
 .pill-toggle:has(input:disabled),
-.pill-toggle.controls-disabled {
-    opacity: 0.4;
-    cursor: default;
-    pointer-events: none;
-}
-
-.pill-toggle:has(input:disabled) span,
-.pill-toggle.controls-disabled span {
-    color: var(--color-text-muted);
-}
-
+.pill-toggle.controls-disabled,
 .pill-toggle.inactive {
-    opacity: 0.4;
+    background: #000 !important;
+    opacity: 0.45;
     cursor: default !important;
 }
 
-.pill-toggle.inactive:hover {
-    opacity: 0.4;
-    background: #000;
-}
-
-.pill-toggle.inactive:hover span {
+.pill-toggle:has(input:disabled) span,
+.pill-toggle.controls-disabled span,
+.pill-toggle.inactive span {
     color: var(--color-text-muted);
 }
 
-.pill-toggle.inactive span {
+.pill-toggle:has(input:disabled),
+.pill-toggle.controls-disabled {
+    pointer-events: none;
+}
+
+.pill-toggle.inactive:hover {
+    background: #000 !important;
+    opacity: 0.45;
+}
+
+.pill-toggle.inactive:hover span {
     color: var(--color-text-muted);
 }
 
@@ -1945,8 +1944,13 @@ legend {
 }
 
 .control-group.disabled .pill-toggle {
-    opacity: 0.4;
+    background: #000 !important;
+    opacity: 0.45;
     pointer-events: none;
+}
+
+.control-group.disabled .pill-toggle span {
+    color: var(--color-text-muted);
 }
 
 /* First section under Effects panel header — no extra top rule */
