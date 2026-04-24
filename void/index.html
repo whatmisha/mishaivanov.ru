@@ -92,7 +92,7 @@
                         <!-- Stem Weight (with dice for range mode) -->
                         <div class="control-group dice-slider-group" id="stemDiceGroup">
                             <label for="stemSlider">
-                                <span>Stem Weight <span class="unit">mod</span> <button type="button" class="dice-btn" id="stemDiceBtn" data-param="stem" title="Random range (min–max)" aria-label="Range mode: min to max">↔</button></span>
+                                <span>Stem Weight <span class="unit">mod</span> <button type="button" class="dice-btn" id="stemDiceBtn" data-param="stem" title="Random range (min–max)" aria-label="Toggle random range">↔</button></span>
                                 <input type="text" class="value-display" id="stemValue" value="0.5">
                             </label>
                             <div class="dice-single" id="stemSingleWrap">
@@ -181,7 +181,7 @@ Code</textarea>
                         <!-- Lines (with dice) -->
                         <div class="control-group dice-slider-group" id="strokesDiceGroup">
                             <label for="strokesSlider">
-                                <span>Lines <button type="button" class="dice-btn" id="strokesDiceBtn" data-param="strokes" title="Random range (min–max)" aria-label="Range mode: min to max">↔</button></span>
+                                <span>Lines <button type="button" class="dice-btn" id="strokesDiceBtn" data-param="strokes" title="Random range (min–max)" aria-label="Toggle random range">↔</button></span>
                                 <input type="text" class="value-display" id="strokesValue" value="1">
                             </label>
                             <div class="dice-single" id="strokesSingleWrap">
@@ -199,7 +199,7 @@ Code</textarea>
                         <!-- Contrast (with dice, dimmed when Lines=1) -->
                         <div class="control-group dice-slider-group" id="strokeGapRatioControlGroup">
                             <label for="strokeGapRatioSlider">
-                                <span>Contrast <button type="button" class="dice-btn" id="contrastDiceBtn" data-param="contrast" title="Random range (min–max)" aria-label="Range mode: min to max">↔</button></span>
+                                <span>Contrast <button type="button" class="dice-btn" id="contrastDiceBtn" data-param="contrast" title="Random range (min–max)" aria-label="Toggle random range">↔</button></span>
                                 <input type="text" class="value-display" id="strokeGapRatioValue" value="1.0">
                             </label>
                             <div class="dice-single" id="contrastSingleWrap">
@@ -226,7 +226,7 @@ Code</textarea>
                             <div class="dashes-section-content" id="dashesSectionContent">
                                 <div class="control-group dice-slider-group" id="dashLengthControlGroup">
                                     <label for="dashLengthSlider">
-                                        <span>Dash Length <button type="button" class="dice-btn" id="dashLengthDiceBtn" data-param="dashLength" title="Random range (min–max)" aria-label="Range mode: min to max">↔</button></span>
+                                        <span>Dash Length <button type="button" class="dice-btn" id="dashLengthDiceBtn" data-param="dashLength" title="Random range (min–max)" aria-label="Toggle random range">↔</button></span>
                                         <input type="text" class="value-display" id="dashLengthValue" value="1.00">
                                     </label>
                                     <div class="dice-single" id="dashLengthSingleWrap">
@@ -242,7 +242,7 @@ Code</textarea>
                                 </div>
                                 <div class="control-group dice-slider-group" id="gapLengthControlGroup">
                                     <label for="gapLengthSlider">
-                                        <span>Gap Length <button type="button" class="dice-btn" id="gapLengthDiceBtn" data-param="gapLength" title="Random range (min–max)" aria-label="Range mode: min to max">↔</button></span>
+                                        <span>Gap Length <button type="button" class="dice-btn" id="gapLengthDiceBtn" data-param="gapLength" title="Random range (min–max)" aria-label="Toggle random range">↔</button></span>
                                         <input type="text" class="value-display" id="gapLengthValue" value="1.50">
                                     </label>
                                     <div class="dice-single" id="gapLengthSingleWrap">
@@ -279,7 +279,7 @@ Code</textarea>
                     </section>
                 </div>
                 <div class="random-panel-actions">
-                    <button type="button" class="btn-secondary" id="shuffleBtn" style="flex: 1;">Chaos</button>
+                    <button type="button" class="btn-secondary" id="shuffleBtn" style="flex: 1;">🎲</button>
                     <button type="button" class="btn-secondary" id="renewRandomBtn" style="flex: 1;">Randomize</button>
                     <button type="button" class="btn-secondary" id="resetAllDiceBtn" style="flex: 1;">↺</button>
                 </div>
@@ -306,7 +306,7 @@ Code</textarea>
                         </div>
                         <div class="control-group dice-slider-group wobbly-slider" id="wobblyAmountControlGroup">
                             <label for="wobblyAmountSlider">
-                                <span>Amount <span class="unit">px</span> <button type="button" class="dice-btn" id="wobblyAmountDiceBtn" data-param="wobblyAmount" title="Random range (min–max)" aria-label="Range mode: min to max">↔</button></span>
+                                <span>Amount <span class="unit">px</span> <button type="button" class="dice-btn" id="wobblyAmountDiceBtn" data-param="wobblyAmount" title="Random range (min–max)" aria-label="Toggle random range">↔</button></span>
                                 <input type="text" class="value-display" id="wobblyAmountValue" value="3">
                             </label>
                             <div class="dice-single" id="wobblyAmountSingleWrap">
@@ -322,7 +322,7 @@ Code</textarea>
                         </div>
                         <div class="control-group dice-slider-group wobbly-slider" id="wobblyFrequencyControlGroup">
                             <label for="wobblyFrequencySlider">
-                                <span>Noise <button type="button" class="dice-btn" id="wobblyFrequencyDiceBtn" data-param="wobblyFrequency" title="Random range (min–max)" aria-label="Range mode: min to max">↔</button></span>
+                                <span>Noise <button type="button" class="dice-btn" id="wobblyFrequencyDiceBtn" data-param="wobblyFrequency" title="Random range (min–max)" aria-label="Toggle random range">↔</button></span>
                                 <input type="text" class="value-display" id="wobblyFrequencyValue" value="0.1">
                             </label>
                             <div class="dice-single" id="wobblyFrequencySingleWrap">
@@ -464,10 +464,10 @@ Code</textarea>
                         </div>
                     </div>
 
-                    <!-- Palette slider (shared, with range pill) -->
+                    <!-- Palette slider (shared, with ↔ dice) -->
                     <div class="control-group dice-slider-group" id="paletteColorsDiceGroup">
                         <label for="paletteColorsSlider">
-                            <span>Palette <button type="button" class="dice-btn" id="paletteColorsDiceBtn" data-param="paletteColors" title="Random range" aria-label="Range mode: min to max">↔</button></span>
+                            <span>Palette <button type="button" class="dice-btn" id="paletteColorsDiceBtn" data-param="paletteColors" title="Random range" aria-label="Toggle random palette range">↔</button></span>
                             <input type="text" class="value-display" id="paletteColorsValue" value="3">
                         </label>
                         <div class="dice-single" id="paletteColorsSingleWrap">
