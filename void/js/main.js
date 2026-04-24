@@ -1169,7 +1169,7 @@ class VoidTypeface {
         };
     }
 
-    /** Lines > 1 in single mode, or Lines ↔ range with max > 1 */
+    /** Lines > 1 in single mode, or Lines range mode with max > 1 */
     linesAllowMultiLineForStyleUI() {
         if (this.settings.get('randomizeStrokes')) {
             return (this.settings.get('randomStrokesMax') ?? 1) > 1;

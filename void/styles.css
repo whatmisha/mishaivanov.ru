@@ -89,6 +89,9 @@
     --checkbox-size: 14px;
     --handle-size: 8px;
     --button-height: 36px;
+    
+    /* Range mode pill next to sliders */
+    --range-pill-text-size: 12pt;
 }
 
 /* ============================================
@@ -1971,34 +1974,47 @@ legend {
     pointer-events: none;
 }
 
-/* Range toggle (↔): inline symbol after param name — always visible */
+/* Range mode pill: ↔ справа от подписи слайдера (неактивно / active) */
 .dice-btn {
-    display: inline;
-    background: none;
+    display: inline-flex;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    margin-left: 6px;
+    padding: 3px 3px;
     border: none;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 0.85em;
-    padding: 0;
-    margin-left: 3px;
-    opacity: 0.35;
-    transition: color var(--transition-fast), opacity var(--transition-fast);
+    font-family: inherit;
+    font-size: var(--range-pill-text-size);
+    font-weight: 500;
     line-height: 1;
+    text-transform: uppercase;
     color: var(--color-text-dim);
-    vertical-align: baseline;
+    background: #141414;
+    vertical-align: middle;
+    flex-shrink: 0;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
-.dice-slider-group label:hover .dice-btn {
-    opacity: 0.65;
-    color: var(--color-text-secondary);
+.dice-slider-group label:hover .dice-btn:not(.active) {
+    color: var(--color-text-muted);
+    background: #1a1a1a;
 }
 
-.dice-btn:hover {
-    opacity: 0.8;
+.dice-btn:hover:not(:disabled):not(.active) {
+    color: var(--color-text-subtle);
 }
 
 .dice-btn.active {
-    opacity: 1;
-    color: var(--color-text);
+    color: #000;
+    background: #d2d2d2;
+}
+
+.dice-btn.active:hover {
+    background: #e0e0e0;
+    color: #000;
 }
 
 .dice-slider-group label > span:first-child {
