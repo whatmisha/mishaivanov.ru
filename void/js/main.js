@@ -363,11 +363,8 @@ class VoidTypeface {
         if (saveBtn)        saveBtn.style.display = 'none';
         if (deleteBtn)      deleteBtn.style.display = 'none';
         
-        // Hide all export / copy buttons — not useful on mobile
-        ['exportBtn', 'exportPngBtn', 'copyBtn'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.style.display = 'none';
-        });
+        // Remove PNG export from DOM (desktop-only feature). SVG / Copy hidden via CSS.
+        document.getElementById('exportPngBtn')?.remove();
         
         // Show Update button
         const renewBtn = document.getElementById('renewBtn');
@@ -383,7 +380,7 @@ class VoidTypeface {
             });
         }
 
-        this.settings.set('text', 'VOID\nTYPE\nFACE');
+        this.settings.set('text', 'DESK\nTOP\nONLY');
 
         // Apply safe mobile chaos on first load
         this.applyMobileChaos();
@@ -480,7 +477,7 @@ class VoidTypeface {
 
     /**
      * Calculate optimal module size for mobile device
-     * so text "VOID\nTYPE\nFACE" fits in window without clipping
+     * so text "DESK\nTOP\nONLY" fits in window without clipping
      */
     calculateMobileModuleSize() {
         // Wait for next frame so canvas gets dimensions

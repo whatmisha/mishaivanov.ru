@@ -298,8 +298,12 @@ body {
     max-height: none;
 }
 
+/* Scrollable body: max height is a cap; scrollbar only when content is taller (see .random-params-list) */
 .controls-panel-random .panel-content {
-    overflow: visible;
+    max-height: 160px;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .random-panel-actions {
@@ -2065,7 +2069,6 @@ legend {
     flex-wrap: wrap;
     gap: 4px;
     margin: 8px 0;
-    min-height: calc(6 * (28px + 4px) - 4px);
     align-content: flex-start;
 }
 
@@ -3033,6 +3036,7 @@ textarea::-moz-selection {
 .is-mobile #savePresetBtn,
 .is-mobile #deletePresetBtn,
 .is-mobile #exportBtn,
+.is-mobile #exportPngBtn,
 .is-mobile #copyBtn {
     display: none !important;
 }
