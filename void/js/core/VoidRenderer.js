@@ -32,8 +32,8 @@ export class VoidRenderer {
             textAlign: 'center',   // text alignment: 'left', 'center', 'right'
             cornerRadius: 0,       // corner radius
             roundedCaps: false,    // rounded line caps in Stroke mode (Rounded)
-            showEndpoints: false,   // show endpoints and joints (for debugging)
-            showTestCircles: false // show circles on endpoints (Test mode)
+            showJoints: false,         // Joints: where modules meet
+            showFreeEndpoints: false  // Free ends of strokes (separate from Joints)
         };
         
         this.cols = 5; // columns in grid
@@ -718,112 +718,27 @@ export class VoidRenderer {
         // Restore globalAlpha
         this.ctx.globalAlpha = originalAlpha;
         
-        // Render endpoints and joints (if enabled)
-        if (this.params.showEndpoints) {
+        if (this.params.showJoints || this.params.showFreeEndpoints) {
             try {
                 const analysis = this.getCachedGlyphAnalysis(glyphCode, letterCols, this.rows);
                 this.endpointDetector.renderPoints(
-                    this.ctx, 
-                    analysis.connections, 
-                    analysis.endpoints, 
+                    this.ctx,
+                    analysis.connections,
+                    analysis.endpoints,
                     moduleW,
                     x,
                     y,
-                    this.params.color,      // Letter Color
-                    this.params.bgColor     // Background Color
+                    this.params.color,
+                    this.params.bgColor,
+                    {
+                        showJoints: this.params.showJoints,
+                        showFreeEndpoints: this.params.showFreeEndpoints
+                    }
                 );
-                
-                // Render circles on endpoints (Test mode)
-                if (this.params.showTestCircles) {
-                    this.renderTestCircles(glyphCode, letterCols, analysis.endpoints, moduleW, x, y, baseStem);
-                }
             } catch (error) {
-                console.error('Error rendering endpoints:', error);
-            }
-        } else if (this.params.showTestCircles) {
-            // If only Test enabled but not Endpoints, still analyze and draw circles
-            try {
-                const analysis = this.getCachedGlyphAnalysis(glyphCode, letterCols, this.rows);
-                this.renderTestCircles(glyphCode, letterCols, analysis.endpoints, moduleW, x, y, baseStem);
-            } catch (error) {
-                console.error('Error rendering test circles:', error);
+                console.error('Error rendering joint/endpoint markers:', error);
             }
         }
-    }
-
-    /**
-     * Render circles on endpoints (Test mode)
-     */
-    renderTestCircles(glyphCode, letterCols, endpoints, moduleW, x, y, stem) {
-        if (!endpoints || endpoints.length === 0) return;
-        
-        // Create module grid to get type and rotation
-        const grid = [];
-        for (let row = 0; row < this.rows; row++) {
-            grid[row] = [];
-            for (let col = 0; col < letterCols; col++) {
-                const index = (row * letterCols + col) * 2;
-                if (index < glyphCode.length) {
-                    const type = glyphCode.charAt(index);
-                    const rotation = parseInt(glyphCode.charAt(index + 1));
-                    grid[row][col] = { type, rotation };
-                } else {
-                    grid[row][col] = { type: 'E', rotation: 0 };
-                }
-            }
-        }
-        
-        this.ctx.save();
-        this.ctx.strokeStyle = this.params.color || '#ffffff';
-        this.ctx.fillStyle = 'transparent';
-        this.ctx.lineWidth = 1;
-        
-        endpoints.forEach(ep => {
-            try {
-                const module = grid[ep.row] && grid[ep.row][ep.col];
-                if (!module || module.type === 'E') return;
-                
-                // Get point coordinates on curve relative to module start
-                const point = this.endpointDetector.getLineEndPointCoordinates(
-                    module.type,
-                    module.rotation,
-                    ep.side,
-                    moduleW,
-                    stem
-                );
-                
-                // Check that coordinates were calculated (not remained 0,0)
-                if (!point || (point.x === 0 && point.y === 0 && module.type !== 'C')) {
-                    // Fallback: use coordinates on module side
-                    const fallbackPoint = this.endpointDetector.getPointCoordinates(ep.col, ep.row, ep.side, moduleW);
-                    const moduleX = x + ep.col * moduleW;
-                    const moduleY = y + ep.row * moduleW;
-                    const relativeX = fallbackPoint.x - (ep.col * moduleW);
-                    const relativeY = fallbackPoint.y - (ep.row * moduleW);
-                    
-                    const radius = stem / 4;
-                    this.ctx.beginPath();
-                    this.ctx.arc(moduleX + relativeX, moduleY + relativeY, radius, 0, Math.PI * 2);
-                    this.ctx.stroke();
-                    return;
-                }
-                
-                // Point coordinates relative to module, convert to coordinates relative to letter
-                const moduleX = x + ep.col * moduleW;
-                const moduleY = y + ep.row * moduleW;
-                
-                // Draw circle with diameter = stem / 2 (line width)
-                // In ModuleDrawer lineWidth = stem / 2, so circle diameter = stem / 2
-                const radius = stem / 4;
-                this.ctx.beginPath();
-                this.ctx.arc(moduleX + point.x, moduleY + point.y, radius, 0, Math.PI * 2);
-                this.ctx.stroke();
-            } catch (error) {
-                console.error('Error rendering test circle:', error, ep);
-            }
-        });
-        
-        this.ctx.restore();
     }
 
     /**

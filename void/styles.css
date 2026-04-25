@@ -1900,7 +1900,7 @@ legend {
     color: var(--color-text);
 }
 
-/* Row of pill toggles (Grid / Ends / …) */
+/* Row of pill toggles (Grid / Joints / …) */
 .pill-toggle-row {
     display: flex;
     flex-wrap: wrap;

@@ -117,13 +117,13 @@ const EFFECT_RANDOM_CONFIG = {
         flag: 'randomizeShowGrid', displayName: 'Grid',
         setting: 'showGrid', checkboxId: 'showGridCheckbox', type: 'bool'
     },
-    ends: {
-        flag: 'randomizeShowEndpoints', displayName: 'Joints',
-        setting: 'showEndpoints', checkboxId: 'showEndpointsCheckbox', type: 'bool'
+    joints: {
+        flag: 'randomizeShowJoints', displayName: 'Joints',
+        setting: 'showJoints', checkboxId: 'showJointsCheckbox', type: 'bool'
     },
-    pointer: {
-        flag: 'randomizeShowPointer', displayName: 'Ends',
-        setting: 'showTestCircles', checkboxId: 'showTestCheckbox', type: 'bool'
+    freeEndpoints: {
+        flag: 'randomizeShowFreeEndpoints', displayName: 'Endpoints',
+        setting: 'showFreeEndpoints', checkboxId: 'showFreeEndpointsCheckbox', type: 'bool'
     }
 };
 
@@ -145,8 +145,8 @@ class VoidTypeface {
                 text: 'Void\nTypeface\nCode',
                 textAlign: 'center',
                 showGrid: true,
-                showEndpoints: false,
-                showTestCircles: false,
+                showJoints: false,
+                showFreeEndpoints: false,
                 randomizeStem: false,
                 randomizeStrokes: false,
                 randomizeContrast: false,
@@ -160,8 +160,8 @@ class VoidTypeface {
                 randomizeAltGlyphs: false,
                 randomizeChaosMode: false,
                 randomizeShowGrid: false,
-                randomizeShowEndpoints: false,
-                randomizeShowPointer: false,
+                randomizeShowJoints: false,
+                randomizeShowFreeEndpoints: false,
                 randomizePaletteColors: false,
                 randomPaletteColorsMin: 3,
                 randomPaletteColorsMax: 32,
@@ -468,11 +468,11 @@ class VoidTypeface {
         this.settings.set('randomizeDashChess',    false);
         this.settings.set('randomizeAltGlyphs',    false);
         this.settings.set('randomizeShowGrid',     false);
-        this.settings.set('randomizeShowEndpoints',false);
-        this.settings.set('randomizeShowPointer',  false);
+        this.settings.set('randomizeShowJoints',   false);
+        this.settings.set('randomizeShowFreeEndpoints', false);
         this.settings.set('showGrid',              true);
-        this.settings.set('showEndpoints',         false);
-        this.settings.set('showTestCircles',       false);
+        this.settings.set('showJoints',            false);
+        this.settings.set('showFreeEndpoints',     false);
     }
 
     /**
@@ -2538,7 +2538,7 @@ class VoidTypeface {
                 dashEnabled: false, dashLength: 1.00, gapLength: 1.50, dashChess: false,
                 wobblyEnabled: false, wobblyAmount: 3, wobblyFrequency: 0.1,
                 roundedCaps: false, closeEnds: false, useAlternativesInRandom: false,
-                showGrid: true, showEndpoints: false, showTestCircles: false,
+                showGrid: true, showJoints: false, showFreeEndpoints: false,
                 letterColor: '#ffffff', bgColor: '#000000', gridColor: '#333333',
                 colorMode: 'manual', colorSource: 'solid', randomModeType: 'byType',
                 colorChaosColors: 3, randomizePaletteColors: false,
@@ -2555,7 +2555,7 @@ class VoidTypeface {
                 randomWobblyFrequencyMin: 0.05, randomWobblyFrequencyMax: 0.2,
                 randomizeRoundedCaps: false, randomizeCloseEnds: false, randomizeDashChess: false,
                 randomizeAltGlyphs: false, randomizeChaosMode: false, randomizeShowGrid: false,
-                randomizeShowEndpoints: false, randomizeShowPointer: false,
+                randomizeShowJoints: false, randomizeShowFreeEndpoints: false,
             };
 
             // Reset dice UI first — otherwise restore-from-range average overwrites colorChaosColors (e.g. 17.5) after defaults
@@ -2621,27 +2621,29 @@ class VoidTypeface {
      */
     initGridToggle() {
         const gridCheckbox = document.getElementById('showGridCheckbox');
-        const endpointsCheckbox = document.getElementById('showEndpointsCheckbox');
-        const testCheckbox = document.getElementById('showTestCheckbox');
-        
+        const jointsCheckbox = document.getElementById('showJointsCheckbox');
+        const freeEpCheckbox = document.getElementById('showFreeEndpointsCheckbox');
+
         gridCheckbox.addEventListener('change', () => {
             this.settings.set('showGrid', gridCheckbox.checked);
             this.updateRenderer();
             this.markAsChanged();
         });
-        
-        endpointsCheckbox.addEventListener('change', () => {
-            console.log('[Main] Show Endpoints toggled:', endpointsCheckbox.checked);
-            this.settings.set('showEndpoints', endpointsCheckbox.checked);
-            this.updateRenderer();
-            this.markAsChanged();
-        });
-        
-        testCheckbox.addEventListener('change', () => {
-            this.settings.set('showTestCircles', testCheckbox.checked);
-            this.updateRenderer();
-            this.markAsChanged();
-        });
+
+        if (jointsCheckbox) {
+            jointsCheckbox.addEventListener('change', () => {
+                this.settings.set('showJoints', jointsCheckbox.checked);
+                this.updateRenderer();
+                this.markAsChanged();
+            });
+        }
+        if (freeEpCheckbox) {
+            freeEpCheckbox.addEventListener('change', () => {
+                this.settings.set('showFreeEndpoints', freeEpCheckbox.checked);
+                this.updateRenderer();
+                this.markAsChanged();
+            });
+        }
     }
 
     /**
@@ -3198,7 +3200,18 @@ class VoidTypeface {
         if (preset.randomColorChaosKeepGrid !== undefined) this.settings.set('colorLockGrid', preset.randomColorChaosKeepGrid);
         if (preset.gradientKeepBg !== undefined) this.settings.set('colorLockBg', preset.gradientKeepBg);
         if (preset.gradientKeepGrid !== undefined) this.settings.set('colorLockGrid', preset.gradientKeepGrid);
-        
+        // showEndpoints (legacy) → Joints + Endpoints (same visibility as before)
+        if (preset.showEndpoints !== undefined && preset.showJoints === undefined) {
+            const on = !!preset.showEndpoints;
+            this.settings.set('showJoints', on);
+            this.settings.set('showFreeEndpoints', on);
+        }
+        if (preset.randomizeShowEndpoints !== undefined && preset.randomizeShowJoints === undefined) {
+            const on = !!preset.randomizeShowEndpoints;
+            this.settings.set('randomizeShowJoints', on);
+            this.settings.set('randomizeShowFreeEndpoints', on);
+        }
+
         // Restore alternative glyph cache if present in preset
         if (this.renderer) {
             if (preset.alternativeGlyphCache && typeof preset.alternativeGlyphCache === 'object') {
@@ -3467,8 +3480,10 @@ class VoidTypeface {
         
         const dashChessCheckboxEl = document.getElementById('dashChessCheckboxPD');
         if (dashChessCheckboxEl) dashChessCheckboxEl.checked = this.settings.get('dashChess') || false;
-        document.getElementById('showEndpointsCheckbox').checked = this.settings.get('showEndpoints') || false;
-        document.getElementById('showTestCheckbox').checked = this.settings.get('showTestCircles') || false;
+        const jointsCb = document.getElementById('showJointsCheckbox');
+        if (jointsCb) jointsCb.checked = this.settings.get('showJoints') || false;
+        const freeEpCb = document.getElementById('showFreeEndpointsCheckbox');
+        if (freeEpCb) freeEpCb.checked = this.settings.get('showFreeEndpoints') || false;
     }
 
     /**
@@ -3580,8 +3595,8 @@ class VoidTypeface {
             gapLength: this.settings.get('gapLength') ?? 1.50,
             dashChess: this.settings.get('dashChess') || false,
             useAlternativesInRandom: this.settings.get('useAlternativesInRandom') || false,
-            showEndpoints: this.settings.get('showEndpoints') || false,
-            showTestCircles: this.settings.get('showTestCircles') || false,
+            showJoints: this.settings.get('showJoints') || false,
+            showFreeEndpoints: this.settings.get('showFreeEndpoints') || false,
             wobblyEnabled: isRandom
                 ? (this.settings.get('randomizeWobblyAmount') || this.settings.get('randomizeWobblyFrequency') || this.settings.get('wobblyEnabled') || false)
                 : (this.settings.get('wobblyEnabled') || false),

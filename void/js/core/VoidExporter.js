@@ -83,13 +83,11 @@ export class VoidExporter {
             if (this.settings.get('dashChess') !== undefined) {
                 params.dashChess = this.settings.get('dashChess');
             }
-            // Get showEndpoints from settings
-            if (this.settings.get('showEndpoints') !== undefined) {
-                params.showEndpoints = this.settings.get('showEndpoints');
+            if (this.settings.get('showJoints') !== undefined) {
+                params.showJoints = this.settings.get('showJoints');
             }
-            // Get showTestCircles from settings
-            if (this.settings.get('showTestCircles') !== undefined) {
-                params.showTestCircles = this.settings.get('showTestCircles');
+            if (this.settings.get('showFreeEndpoints') !== undefined) {
+                params.showFreeEndpoints = this.settings.get('showFreeEndpoints');
             }
             // Get closeEnds from settings
             if (this.settings.get('closeEnds') !== undefined) {
@@ -102,13 +100,11 @@ export class VoidExporter {
             // If settings unavailable, use showGrid from params
             params.includeGridToExport = params.showGrid || false;
         }
-        // Ensure showEndpoints is set
-        if (params.showEndpoints === undefined) {
-            params.showEndpoints = false;
+        if (params.showJoints === undefined) {
+            params.showJoints = false;
         }
-        // Ensure showTestCircles is set
-        if (params.showTestCircles === undefined) {
-            params.showTestCircles = false;
+        if (params.showFreeEndpoints === undefined) {
+            params.showFreeEndpoints = false;
         }
         // Ensure closeEnds is set
         if (params.closeEnds === undefined) {
@@ -210,8 +206,6 @@ export class VoidExporter {
         // Arrays for collecting all points (if endpoints enabled)
         const allConnections = [];
         const allEndpoints = [];
-        // Array for test circles (if test mode enabled)
-        const allTestCircles = [];
 
         // Render each line
         for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
@@ -274,8 +268,7 @@ export class VoidExporter {
                 }
                 const y = offsetY + lineY;
                 
-                // Collect points for this letter (if endpoints or test circles enabled)
-                if (params.showEndpoints || params.showTestCircles) {
+                if (params.showJoints || params.showFreeEndpoints) {
                     const glyphCode = getGlyph(char, {
                         alternativeIndex: this.getAlternativeIndex(char, params, lineIndex, charIndex)
                     });
@@ -295,43 +288,20 @@ export class VoidExporter {
                     const analysis = this.endpointDetector.analyzeGlyph(glyphCode, letterCols, this.renderer.rows);
                     
                     // Add offset to point coordinates (for endpoints)
-                    if (params.showEndpoints) {
-                        analysis.connections.forEach(conn => {
-                            allConnections.push({
-                                ...conn,
-                                offsetX: currentX,
-                                offsetY: y
-                            });
+                    analysis.connections.forEach(conn => {
+                        allConnections.push({
+                            ...conn,
+                            offsetX: currentX,
+                            offsetY: y
                         });
-                        analysis.endpoints.forEach(ep => {
-                            allEndpoints.push({
-                                ...ep,
-                                offsetX: currentX,
-                                offsetY: y
-                            });
+                    });
+                    analysis.endpoints.forEach(ep => {
+                        allEndpoints.push({
+                            ...ep,
+                            offsetX: currentX,
+                            offsetY: y
                         });
-                    }
-                    
-                    // Collect data for test circles
-                    if (params.showTestCircles && analysis.endpoints.length > 0) {
-                        // Save data for each endpoint with module information
-                        analysis.endpoints.forEach(ep => {
-                            // Get module type and rotation from glyphCode
-                            const moduleIndex = (ep.row * letterCols + ep.col) * 2;
-                            if (moduleIndex < glyphCode.length) {
-                                const moduleType = glyphCode.charAt(moduleIndex);
-                                const moduleRotation = parseInt(glyphCode.charAt(moduleIndex + 1));
-                                
-                                allTestCircles.push({
-                                    ...ep,
-                                    offsetX: currentX,
-                                    offsetY: y,
-                                    moduleType: moduleType,
-                                    moduleRotation: moduleRotation
-                                });
-                            }
-                        });
-                    }
+                    });
                 }
                 
                 svgContent += this.renderLetterToSVG(char, currentX, y, params, lineIndex, charIndex);
@@ -341,23 +311,18 @@ export class VoidExporter {
 
         svgContent += `  </g>\n`;
 
-        // Layer for points (if endpoints enabled)
-        if (params.showEndpoints && (allConnections.length > 0 || allEndpoints.length > 0)) {
+        const hasJoints = params.showJoints && allConnections.length > 0;
+        const hasFree = params.showFreeEndpoints && allEndpoints.length > 0;
+        if (hasJoints || hasFree) {
             svgContent += `  <g id="points">\n`;
             svgContent += this.renderEndpointsToSVG(
-                allConnections, 
-                allEndpoints, 
-                moduleSize, 
+                allConnections,
+                allEndpoints,
+                moduleSize,
                 params.color || '#ffffff',
-                params.bgColor || '#000000'
+                params.bgColor || '#000000',
+                { showJoints: !!params.showJoints, showFreeEndpoints: !!params.showFreeEndpoints }
             );
-            svgContent += `  </g>\n`;
-        }
-
-        // Layer for test circles (if test mode enabled)
-        if (params.showTestCircles && allTestCircles.length > 0) {
-            svgContent += `  <g id="test-circles">\n`;
-            svgContent += this.renderTestCirclesToSVG(allTestCircles, moduleSize, params.stem, params.color || '#ffffff');
             svgContent += `  </g>\n`;
         }
 
@@ -2186,16 +2151,22 @@ export class VoidExporter {
 
     /**
      * Render endpoints and joints to SVG
-     * Uses colors from palette: joints use backgroundColor, endpoints use letterColor
+     * Joints (connections) vs free stroke ends, matching canvas. Circles for both; joints use bg + letter stroke.
      */
-    renderEndpointsToSVG(connections, endpoints, moduleSize, letterColor = '#ffffff', backgroundColor = '#000000') {
+    renderEndpointsToSVG(
+        connections,
+        endpoints,
+        moduleSize,
+        letterColor = '#ffffff',
+        backgroundColor = '#000000',
+        visibility = { showJoints: true, showFreeEndpoints: true }
+    ) {
+        const { showJoints = true, showFreeEndpoints: showFree = true } = visibility || {};
         const pointRadius = 6;
         const strokeWidth = 2;
         let svg = '';
-        
-        // Group for joints (blue circles)
-        // Fill: Background Color, Stroke: Letter Color (matching canvas rendering)
-        if (connections.length > 0) {
+
+        if (showJoints && connections.length > 0) {
             svg += `    <g id="connections" fill="${backgroundColor}" stroke="${letterColor}" stroke-width="${strokeWidth}">\n`;
             connections.forEach(conn => {
                 const point = this.endpointDetector.getPointCoordinates(conn.col1, conn.row1, conn.side1, moduleSize);
@@ -2205,10 +2176,8 @@ export class VoidExporter {
             });
             svg += `    </g>\n`;
         }
-        
-        // Group for endpoints (red circles)
-        // Fill: Letter Color, Stroke: Letter Color (matching canvas rendering)
-        if (endpoints.length > 0) {
+
+        if (showFree && endpoints.length > 0) {
             svg += `    <g id="endpoints" fill="${letterColor}" stroke="${letterColor}" stroke-width="${strokeWidth}">\n`;
             endpoints.forEach(ep => {
                 const point = this.endpointDetector.getPointCoordinates(ep.col, ep.row, ep.side, moduleSize);
@@ -2218,40 +2187,7 @@ export class VoidExporter {
             });
             svg += `    </g>\n`;
         }
-        
-        return svg;
-    }
 
-    /**
-     * Render test circles to SVG
-     */
-    renderTestCirclesToSVG(testCircles, moduleSize, stem, strokeColor = '#ffffff') {
-        // Circle diameter = stem / 2 (line width), radius = stem / 4
-        const radius = stem / 4;
-        let svg = '';
-        
-        svg += `    <g id="test-circles-group" stroke="${strokeColor}" stroke-width="1" fill="transparent">\n`;
-        testCircles.forEach(circle => {
-            // Get point coordinates on curve relative to module start
-            const point = this.endpointDetector.getLineEndPointCoordinates(
-                circle.moduleType,
-                circle.moduleRotation,
-                circle.side,
-                moduleSize,
-                stem
-            );
-            
-            // Point coordinates relative to module, convert to absolute coordinates
-            const moduleX = circle.offsetX + circle.col * moduleSize;
-            const moduleY = circle.offsetY + circle.row * moduleSize;
-            
-            const cx = moduleX + point.x;
-            const cy = moduleY + point.y;
-            
-            svg += `      <circle cx="${cx}" cy="${cy}" r="${radius}"/>\n`;
-        });
-        svg += `    </g>\n`;
-        
         return svg;
     }
 

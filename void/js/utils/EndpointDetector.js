@@ -442,53 +442,62 @@ export class EndpointDetector {
     }
 
     /**
-     * Render points on canvas
+     * Joint and free-end markers. Controlled separately: joints (module connections) vs free stroke ends.
+     * Joints: fill background, stroke letter color. Free ends: fill+stroke letter color.
+     * @param {{ showJoints?: boolean, showFreeEndpoints?: boolean }} [visibility] — both default true
      */
-    renderPoints(ctx, connections, endpoints, moduleSize, offsetX = 0, offsetY = 0, letterColor = '#ffffff', backgroundColor = '#000000') {
-        // Point radius in pixels (independent of scale)
+    renderPoints(
+        ctx,
+        connections,
+        endpoints,
+        moduleSize,
+        offsetX = 0,
+        offsetY = 0,
+        letterColor = '#ffffff',
+        backgroundColor = '#000000',
+        visibility = {}
+    ) {
+        const { showJoints = true, showFreeEndpoints = true } = visibility;
         const pointRadius = 6;
         const strokeWidth = 2;
-        
-        
-        // Draw joints (blue circles)
-        // Fill: Background, Stroke: Letter Color
-        ctx.fillStyle = backgroundColor;
-        ctx.strokeStyle = letterColor;
-        ctx.lineWidth = strokeWidth;
-        
-        connections.forEach(conn => {
-            const point = this.getPointCoordinates(conn.col1, conn.row1, conn.side1, moduleSize);
-            ctx.beginPath();
-            ctx.arc(
-                offsetX + point.x, 
-                offsetY + point.y, 
-                pointRadius, 
-                0, 
-                Math.PI * 2
-            );
-            ctx.fill();
-            ctx.stroke();
-        });
-        
-        // Draw endpoints (red circles)
-        // Fill: Letter Color, Stroke: Letter Color
-        ctx.fillStyle = letterColor;
-        ctx.strokeStyle = letterColor;
-        ctx.lineWidth = strokeWidth;
-        
-        endpoints.forEach(ep => {
-            const point = this.getPointCoordinates(ep.col, ep.row, ep.side, moduleSize);
-            ctx.beginPath();
-            ctx.arc(
-                offsetX + point.x, 
-                offsetY + point.y, 
-                pointRadius, 
-                0, 
-                Math.PI * 2
-            );
-            ctx.fill();
-            ctx.stroke();
-        });
+
+        if (showJoints) {
+            ctx.fillStyle = backgroundColor;
+            ctx.strokeStyle = letterColor;
+            ctx.lineWidth = strokeWidth;
+            connections.forEach(conn => {
+                const point = this.getPointCoordinates(conn.col1, conn.row1, conn.side1, moduleSize);
+                ctx.beginPath();
+                ctx.arc(
+                    offsetX + point.x,
+                    offsetY + point.y,
+                    pointRadius,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fill();
+                ctx.stroke();
+            });
+        }
+
+        if (showFreeEndpoints) {
+            ctx.fillStyle = letterColor;
+            ctx.strokeStyle = letterColor;
+            ctx.lineWidth = strokeWidth;
+            endpoints.forEach(ep => {
+                const point = this.getPointCoordinates(ep.col, ep.row, ep.side, moduleSize);
+                ctx.beginPath();
+                ctx.arc(
+                    offsetX + point.x,
+                    offsetY + point.y,
+                    pointRadius,
+                    0,
+                    Math.PI * 2
+                );
+                ctx.fill();
+                ctx.stroke();
+            });
+        }
     }
 }
 
