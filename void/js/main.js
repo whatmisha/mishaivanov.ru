@@ -1923,7 +1923,19 @@ class VoidTypeface {
         const dashChessLabel = document.getElementById('dashChessLabel');
         const dashChessCheckbox = document.getElementById('dashChessCheckboxPD');
         const chessDimmed = !dashEnabled || !multiLine;
-        if (dashChessLabel) dashChessLabel.classList.toggle('controls-disabled', chessDimmed);
+        if (dashChessLabel) {
+            dashChessLabel.classList.toggle('controls-disabled', chessDimmed);
+            // Tooltip text depends on which prerequisite is missing
+            let disabledTip;
+            if (!dashEnabled && !multiLine) {
+                disabledTip = 'Turn on Dashes (● Dashes) and set multiple stroke lines (Lines > 1) to use this effect.';
+            } else if (!dashEnabled) {
+                disabledTip = 'Turn on Dashes (● Dashes) to use this effect.';
+            } else {
+                disabledTip = 'Set multiple stroke lines (Lines > 1, or a Random range whose max ≥ 2) to use this effect.';
+            }
+            dashChessLabel.setAttribute('data-tooltip-disabled', disabledTip);
+        }
         if (dashChessCheckbox) dashChessCheckbox.disabled = chessDimmed;
     }
 
@@ -2470,6 +2482,15 @@ class VoidTypeface {
             this.settings.set('gridColor', randColor());
             this.settings.set('gradientStartColor', randColor());
             this.settings.set('gradientEndColor', randColor());
+
+            // Lock BG / Lock Grid only make sense in random regeneration mode.
+            // Chaos is a one-shot full reroll, so reset these locks (and their pills).
+            this.settings.set('colorLockBg', false);
+            this.settings.set('colorLockGrid', false);
+            const lockBgCb = document.getElementById('randomColorLockBgCheckbox');
+            if (lockBgCb) lockBgCb.checked = false;
+            const lockGridCb = document.getElementById('randomColorLockGridCheckbox');
+            if (lockGridCb) lockGridCb.checked = false;
 
             if (this.renderer.clearModuleTypeCache) this.renderer.clearModuleTypeCache();
             if (this.renderer.clearAlternativeGlyphCache) this.renderer.clearAlternativeGlyphCache();

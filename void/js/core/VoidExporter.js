@@ -321,7 +321,8 @@ export class VoidExporter {
                 moduleSize,
                 params.color || '#ffffff',
                 params.bgColor || '#000000',
-                { showJoints: !!params.showJoints, showFreeEndpoints: !!params.showFreeEndpoints }
+                { showJoints: !!params.showJoints, showFreeEndpoints: !!params.showFreeEndpoints },
+                params.stem !== undefined ? params.stem : moduleSize
             );
             svgContent += `  </g>\n`;
         }
@@ -2159,19 +2160,35 @@ export class VoidExporter {
         moduleSize,
         letterColor = '#ffffff',
         backgroundColor = '#000000',
-        visibility = { showJoints: true, showFreeEndpoints: true }
+        visibility = { showJoints: true, showFreeEndpoints: true },
+        stem = moduleSize
     ) {
         const { showJoints = true, showFreeEndpoints: showFree = true } = visibility || {};
         const pointRadius = 6;
         const strokeWidth = 2;
         let svg = '';
 
+        const axisLocal = (col, row, side, type, rotation) => {
+            return (type !== undefined && rotation !== undefined)
+                ? this.endpointDetector.getLineEndPointCoordinates(type, rotation, side, moduleSize, stem)
+                : this.endpointDetector.getPointCoordinates(col, row, side, moduleSize);
+        };
+
         if (showJoints && connections.length > 0) {
             svg += `    <g id="connections" fill="${backgroundColor}" stroke="${letterColor}" stroke-width="${strokeWidth}">\n`;
             connections.forEach(conn => {
-                const point = this.endpointDetector.getPointCoordinates(conn.col1, conn.row1, conn.side1, moduleSize);
-                const cx = conn.offsetX + point.x;
-                const cy = conn.offsetY + point.y;
+                const l1 = axisLocal(conn.col1, conn.row1, conn.side1, conn.type1, conn.rotation1);
+                const a1x = conn.col1 * moduleSize + l1.x;
+                const a1y = conn.row1 * moduleSize + l1.y;
+                let a2x = a1x;
+                let a2y = a1y;
+                if (conn.col2 !== undefined) {
+                    const l2 = axisLocal(conn.col2, conn.row2, conn.side2, conn.type2, conn.rotation2);
+                    a2x = conn.col2 * moduleSize + l2.x;
+                    a2y = conn.row2 * moduleSize + l2.y;
+                }
+                const cx = conn.offsetX + (a1x + a2x) / 2;
+                const cy = conn.offsetY + (a1y + a2y) / 2;
                 svg += `      <circle cx="${cx}" cy="${cy}" r="${pointRadius}"/>\n`;
             });
             svg += `    </g>\n`;
@@ -2180,9 +2197,9 @@ export class VoidExporter {
         if (showFree && endpoints.length > 0) {
             svg += `    <g id="endpoints" fill="${letterColor}" stroke="${letterColor}" stroke-width="${strokeWidth}">\n`;
             endpoints.forEach(ep => {
-                const point = this.endpointDetector.getPointCoordinates(ep.col, ep.row, ep.side, moduleSize);
-                const cx = ep.offsetX + point.x;
-                const cy = ep.offsetY + point.y;
+                const l = axisLocal(ep.col, ep.row, ep.side, ep.type, ep.rotation);
+                const cx = ep.offsetX + ep.col * moduleSize + l.x;
+                const cy = ep.offsetY + ep.row * moduleSize + l.y;
                 svg += `      <circle cx="${cx}" cy="${cy}" r="${pointRadius}"/>\n`;
             });
             svg += `    </g>\n`;

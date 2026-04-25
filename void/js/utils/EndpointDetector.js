@@ -337,7 +337,7 @@ export class EndpointDetector {
                         neighbor.col < 0 || neighbor.col >= cols) {
                         // Out of bounds - this is endpoint only if there's exit on this side
                         if (exits[side]) {
-                            endpoints.push({ col, row, side });
+                            endpoints.push({ col, row, side, type: module.type, rotation: module.rotation });
                         }
                         return;
                     }
@@ -349,7 +349,7 @@ export class EndpointDetector {
                         if (exits[side]) {
                             // For R/B: add endpoint later, only if there's NO connection on this side
                             if (!isCurve) {
-                                endpoints.push({ col, row, side });
+                                endpoints.push({ col, row, side, type: module.type, rotation: module.rotation });
                             }
                         }
                         return;
@@ -402,16 +402,20 @@ export class EndpointDetector {
                                 col1: col, 
                                 row1: row, 
                                 side1: side,
+                                type1: module.type,
+                                rotation1: module.rotation,
                                 col2: neighbor.col,
                                 row2: neighbor.row,
                                 side2: oppositeSide,
+                                type2: neighborModule.type,
+                                rotation2: neighborModule.rotation,
                                 key 
                             });
                         }
                     } else if (exits[side]) {
                         // Neighbor exists but doesn't connect, and current module has exit - endpoint
                         if (!isCurve) {
-                            endpoints.push({ col, row, side });
+                            endpoints.push({ col, row, side, type: module.type, rotation: module.rotation });
                         }
                     }
                 });
@@ -430,7 +434,7 @@ export class EndpointDetector {
                             const isEmpty = !isOutOfBounds && grid[neighbor.row][neighbor.col].type === 'E';
                             
                             if (isOutOfBounds || isEmpty) {
-                                endpoints.push({ col, row, side });
+                                endpoints.push({ col, row, side, type: module.type, rotation: module.rotation });
                             }
                         }
                     });
@@ -455,26 +459,37 @@ export class EndpointDetector {
         offsetY = 0,
         letterColor = '#ffffff',
         backgroundColor = '#000000',
-        visibility = {}
+        visibility = {},
+        stem = moduleSize
     ) {
         const { showJoints = true, showFreeEndpoints = true } = visibility;
         const pointRadius = 6;
         const strokeWidth = 2;
+
+        const axisAbs = (col, row, side, type, rotation) => {
+            // Fallback to side midpoint if type/rotation unknown (legacy data)
+            const local = (type !== undefined && rotation !== undefined)
+                ? this.getLineEndPointCoordinates(type, rotation, side, moduleSize, stem)
+                : this.getPointCoordinates(col, row, side, moduleSize);
+            return {
+                x: col * moduleSize + local.x,
+                y: row * moduleSize + local.y
+            };
+        };
 
         if (showJoints) {
             ctx.fillStyle = backgroundColor;
             ctx.strokeStyle = letterColor;
             ctx.lineWidth = strokeWidth;
             connections.forEach(conn => {
-                const point = this.getPointCoordinates(conn.col1, conn.row1, conn.side1, moduleSize);
+                const p1 = axisAbs(conn.col1, conn.row1, conn.side1, conn.type1, conn.rotation1);
+                const p2 = (conn.col2 !== undefined)
+                    ? axisAbs(conn.col2, conn.row2, conn.side2, conn.type2, conn.rotation2)
+                    : p1;
+                const cx = offsetX + (p1.x + p2.x) / 2;
+                const cy = offsetY + (p1.y + p2.y) / 2;
                 ctx.beginPath();
-                ctx.arc(
-                    offsetX + point.x,
-                    offsetY + point.y,
-                    pointRadius,
-                    0,
-                    Math.PI * 2
-                );
+                ctx.arc(cx, cy, pointRadius, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.stroke();
             });
@@ -485,15 +500,9 @@ export class EndpointDetector {
             ctx.strokeStyle = letterColor;
             ctx.lineWidth = strokeWidth;
             endpoints.forEach(ep => {
-                const point = this.getPointCoordinates(ep.col, ep.row, ep.side, moduleSize);
+                const p = axisAbs(ep.col, ep.row, ep.side, ep.type, ep.rotation);
                 ctx.beginPath();
-                ctx.arc(
-                    offsetX + point.x,
-                    offsetY + point.y,
-                    pointRadius,
-                    0,
-                    Math.PI * 2
-                );
+                ctx.arc(offsetX + p.x, offsetY + p.y, pointRadius, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.stroke();
             });

@@ -733,7 +733,8 @@ export class VoidRenderer {
                     {
                         showJoints: this.params.showJoints,
                         showFreeEndpoints: this.params.showFreeEndpoints
-                    }
+                    },
+                    baseStem
                 );
             } catch (error) {
                 console.error('Error rendering joint/endpoint markers:', error);
