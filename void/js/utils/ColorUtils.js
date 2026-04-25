@@ -161,5 +161,20 @@ export class ColorUtils {
         // Color switching (light/dark) is handled by getContrastColor()
         return baseOpacity;
     }
+
+    /**
+     * Desaturate: perceived luminance in sRGB space → gray #rrggbb
+     * @param {string} hex
+     * @returns {string}
+     */
+    static toGrayscaleHex(hex) {
+        if (!hex || typeof hex !== 'string') return '#808080';
+        const s = hex.trim();
+        const normalized = s.startsWith('#') ? s : `#${s}`;
+        const rgb = this.hexToRgb(normalized);
+        if (!rgb) return normalized;
+        const y = Math.round(0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b);
+        return this.rgbToHex(y, y, y);
+    }
 }
 

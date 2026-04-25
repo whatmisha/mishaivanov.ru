@@ -7,6 +7,7 @@ import { getGlyph } from './GlyphLoader.js';
 import { ModuleDrawer } from './ModuleDrawer.js';
 import { EndpointDetector } from '../utils/EndpointDetector.js';
 import { RandomUtils } from '../utils/RandomUtils.js';
+import { ColorUtils } from '../utils/ColorUtils.js';
 
 export class VoidRenderer {
     constructor(canvas) {
@@ -33,7 +34,8 @@ export class VoidRenderer {
             cornerRadius: 0,       // corner radius
             roundedCaps: false,    // rounded line caps in Stroke mode (Rounded)
             showJoints: false,         // Joints: where modules meet
-            showFreeEndpoints: false  // Free ends of strokes (separate from Joints)
+            showFreeEndpoints: false,  // Free ends of strokes (separate from Joints)
+            colorBW: false             // BW: grayscale markers with letter/bg (endpoints, joints)
         };
         
         this.cols = 5; // columns in grid
@@ -500,7 +502,11 @@ export class VoidRenderer {
         const offsetX = startX % moduleSize;
         const offsetY = startY % moduleSize;
         
-        this.ctx.strokeStyle = this.params.gridColor || '#333333';
+        let gridC = this.params.gridColor || '#333333';
+        if (this.params.colorBW) {
+            gridC = ColorUtils.toGrayscaleHex(gridC);
+        }
+        this.ctx.strokeStyle = gridC;
         this.ctx.lineWidth = 0.5;
         this.ctx.beginPath();
         
@@ -721,6 +727,12 @@ export class VoidRenderer {
         if (this.params.showJoints || this.params.showFreeEndpoints) {
             try {
                 const analysis = this.getCachedGlyphAnalysis(glyphCode, letterCols, this.rows);
+                let letterForPoints = this.params.color;
+                let bgForPoints = this.params.bgColor;
+                if (this.params.colorBW) {
+                    letterForPoints = ColorUtils.toGrayscaleHex(letterForPoints);
+                    bgForPoints = ColorUtils.toGrayscaleHex(bgForPoints);
+                }
                 this.endpointDetector.renderPoints(
                     this.ctx,
                     analysis.connections,
@@ -728,8 +740,8 @@ export class VoidRenderer {
                     moduleW,
                     x,
                     y,
-                    this.params.color,
-                    this.params.bgColor,
+                    letterForPoints,
+                    bgForPoints,
                     {
                         showJoints: this.params.showJoints,
                         showFreeEndpoints: this.params.showFreeEndpoints

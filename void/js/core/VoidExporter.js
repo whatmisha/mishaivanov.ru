@@ -7,6 +7,7 @@ import { getGlyph } from './GlyphLoader.js';
 import { EndpointDetector } from '../utils/EndpointDetector.js';
 import { RandomUtils } from '../utils/RandomUtils.js';
 import { MathUtils } from '../utils/MathUtils.js';
+import { ColorUtils } from '../utils/ColorUtils.js';
 
 export class VoidExporter {
     constructor(renderer, settings = null) {
@@ -315,12 +316,18 @@ export class VoidExporter {
         const hasFree = params.showFreeEndpoints && allEndpoints.length > 0;
         if (hasJoints || hasFree) {
             svgContent += `  <g id="points">\n`;
+            let el = params.color || '#ffffff';
+            let eb = params.bgColor || '#000000';
+            if (params.colorBW) {
+                el = ColorUtils.toGrayscaleHex(el);
+                eb = ColorUtils.toGrayscaleHex(eb);
+            }
             svgContent += this.renderEndpointsToSVG(
                 allConnections,
                 allEndpoints,
                 moduleSize,
-                params.color || '#ffffff',
-                params.bgColor || '#000000',
+                el,
+                eb,
                 { showJoints: !!params.showJoints, showFreeEndpoints: !!params.showFreeEndpoints },
                 params.stem !== undefined ? params.stem : moduleSize
             );
@@ -343,7 +350,10 @@ export class VoidExporter {
         const offsetX = contentOffsetX % moduleSize;
         const offsetY = contentOffsetY % moduleSize;
         
-        const gridColor = params.gridColor || '#333333';
+        let gridColor = params.gridColor || '#333333';
+        if (params.colorBW) {
+            gridColor = ColorUtils.toGrayscaleHex(gridColor);
+        }
         let gridSVG = `  <g id="grid" stroke="${gridColor}" stroke-width="0.5" opacity="1">\n`;
         
         // Vertical lines

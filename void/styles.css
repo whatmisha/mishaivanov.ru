@@ -343,20 +343,14 @@ body {
     text-align: center;
 }
 
-.color-source-row,
-.color-mode-row {
+.color-source-row {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.color-source-row .style-buttons-container,
-.color-mode-row .style-buttons-container {
+.color-source-row .style-buttons-container {
     flex: 1;
-}
-
-.color-mode-row {
-    margin-top: -4px;
 }
 
 .dice-count-badge {
@@ -1833,6 +1827,49 @@ legend {
     flex: 1 1 auto;
 }
 
+/* Solid / Gradient — единая «таб»-панель: плоский стык по центру, скругления снаружи */
+.style-buttons-container--segmented {
+    gap: 0;
+    flex-wrap: nowrap;
+    border-radius: 999px;
+    overflow: hidden;
+    background: var(--color-bg);
+    box-shadow: inset 0 0 0 1px var(--color-border);
+}
+
+.style-buttons-container--segmented .style-button {
+    border-radius: 0;
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.style-buttons-container--segmented .style-button + .style-button {
+    box-shadow: inset 1px 0 0 var(--color-border);
+}
+
+/* Активный сегмент чуть перекрывает линию стыка */
+.style-buttons-container--segmented .style-button.active {
+    position: relative;
+    z-index: 1;
+}
+
+/* Сегменты: тёмный (неактивный) / светлый (active) */
+.style-buttons-container--segmented .style-button:hover:not(:disabled):not(.active) {
+    opacity: 1;
+    background: #666666;
+    color: #d2d2d2;
+}
+
+.style-buttons-container--segmented .style-button.active:hover:not(:disabled) {
+    opacity: 1;
+    background: #2a2a2a;
+    color: #d2d2d2;
+}
+
 .style-button-spacer {
     display: none;
 }
@@ -1852,9 +1889,9 @@ legend {
     outline-offset: 2px;
 }
 
-/* Control group with style buttons has smaller bottom margin */
+/* Control group with style buttons (Solid/Gradient) */
 .control-group:has(.style-buttons-container) {
-    margin-bottom: 8px;
+    margin-bottom: 16px;
 }
 
 /* ============================================
@@ -2287,20 +2324,30 @@ button.color-dot--expandable:focus-visible {
     cursor: pointer;
 }
 
-/* ◆/◇ randomize toggle inside Back/Grid swatches — only visible in Random mode */
-.swatch-dice-btn {
-    display: none;
+/* ◆ on color swatch rows */
+.color-swatch-compact .palette-swatch-dice.dice-btn--diamond {
     margin-left: 0;
+    flex: 0 0 auto;
     color: var(--color-text-secondary);
     opacity: 1;
-    flex: 0 0 auto;
 }
-.color-mode-random .swatch-dice-btn {
-    display: inline-block;
-}
-.swatch-dice-btn:hover {
+.color-swatch-compact .palette-swatch-dice.dice-btn--diamond:hover,
+.color-swatch-compact .palette-swatch-dice.dice-btn--diamond.active {
     color: var(--color-text);
-    opacity: 1;
+}
+
+#viewColorsPanel #paletteColorsDiceGroup {
+    margin-top: 12px;
+    margin-bottom: 0;
+}
+
+#paletteColorsDiceGroup.palette-size-group--disabled {
+    opacity: 0.38;
+    pointer-events: none;
+}
+#paletteColorsDiceGroup.palette-size-group--disabled .range-slider-container,
+#paletteColorsDiceGroup.palette-size-group--disabled .range-slider-values {
+    pointer-events: none;
 }
 
 .color-swatch-hex {

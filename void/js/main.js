@@ -82,7 +82,7 @@ const DICE_CONFIG = {
     },
     paletteColors: {
         flag: 'randomizePaletteColors', displayName: 'Palette',
-        diceBtnId: 'paletteColorsDiceBtn', singleValueId: 'paletteColorsValue',
+        singleValueId: 'paletteColorsValue',
         singleWrap: 'paletteColorsSingleWrap', rangeWrap: 'paletteColorsRangeWrap',
         singleSlider: 'paletteColorsSlider', singleSetting: 'colorChaosColors',
         rangeSlider: 'randomPaletteColorsRangeSlider',
@@ -124,6 +124,10 @@ const EFFECT_RANDOM_CONFIG = {
     freeEndpoints: {
         flag: 'randomizeShowFreeEndpoints', displayName: 'Endpoints',
         setting: 'showFreeEndpoints', checkboxId: 'showFreeEndpointsCheckbox', type: 'bool'
+    },
+    colorBW: {
+        flag: 'randomizeColorBW', displayName: 'BW',
+        setting: 'colorBW', checkboxId: 'colorBWCheckbox', type: 'bool'
     }
 };
 
@@ -162,12 +166,11 @@ class VoidTypeface {
                 randomizeShowGrid: false,
                 randomizeShowJoints: false,
                 randomizeShowFreeEndpoints: false,
+                randomizeColorBW: false,
                 randomizePaletteColors: false,
                 randomPaletteColorsMin: 3,
                 randomPaletteColorsMax: 32,
                 colorBW: false,
-                colorLockBg: false,
-                colorLockGrid: false,
                 colorSource: 'solid', // 'solid', 'gradient'
                 randomStemMin: 0.5,
                 randomStemMax: 1.0,
@@ -186,8 +189,13 @@ class VoidTypeface {
                 randomWobblyFrequencyMax: 0.2, // maximum wobbly noise frequency/scale
                 colorMode: 'manual', // derived: 'manual', 'randomChaos', 'gradient', 'randomGradient'
                 colorChaos: false, // legacy
-                colorRandomMode: false, // explicit Manual/Random axis (replaces colorChaosColors===3 magic)
-                colorChaosColors: 16, // size of random palette; only used when colorRandomMode === true
+                /** If true, that channel is included in live palette / regen (◆ on swatch) */
+                paletteDiceLetter: false,
+                paletteDiceBg: false,
+                paletteDiceGrid: false,
+                paletteDiceGradientStart: false,
+                paletteDiceGradientEnd: false,
+                colorChaosColors: 16, // unused when randomizePaletteColors (range picks N each regen)
                 gradientStartColor: '#ff0000', // gradient start color
                 gradientEndColor: '#0000ff', // gradient end color
                 roundedCaps: false, // rounded line ends (Rounded)
@@ -203,7 +211,20 @@ class VoidTypeface {
             },
             get(key) {
                 if (key === 'randomizeColor') {
-                    return !!this.values.colorRandomMode;
+                    const src = this.values.colorSource || 'solid';
+                    if (src === 'gradient') {
+                        return !!(
+                            this.values.paletteDiceGradientStart ||
+                            this.values.paletteDiceGradientEnd ||
+                            this.values.paletteDiceBg ||
+                            this.values.paletteDiceGrid
+                        );
+                    }
+                    return !!(
+                        this.values.paletteDiceLetter ||
+                        this.values.paletteDiceBg ||
+                        this.values.paletteDiceGrid
+                    );
                 }
                 if (key === 'isRandom') {
                     const effectOn = Object.values(EFFECT_RANDOM_CONFIG).some(c => this.values[c.flag]);
@@ -217,8 +238,25 @@ class VoidTypeface {
             set(key, value) {
                 if (key === 'isRandom') return this.get('isRandom');
                 if (key === 'randomizeColor') {
-                    this.values.colorRandomMode = !!value;
-                    if (!value) this.values.randomizePaletteColors = false;
+                    if (!value) {
+                        this.values.paletteDiceLetter = false;
+                        this.values.paletteDiceBg = false;
+                        this.values.paletteDiceGrid = false;
+                        this.values.paletteDiceGradientStart = false;
+                        this.values.paletteDiceGradientEnd = false;
+                        this.values.randomizePaletteColors = false;
+                    } else {
+                        const hadAny = this.get('randomizeColor');
+                        this.values.randomizePaletteColors = true;
+                        if (!hadAny) {
+                            if ((this.values.colorSource || 'solid') === 'gradient') {
+                                this.values.paletteDiceGradientStart = true;
+                                this.values.paletteDiceGradientEnd = true;
+                            } else {
+                                this.values.paletteDiceLetter = true;
+                            }
+                        }
+                    }
                     return this.get('randomizeColor');
                 }
                 this.values[key] = value;
@@ -281,6 +319,7 @@ class VoidTypeface {
             this.initDashChessToggle();
             this.initWobblyToggle();
             this.initGridToggle();
+            this.initColorBWToggle();
             // this.initGlyphEditor(); // Glyph editor (DISABLED - use editor.html)
             // this.initEditorHotkey(); // Cmd+G hotkey for editor (DISABLED)
             this.initAlternativeGlyphs(); // Alternative glyphs
@@ -433,7 +472,7 @@ class VoidTypeface {
         this.settings.set('gridColor', '#333333');
         this.settings.set('colorMode', 'manual');
         this.settings.set('colorSource', 'solid');
-        this.settings.set('colorRandomMode', false);    // explicit Manual mode
+        this.settings.set('randomizeColor', false);
         this.settings.set('randomizePaletteColors', false);
 
         // --- cheap shape randomisers ---
@@ -468,6 +507,8 @@ class VoidTypeface {
         this.settings.set('randomizeShowGrid',     false);
         this.settings.set('randomizeShowJoints',   false);
         this.settings.set('randomizeShowFreeEndpoints', false);
+        this.settings.set('randomizeColorBW',     false);
+        this.settings.set('colorBW', false);
         this.settings.set('showGrid',              true);
         this.settings.set('showJoints',            false);
         this.settings.set('showFreeEndpoints',     false);
@@ -761,6 +802,7 @@ class VoidTypeface {
             max: 32,
             decimals: 0,
             onUpdate: (value) => {
+                if (!this.settings.get('randomizeColor')) return;
                 const cm = this.getDerivedColorMode();
                 this.settings.set('colorMode', cm);
                 if (cm === 'randomChaos' || cm === 'randomGradient') {
@@ -937,6 +979,7 @@ class VoidTypeface {
             baseStep: 1,
             shiftStep: 1,
             onUpdate: (minValue, maxValue) => {
+                if (!this.settings.get('randomizeColor')) return;
                 const cm = this.getDerivedColorMode();
                 if (cm === 'randomChaos' || cm === 'randomGradient') {
                     this.generateColorPalette();
@@ -1327,11 +1370,8 @@ class VoidTypeface {
         
         // Initialize color source buttons and dice
         this.initColorSourceButtons();
-        this.initColorModeButtons();
-        this.initSwatchDiceButtons();
+        this.initPaletteSwatchDice();
         this.updateColorModeUI();
-        
-        this.initPaletteOptions();
     }
     
     /**
@@ -1339,7 +1379,7 @@ class VoidTypeface {
      */
     getDerivedColorMode() {
         const source = this.settings.get('colorSource') || 'solid';
-        const random = !!this.settings.get('colorRandomMode');
+        const random = !!this.settings.get('randomizeColor');
         if (source === 'gradient') return random ? 'randomGradient' : 'gradient';
         return random ? 'randomChaos' : 'manual';
     }
@@ -1379,79 +1419,72 @@ class VoidTypeface {
     }
 
     /**
-     * Initialize color mode buttons (Manual / Random)
+     * ◆ on each color swatch — include in live palette / regen
      */
-    initColorModeButtons() {
-        const buttons = document.querySelectorAll('#colorModeButtons .style-button');
-        buttons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const newMode = btn.dataset.colorMode;
-                if (!newMode) return;
-                const wasRandom = !!this.settings.get('colorRandomMode');
-                const isRandom = newMode === 'random';
-                if (wasRandom === isRandom) return;
-                buttons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                this.settings.set('colorRandomMode', isRandom);
-                if (isRandom) {
-                    if ((this.settings.get('colorChaosColors') || 3) <= 3) {
-                        this.settings.set('colorChaosColors', 16);
-                        if (this.sliderController) this.sliderController.setValue('paletteColorsSlider', 16, false);
-                    }
-                } else {
-                    this.settings.set('randomizePaletteColors', false);
-                }
-                const colorMode = this.getDerivedColorMode();
-                this.settings.set('colorMode', colorMode);
-                this.applyColorMode(colorMode);
-                this.updateColorModeUI();
-                this.updateRandomParamsList();
-                this.updateRandomSectionVisibility();
-                this.markAsChanged();
-            });
-        });
-    }
-
-    /**
-     * Initialize ◆/◇ buttons inside Back/Grid swatches
-     * (replace the old Lock BG / Lock Grid pills).
-     * ◆ (active) = swatch participates in random palette;
-     * ◇ (inactive) = swatch is locked (kept as-is).
-     */
-    initSwatchDiceButtons() {
-        const buttons = document.querySelectorAll('.swatch-dice-btn[data-swatch-dice]');
-        buttons.forEach(btn => {
+    initPaletteSwatchDice() {
+        const map = {
+            letter: 'paletteDiceLetter',
+            bg: 'paletteDiceBg',
+            grid: 'paletteDiceGrid',
+            gradientStart: 'paletteDiceGradientStart',
+            gradientEnd: 'paletteDiceGradientEnd'
+        };
+        document.querySelectorAll('button.palette-swatch-dice[data-palette-dice]').forEach(btn => {
+            const key = map[btn.dataset.paletteDice];
+            if (!key) return;
             btn.addEventListener('click', (e) => {
+                e.preventDefault();
                 e.stopPropagation();
-                const which = btn.dataset.swatchDice;
-                const lockKey = which === 'bg' ? 'colorLockBg' : (which === 'grid' ? 'colorLockGrid' : null);
-                if (!lockKey) return;
-                const currentlyLocked = !!this.settings.get(lockKey);
-                this.settings.set(lockKey, !currentlyLocked);
-                this.syncSwatchDiceButtons();
+                this.settings.set(key, !this.settings.get(key));
+                const active = this.settings.get('randomizeColor');
+                this.settings.set('randomizePaletteColors', active);
                 const cm = this.getDerivedColorMode();
+                this.settings.set('colorMode', cm);
                 if (cm === 'randomChaos' || cm === 'randomGradient') {
                     this.generateColorPalette();
-                    this.updateRenderer();
                 }
+                this.syncPaletteSwatchDice();
+                this.updatePaletteSizeGroupState();
+                this.updateRandomParamsList();
+                this.updateRandomSectionVisibility();
+                this.updateRenderer();
                 this.markAsChanged();
             });
         });
-        this.syncSwatchDiceButtons();
+        this.syncPaletteSwatchDice();
+    }
+
+    syncPaletteSwatchDice() {
+        const map = {
+            letter: 'paletteDiceLetter',
+            bg: 'paletteDiceBg',
+            grid: 'paletteDiceGrid',
+            gradientStart: 'paletteDiceGradientStart',
+            gradientEnd: 'paletteDiceGradientEnd'
+        };
+        document.querySelectorAll('button.palette-swatch-dice[data-palette-dice]').forEach(btn => {
+            const key = map[btn.dataset.paletteDice];
+            if (!key) return;
+            btn.classList.toggle('active', !!this.settings.get(key));
+        });
     }
 
     /**
-     * Reflect colorLockBg / colorLockGrid in the .active state of swatch ◆ buttons.
-     * Active (◆) means "regenerated by Random" → lock is OFF.
+     * Palette size: always visible; enabled when at least one swatch ◆ is on. Range only.
      */
-    syncSwatchDiceButtons() {
-        const map = { bg: 'colorLockBg', grid: 'colorLockGrid' };
-        document.querySelectorAll('.swatch-dice-btn[data-swatch-dice]').forEach(btn => {
-            const key = map[btn.dataset.swatchDice];
-            if (!key) return;
-            const locked = !!this.settings.get(key);
-            btn.classList.toggle('active', !locked);
-        });
+    updatePaletteSizeGroupState() {
+        const active = !!this.settings.get('randomizeColor');
+        this.settings.set('randomizePaletteColors', active);
+        const group = document.getElementById('paletteColorsDiceGroup');
+        if (group) {
+            group.classList.toggle('palette-size-group--disabled', !active);
+        }
+        const singleWrap = document.getElementById('paletteColorsSingleWrap');
+        const rangeWrap = document.getElementById('paletteColorsRangeWrap');
+        const singleVal = document.getElementById('paletteColorsValue');
+        if (singleWrap) singleWrap.style.display = 'none';
+        if (rangeWrap) rangeWrap.style.display = 'block';
+        if (singleVal) singleVal.style.display = 'none';
     }
 
     /**
@@ -1460,15 +1493,11 @@ class VoidTypeface {
     updateColorModeUI() {
         const colorSource = this.settings.get('colorSource') || 'solid';
         const isGradient = colorSource === 'gradient';
-        const isRandom = !!this.settings.get('colorRandomMode');
 
         const solidControls = document.getElementById('colorSolidControls');
         const gradientControls = document.getElementById('colorGradientControls');
         if (solidControls) solidControls.style.display = isGradient ? 'none' : '';
         if (gradientControls) gradientControls.style.display = isGradient ? '' : 'none';
-
-        const randomControls = document.getElementById('colorRandomControls');
-        if (randomControls) randomControls.style.display = isRandom ? '' : 'none';
 
         // Sync gradient Back/Grid dot colors
         if (isGradient) {
@@ -1476,54 +1505,19 @@ class VoidTypeface {
             const gradGrid = document.getElementById('gradientGridColorPreview');
             if (gradBg) gradBg.style.background = this.settings.get('bgColor');
             if (gradGrid) gradGrid.style.background = this.settings.get('gridColor');
-            // Sync hex spans
             const gradBgHex = document.getElementById('gradientBgColorHex');
             const gradGridHex = document.getElementById('gradientGridColorHex');
             if (gradBgHex) gradBgHex.textContent = this.settings.get('bgColor');
             if (gradGridHex) gradGridHex.textContent = this.settings.get('gridColor');
         }
 
-        // Update active source buttons
         const sourceButtons = document.querySelectorAll('#colorSourceButtons .style-button');
         sourceButtons.forEach(btn => {
             btn.classList.toggle('active', btn.dataset.colorSource === colorSource);
         });
 
-        // Update active mode buttons
-        const modeButtons = document.querySelectorAll('#colorModeButtons .style-button');
-        modeButtons.forEach(btn => {
-            const wantRandom = btn.dataset.colorMode === 'random';
-            btn.classList.toggle('active', wantRandom === isRandom);
-        });
-
-        // Toggle .color-mode-random on the colors panel content so swatch ◆ buttons appear
-        const colorsPanel = document.getElementById('viewColorsPanelHeader')?.parentElement;
-        const colorsContent = colorsPanel?.querySelector('.panel-content');
-        if (colorsContent) colorsContent.classList.toggle('color-mode-random', isRandom);
-
-        // Update palette slider display value
-        const paletteVal = document.getElementById('paletteColorsValue');
-        if (paletteVal) paletteVal.value = this.settings.get('colorChaosColors') || 16;
-
-        // Sync ◆/◇ on Back/Grid swatches
-        this.syncSwatchDiceButtons();
-    }
-    
-    /** Palette options: BW (Lock BG / Lock Grid migrated to ◆/◇ on swatches) */
-    initPaletteOptions() {
-        const regenIfNeeded = () => {
-            const cm = this.getDerivedColorMode();
-            if (cm === 'randomChaos' || cm === 'randomGradient') {
-                this.generateColorPalette();
-                this.updateRenderer();
-            }
-            this.markAsChanged();
-        };
-        const bwCb = document.getElementById('randomColorBWCheckbox');
-        if (bwCb) {
-            bwCb.checked = this.settings.get('colorBW') || false;
-            bwCb.addEventListener('change', () => { this.settings.set('colorBW', bwCb.checked); regenIfNeeded(); });
-        }
+        this.syncPaletteSwatchDice();
+        this.updatePaletteSizeGroupState();
     }
 
     /**
@@ -1582,47 +1576,63 @@ class VoidTypeface {
      */
     generateColorPalette() {
         const colorMode = this.getDerivedColorMode();
-        const numColors = this.settings.get('colorChaosColors') || 16;
-        
+        const minN = this.settings.get('randomPaletteColorsMin') ?? 3;
+        const maxN = this.settings.get('randomPaletteColorsMax') ?? 32;
+        let numColors = this.settings.get('colorChaosColors') || 16;
+        if (this.settings.get('randomizePaletteColors')) {
+            const lo = Math.min(minN, maxN);
+            const hi = Math.max(minN, maxN);
+            numColors = lo + Math.floor(Math.random() * (hi - lo + 1));
+        }
+
         const isGrayscale = this.settings.get('colorBW');
         const generateColor = isGrayscale ? () => this.generateRandomGrayscaleColor() : () => this.generateRandomColor();
-        
+
+        const diceL = !!this.settings.get('paletteDiceLetter');
+        const diceBg = !!this.settings.get('paletteDiceBg');
+        const diceGrid = !!this.settings.get('paletteDiceGrid');
+        const diceGS = !!this.settings.get('paletteDiceGradientStart');
+        const diceGE = !!this.settings.get('paletteDiceGradientEnd');
+
         this.colorPalette = [];
-        for (let i = 0; i < numColors; i++) {
-            this.colorPalette.push(generateColor());
-        }
-        
-        const keepBg = this.settings.get('colorLockBg');
-        let bgColor;
-        if (!keepBg) {
-            bgColor = generateColor();
-            this.settings.set('bgColor', bgColor);
-        } else {
-            bgColor = this.settings.get('bgColor');
-        }
-        
-        const keepGrid = this.settings.get('colorLockGrid');
-        let gridColor;
-        if (!keepGrid) {
-            gridColor = generateColor();
-            this.settings.set('gridColor', gridColor);
-        } else {
-            gridColor = this.settings.get('gridColor');
-        }
-        
-        if (colorMode === 'randomGradient') {
-            this.settings.set('gradientStartColor', generateColor());
-            this.settings.set('gradientEndColor', generateColor());
-            this.updateSwatchDisplay('gradientStart', this.settings.get('gradientStartColor'));
-            this.updateSwatchDisplay('gradientEnd', this.settings.get('gradientEndColor'));
-            // Generate N/2 gradient pairs for multi-gradient mode
-            const pairCount = Math.max(1, Math.floor(numColors / 2));
-            this.gradientPairs = [];
-            for (let i = 0; i < pairCount; i++) {
-                this.gradientPairs.push({ start: generateColor(), end: generateColor() });
+        if (colorMode === 'randomChaos' && diceL) {
+            for (let i = 0; i < numColors; i++) {
+                this.colorPalette.push(generateColor());
             }
         }
-        
+
+        let bgColor = this.settings.get('bgColor');
+        if (diceBg) {
+            bgColor = generateColor();
+            this.settings.set('bgColor', bgColor);
+        }
+        let gridColor = this.settings.get('gridColor');
+        if (diceGrid) {
+            gridColor = generateColor();
+            this.settings.set('gridColor', gridColor);
+        }
+
+        if (colorMode === 'randomGradient') {
+            if (diceGS) {
+                this.settings.set('gradientStartColor', generateColor());
+                this.updateSwatchDisplay('gradientStart', this.settings.get('gradientStartColor'));
+            }
+            if (diceGE) {
+                this.settings.set('gradientEndColor', generateColor());
+                this.updateSwatchDisplay('gradientEnd', this.settings.get('gradientEndColor'));
+            }
+            this.gradientPairs = [];
+            if (diceGS || diceGE) {
+                const pairCount = Math.max(1, Math.floor(numColors / 2));
+                for (let i = 0; i < pairCount; i++) {
+                    this.gradientPairs.push({
+                        start: diceGS ? generateColor() : this.settings.get('gradientStartColor'),
+                        end: diceGE ? generateColor() : this.settings.get('gradientEndColor')
+                    });
+                }
+            }
+        }
+
         this.updateSwatchDisplay('bg', bgColor);
         this.updateSwatchDisplay('grid', gridColor);
         this.updateSwatchDisplay('gradientBg', bgColor);
@@ -1630,11 +1640,15 @@ class VoidTypeface {
         
         if (this.unifiedColorPicker) {
             const colorMap = {
-                'letter': this.settings.get('letterColor'),
-                'bg': bgColor,
-                'grid': gridColor
+                letter: this.settings.get('letterColor'),
+                bg: bgColor,
+                grid: gridColor,
+                gradientStart: this.settings.get('gradientStartColor'),
+                gradientEnd: this.settings.get('gradientEndColor'),
+                gradientBg: bgColor,
+                gradientGrid: gridColor
             };
-            if (this.activeColorType) {
+            if (this.activeColorType && colorMap[this.activeColorType] !== undefined) {
                 this.unifiedColorPicker.setColor(colorMap[this.activeColorType]);
             }
         }
@@ -1677,7 +1691,9 @@ class VoidTypeface {
      */
     getModuleColor() {
         const colorMode = this.getDerivedColorMode();
-        
+        if (colorMode === 'randomChaos' && !this.settings.get('paletteDiceLetter')) {
+            return this.settings.get('letterColor');
+        }
         const colorChaosEnabled = colorMode === 'randomChaos' || colorMode === 'randomGradient';
         if (!colorChaosEnabled || !this.colorPalette || this.colorPalette.length === 0) {
             return this.settings.get('letterColor');
@@ -2154,11 +2170,11 @@ class VoidTypeface {
                     }
                     const wobblyEffect = this.renderer.moduleDrawer?.getWobblyEffect();
                     if (wobblyEffect) wobblyEffect.reseed();
+                    this.rollEffectRandomValues();
                     const cm = this.getDerivedColorMode();
                     if (cm === 'randomChaos' || cm === 'randomGradient') {
                         this.generateColorPalette();
                     }
-                    this.rollEffectRandomValues();
                     this.updateRenderer();
                     this.markAsChanged();
                 }
@@ -2170,6 +2186,12 @@ class VoidTypeface {
      * Reset dice for a single param (when parent toggle is disabled, e.g. Dashes off → reset dash dice)
      */
     resetDiceForParam(param) {
+        if (param === 'paletteColors') {
+            this.settings.set('randomizeColor', false);
+            this.syncPaletteSwatchDice();
+            this.updatePaletteSizeGroupState();
+            return;
+        }
         const cfg = DICE_CONFIG[param];
         if (!cfg) return;
         this.settings.set(cfg.flag, false);
@@ -2278,6 +2300,10 @@ class VoidTypeface {
         };
 
         for (const param of Object.keys(DICE_CONFIG)) {
+            if (param === 'paletteColors') {
+                this.updatePaletteSizeGroupState();
+                continue;
+            }
             const cfg = DICE_CONFIG[param];
             const btn = cfg.diceBtnId ? document.getElementById(cfg.diceBtnId) : null;
             if (btn) {
@@ -2369,12 +2395,13 @@ class VoidTypeface {
         const showEmptyHint = () => {
             const hint = document.createElement('p');
             hint.className = 'random-params-empty-hint';
-            hint.textContent = 'No Random parameters yet. Use ◆ (filled) to include a setting, ◇ (outline) to leave it out. On sliders and Palette, ◆ also turns on a min–max range; on effect pills, ◆ means that toggle is rerolled on Randomize. Then press Randomize.';
+            hint.textContent = 'No Random parameters yet. Use ◆ (filled) on Style sliders, effect pills, or color swatches; ◇ to exclude. On the Colors panel, enable ◆ on any swatch to use the Palette range. Then press Randomize.';
             container.appendChild(hint);
         };
 
         for (const [param, cfg] of Object.entries(DICE_CONFIG)) {
             if (!this.settings.get(cfg.flag)) continue;
+            if (param === 'paletteColors' && this.settings.get('randomizeColor')) continue;
 
             const item = document.createElement('div');
             item.className = 'random-param-pill';
@@ -2441,9 +2468,9 @@ class VoidTypeface {
             closeBtn.textContent = '×';
             closeBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                this.resetDiceForParam('paletteColors');
-                this.settings.set('colorRandomMode', false);
-                this.settings.set('randomizePaletteColors', false);
+                this.settings.set('randomizeColor', false);
+                this.syncPaletteSwatchDice();
+                this.updatePaletteSizeGroupState();
                 const cm = this.getDerivedColorMode();
                 this.settings.set('colorMode', cm);
                 this.updateColorModeUI();
@@ -2455,41 +2482,6 @@ class VoidTypeface {
 
             item.append(text, closeBtn);
             container.appendChild(item);
-
-            const regenPaletteIfNeeded = () => {
-                const cm = this.getDerivedColorMode();
-                if (cm === 'randomChaos' || cm === 'randomGradient') {
-                    this.generateColorPalette();
-                }
-            };
-
-            const addColorOptPill = (label, settingKey, checkboxId) => {
-                if (!this.settings.get(settingKey)) return;
-                const opt = document.createElement('div');
-                opt.className = 'random-param-pill';
-                opt.dataset.param = `colorOpt:${settingKey}`;
-                const t = document.createElement('span');
-                t.className = 'random-param-pill-text';
-                t.textContent = label;
-                const x = document.createElement('button');
-                x.className = 'random-param-pill-close';
-                x.textContent = '×';
-                x.addEventListener('click', (ev) => {
-                    ev.stopPropagation();
-                    this.settings.set(settingKey, false);
-                    const cb = document.getElementById(checkboxId);
-                    if (cb) cb.checked = false;
-                    regenPaletteIfNeeded();
-                    this.updateRandomParamsList();
-                    this.updateRandomSectionVisibility();
-                    this.updateRenderer();
-                    this.markAsChanged();
-                });
-                opt.append(t, x);
-                container.appendChild(opt);
-            };
-
-            addColorOptPill('BW', 'colorBW', 'randomColorBWCheckbox');
         }
 
         if (container.children.length === 0) {
@@ -2582,25 +2574,22 @@ class VoidTypeface {
             // Random colors
             const randColor = () => '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
             this.settings.set('colorSource', coin() ? 'gradient' : 'solid');
-            const randomColorMode = coin();
-            this.settings.set('colorRandomMode', randomColorMode);
-            if (randomColorMode) {
+            this.settings.set('paletteDiceLetter', coin());
+            this.settings.set('paletteDiceGradientStart', coin());
+            this.settings.set('paletteDiceGradientEnd', coin());
+            this.settings.set('paletteDiceBg', coin());
+            this.settings.set('paletteDiceGrid', coin());
+            if (this.settings.get('randomizeColor')) {
                 this.settings.set('colorChaosColors', Math.floor(Math.random() * 29) + 4);
-                this.settings.set('randomizePaletteColors', coin());
+                this.settings.set('randomizePaletteColors', true);
             } else {
                 this.settings.set('randomizePaletteColors', false);
             }
-            this.settings.set('colorBW', coin());
             this.settings.set('letterColor', randColor());
             this.settings.set('bgColor', randColor());
             this.settings.set('gridColor', randColor());
             this.settings.set('gradientStartColor', randColor());
             this.settings.set('gradientEndColor', randColor());
-
-            // Lock BG / Lock Grid only make sense in random regeneration mode.
-            // Chaos is a one-shot full reroll, so reset these locks (so all swatches are ◆ active).
-            this.settings.set('colorLockBg', false);
-            this.settings.set('colorLockGrid', false);
 
             if (this.renderer.clearModuleTypeCache) this.renderer.clearModuleTypeCache();
             if (this.renderer.clearAlternativeGlyphCache) this.renderer.clearAlternativeGlyphCache();
@@ -2671,10 +2660,12 @@ class VoidTypeface {
                 roundedCaps: false, closeEnds: false, useAlternativesInRandom: false,
                 showGrid: true, showJoints: false, showFreeEndpoints: false,
                 letterColor: '#ffffff', bgColor: '#000000', gridColor: '#333333',
-                colorMode: 'manual', colorSource: 'solid', colorRandomMode: false, randomModeType: 'byType',
+                colorMode: 'manual', colorSource: 'solid', randomModeType: 'byType',
+                paletteDiceLetter: false, paletteDiceBg: false, paletteDiceGrid: false,
+                paletteDiceGradientStart: false, paletteDiceGradientEnd: false,
                 colorChaosColors: 16, randomizePaletteColors: false,
                 randomPaletteColorsMin: 3, randomPaletteColorsMax: 32,
-                colorBW: false, colorLockBg: false, colorLockGrid: false,
+                colorBW: false, randomizeColorBW: false,
                 gradientStartColor: '#ff0000', gradientEndColor: '#0000ff',
                 letterSpacingMultiplier: 1, lineHeightMultiplier: 1,
                 randomStemMin: 0.5, randomStemMax: 1.0,
@@ -2778,6 +2769,24 @@ class VoidTypeface {
     }
 
     /**
+     * Black & white palette (effect pill on Style panel)
+     */
+    initColorBWToggle() {
+        const cb = document.getElementById('colorBWCheckbox');
+        if (!cb) return;
+        cb.checked = this.settings.get('colorBW') || false;
+        cb.addEventListener('change', () => {
+            this.settings.set('colorBW', cb.checked);
+            const cm = this.getDerivedColorMode();
+            if (cm === 'randomChaos' || cm === 'randomGradient') {
+                this.generateColorPalette();
+            }
+            this.updateRenderer();
+            this.markAsChanged();
+        });
+    }
+
+    /**
      * Initialize presets
      */
     initPresets() {
@@ -2818,13 +2827,17 @@ class VoidTypeface {
                 defaultPreset.useAlternativesInRandom !== false ||
                 defaultPreset.lineHeightMultiplier !== 1;
 
-            // Factory Colors panel for preset "New" (Solid, Manual mode, no palette random)
+            // Factory Colors panel for preset "New" (Solid, no ◆, manual colorMode)
             const paletteDrift =
-                defaultPreset.colorRandomMode === true ||
                 defaultPreset.randomizePaletteColors === true ||
                 defaultPreset.colorMode === 'randomChaos' ||
                 defaultPreset.colorMode === 'randomGradient' ||
-                defaultPreset.randomizeColor === true;
+                defaultPreset.randomizeColor === true ||
+                defaultPreset.paletteDiceLetter === true ||
+                defaultPreset.paletteDiceBg === true ||
+                defaultPreset.paletteDiceGrid === true ||
+                defaultPreset.paletteDiceGradientStart === true ||
+                defaultPreset.paletteDiceGradientEnd === true;
             
             if (needsUpdate || paletteDrift) {
                 if (needsUpdate) {
@@ -2848,15 +2861,19 @@ class VoidTypeface {
                     defaultPreset.gridColor = '#333333';
                     defaultPreset.colorSource = 'solid';
                     defaultPreset.colorMode = 'manual';
-                    defaultPreset.colorRandomMode = false;
                     defaultPreset.colorChaosColors = 16;
                     defaultPreset.randomizePaletteColors = false;
                     defaultPreset.randomPaletteColorsMin = 3;
                     defaultPreset.randomPaletteColorsMax = 32;
+                    defaultPreset.paletteDiceLetter = false;
+                    defaultPreset.paletteDiceBg = false;
+                    defaultPreset.paletteDiceGrid = false;
+                    defaultPreset.paletteDiceGradientStart = false;
+                    defaultPreset.paletteDiceGradientEnd = false;
                     defaultPreset.colorBW = false;
-                    defaultPreset.colorLockBg = false;
-                    defaultPreset.colorLockGrid = false;
+                    defaultPreset.randomizeColorBW = false;
                     delete defaultPreset.randomizeColor;
+                    delete defaultPreset.colorRandomMode;
                     delete defaultPreset.colorPalette;
                     delete defaultPreset.moduleColorCache;
                 }
@@ -3088,15 +3105,6 @@ class VoidTypeface {
             this.hasUnsavedChanges = false;
         }
         this.updateSaveDeleteButtons();
-        
-        // Warn before closing tab with unsaved changes
-        window.addEventListener('beforeunload', (e) => {
-            if (this.hasUnsavedChanges && this.currentPresetName !== 'New') {
-                e.preventDefault();
-                e.returnValue = ''; // Required for Chrome
-                return ''; // Required for some browsers
-            }
-        });
     }
 
     /**
@@ -3329,29 +3337,32 @@ class VoidTypeface {
         if (preset.randomizeColor && (this.settings.get('colorChaosColors') || 3) <= 3) {
             this.settings.set('colorChaosColors', preset.colorChaosColors || 16);
         }
-        // Migrate Random axis: derive colorRandomMode from legacy fields
-        if (preset.colorRandomMode === undefined) {
+        // Migrate → per-swatch palette dice (replaces colorRandomMode)
+        if (preset.paletteDiceLetter === undefined) {
             const legacyRandom =
+                preset.colorRandomMode === true ||
                 preset.colorMode === 'random' ||
                 preset.colorMode === 'chaos' ||
                 preset.colorMode === 'randomChaos' ||
                 preset.colorMode === 'randomGradient' ||
                 preset.randomizeColor === true ||
                 (preset.colorChaosColors ?? 3) > 3;
-            this.settings.set('colorRandomMode', !!legacyRandom);
-            if (legacyRandom && (this.settings.get('colorChaosColors') || 3) <= 3) {
-                this.settings.set('colorChaosColors', 16);
-            }
-            if (!legacyRandom) {
+            if (legacyRandom) {
+                this.settings.set('paletteDiceLetter', true);
+                this.settings.set('paletteDiceGradientStart', true);
+                this.settings.set('paletteDiceGradientEnd', true);
+                this.settings.set('paletteDiceBg', true);
+                this.settings.set('paletteDiceGrid', true);
+                this.settings.set('randomizePaletteColors', true);
+                if ((this.settings.get('colorChaosColors') || 3) <= 3) {
+                    this.settings.set('colorChaosColors', 16);
+                }
+            } else {
                 this.settings.set('randomizePaletteColors', false);
             }
         }
         // Migrate old settings names
         if (preset.randomColorChaosGrayscale !== undefined) this.settings.set('colorBW', preset.randomColorChaosGrayscale);
-        if (preset.randomColorChaosKeepBg !== undefined) this.settings.set('colorLockBg', preset.randomColorChaosKeepBg);
-        if (preset.randomColorChaosKeepGrid !== undefined) this.settings.set('colorLockGrid', preset.randomColorChaosKeepGrid);
-        if (preset.gradientKeepBg !== undefined) this.settings.set('colorLockBg', preset.gradientKeepBg);
-        if (preset.gradientKeepGrid !== undefined) this.settings.set('colorLockGrid', preset.gradientKeepGrid);
         // showEndpoints (legacy) → Joints + Endpoints (same visibility as before)
         if (preset.showEndpoints !== undefined && preset.showJoints === undefined) {
             const on = !!preset.showEndpoints;
@@ -3393,7 +3404,7 @@ class VoidTypeface {
             }
         }
         
-        const hasColorChaos = !!this.settings.get('colorRandomMode');
+        const hasColorChaos = !!this.settings.get('randomizeColor');
         
         // Restore or clear Color Chaos palette and cache
         if (!hasColorChaos) {
@@ -3471,6 +3482,7 @@ class VoidTypeface {
         // Update sliders (without calling callbacks to avoid extra updates)
         this.sliderController.setValue('stemSlider', this.settings.get('stemMultiplier'), false);
         for (const param of Object.keys(DICE_CONFIG)) {
+            if (param === 'paletteColors') continue;
             const cfg = DICE_CONFIG[param];
             const enabled = this.settings.get(cfg.flag);
             const singleWrap = document.getElementById(cfg.singleWrap);
@@ -3606,12 +3618,9 @@ class VoidTypeface {
         const paletteVal = document.getElementById('paletteColorsValue');
         if (paletteVal) paletteVal.value = this.settings.get('colorChaosColors') || 16;
 
-        // Update palette option checkboxes
-        const bwCb = document.getElementById('randomColorBWCheckbox');
-        if (bwCb) bwCb.checked = this.settings.get('colorBW') || false;
-
-        // Sync ◆/◇ on Back/Grid swatches (they replaced Lock BG / Lock Grid pills)
-        this.syncSwatchDiceButtons();
+        // BW (effect panel)
+        const colorBWEl = document.getElementById('colorBWCheckbox');
+        if (colorBWEl) colorBWEl.checked = this.settings.get('colorBW') || false;
 
         // Update text
         const text = this.settings.get('text');
@@ -3734,8 +3743,6 @@ class VoidTypeface {
             randomGapLengthMax: this.settings.get('randomGapLengthMax'),
             randomModeType: this.settings.get('randomModeType'),
             colorBW: this.settings.get('colorBW') || false,
-            colorLockBg: this.settings.get('colorLockBg') || false,
-            colorLockGrid: this.settings.get('colorLockGrid') || false,
             useCustomModuleColor: ['randomChaos', 'randomGradient'].includes(this.getDerivedColorMode()),
             roundedCaps: this.settings.get('roundedCaps') || false,
             closeEnds: this.settings.get('closeEnds') || false,
