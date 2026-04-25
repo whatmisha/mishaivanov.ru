@@ -110,7 +110,7 @@ const EFFECT_RANDOM_CONFIG = {
         setting: 'useAlternativesInRandom', checkboxId: 'alternativeGlyphsCheckbox', type: 'bool'
     },
     chaos: {
-        flag: 'randomizeChaosMode', displayName: 'Chaos',
+        flag: 'randomizeChaosMode', displayName: 'Unique',
         setting: 'randomModeType', checkboxId: 'chaosCheckbox', type: 'chaos'
     },
     grid: {
@@ -276,6 +276,7 @@ class VoidTypeface {
             this.initTextAlign();
             this.initStyleControls();
             this.initDiceButtons();
+            this.initEffectDiceButtons();
             this.initRandomSection();
             this.initResetAllDice();
             this.initRoundedCapsToggle();
@@ -1194,7 +1195,7 @@ class VoidTypeface {
         };
     }
 
-    /** Lines > 1 in single mode, or Lines ↔ range with max > 1 */
+    /** Lines > 1 in single mode, or Lines with ◆ range whose max > 1 */
     linesAllowMultiLineForStyleUI() {
         if (this.settings.get('randomizeStrokes')) {
             return (this.settings.get('randomStrokesMax') ?? 1) > 1;
@@ -2233,6 +2234,37 @@ class VoidTypeface {
     }
 
     /**
+     * ◆/◇ on effect pills: toggle randomize* flags (add/remove from Random); same control pattern as DICE_CONFIG sliders
+     */
+    initEffectDiceButtons() {
+        for (const key of Object.keys(EFFECT_RANDOM_CONFIG)) {
+            const btn = document.querySelector(`.dice-btn--pill[data-effect="${key}"]`);
+            if (!btn) continue;
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const cfg = EFFECT_RANDOM_CONFIG[key];
+                if (!cfg) return;
+                this.settings.set(cfg.flag, !this.settings.get(cfg.flag));
+                this.updateRandomParamsList();
+                this.updateRandomSectionVisibility();
+                this.updateRenderer();
+                this.markAsChanged();
+            });
+        }
+        this.syncEffectDiceButtons();
+    }
+
+    /** Keep ◆/◇ (random) state in sync when settings change from Random panel, presets, Chaos, etc. */
+    syncEffectDiceButtons() {
+        for (const key of Object.keys(EFFECT_RANDOM_CONFIG)) {
+            const cfg = EFFECT_RANDOM_CONFIG[key];
+            const btn = document.querySelector(`.dice-btn--pill[data-effect="${key}"]`);
+            if (btn) btn.classList.toggle('active', !!this.settings.get(cfg.flag));
+        }
+    }
+
+    /**
      * Initialize Random section (Scope, Alternatives, Randomize)
      */
     initRandomSection() {
@@ -2257,7 +2289,7 @@ class VoidTypeface {
         const showEmptyHint = () => {
             const hint = document.createElement('p');
             hint.className = 'random-params-empty-hint';
-            hint.textContent = 'Tap ↔ next to any slider to set a random range for it — then hit Randomize to shuffle within your chosen bounds.';
+            hint.textContent = 'No Random parameters yet. Use ◆ (filled) to include a setting, ◇ (outline) to leave it out. On sliders and Palette, ◆ also turns on a min–max range; on effect pills, ◆ means that toggle is rerolled on Randomize. Then press Randomize.';
             container.appendChild(hint);
         };
 
@@ -2388,6 +2420,7 @@ class VoidTypeface {
         if (container.children.length === 0) {
             showEmptyHint();
         }
+        this.syncEffectDiceButtons();
     }
 
     /**
