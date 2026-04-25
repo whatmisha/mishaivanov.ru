@@ -353,94 +353,134 @@ class VoidTypeface {
     initMobileView() {
         // Hide all control panels
         const panels = document.querySelectorAll('.controls-panel');
-        panels.forEach(panel => {
-            panel.style.display = 'none';
+        panels.forEach(panel => { panel.style.display = 'none'; });
+        
+        // Hide preset/save/delete
+        const presetDropdown = document.getElementById('presetDropdown');
+        const saveBtn        = document.getElementById('savePresetBtn');
+        const deleteBtn      = document.getElementById('deletePresetBtn');
+        if (presetDropdown) presetDropdown.style.display = 'none';
+        if (saveBtn)        saveBtn.style.display = 'none';
+        if (deleteBtn)      deleteBtn.style.display = 'none';
+        
+        // Hide all export / copy buttons — not useful on mobile
+        ['exportBtn', 'exportPngBtn', 'copyBtn'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
         });
         
-        // Hide preset dropdown and Save/Delete buttons
-        const presetDropdown = document.getElementById('presetDropdown');
-        const saveBtn = document.getElementById('savePresetBtn');
-        const deleteBtn = document.getElementById('deletePresetBtn');
-        if (presetDropdown) presetDropdown.style.display = 'none';
-        if (saveBtn) saveBtn.style.display = 'none';
-        if (deleteBtn) deleteBtn.style.display = 'none';
-        
-        // Hide export buttons
-        const exportBtn = document.getElementById('exportBtn');
-        const copyBtn = document.getElementById('copyBtn');
-        const exportPngBtn = document.getElementById('exportPngBtn');
-        if (exportBtn) exportBtn.style.display = 'none';
-        if (copyBtn) copyBtn.style.display = 'none';
-        if (exportPngBtn) exportPngBtn.style.display = 'none';
-        
-        // Show Update button — runs Chaos on tap
+        // Show Update button
         const renewBtn = document.getElementById('renewBtn');
         if (renewBtn) {
             renewBtn.style.display = 'inline-flex';
-            renewBtn.addEventListener('click', () => this.runChaos());
+            renewBtn.addEventListener('click', () => {
+                this.renderer.clearModuleTypeCache();
+                if (this.renderer.clearAlternativeGlyphCache) {
+                    this.renderer.clearAlternativeGlyphCache();
+                }
+                this.applyMobileChaos();
+                this.calculateMobileModuleSize();
+            });
         }
+
+        this.settings.set('text', 'VOID\nTYPE\nFACE');
+
+        // Apply safe mobile chaos on first load
+        this.applyMobileChaos();
         
-        // Enable all dice flags for mobile random display
-        this.settings.set('randomizeStem', true);
-        this.settings.set('randomizeStrokes', true);
-        this.settings.set('randomizeContrast', true);
-        this.settings.set('randomizeDashLength', true);
-        this.settings.set('randomizeGapLength', true);
-        this.settings.set('dashEnabled', true);
-        this.settings.set('useAlternativesInRandom', true);
-        this.settings.set('text', 'DESK\nTOP\nONLY');
-        
-        // Touch event handler for switching alternative glyphs
+        // Touch: tap a letter to cycle its alternative
         const canvas = document.getElementById('mainCanvas');
         if (canvas) {
             canvas.addEventListener('touchend', (e) => {
-                e.preventDefault(); // Prevent default behavior (e.g., scroll)
-                
-                const rect = canvas.getBoundingClientRect();
-                const touch = e.changedTouches[0];
+                e.preventDefault();
+                const rect   = canvas.getBoundingClientRect();
+                const touch  = e.changedTouches[0];
                 const touchX = touch.clientX - rect.left;
                 const touchY = touch.clientY - rect.top;
-                
                 const position = this.renderer.getLetterPositionAt(touchX, touchY);
                 if (position) {
-                    // Check if there are alternatives for this character
                     const char = position.char.toUpperCase();
-                    const hasAlternatives = VOID_ALPHABET_ALTERNATIVES && VOID_ALPHABET_ALTERNATIVES[char] && VOID_ALPHABET_ALTERNATIVES[char].length > 0;
-                    
+                    const hasAlternatives = VOID_ALPHABET_ALTERNATIVES &&
+                        VOID_ALPHABET_ALTERNATIVES[char] &&
+                        VOID_ALPHABET_ALTERNATIVES[char].length > 0;
                     if (hasAlternatives) {
-                        const toggled = this.renderer.toggleLetterAlternative(position.lineIndex, position.charIndex);
-                        if (toggled) {
-                            this.updateRenderer();
-                            this.markAsChanged();
-                        }
+                        const toggled = this.renderer.toggleLetterAlternative(
+                            position.lineIndex, position.charIndex);
+                        if (toggled) this.updateRenderer();
                     }
                 }
             });
         }
-        
-        // Calculate optimal module size so text fits in window
-        // (updateRenderer will be called inside calculateMobileModuleSize)
+
         this.calculateMobileModuleSize();
-        
-        // Handle window resize (for screen rotation)
+
         window.addEventListener('resize', () => {
             const wasMobile = this.isMobile;
             this.isMobile = this.checkIsMobile();
-            
-            // If switched from mobile to desktop, reload page
             if (wasMobile && !this.isMobile) {
                 window.location.reload();
             } else if (this.isMobile) {
-                // Recalculate module size on window resize
-                // (updateRenderer will be called inside calculateMobileModuleSize)
                 this.calculateMobileModuleSize();
             }
         });
     }
 
     /**
+     * Apply a safe, performance-friendly randomisation preset for mobile.
+     * Fixed 3-colour palette (white letters / black bg / grey grid).
+     * No Wobble, no Dashes, no Alt Glyphs, no per-module Full Chaos,
+     * no colour randomisation — all of which are expensive on weak hardware.
+     */
+    applyMobileChaos() {
+        // --- colours: always fixed, never randomised ---
+        this.settings.set('letterColor', '#ffffff');
+        this.settings.set('bgColor', '#000000');
+        this.settings.set('gridColor', '#333333');
+        this.settings.set('colorMode', 'manual');
+        this.settings.set('colorSource', 'solid');
+        this.settings.set('colorChaosColors', 3);       // ≤3 → no palette chaos
+        this.settings.set('randomizePaletteColors', false);
+
+        // --- cheap shape randomisers ---
+        this.settings.set('randomizeStem',     true);
+        this.settings.set('randomizeStrokes',  true);
+        this.settings.set('randomizeContrast', true);
+
+        // --- off: dashes add heavy path-subdivision per module ---
+        this.settings.set('dashEnabled',          false);
+        this.settings.set('randomizeDashLength',   false);
+        this.settings.set('randomizeGapLength',    false);
+
+        // --- off: Perlin noise recomputed per module every frame ---
+        this.settings.set('wobblyEnabled',          false);
+        this.settings.set('randomizeWobblyAmount',   false);
+        this.settings.set('randomizeWobblyFrequency',false);
+
+        // --- off: per-module full-chaos cache is very large ---
+        this.settings.set('randomModeType', 'byType');
+        this.settings.set('randomizeChaosMode', false);
+
+        // --- off: alt-glyph cache lookup per letter ---
+        this.settings.set('useAlternativesInRandom', false);
+
+        // --- cosmetic extras off ---
+        this.settings.set('roundedCaps',           false);
+        this.settings.set('closeEnds',             false);
+        this.settings.set('randomizeRoundedCaps',  false);
+        this.settings.set('randomizeCloseEnds',    false);
+        this.settings.set('randomizeDashChess',    false);
+        this.settings.set('randomizeAltGlyphs',    false);
+        this.settings.set('randomizeShowGrid',     false);
+        this.settings.set('randomizeShowEndpoints',false);
+        this.settings.set('randomizeShowPointer',  false);
+        this.settings.set('showGrid',              true);
+        this.settings.set('showEndpoints',         false);
+        this.settings.set('showTestCircles',       false);
+    }
+
+    /**
      * Calculate optimal module size for mobile device
-     * so text "DESK\nTOP\nONLY" fits in window without clipping
+     * so text "VOID\nTYPE\nFACE" fits in window without clipping
      */
     calculateMobileModuleSize() {
         // Wait for next frame so canvas gets dimensions
@@ -450,7 +490,7 @@ class VoidTypeface {
             
             // Get container or window dimensions
             const containerRect = canvasContainer ? canvasContainer.getBoundingClientRect() : null;
-            const availableWidth = containerRect ? containerRect.width : window.innerWidth;
+            const availableWidth  = containerRect ? containerRect.width  : window.innerWidth;
             const availableHeight = containerRect ? containerRect.height : window.innerHeight;
             
             // Text consists of 3 lines: "DESK", "TOP", "ONLY"
@@ -2352,13 +2392,7 @@ class VoidTypeface {
     initShuffle() {
         const btn = document.getElementById('shuffleBtn');
         if (!btn) return;
-        btn.addEventListener('click', () => this.runChaos());
-    }
-
-    /**
-     * Chaos: fully randomize all params, colors, toggles
-     */
-    runChaos() {
+        btn.addEventListener('click', () => {
             const rand = (min, max) => min + Math.random() * (max - min);
             const randInt = (min, max) => Math.floor(rand(min, max + 1));
             const coin = () => Math.random() < 0.5;
@@ -2458,6 +2492,7 @@ class VoidTypeface {
             this.updateRandomSectionVisibility();
             this.updateRenderer();
             this.markAsChanged();
+        });
     }
 
     /**
