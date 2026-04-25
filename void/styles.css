@@ -343,14 +343,20 @@ body {
     text-align: center;
 }
 
-.color-source-row {
+.color-source-row,
+.color-mode-row {
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
-.color-source-row .style-buttons-container {
+.color-source-row .style-buttons-container,
+.color-mode-row .style-buttons-container {
     flex: 1;
+}
+
+.color-mode-row {
+    margin-top: -4px;
 }
 
 .dice-count-badge {
@@ -2279,6 +2285,22 @@ button.color-dot--expandable:focus-visible {
     font-size: 0.9rem;
     color: var(--color-text-secondary);
     cursor: pointer;
+}
+
+/* ◆/◇ randomize toggle inside Back/Grid swatches — only visible in Random mode */
+.swatch-dice-btn {
+    display: none;
+    margin-left: 0;
+    color: var(--color-text-secondary);
+    opacity: 1;
+    flex: 0 0 auto;
+}
+.color-mode-random .swatch-dice-btn {
+    display: inline-block;
+}
+.swatch-dice-btn:hover {
+    color: var(--color-text);
+    opacity: 1;
 }
 
 .color-swatch-hex {
