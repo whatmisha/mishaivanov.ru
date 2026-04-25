@@ -463,7 +463,7 @@ export class VoidExporter {
         let alternativeIndex = null;
         const cacheKey = lineIndex !== null && charIndex !== null ? `${lineIndex}_${charIndex}` : null;
         
-        if (cacheKey && this.renderer.alternativeGlyphCache && this.renderer.alternativeGlyphCache.hasOwnProperty(cacheKey)) {
+        if (cacheKey && params.useAlternativesInRandom && this.renderer.alternativeGlyphCache && this.renderer.alternativeGlyphCache.hasOwnProperty(cacheKey)) {
             // Use saved alternative
             alternativeIndex = this.renderer.alternativeGlyphCache[cacheKey];
         } else if (params.isRandom && params.useAlternativesInRandom && cacheKey) {
@@ -2165,7 +2165,7 @@ export class VoidExporter {
     getAlternativeIndex(char, params, lineIndex, charIndex) {
         const cacheKey = lineIndex !== null && charIndex !== null ? `${lineIndex}_${charIndex}` : null;
         
-        if (cacheKey && this.renderer.alternativeGlyphCache && this.renderer.alternativeGlyphCache.hasOwnProperty(cacheKey)) {
+        if (cacheKey && params.useAlternativesInRandom && this.renderer.alternativeGlyphCache && this.renderer.alternativeGlyphCache.hasOwnProperty(cacheKey)) {
             return this.renderer.alternativeGlyphCache[cacheKey];
         } else if (params.isRandom && params.useAlternativesInRandom && cacheKey) {
             const charUpper = char.toUpperCase();

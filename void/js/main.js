@@ -14,7 +14,6 @@ import { ModalManager } from './ui/ModalManager.js';
 import { ColorUtils } from './utils/ColorUtils.js';
 import { MathUtils } from './utils/MathUtils.js';
 import GlyphEditor from './core/GlyphEditor.js';
-import MIDIController from './ui/MIDIController.js';
 
 /** Shared config for dice (per-param random) buttons */
 const DICE_CONFIG = {
@@ -243,9 +242,6 @@ class VoidTypeface {
         
         // Glyph Editor
         this.glyphEditor = null;
-        
-        // MIDI Controller
-        this.midiController = null;
 
         // Render scheduling for performance optimization
         this.renderScheduled = false;
@@ -301,7 +297,6 @@ class VoidTypeface {
             this.initPresets();
             this.initExport();
             this.initResize();
-            this.initMIDI();
             this.initCursorTooltips();
             
             // Clear random values cache before first render
@@ -373,23 +368,16 @@ class VoidTypeface {
         // Hide export buttons
         const exportBtn = document.getElementById('exportBtn');
         const copyBtn = document.getElementById('copyBtn');
+        const exportPngBtn = document.getElementById('exportPngBtn');
         if (exportBtn) exportBtn.style.display = 'none';
         if (copyBtn) copyBtn.style.display = 'none';
+        if (exportPngBtn) exportPngBtn.style.display = 'none';
         
-        // Show Update button
+        // Show Update button — runs Chaos on tap
         const renewBtn = document.getElementById('renewBtn');
         if (renewBtn) {
             renewBtn.style.display = 'inline-flex';
-            renewBtn.addEventListener('click', () => {
-                // Clear random values cache
-                this.renderer.clearModuleTypeCache();
-                // Clear alternative glyphs cache (to generate new random alternatives)
-                if (this.renderer.clearAlternativeGlyphCache) {
-                    this.renderer.clearAlternativeGlyphCache();
-                }
-                // Redraw graphics with new random values
-                this.calculateMobileModuleSize();
-            });
+            renewBtn.addEventListener('click', () => this.runChaos());
         }
         
         // Enable all dice flags for mobile random display
@@ -1650,9 +1638,7 @@ class VoidTypeface {
         
         alternativeGlyphsCheckbox.addEventListener('change', () => {
             this.settings.set('useAlternativesInRandom', alternativeGlyphsCheckbox.checked);
-            if (!alternativeGlyphsCheckbox.checked && this.renderer.clearAlternativeGlyphCache) {
-                this.renderer.clearAlternativeGlyphCache();
-            }
+            // Keep alternativeGlyphCache when toggled off so turning Alt Glyphs back on shows the same picks
             this.updateRenderer();
             this.markAsChanged();
         });
@@ -2219,6 +2205,13 @@ class VoidTypeface {
         if (!container) return;
         container.innerHTML = '';
 
+        const showEmptyHint = () => {
+            const hint = document.createElement('p');
+            hint.className = 'random-params-empty-hint';
+            hint.textContent = 'Tap ↔ next to any slider to set a random range for it — then hit Randomize to shuffle within your chosen bounds.';
+            container.appendChild(hint);
+        };
+
         for (const [param, cfg] of Object.entries(DICE_CONFIG)) {
             if (!this.settings.get(cfg.flag)) continue;
 
@@ -2342,6 +2335,10 @@ class VoidTypeface {
             addColorOptPill('Lock BG', 'colorLockBg', 'randomColorLockBgCheckbox');
             addColorOptPill('Lock Grid', 'colorLockGrid', 'randomColorLockGridCheckbox');
         }
+
+        if (container.children.length === 0) {
+            showEmptyHint();
+        }
     }
 
     /**
@@ -2355,7 +2352,13 @@ class VoidTypeface {
     initShuffle() {
         const btn = document.getElementById('shuffleBtn');
         if (!btn) return;
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', () => this.runChaos());
+    }
+
+    /**
+     * Chaos: fully randomize all params, colors, toggles
+     */
+    runChaos() {
             const rand = (min, max) => min + Math.random() * (max - min);
             const randInt = (min, max) => Math.floor(rand(min, max + 1));
             const coin = () => Math.random() < 0.5;
@@ -2455,7 +2458,6 @@ class VoidTypeface {
             this.updateRandomSectionVisibility();
             this.updateRenderer();
             this.markAsChanged();
-        });
     }
 
     /**
@@ -2466,13 +2468,20 @@ class VoidTypeface {
         if (!panel) return;
         panel.style.display = '';
 
+        let total = Object.values(DICE_CONFIG).filter(cfg => this.settings.get(cfg.flag)).length;
+        total += Object.values(EFFECT_RANDOM_CONFIG).filter(cfg => this.settings.get(cfg.flag)).length;
+        if (this.settings.get('randomizeColor')) total++;
+
         const badge = document.getElementById('diceCountBadge');
         if (badge) {
-            let total = Object.values(DICE_CONFIG).filter(cfg => this.settings.get(cfg.flag)).length;
-            total += Object.values(EFFECT_RANDOM_CONFIG).filter(cfg => this.settings.get(cfg.flag)).length;
-            if (this.settings.get('randomizeColor')) total++;
-            badge.textContent = total > 0 ? (total === 1 ? '1 dice' : `${total} dices`) : '';
+            badge.textContent = total > 0 ? (total === 1 ? '1 parameter' : `${total} parameters`) : '';
         }
+
+        const hasParams = total > 0;
+        const renewBtn = document.getElementById('renewRandomBtn');
+        const resetBtn = document.getElementById('resetAllDiceBtn');
+        if (renewBtn) renewBtn.disabled = !hasParams;
+        if (resetBtn) resetBtn.disabled = !hasParams;
     }
 
     /**
@@ -2481,7 +2490,17 @@ class VoidTypeface {
     initResetAllDice() {
         const btn = document.getElementById('resetAllDiceBtn');
         if (!btn) return;
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
+            const confirmed = await this.modalManager.show({
+                title: 'Reset Random Settings?',
+                text: 'All randomization parameters will be cleared and settings will return to defaults.',
+                buttons: [
+                    { id: 'reset', text: 'Reset', type: 'danger' },
+                    { id: 'cancel', text: 'No', type: 'ghost' }
+                ]
+            });
+            if (confirmed.action !== 'reset') return;
+
             const defaults = {
                 stemMultiplier: 0.5, strokesNum: 1, strokeGapRatio: 1.0,
                 dashEnabled: false, dashLength: 1.00, gapLength: 1.50, dashChess: false,
@@ -2547,51 +2566,6 @@ class VoidTypeface {
 
 
     /**
-     * Update Dash Length and Gap Length sliders state in Random mode
-     * Also updates Chess toggle inactive state (depends on Dash)
-     */
-    updateRandomDashSlidersState() {
-        const dashEnabled = this.settings.get('dashEnabled') ?? false;
-        const randomizeDashLength = this.settings.get('randomizeDashLength') ?? false;
-        const isRandomMode = this.settings.get('isRandom');
-        const isEnabled = isRandomMode && (dashEnabled || randomizeDashLength);
-        const tooltipMessage = 'Enable Dashes toggle';
-
-        // Update disabled state for Dash Length and Gap Length groups
-        const dashLengthGroup = document.getElementById('dashLengthControlGroup');
-        const gapLengthGroup = document.getElementById('gapLengthControlGroup');
-        
-        if (dashLengthGroup) {
-            dashLengthGroup.classList.toggle('disabled', !isEnabled);
-            if (!isEnabled && isRandomMode) {
-                dashLengthGroup.setAttribute('data-tooltip', tooltipMessage);
-            } else {
-                dashLengthGroup.removeAttribute('data-tooltip');
-            }
-        }
-        
-        if (gapLengthGroup) {
-            gapLengthGroup.classList.toggle('disabled', !isEnabled);
-            if (!isEnabled && isRandomMode) {
-                gapLengthGroup.setAttribute('data-tooltip', tooltipMessage);
-            } else {
-                gapLengthGroup.removeAttribute('data-tooltip');
-            }
-        }
-
-        // Update Chess toggle inactive state (Chess only works with Dash enabled)
-        const chessLabel = document.getElementById('dashChessLabel');
-        if (chessLabel) {
-            chessLabel.classList.toggle('inactive', !isEnabled);
-            if (!isEnabled && isRandomMode) {
-                chessLabel.setAttribute('data-tooltip', tooltipMessage);
-            } else {
-                chessLabel.removeAttribute('data-tooltip');
-            }
-        }
-    }
-
-    /**
      * Update Close toggle state based on Lines range
      * Close only works when Lines > 1
      */
@@ -2603,16 +2577,10 @@ class VoidTypeface {
         
         // Close is inactive only if both min and max are 1
         const isInactive = minLines === 1 && maxLines === 1;
-        const tooltipMessage = 'Set Lines to more than 1';
         
         const closeLabel = document.getElementById('closeEndsLabel');
         if (closeLabel) {
             closeLabel.classList.toggle('inactive', isInactive);
-            if (isInactive) {
-                closeLabel.setAttribute('data-tooltip', tooltipMessage);
-            } else {
-                closeLabel.removeAttribute('data-tooltip');
-            }
         }
     }
 
@@ -4151,26 +4119,6 @@ class VoidTypeface {
             });
         }
     }
-    
-    /**
-     * Initialize MIDI controller
-     */
-    async initMIDI() {
-        if (this.isMobile) return; // Don't initialize on mobile
-        
-        try {
-            this.midiController = new MIDIController(this);
-            const success = await this.midiController.init();
-            
-            if (success) {
-                console.log('[VoidTypeface] MIDI controller initialized');
-            } else {
-                console.log('[VoidTypeface] MIDI controller not available');
-            }
-        } catch (error) {
-            console.error('[VoidTypeface] Failed to initialize MIDI controller:', error);
-        }
-    }
 
     /**
      * Initialize cursor-following tooltips system
@@ -4201,16 +4149,21 @@ class VoidTypeface {
         });
         
         const getTooltipText = (target) => {
-            const isDisabled = target.classList.contains('controls-disabled') || target.querySelector('input:disabled');
-            if (isDisabled && target.hasAttribute('data-tooltip-disabled')) {
+            const unavailable =
+                target.classList.contains('inactive') ||
+                target.classList.contains('controls-disabled') ||
+                (target.querySelector && target.querySelector('input:disabled'));
+            if (unavailable && target.hasAttribute('data-tooltip-disabled')) {
                 return target.getAttribute('data-tooltip-disabled');
             }
             return target.getAttribute('data-tooltip') || null;
         };
 
-        // Delegate event listeners for elements with data-tooltip
+        const tooltipHostSelector = '[data-tooltip], [data-tooltip-disabled]';
+
+        // Delegate event listeners for elements with tooltips
         document.addEventListener('mouseenter', (e) => {
-            const target = e.target.closest('[data-tooltip]');
+            const target = e.target.closest(tooltipHostSelector);
             if (target) {
                 const text = getTooltipText(target);
                 if (text) {
@@ -4220,14 +4173,14 @@ class VoidTypeface {
         }, true);
         
         document.addEventListener('mouseleave', (e) => {
-            const target = e.target.closest('[data-tooltip]');
+            const target = e.target.closest(tooltipHostSelector);
             if (target) {
                 this.hideTooltip();
             }
         }, true);
         
         document.addEventListener('mouseover', (e) => {
-            const target = e.target.closest('[data-tooltip]');
+            const target = e.target.closest(tooltipHostSelector);
             if (target) {
                 const text = getTooltipText(target);
                 if (text) {
@@ -4240,11 +4193,9 @@ class VoidTypeface {
             const target = e.target;
             const relatedTarget = e.relatedTarget;
             
-            // Check if we're leaving a tooltip element
-            if (target.closest && target.closest('[data-tooltip]')) {
-                // Check if we're moving to a child or parent with the same tooltip
-                const targetTooltipEl = target.closest('[data-tooltip]');
-                const relatedTooltipEl = relatedTarget?.closest?.('[data-tooltip]');
+            if (target.closest && target.closest(tooltipHostSelector)) {
+                const targetTooltipEl = target.closest(tooltipHostSelector);
+                const relatedTooltipEl = relatedTarget?.closest?.(tooltipHostSelector);
                 
                 if (targetTooltipEl !== relatedTooltipEl) {
                     this.hideTooltip();

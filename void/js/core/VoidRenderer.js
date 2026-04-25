@@ -527,8 +527,8 @@ export class VoidRenderer {
         let alternativeIndex = null;
         const cacheKey = lineIndex !== null && charIndex !== null ? `${lineIndex}_${charIndex}` : null;
         
-        if (cacheKey && this.alternativeGlyphCache.hasOwnProperty(cacheKey)) {
-            // Letter fixed in cache - use its alternative
+        if (cacheKey && this.params.useAlternativesInRandom && this.alternativeGlyphCache.hasOwnProperty(cacheKey)) {
+            // Letter fixed in cache - use its alternative (only while Alt Glyphs is on; cache is kept when off)
             alternativeIndex = this.alternativeGlyphCache[cacheKey];
         } else if (this.params.isRandom && this.params.useAlternativesInRandom && cacheKey) {
             // In Random mode with alternatives enabled - generate random alternative once

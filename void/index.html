@@ -116,6 +116,7 @@
                                     <path d="M8,3v6M5,3h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
                                 </svg>
                                 <input type="number" class="compact-input" id="letterSpacingValue" value="1" min="0" max="16" step="1">
+                                <span class="unit">mod</span>
                             </div>
                             
                             <!-- Line Height (Leading) -->
@@ -125,6 +126,7 @@
                                     <path d="M11,3.6v8.7M8,3.6h6" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
                                 </svg>
                                 <input type="number" class="compact-input" id="lineHeightValue" value="2" min="0" max="16" step="1">
+                                <span class="unit">mod</span>
                             </div>
                             
                             <!-- Text Alignment Icons -->
@@ -197,7 +199,7 @@ Code</textarea>
                         </div>
 
                         <!-- Contrast (with dice, dimmed when Lines=1) -->
-                        <div class="control-group dice-slider-group" id="strokeGapRatioControlGroup">
+                        <div class="control-group dice-slider-group" id="strokeGapRatioControlGroup" data-tooltip="Spacing between parallel strokes in multiline styles" data-tooltip-disabled="Only used when there are two or more stroke lines. Raise Lines, or in Random set a Lines range whose maximum is above 1.">
                             <label for="strokeGapRatioSlider">
                                 <span>Contrast <button type="button" class="dice-btn" id="contrastDiceBtn" data-param="contrast" title="Random range (min–max)" aria-label="Toggle random range">↔</button></span>
                                 <input type="text" class="value-display" id="strokeGapRatioValue" value="1.0">
@@ -220,13 +222,12 @@ Code</textarea>
                                 <label class="section-toggle-label" for="dashEnabledCheckbox">
                                     <input type="checkbox" id="dashEnabledCheckbox" class="sr-only">
                                     Dashes
-                                    <svg class="section-toggle-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="2.5" x2="8" y2="8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
                                 </label>
                             </div>
-                            <div class="dashes-section-content" id="dashesSectionContent">
+                            <div class="dashes-section-content" id="dashesSectionContent" data-tooltip="Dash segment length and gap (dash drawing mode)" data-tooltip-disabled="Turn on Dashes in the section header (○ → ●) to edit these sliders.">
                                 <div class="control-group dice-slider-group" id="dashLengthControlGroup">
                                     <label for="dashLengthSlider">
-                                        <span>Dash Length <button type="button" class="dice-btn" id="dashLengthDiceBtn" data-param="dashLength" title="Random range (min–max)" aria-label="Toggle random range">↔</button></span>
+                                        <span>Dash Length <span class="unit">mod</span> <button type="button" class="dice-btn" id="dashLengthDiceBtn" data-param="dashLength" title="Random range (min–max)" aria-label="Toggle random range">↔</button></span>
                                         <input type="text" class="value-display" id="dashLengthValue" value="1.00">
                                     </label>
                                     <div class="dice-single" id="dashLengthSingleWrap">
@@ -242,7 +243,7 @@ Code</textarea>
                                 </div>
                                 <div class="control-group dice-slider-group" id="gapLengthControlGroup">
                                     <label for="gapLengthSlider">
-                                        <span>Gap Length <button type="button" class="dice-btn" id="gapLengthDiceBtn" data-param="gapLength" title="Random range (min–max)" aria-label="Toggle random range">↔</button></span>
+                                        <span>Gap Length <span class="unit">mod</span> <button type="button" class="dice-btn" id="gapLengthDiceBtn" data-param="gapLength" title="Random range (min–max)" aria-label="Toggle random range">↔</button></span>
                                         <input type="text" class="value-display" id="gapLengthValue" value="1.50">
                                     </label>
                                     <div class="dice-single" id="gapLengthSingleWrap">
@@ -279,9 +280,9 @@ Code</textarea>
                     </section>
                 </div>
                 <div class="random-panel-actions">
-                    <button type="button" class="btn-secondary" id="shuffleBtn" style="flex: 1;">🎲</button>
-                    <button type="button" class="btn-secondary" id="renewRandomBtn" style="flex: 1;">Randomize</button>
-                    <button type="button" class="btn-secondary" id="resetAllDiceBtn" style="flex: 1;">↺</button>
+                    <button type="button" class="btn-secondary" id="shuffleBtn" style="flex: 1;" title="Unpredictable result">Chaos</button>
+                    <button type="button" class="btn-secondary" id="renewRandomBtn" style="flex: 1;" title="Randomizes the parameters you selected">Randomize</button>
+                    <button type="button" class="btn-secondary" id="resetAllDiceBtn" style="flex: 1;" title="Reset to this preset’s default settings">↺</button>
                 </div>
             </aside>
 
@@ -301,10 +302,9 @@ Code</textarea>
                             <label class="section-toggle-label" for="wobblyCheckbox">
                                 <input type="checkbox" id="wobblyCheckbox" class="sr-only">
                                 Wobble
-                                <svg class="section-toggle-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.3"/><line x1="8" y1="2.5" x2="8" y2="8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
                             </label>
                         </div>
-                        <div class="control-group dice-slider-group wobbly-slider" id="wobblyAmountControlGroup">
+                        <div class="control-group dice-slider-group wobbly-slider" id="wobblyAmountControlGroup" data-tooltip="Wobble — how far strokes move off-grid (px)" data-tooltip-disabled="Turn on Wobble (● Wobble), or include Wobble Amount / Noise in Random (↔).">
                             <label for="wobblyAmountSlider">
                                 <span>Amount <span class="unit">px</span> <button type="button" class="dice-btn" id="wobblyAmountDiceBtn" data-param="wobblyAmount" title="Random range (min–max)" aria-label="Toggle random range">↔</button></span>
                                 <input type="text" class="value-display" id="wobblyAmountValue" value="3">
@@ -320,7 +320,7 @@ Code</textarea>
                                 </div>
                             </div>
                         </div>
-                        <div class="control-group dice-slider-group wobbly-slider" id="wobblyFrequencyControlGroup">
+                        <div class="control-group dice-slider-group wobbly-slider" id="wobblyFrequencyControlGroup" data-tooltip="Wobble — noise scale / how quickly the wobble changes" data-tooltip-disabled="Turn on Wobble (● Wobble), or include Wobble Amount / Noise in Random (↔).">
                             <label for="wobblyFrequencySlider">
                                 <span>Noise <button type="button" class="dice-btn" id="wobblyFrequencyDiceBtn" data-param="wobblyFrequency" title="Random range (min–max)" aria-label="Toggle random range">↔</button></span>
                                 <input type="text" class="value-display" id="wobblyFrequencyValue" value="0.1">
@@ -341,11 +341,11 @@ Code</textarea>
                                 <input type="checkbox" id="roundedCapsCheckbox" class="sr-only">
                                 <span>Round Caps</span>
                             </label>
-                            <label class="pill-toggle" id="closeEndsLabel" for="closeEndsCheckbox" data-tooltip="Close line ends in multiline mode" data-tooltip-disabled="Close line ends in multiline mode. Requires Lines > 1">
+                            <label class="pill-toggle" id="closeEndsLabel" for="closeEndsCheckbox" data-tooltip="Close line ends in multiline mode" data-tooltip-disabled="Needs multiple lines: set Lines to 2+ in Style, or a random Lines range with max &gt; 1. If Dashes are off, use Stripes.">
                                 <input type="checkbox" id="closeEndsCheckbox" class="sr-only">
                                 <span>Close Stems</span>
                             </label>
-                            <label class="pill-toggle" id="dashChessLabel" for="dashChessCheckboxPD" data-tooltip="Alternate dash pattern between lines" data-tooltip-disabled="Alternate dash pattern between lines. Requires Dashes enabled and Lines > 1">
+                            <label class="pill-toggle" id="dashChessLabel" for="dashChessCheckboxPD" data-tooltip="Stagger dash phase on neighboring lines" data-tooltip-disabled="Requires Dashes (● Dashes) and multiple stroke lines (Lines &gt; 1 or a range that includes 2+).">
                                 <input type="checkbox" id="dashChessCheckboxPD" class="sr-only">
                                 <span>Chess Order</span>
                             </label>
@@ -552,7 +552,7 @@ Code</textarea>
     <!-- Bottom Action Buttons -->
     <nav class="bottom-buttons">
         <button class="btn-fixed" id="exportPngBtn" type="button">Export PNG</button>
-        <button class="btn-fixed" id="copyBtn">Copy SVG</button>
+        <button class="btn-fixed" id="copyBtn" type="button" title="Copies the SVG to the clipboard — paste it straight into Figma (or any app)">Copy SVG</button>
         <button class="btn-fixed" id="exportBtn">Export SVG ⌘E</button>
         <button class="btn-fixed" id="renewBtn" style="display: none;">Update</button>
     </nav>
