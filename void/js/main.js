@@ -14,6 +14,7 @@ import { ModalManager } from './ui/ModalManager.js';
 import { ColorUtils } from './utils/ColorUtils.js';
 import { MathUtils } from './utils/MathUtils.js';
 import GlyphEditor from './core/GlyphEditor.js';
+import { HistoryManager } from './history/HistoryManager.js';
 
 /** Shared config for dice (per-param random) buttons */
 const DICE_CONFIG = {
@@ -302,6 +303,14 @@ class VoidTypeface {
             this.currentPresetName = 'New';
             this.hasUnsavedChanges = false;
             this.isInitializing = true;
+
+            // Undo/Redo: per-preset history. historyManager — текущий менеджер активного пресета.
+            this.presetHistories = new Map();
+            this.historyManager = new HistoryManager({ maxSize: 50 });
+            this.isRestoringState = false;
+            this.activeSliderTransactions = new Map();
+            this.activeInputTransactions = new Set();
+            this.snapshotDebounceTimer = null;
             // On desktop initialize everything as usual
             this.initPanels();
             this.initSliders();
@@ -331,6 +340,7 @@ class VoidTypeface {
             this.isLoadingPreset = false;
             
             this.setupChangeTracking();
+            this.initSliderHistoryHandlers();
             this.initPresets();
             this.initExport();
             this.initResize();
@@ -358,6 +368,18 @@ class VoidTypeface {
             // Complete initialization and update buttons
             this.isInitializing = false;
             this.hasUnsavedChanges = false; // Ensure no changes after initialization
+
+            // Записываем стартовый снэпшот в историю текущего пресета, если её ещё нет.
+            // (loadPreset во время init мог уже это сделать — saveInitialHistorySnapshot
+            // не дублирует одинаковое состояние благодаря compare-проверке.)
+            if (this.historyManager.history.length === 0) {
+                this.saveInitialHistorySnapshot(`init: ${this.currentPresetName || 'New'}`);
+            }
+            // Регистрируем активный менеджер в Map (на случай если init шёл без loadPreset)
+            if (this.currentPresetName) {
+                this.presetHistories.set(this.currentPresetName, this.historyManager);
+            }
+
             if (this.currentPresetName === 'New') {
                 this.updateSaveDeleteButtons();
             }
@@ -1524,6 +1546,9 @@ class VoidTypeface {
      * Generate random colors for type, background and grid
      */
     randomizeColors() {
+        this._flushAutoSnapshot();
+        this.historyManager.beginAction('randomize colors', this.getStateSnapshot());
+
         const letterColor = this.generateRandomColor();
         const bgColor = this.generateRandomColor();
         const gridColor = this.generateRandomColor();
@@ -1550,6 +1575,7 @@ class VoidTypeface {
         // Render and mark as changed
         this.updateRenderer();
         this.markAsChanged();
+        this.historyManager.commitAction(this.getStateSnapshot());
     }
     
     /**
@@ -2162,6 +2188,9 @@ class VoidTypeface {
         if (renewBtn) {
             renewBtn.addEventListener('click', () => {
                 if (this.settings.get('isRandom')) {
+                    this._flushAutoSnapshot();
+                    this.historyManager.beginAction('randomize', this.getStateSnapshot());
+
                     if (this.renderer.clearModuleTypeCache) {
                         this.renderer.clearModuleTypeCache();
                     }
@@ -2177,6 +2206,7 @@ class VoidTypeface {
                     }
                     this.updateRenderer();
                     this.markAsChanged();
+                    this.historyManager.commitAction(this.getStateSnapshot());
                 }
             });
         }
@@ -2653,6 +2683,9 @@ class VoidTypeface {
             });
             if (confirmed.action !== 'reset') return;
 
+            this._flushAutoSnapshot();
+            this.historyManager.beginAction('reset all', this.getStateSnapshot());
+
             const defaults = {
                 stemMultiplier: 0.5, strokesNum: 1, strokeGapRatio: 1.0,
                 dashEnabled: false, dashLength: 1.00, gapLength: 1.50, dashChess: false,
@@ -2714,6 +2747,7 @@ class VoidTypeface {
             this.updateRandomSectionVisibility();
             this.updateRenderer();
             this.markAsChanged();
+            this.historyManager.commitAction(this.getStateSnapshot());
         });
     }
     
@@ -2947,6 +2981,7 @@ class VoidTypeface {
                     const confirmed = await this.modalManager.confirmDelete(presetName);
                     if (confirmed) {
                         if (this.presetManager.deletePreset(presetName)) {
+                            this.presetHistories.delete(presetName);
                             // Update preset list first
                             this.updatePresetList();
                             
@@ -2985,6 +3020,7 @@ class VoidTypeface {
                         names.forEach(name => {
                             if (name !== 'New') {
                                 this.presetManager.deletePreset(name);
+                                this.presetHistories.delete(name);
                             }
                         });
                         
@@ -3082,6 +3118,7 @@ class VoidTypeface {
             const confirmed = await this.modalManager.confirmDelete(this.currentPresetName);
             if (confirmed) {
                 if (this.presetManager.deletePreset(this.currentPresetName)) {
+                    this.presetHistories.delete(this.currentPresetName);
                     // Update preset list first
                     this.updatePresetList();
                     
@@ -3280,6 +3317,38 @@ class VoidTypeface {
             return;
         }
 
+        // === Per-preset history: сохраняем историю текущего пресета и переключаем менеджер ===
+        const oldPresetName = this.currentPresetName;
+        if (oldPresetName && this.historyManager) {
+            if (this.historyManager.currentTransaction) {
+                this.historyManager.cancelAction();
+            }
+            this._flushAutoSnapshot();
+            // Сохраняем только непустую историю (пустой менеджер незачем кэшировать)
+            if (this.historyManager.history.length > 0) {
+                this.presetHistories.set(oldPresetName, this.historyManager);
+            }
+        }
+
+        // Если у пресета есть сохранённая история — восстанавливаем состояние ИЗ НЕЁ
+        // (там, где пользователь оставил пресет в этой сессии), не накладывая данные с диска.
+        const existingHistory = this.presetHistories.get(name);
+        if (existingHistory && existingHistory.history.length > 0) {
+            this.historyManager = existingHistory;
+            this.currentPresetName = name;
+
+            const currentState = this.historyManager.getCurrentState();
+            if (currentState && updateUI) {
+                this.applyStateSnapshot(currentState);
+            }
+            this.hasUnsavedChanges = this.historyManager.historyIndex > 0;
+            this.updateSaveDeleteButtons();
+            return;
+        }
+
+        // Иначе заводим свежую историю, текущий поток loadPreset сам выставит settings с диска.
+        this.historyManager = new HistoryManager({ maxSize: 50 });
+
         // Set loading flag to avoid triggering change tracking
         this.isLoadingPreset = true;
         
@@ -3451,9 +3520,21 @@ class VoidTypeface {
         // Clear pending cache restore
         this.pendingCacheRestore = null;
         
-        // Reset changes flag and loading flag AFTER all UI updates
-        this.hasUnsavedChanges = false;
+        // Reset loading flag AFTER all UI updates so initial snapshot is recorded clean
         this.isLoadingPreset = false;
+
+        // Если у пресета ещё нет истории — пишем стартовый снэпшот.
+        // Если есть — синхронизируем hasUnsavedChanges с положением курсора в истории.
+        if (this.historyManager.history.length === 0) {
+            this.saveInitialHistorySnapshot(`load preset: ${name}`);
+            this.hasUnsavedChanges = false;
+        } else {
+            this.hasUnsavedChanges = this.historyManager.historyIndex > 0;
+        }
+
+        // Регистрируем активный менеджер в Map, чтобы при следующем переключении
+        // его можно было найти по имени пресета.
+        this.presetHistories.set(name, this.historyManager);
         
         // Update buttons after all changes
         this.updateSaveDeleteButtons();
@@ -3676,7 +3757,19 @@ class VoidTypeface {
                 e.preventDefault();
                 this.exportSVG();
             }
-            
+
+            // Cmd/Ctrl+Z — Undo, Cmd/Ctrl+Shift+Z — Redo
+            // toLowerCase т.к. при зажатом Shift e.key может быть 'Z'
+            if ((e.metaKey || e.ctrlKey) && typeof e.key === 'string' && e.key.toLowerCase() === 'z') {
+                const currentMode = this.settings.get('currentMode') || 'normal';
+                if (currentMode === 'editor') return;
+                e.preventDefault();
+                if (e.shiftKey) {
+                    this.redo();
+                } else {
+                    this.undo();
+                }
+            }
         });
     }
 
@@ -4094,9 +4187,10 @@ class VoidTypeface {
         this.settings.set = function(key, value) {
             const oldValue = self.settings.values[key];
             const result = originalSet(key, value);
-            // If not loading preset, not initializing and value actually changed, mark as changed
-            if (!self.isLoadingPreset && !self.isInitializing && self.currentPresetName && oldValue !== value) {
+            const changed = oldValue !== value;
+            if (changed && !self.isLoadingPreset && !self.isInitializing && !self.isRestoringState && self.currentPresetName) {
                 self.markAsChanged();
+                self._scheduleAutoSnapshot(`set ${key}`);
             }
             return result;
         };
@@ -4108,9 +4202,10 @@ class VoidTypeface {
             const oldText = lastRendererText;
             originalSetText(text);
             lastRendererText = text;
-            // Only mark as changed if text actually changed
-            if (!this.isLoadingPreset && !this.isInitializing && this.currentPresetName && oldText !== null && oldText !== text) {
+            const changed = oldText !== null && oldText !== text;
+            if (changed && !this.isLoadingPreset && !this.isInitializing && !this.isRestoringState && this.currentPresetName) {
                 this.markAsChanged();
+                this._scheduleAutoSnapshot('setText');
             }
         };
     }
@@ -4123,10 +4218,286 @@ class VoidTypeface {
         const currentMode = this.settings.get('currentMode') || 'normal';
         if (currentMode === 'editor') return;
         
-        if (!this.isLoadingPreset && !this.isInitializing) {
+        if (!this.isLoadingPreset && !this.isInitializing && !this.isRestoringState) {
             this.hasUnsavedChanges = true;
             this.updateSaveDeleteButtons();
         }
+    }
+
+    // ============================================
+    // History (Undo/Redo)
+    // ============================================
+
+    /**
+     * Снэпшот текущего состояния приложения для истории.
+     * Включает settings + кэши рендера + Color Chaos состояние.
+     */
+    getStateSnapshot() {
+        const renderer = this.renderer;
+        return {
+            settings: JSON.parse(JSON.stringify(this.settings.values)),
+            renderer: {
+                alternativeGlyphCache: renderer?.alternativeGlyphCache
+                    ? JSON.parse(JSON.stringify(renderer.alternativeGlyphCache)) : {},
+                moduleTypeCache: renderer?.moduleTypeCache
+                    ? JSON.parse(JSON.stringify(renderer.moduleTypeCache)) : {},
+                moduleValueCache: renderer?.moduleValueCache
+                    ? JSON.parse(JSON.stringify(renderer.moduleValueCache)) : {}
+            },
+            colorChaos: {
+                colorPalette: Array.isArray(this.colorPalette) ? [...this.colorPalette] : [],
+                moduleColorCache: this.moduleColorCache instanceof Map
+                    ? Array.from(this.moduleColorCache.entries())
+                    : [],
+                globalModuleIndex: this.globalModuleIndex || 0,
+                globalGradientIndex: this.globalGradientIndex || 0
+            }
+        };
+    }
+
+    /**
+     * Применить снэпшот состояния. Все промежуточные set/изменения UI происходят
+     * под флагом isRestoringState — они не пишутся в историю и не помечают пресет
+     * как изменённый.
+     */
+    applyStateSnapshot(snapshot) {
+        if (!snapshot) return;
+
+        this.isRestoringState = true;
+        this.historyManager.setRestoring(true);
+
+        try {
+            // 1. Прямое восстановление settings.values, минуя обёртку set()
+            //    (иначе пойдут лишние markAsChanged + auto-snapshot)
+            if (snapshot.settings) {
+                Object.assign(this.settings.values, snapshot.settings);
+            }
+
+            // 2. Восстановление кэшей Color Chaos
+            if (snapshot.colorChaos) {
+                this.colorPalette = Array.isArray(snapshot.colorChaos.colorPalette)
+                    ? [...snapshot.colorChaos.colorPalette] : [];
+                this.moduleColorCache = new Map(snapshot.colorChaos.moduleColorCache || []);
+                this.globalModuleIndex = snapshot.colorChaos.globalModuleIndex || 0;
+                this.globalGradientIndex = snapshot.colorChaos.globalGradientIndex || 0;
+            }
+
+            // 3. Подготовка кэшей рендера к восстановлению
+            //    pendingCacheRestore используется внутри updateRenderer()
+            if (snapshot.renderer) {
+                this.pendingCacheRestore = {
+                    moduleTypeCache: snapshot.renderer.moduleTypeCache || null,
+                    moduleValueCache: snapshot.renderer.moduleValueCache || null,
+                    alternativeGlyphCache: snapshot.renderer.alternativeGlyphCache || null
+                };
+                if (this.renderer) {
+                    if (snapshot.renderer.alternativeGlyphCache) {
+                        this.renderer.alternativeGlyphCache = JSON.parse(JSON.stringify(snapshot.renderer.alternativeGlyphCache));
+                    }
+                    if (snapshot.renderer.moduleTypeCache) {
+                        this.renderer.moduleTypeCache = JSON.parse(JSON.stringify(snapshot.renderer.moduleTypeCache));
+                    }
+                    if (snapshot.renderer.moduleValueCache) {
+                        this.renderer.moduleValueCache = JSON.parse(JSON.stringify(snapshot.renderer.moduleValueCache));
+                    }
+                }
+            }
+
+            // 4. Очистка layout-кэшей и обновление UI/рендера
+            if (this.renderer && this.renderer.clearLayoutCache) {
+                this.renderer.clearLayoutCache();
+            }
+            this.updateUIFromSettings();
+            this.updateRenderer(true);
+
+            this.pendingCacheRestore = null;
+        } finally {
+            this.isRestoringState = false;
+            this.historyManager.setRestoring(false);
+        }
+    }
+
+    /**
+     * Запланировать автоматический snapshot после серии изменений.
+     * Дебаунс — чтобы быстрая последовательность set'ов превратилась в один шаг истории.
+     * Не пишет, если идёт активная транзакция (её закроет commitAction).
+     */
+    _scheduleAutoSnapshot(label = '') {
+        if (this.isRestoringState || this.isLoadingPreset || this.isInitializing) return;
+        if (this.settings.get('currentMode') === 'editor') return;
+        if (this.historyManager.currentTransaction) return;
+
+        if (this.snapshotDebounceTimer) {
+            clearTimeout(this.snapshotDebounceTimer);
+        }
+        this.snapshotDebounceTimer = setTimeout(() => {
+            this.snapshotDebounceTimer = null;
+            if (this.historyManager.currentTransaction) return;
+            this.historyManager.saveSnapshot(this.getStateSnapshot(), label);
+        }, 250);
+    }
+
+    /**
+     * Принудительно сбросить отложенный snapshot (например, перед началом транзакции).
+     */
+    _flushAutoSnapshot() {
+        if (this.snapshotDebounceTimer) {
+            clearTimeout(this.snapshotDebounceTimer);
+            this.snapshotDebounceTimer = null;
+        }
+    }
+
+    /**
+     * Сохранить начальный снэпшот в историю текущего пресета.
+     * Вызывается после загрузки/создания пресета, когда история пуста.
+     */
+    saveInitialHistorySnapshot(label = 'initial') {
+        this._flushAutoSnapshot();
+        this.historyManager.saveSnapshot(this.getStateSnapshot(), label);
+    }
+
+    /**
+     * Cmd/Ctrl+Z
+     */
+    undo() {
+        if (this.settings.get('currentMode') === 'editor') return;
+        // Закрываем активный input (его blur закоммитит транзакцию текстового поля)
+        const activeEl = document.activeElement;
+        if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+            activeEl.blur();
+        }
+        this._flushAutoSnapshot();
+        const previousState = this.historyManager.undo();
+        if (previousState) {
+            this.applyStateSnapshot(previousState);
+            this._afterHistoryNav();
+        }
+    }
+
+    /**
+     * Cmd/Ctrl+Shift+Z
+     */
+    redo() {
+        if (this.settings.get('currentMode') === 'editor') return;
+        const activeEl = document.activeElement;
+        if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
+            activeEl.blur();
+        }
+        this._flushAutoSnapshot();
+        const nextState = this.historyManager.redo();
+        if (nextState) {
+            this.applyStateSnapshot(nextState);
+            this._afterHistoryNav();
+        }
+    }
+
+    /**
+     * Сделать вид, что после undo/redo нужно отметить пресет как изменённый
+     * (если индекс не на стартовой позиции истории пресета).
+     */
+    _afterHistoryNav() {
+        // hasUnsavedChanges вычисляем относительно стартового снэпшота истории (index 0)
+        const idx = this.historyManager.historyIndex;
+        const hasChanges = idx > 0;
+        this.hasUnsavedChanges = hasChanges;
+        this.updateSaveDeleteButtons();
+    }
+
+    /**
+     * Привязать к каждому слайдеру/range-слайдеру обработчики транзакций:
+     *  - mousedown на ползунке  → beginAction (snapshot "до")
+     *  - глобальный mouseup     → commitAction (snapshot "после")
+     *  - focus  на value-input  → beginAction
+     *  - blur   на value-input  → commitAction
+     * Это превращает один drag/один сеанс ввода в один шаг истории.
+     */
+    initSliderHistoryHandlers() {
+        // ---- SliderController (одиночные слайдеры) ----
+        if (this.sliderController?.sliders) {
+            this.sliderController.sliders.forEach((sliderData, sliderId) => {
+                const slider = sliderData.element;
+                const valueInput = sliderData.valueInput;
+
+                if (slider) {
+                    slider.addEventListener('mousedown', (e) => {
+                        if (e.button !== 0) return;
+                        this._flushAutoSnapshot();
+                        this.historyManager.beginAction(`adjust ${sliderId}`, this.getStateSnapshot());
+                        this.activeSliderTransactions.set(sliderId, true);
+                    });
+                }
+
+                if (valueInput) {
+                    valueInput.addEventListener('focus', () => {
+                        if (this.activeInputTransactions.has(sliderId)) return;
+                        this._flushAutoSnapshot();
+                        this.historyManager.beginAction(`type ${sliderId}`, this.getStateSnapshot());
+                        this.activeInputTransactions.add(sliderId);
+                    });
+                    valueInput.addEventListener('blur', () => {
+                        if (!this.activeInputTransactions.has(sliderId)) return;
+                        this.historyManager.commitAction(this.getStateSnapshot());
+                        this.activeInputTransactions.delete(sliderId);
+                    });
+                }
+            });
+        }
+
+        // ---- RangeSliderController (двойные ползунки) ----
+        if (this.rangeSliderController?.ranges) {
+            this.rangeSliderController.ranges.forEach((rangeData, rangeId) => {
+                const beginRange = (label) => {
+                    if (this.activeSliderTransactions.has(rangeId)) return;
+                    this._flushAutoSnapshot();
+                    this.historyManager.beginAction(label, this.getStateSnapshot());
+                    this.activeSliderTransactions.set(rangeId, true);
+                };
+
+                if (rangeData.minThumb) {
+                    rangeData.minThumb.addEventListener('mousedown', (e) => {
+                        if (e.button !== 0) return;
+                        beginRange(`adjust ${rangeId} (min)`);
+                    });
+                }
+                if (rangeData.maxThumb) {
+                    rangeData.maxThumb.addEventListener('mousedown', (e) => {
+                        if (e.button !== 0) return;
+                        beginRange(`adjust ${rangeId} (max)`);
+                    });
+                }
+
+                // Текстовые поля min/max
+                const cfg = rangeData.config || {};
+                ['minValueId', 'maxValueId'].forEach(idKey => {
+                    const inputId = cfg[idKey];
+                    if (!inputId) return;
+                    const input = document.getElementById(inputId);
+                    if (!input) return;
+                    const txKey = `${rangeId}:${inputId}`;
+                    input.addEventListener('focus', () => {
+                        if (this.activeInputTransactions.has(txKey)) return;
+                        this._flushAutoSnapshot();
+                        this.historyManager.beginAction(`type ${inputId}`, this.getStateSnapshot());
+                        this.activeInputTransactions.add(txKey);
+                    });
+                    input.addEventListener('blur', () => {
+                        if (!this.activeInputTransactions.has(txKey)) return;
+                        this.historyManager.commitAction(this.getStateSnapshot());
+                        this.activeInputTransactions.delete(txKey);
+                    });
+                });
+            });
+        }
+
+        // Глобальный mouseup закрывает все активные slider/range-транзакции
+        document.addEventListener('mouseup', (e) => {
+            if (e.button !== 0) return;
+            if (this.activeSliderTransactions.size === 0) return;
+            this.activeSliderTransactions.forEach((_, id) => {
+                this.historyManager.commitAction(this.getStateSnapshot());
+            });
+            this.activeSliderTransactions.clear();
+        });
     }
 
     /**
