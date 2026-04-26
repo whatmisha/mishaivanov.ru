@@ -16,6 +16,14 @@ import { MathUtils } from './utils/MathUtils.js';
 import GlyphEditor from './core/GlyphEditor.js';
 import { HistoryManager } from './history/HistoryManager.js';
 
+const RANDOM_DICE_TITLE_OFF = 'Add this parameter to random';
+const RANDOM_DICE_TITLE_ON = 'Remove this parameter from random';
+
+function syncRandomDiceTitle(btn, active) {
+    if (!btn) return;
+    btn.title = active ? RANDOM_DICE_TITLE_ON : RANDOM_DICE_TITLE_OFF;
+}
+
 /** Shared config for dice (per-param random) buttons */
 const DICE_CONFIG = {
     stem: {
@@ -1487,7 +1495,9 @@ class VoidTypeface {
         document.querySelectorAll('button.palette-swatch-dice[data-palette-dice]').forEach(btn => {
             const key = map[btn.dataset.paletteDice];
             if (!key) return;
-            btn.classList.toggle('active', !!this.settings.get(key));
+            const enabled = !!this.settings.get(key);
+            btn.classList.toggle('active', enabled);
+            syncRandomDiceTitle(btn, enabled);
         });
     }
 
@@ -2232,7 +2242,10 @@ class VoidTypeface {
         if (singleWrap) singleWrap.style.display = '';
         if (rangeWrap) rangeWrap.style.display = 'none';
         if (singleValueEl) singleValueEl.style.display = '';
-        if (diceBtn) diceBtn.classList.remove('active');
+        if (diceBtn) {
+            diceBtn.classList.remove('active');
+            syncRandomDiceTitle(diceBtn, false);
+        }
         // Restore single value from range average
         const min = this.settings.get(cfg.minSetting);
         const max = this.settings.get(cfg.maxSetting);
@@ -2290,7 +2303,10 @@ class VoidTypeface {
             if (singleWrap) singleWrap.style.display = enabled ? 'none' : '';
             if (rangeWrap) rangeWrap.style.display = enabled ? 'block' : 'none';
             if (singleValueEl) singleValueEl.style.display = enabled ? 'none' : '';
-            if (diceBtn) diceBtn.classList.toggle('active', enabled);
+            if (diceBtn) {
+                diceBtn.classList.toggle('active', enabled);
+                syncRandomDiceTitle(diceBtn, enabled);
+            }
             if (enabled) {
                 const dMin = cfg.defaultMin !== undefined ? cfg.defaultMin : cfg.min;
                 const dMax = cfg.defaultMax !== undefined ? cfg.defaultMax : cfg.max;
@@ -2365,7 +2381,10 @@ class VoidTypeface {
             if (singleWrap) singleWrap.style.display = enabled ? 'none' : '';
             if (rangeWrap) rangeWrap.style.display = enabled ? 'block' : 'none';
             if (singleValueEl) singleValueEl.style.display = enabled ? 'none' : '';
-            if (btn) btn.classList.toggle('active', enabled);
+            if (btn) {
+                btn.classList.toggle('active', enabled);
+                syncRandomDiceTitle(btn, enabled);
+            }
         }
     }
 
@@ -2396,7 +2415,11 @@ class VoidTypeface {
         for (const key of Object.keys(EFFECT_RANDOM_CONFIG)) {
             const cfg = EFFECT_RANDOM_CONFIG[key];
             const btn = document.querySelector(`.dice-btn--pill[data-effect="${key}"]`);
-            if (btn) btn.classList.toggle('active', !!this.settings.get(cfg.flag));
+            if (btn) {
+                const enabled = !!this.settings.get(cfg.flag);
+                btn.classList.toggle('active', enabled);
+                syncRandomDiceTitle(btn, enabled);
+            }
         }
     }
 
@@ -3573,7 +3596,10 @@ class VoidTypeface {
             if (singleWrap) singleWrap.style.display = enabled ? 'none' : '';
             if (rangeWrap) rangeWrap.style.display = enabled ? 'block' : 'none';
             if (singleValueEl) singleValueEl.style.display = enabled ? 'none' : '';
-            if (diceBtn) diceBtn.classList.toggle('active', enabled);
+            if (diceBtn) {
+                diceBtn.classList.toggle('active', enabled);
+                syncRandomDiceTitle(diceBtn, enabled);
+            }
         }
         this.sliderController.setValue('moduleSizeSlider', this.settings.get('moduleSize'), false);
         // Update compact inputs

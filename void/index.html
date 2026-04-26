@@ -94,7 +94,7 @@
                         <!-- Stem Weight (with dice for range mode) -->
                         <div class="control-group dice-slider-group" id="stemDiceGroup">
                             <label for="stemSlider">
-                                <span>Stem Weight <span class="unit">mod</span> <button type="button" class="dice-btn dice-btn--diamond" id="stemDiceBtn" data-param="stem" title="Random range: ◆ on, fixed value: ◇" aria-label="Toggle random range for Stem"></button></span>
+                                <span>Stem Weight <span class="unit">mod</span> <button type="button" class="dice-btn dice-btn--diamond" id="stemDiceBtn" data-param="stem" title="Add this parameter to random" aria-label="Toggle random range for Stem"></button></span>
                                 <input type="text" class="value-display" id="stemValue" value="0.5">
                             </label>
                             <div class="dice-single" id="stemSingleWrap">
@@ -185,7 +185,7 @@ Code</textarea>
                         <!-- Lines (with dice) -->
                         <div class="control-group dice-slider-group" id="strokesDiceGroup">
                             <label for="strokesSlider">
-                                <span>Lines <button type="button" class="dice-btn dice-btn--diamond" id="strokesDiceBtn" data-param="strokes" title="Random range: ◆ on, fixed value: ◇" aria-label="Toggle random range for Lines"></button></span>
+                                <span>Lines <button type="button" class="dice-btn dice-btn--diamond" id="strokesDiceBtn" data-param="strokes" title="Add this parameter to random" aria-label="Toggle random range for Lines"></button></span>
                                 <input type="text" class="value-display" id="strokesValue" value="1">
                             </label>
                             <div class="dice-single" id="strokesSingleWrap">
@@ -203,7 +203,7 @@ Code</textarea>
                         <!-- Contrast (with dice, dimmed when Lines=1) -->
                         <div class="control-group dice-slider-group" id="strokeGapRatioControlGroup" data-tooltip="Spacing between parallel strokes in multiline styles" data-tooltip-disabled="Only used when there are two or more stroke lines. Raise Lines, or in Random set a Lines range whose maximum is above 1.">
                             <label for="strokeGapRatioSlider">
-                                <span>Contrast <button type="button" class="dice-btn dice-btn--diamond" id="contrastDiceBtn" data-param="contrast" title="Random range: ◆ on, fixed value: ◇" aria-label="Toggle random range for Contrast"></button></span>
+                                <span>Contrast <button type="button" class="dice-btn dice-btn--diamond" id="contrastDiceBtn" data-param="contrast" title="Add this parameter to random" aria-label="Toggle random range for Contrast"></button></span>
                                 <input type="text" class="value-display" id="strokeGapRatioValue" value="1.0">
                             </label>
                             <div class="dice-single" id="contrastSingleWrap">
@@ -229,7 +229,7 @@ Code</textarea>
                             <div class="dashes-section-content" id="dashesSectionContent" data-tooltip="Dash segment length and gap (dash drawing mode)" data-tooltip-disabled="Turn on Dashes in the section header (○ → ●) to edit these sliders.">
                                 <div class="control-group dice-slider-group" id="dashLengthControlGroup">
                                     <label for="dashLengthSlider">
-                                        <span>Dash Length <span class="unit">mod</span> <button type="button" class="dice-btn dice-btn--diamond" id="dashLengthDiceBtn" data-param="dashLength" title="Random range: ◆ on, fixed value: ◇" aria-label="Toggle random range for Dash length"></button></span>
+                                        <span>Dash Length <span class="unit">mod</span> <button type="button" class="dice-btn dice-btn--diamond" id="dashLengthDiceBtn" data-param="dashLength" title="Add this parameter to random" aria-label="Toggle random range for Dash length"></button></span>
                                         <input type="text" class="value-display" id="dashLengthValue" value="1.00">
                                     </label>
                                     <div class="dice-single" id="dashLengthSingleWrap">
@@ -245,7 +245,7 @@ Code</textarea>
                                 </div>
                                 <div class="control-group dice-slider-group" id="gapLengthControlGroup">
                                     <label for="gapLengthSlider">
-                                        <span>Gap Length <span class="unit">mod</span> <button type="button" class="dice-btn dice-btn--diamond" id="gapLengthDiceBtn" data-param="gapLength" title="Random range: ◆ on, fixed value: ◇" aria-label="Toggle random range for Gap length"></button></span>
+                                        <span>Gap Length <span class="unit">mod</span> <button type="button" class="dice-btn dice-btn--diamond" id="gapLengthDiceBtn" data-param="gapLength" title="Add this parameter to random" aria-label="Toggle random range for Gap length"></button></span>
                                         <input type="text" class="value-display" id="gapLengthValue" value="1.50">
                                     </label>
                                     <div class="dice-single" id="gapLengthSingleWrap">
@@ -308,7 +308,7 @@ Code</textarea>
                         </div>
                         <div class="control-group dice-slider-group wobbly-slider" id="wobblyAmountControlGroup" data-tooltip="Wobble — how far strokes move off-grid (px)" data-tooltip-disabled="Turn on Wobble (● Wobble), or add Amount / Noise to Random (turn ◆ on for those sliders).">
                             <label for="wobblyAmountSlider">
-                                <span>Amount <span class="unit">px</span> <button type="button" class="dice-btn dice-btn--diamond" id="wobblyAmountDiceBtn" data-param="wobblyAmount" title="Random range: ◆ on, fixed value: ◇" aria-label="Toggle random range for Wobble amount"></button></span>
+                                <span>Amount <span class="unit">px</span> <button type="button" class="dice-btn dice-btn--diamond" id="wobblyAmountDiceBtn" data-param="wobblyAmount" title="Add this parameter to random" aria-label="Toggle random range for Wobble amount"></button></span>
                                 <input type="text" class="value-display" id="wobblyAmountValue" value="3">
                             </label>
                             <div class="dice-single" id="wobblyAmountSingleWrap">
@@ -324,7 +324,7 @@ Code</textarea>
                         </div>
                         <div class="control-group dice-slider-group wobbly-slider" id="wobblyFrequencyControlGroup" data-tooltip="Wobble — noise scale / how quickly the wobble changes" data-tooltip-disabled="Turn on Wobble (● Wobble), or add Amount / Noise to Random (turn ◆ on for those sliders).">
                             <label for="wobblyFrequencySlider">
-                                <span>Noise <button type="button" class="dice-btn dice-btn--diamond" id="wobblyFrequencyDiceBtn" data-param="wobblyFrequency" title="Random range: ◆ on, fixed value: ◇" aria-label="Toggle random range for Wobble noise"></button></span>
+                                <span>Noise <button type="button" class="dice-btn dice-btn--diamond" id="wobblyFrequencyDiceBtn" data-param="wobblyFrequency" title="Add this parameter to random" aria-label="Toggle random range for Wobble noise"></button></span>
                                 <input type="text" class="value-display" id="wobblyFrequencyValue" value="0.1">
                             </label>
                             <div class="dice-single" id="wobblyFrequencySingleWrap">
@@ -343,63 +343,63 @@ Code</textarea>
                                 <input type="checkbox" id="roundedCapsCheckbox" class="sr-only">
                                 <span class="pill-toggle-inner">
                                     <span class="pill-toggle-text">Round Caps</span>
-                                    <button type="button" class="dice-btn dice-btn--diamond dice-btn--pill" data-effect="roundedCaps" title="Include in Random (◆/◇)" aria-label="Toggle random for Round Caps"></button>
+                                    <button type="button" class="dice-btn dice-btn--diamond dice-btn--pill" data-effect="roundedCaps" title="Add this parameter to random" aria-label="Toggle random for Round Caps"></button>
                                 </span>
                             </label>
                             <label class="pill-toggle pill-toggle--with-dice" id="closeEndsLabel" for="closeEndsCheckbox" data-tooltip="Close line ends in multiline mode" data-tooltip-disabled="Needs multiple lines: set Lines to 2+ in Style, or a random Lines range with max &gt; 1. If Dashes are off, use Stripes.">
                                 <input type="checkbox" id="closeEndsCheckbox" class="sr-only">
                                 <span class="pill-toggle-inner">
                                     <span class="pill-toggle-text">Close Stems</span>
-                                    <button type="button" class="dice-btn dice-btn--diamond dice-btn--pill" data-effect="closeEnds" title="Include in Random (◆/◇)" aria-label="Toggle random for Close Stems"></button>
+                                    <button type="button" class="dice-btn dice-btn--diamond dice-btn--pill" data-effect="closeEnds" title="Add this parameter to random" aria-label="Toggle random for Close Stems"></button>
                                 </span>
                             </label>
                             <label class="pill-toggle pill-toggle--with-dice" id="dashChessLabel" for="dashChessCheckboxPD" data-tooltip="Stagger dash phase on neighboring lines" data-tooltip-disabled="Requires Dashes (● Dashes) and multiple stroke lines (Lines &gt; 1 or a range that includes 2+).">
                                 <input type="checkbox" id="dashChessCheckboxPD" class="sr-only">
                                 <span class="pill-toggle-inner">
                                     <span class="pill-toggle-text">Chess Order</span>
-                                    <button type="button" class="dice-btn dice-btn--diamond dice-btn--pill" data-effect="dashChess" title="Include in Random (◆/◇)" aria-label="Toggle random for Chess Order"></button>
+                                    <button type="button" class="dice-btn dice-btn--diamond dice-btn--pill" data-effect="dashChess" title="Add this parameter to random" aria-label="Toggle random for Chess Order"></button>
                                 </span>
                             </label>
                             <label class="pill-toggle pill-toggle--with-dice" for="alternativeGlyphsCheckbox" data-tooltip="Use alternative glyph forms">
                                 <input type="checkbox" id="alternativeGlyphsCheckbox" class="sr-only">
                                 <span class="pill-toggle-inner">
                                     <span class="pill-toggle-text">Alt Glyphs</span>
-                                    <button type="button" class="dice-btn dice-btn--diamond dice-btn--pill" data-effect="altGlyphs" title="Include in Random (◆/◇)" aria-label="Toggle random for Alt Glyphs"></button>
+                                    <button type="button" class="dice-btn dice-btn--diamond dice-btn--pill" data-effect="altGlyphs" title="Add this parameter to random" aria-label="Toggle random for Alt Glyphs"></button>
                                 </span>
                             </label>
                             <label class="pill-toggle pill-toggle--with-dice" for="chaosCheckbox" data-tooltip="Each module is unique in Random mode">
                                 <input type="checkbox" id="chaosCheckbox" class="sr-only">
                                 <span class="pill-toggle-inner">
                                     <span class="pill-toggle-text">Unique</span>
-                                    <button type="button" class="dice-btn dice-btn--diamond dice-btn--pill" data-effect="chaos" title="Include in Random (◆/◇)" aria-label="Toggle random for Unique (per-module)"></button>
+                                    <button type="button" class="dice-btn dice-btn--diamond dice-btn--pill" data-effect="chaos" title="Add this parameter to random" aria-label="Toggle random for Unique (per-module)"></button>
                                 </span>
                             </label>
                             <label class="pill-toggle pill-toggle--with-dice" for="showGridCheckbox" data-tooltip="Show background grid">
                                 <input type="checkbox" id="showGridCheckbox" class="sr-only" checked>
                                 <span class="pill-toggle-inner">
                                     <span class="pill-toggle-text">Grid</span>
-                                    <button type="button" class="dice-btn dice-btn--diamond dice-btn--pill" data-effect="grid" title="Include in Random (◆/◇)" aria-label="Toggle random for Grid"></button>
+                                    <button type="button" class="dice-btn dice-btn--diamond dice-btn--pill" data-effect="grid" title="Add this parameter to random" aria-label="Toggle random for Grid"></button>
                                 </span>
                             </label>
                             <label class="pill-toggle pill-toggle--with-dice" for="showJointsCheckbox" data-tooltip="Where stroke modules meet (grid joints)">
                                 <input type="checkbox" id="showJointsCheckbox" class="sr-only">
                                 <span class="pill-toggle-inner">
                                     <span class="pill-toggle-text">Joints</span>
-                                    <button type="button" class="dice-btn dice-btn--diamond dice-btn--pill" data-effect="joints" title="Include in Random (◆/◇)" aria-label="Toggle random for Joints"></button>
+                                    <button type="button" class="dice-btn dice-btn--diamond dice-btn--pill" data-effect="joints" title="Add this parameter to random" aria-label="Toggle random for Joints"></button>
                                 </span>
                             </label>
                             <label class="pill-toggle pill-toggle--with-dice" for="showFreeEndpointsCheckbox" data-tooltip="Free open ends of strokes">
                                 <input type="checkbox" id="showFreeEndpointsCheckbox" class="sr-only">
                                 <span class="pill-toggle-inner">
                                     <span class="pill-toggle-text">Endpoints</span>
-                                    <button type="button" class="dice-btn dice-btn--diamond dice-btn--pill" data-effect="freeEndpoints" title="Include in Random (◆/◇)" aria-label="Toggle random for Endpoints"></button>
+                                    <button type="button" class="dice-btn dice-btn--diamond dice-btn--pill" data-effect="freeEndpoints" title="Add this parameter to random" aria-label="Toggle random for Endpoints"></button>
                                 </span>
                             </label>
                             <label class="pill-toggle pill-toggle--with-dice" for="colorBWCheckbox" data-tooltip="Random palette only black &amp; white">
                                 <input type="checkbox" id="colorBWCheckbox" class="sr-only">
                                 <span class="pill-toggle-inner">
                                     <span class="pill-toggle-text">BW</span>
-                                    <button type="button" class="dice-btn dice-btn--diamond dice-btn--pill" data-effect="colorBW" title="Include in Random (◆/◇)" aria-label="Toggle random for BW (black &amp; white palette)"></button>
+                                    <button type="button" class="dice-btn dice-btn--diamond dice-btn--pill" data-effect="colorBW" title="Add this parameter to random" aria-label="Toggle random for BW (black &amp; white palette)"></button>
                                 </span>
                             </label>
                         </div>
@@ -435,7 +435,7 @@ Code</textarea>
                                     <button type="button" class="color-dot color-dot--expandable" id="letterColorPreview" title="HSB — click row or swatch to expand" aria-label="Open HSB color controls"></button>
                                     <span class="color-label">Type</span>
                                     <input type="text" class="color-swatch-hex" id="letterColorHex" value="#ffffff" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Type color hex">
-                                    <button type="button" class="palette-swatch-dice dice-btn dice-btn--diamond" data-palette-dice="letter" title="Include in live palette" aria-label="Include Type in live palette (◆)"></button>
+                                    <button type="button" class="palette-swatch-dice dice-btn dice-btn--diamond" data-palette-dice="letter" title="Add this parameter to random" aria-label="Include Type in live palette (◆)"></button>
                                 </div>
                                 <div class="color-hsb-slot" id="letterColorHsbSlot">
                                     <div id="unifiedColorPickerContainer"></div>
@@ -446,7 +446,7 @@ Code</textarea>
                                     <button type="button" class="color-dot color-dot--expandable" id="bgColorPreview" title="HSB — click row or swatch to expand" aria-label="Open HSB color controls"></button>
                                     <span class="color-label">Back</span>
                                     <input type="text" class="color-swatch-hex" id="bgColorHex" value="#000000" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Background color hex">
-                                    <button type="button" class="palette-swatch-dice dice-btn dice-btn--diamond" data-palette-dice="bg" title="Include in live palette" aria-label="Include Back in live palette (◆)"></button>
+                                    <button type="button" class="palette-swatch-dice dice-btn dice-btn--diamond" data-palette-dice="bg" title="Add this parameter to random" aria-label="Include Back in live palette (◆)"></button>
                                 </div>
                                 <div class="color-hsb-slot" id="bgColorHsbSlot"></div>
                             </div>
@@ -455,7 +455,7 @@ Code</textarea>
                                     <button type="button" class="color-dot color-dot--expandable" id="gridColorPreview" title="HSB — click row or swatch to expand" aria-label="Open HSB color controls"></button>
                                     <span class="color-label">Grid</span>
                                     <input type="text" class="color-swatch-hex" id="gridColorHex" value="#333333" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Grid color hex">
-                                    <button type="button" class="palette-swatch-dice dice-btn dice-btn--diamond" data-palette-dice="grid" title="Include in live palette" aria-label="Include Grid in live palette (◆)"></button>
+                                    <button type="button" class="palette-swatch-dice dice-btn dice-btn--diamond" data-palette-dice="grid" title="Add this parameter to random" aria-label="Include Grid in live palette (◆)"></button>
                                 </div>
                                 <div class="color-hsb-slot" id="gridColorHsbSlot"></div>
                             </div>
@@ -470,7 +470,7 @@ Code</textarea>
                                     <button type="button" class="color-dot color-dot--expandable" id="gradientStartColorPreview" style="background: #ff0000;" title="HSB — click row or swatch to expand" aria-label="Open HSB color controls"></button>
                                     <span class="color-label">Type Start</span>
                                     <input type="text" class="color-swatch-hex" id="gradientStartColorHex" value="#ff0000" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Type Start hex">
-                                    <button type="button" class="palette-swatch-dice dice-btn dice-btn--diamond" data-palette-dice="gradientStart" title="Include in live palette" aria-label="Include Type Start in live palette (◆)"></button>
+                                    <button type="button" class="palette-swatch-dice dice-btn dice-btn--diamond" data-palette-dice="gradientStart" title="Add this parameter to random" aria-label="Include Type Start in live palette (◆)"></button>
                                 </div>
                                 <div class="color-hsb-slot" id="gradientStartColorHsbSlot"></div>
                             </div>
@@ -479,7 +479,7 @@ Code</textarea>
                                     <button type="button" class="color-dot color-dot--expandable" id="gradientEndColorPreview" style="background: #0000ff;" title="HSB — click row or swatch to expand" aria-label="Open HSB color controls"></button>
                                     <span class="color-label">Type End</span>
                                     <input type="text" class="color-swatch-hex" id="gradientEndColorHex" value="#0000ff" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Type End hex">
-                                    <button type="button" class="palette-swatch-dice dice-btn dice-btn--diamond" data-palette-dice="gradientEnd" title="Include in live palette" aria-label="Include Type End in live palette (◆)"></button>
+                                    <button type="button" class="palette-swatch-dice dice-btn dice-btn--diamond" data-palette-dice="gradientEnd" title="Add this parameter to random" aria-label="Include Type End in live palette (◆)"></button>
                                 </div>
                                 <div class="color-hsb-slot" id="gradientEndColorHsbSlot"></div>
                             </div>
@@ -488,7 +488,7 @@ Code</textarea>
                                     <button type="button" class="color-dot color-dot--expandable" id="gradientBgColorPreview" title="HSB — click row or swatch to expand" aria-label="Open HSB color controls"></button>
                                     <span class="color-label">Back</span>
                                     <input type="text" class="color-swatch-hex" id="gradientBgColorHex" value="#000000" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Background color hex">
-                                    <button type="button" class="palette-swatch-dice dice-btn dice-btn--diamond" data-palette-dice="bg" title="Include in live palette" aria-label="Include Back in live palette (◆)"></button>
+                                    <button type="button" class="palette-swatch-dice dice-btn dice-btn--diamond" data-palette-dice="bg" title="Add this parameter to random" aria-label="Include Back in live palette (◆)"></button>
                                 </div>
                                 <div class="color-hsb-slot" id="gradientBgColorHsbSlot"></div>
                             </div>
@@ -497,7 +497,7 @@ Code</textarea>
                                     <button type="button" class="color-dot color-dot--expandable" id="gradientGridColorPreview" title="HSB — click row or swatch to expand" aria-label="Open HSB color controls"></button>
                                     <span class="color-label">Grid</span>
                                     <input type="text" class="color-swatch-hex" id="gradientGridColorHex" value="#333333" maxlength="7" spellcheck="false" autocomplete="off" aria-label="Grid color hex">
-                                    <button type="button" class="palette-swatch-dice dice-btn dice-btn--diamond" data-palette-dice="grid" title="Include in live palette" aria-label="Include Grid in live palette (◆)"></button>
+                                    <button type="button" class="palette-swatch-dice dice-btn dice-btn--diamond" data-palette-dice="grid" title="Add this parameter to random" aria-label="Include Grid in live palette (◆)"></button>
                                 </div>
                                 <div class="color-hsb-slot" id="gradientGridColorHsbSlot"></div>
                             </div>
