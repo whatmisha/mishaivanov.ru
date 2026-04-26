@@ -13,6 +13,7 @@
 import { MathUtils } from '../utils/MathUtils.js';
 import { WobblyEffect } from '../effects/WobblyEffect.js';
 import { GradientStrokeEffect } from '../effects/GradientStrokeEffect.js';
+import { computeStripeLayout, closeEndsLineCap } from './geometry/StrokeGeometry.js';
 
 export class ModuleDrawer {
     constructor(mode = 'fill') {
@@ -155,15 +156,12 @@ export class ModuleDrawer {
     }
 
     /**
-     * Calculate gap and strokeWidth based on total width
-     * @param {number} totalWidth - total width for placing strokes
-     * @returns {Object} {gap, strokeWidth}
+     * Calculate gap and strokeWidth for the current stripes settings.
+     * Thin instance-bound wrapper around the pure helper in
+     * core/geometry/StrokeGeometry.js (shared with VoidExporter).
      */
     calculateGapAndStrokeWidth(totalWidth) {
-        // gap = totalWidth / (strokesNum * (strokeGapRatio + 1) - 1)
-        const gap = totalWidth / (this.strokesNum * (this.strokeGapRatio + 1) - 1);
-        const strokeWidth = gap * this.strokeGapRatio;
-        return { gap, strokeWidth };
+        return computeStripeLayout(totalWidth, this.strokesNum, this.strokeGapRatio);
     }
 
     /**

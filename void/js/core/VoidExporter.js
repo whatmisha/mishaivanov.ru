@@ -8,6 +8,7 @@ import { EndpointDetector } from '../utils/EndpointDetector.js';
 import { RandomUtils } from '../utils/RandomUtils.js';
 import { MathUtils } from '../utils/MathUtils.js';
 import { ColorUtils } from '../utils/ColorUtils.js';
+import { computeStripeLayout, closeEndsLineCap } from './geometry/StrokeGeometry.js';
 
 export class VoidExporter {
     constructor(renderer, settings = null) {
@@ -1112,10 +1113,7 @@ export class VoidExporter {
      * @returns {Object} {gap, strokeWidth}
      */
     calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio) {
-        // gap = totalWidth / (strokesNum * (strokeGapRatio + 1) - 1)
-        const gap = totalWidth / (strokesNum * (strokeGapRatio + 1) - 1);
-        const strokeWidth = gap * strokeGapRatio;
-        return { gap, strokeWidth };
+        return computeStripeLayout(totalWidth, strokesNum, strokeGapRatio);
     }
 
     // ============================================
