@@ -2448,7 +2448,7 @@ class VoidTypeface {
         const showEmptyHint = () => {
             const hint = document.createElement('p');
             hint.className = 'random-params-empty-hint';
-            hint.textContent = 'No Random parameters yet. Use ◆ (filled) on Style sliders, effect pills, or color swatches; ◇ to exclude. On the Colors panel, enable ◆ on any swatch to use the Palette range. Then press Randomize.';
+            hint.textContent = 'No parameters selected. Use ◇ to add sliders, effects, or colors to Random, then press Randomize.';
             container.appendChild(hint);
         };
 
