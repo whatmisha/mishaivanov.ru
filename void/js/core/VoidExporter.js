@@ -8,7 +8,13 @@ import { EndpointDetector } from '../utils/EndpointDetector.js';
 import { RandomUtils } from '../utils/RandomUtils.js';
 import { MathUtils } from '../utils/MathUtils.js';
 import { ColorUtils } from '../utils/ColorUtils.js';
-import { computeStripeLayout, closeEndsLineCap } from './geometry/StrokeGeometry.js';
+import {
+    computeStripeLayout,
+    closeEndsLineCap,
+    stripeBandWidth,
+    stripeOffset,
+    stripeArcRadius
+} from './geometry/StrokeGeometry.js';
 
 export class VoidExporter {
     constructor(renderer, settings = null) {
@@ -1253,7 +1259,7 @@ export class VoidExporter {
         let svg = '';
         
         for (let i = 0; i < strokesNum; i++) {
-            const lineX = startX + i * (strokeWidth + gap);
+            const lineX = startX + stripeOffset(i, strokeWidth, gap);
             svg += `        <line x1="${lineX}" y1="${-h/2 + shortenTop}" x2="${lineX}" y2="${h/2 - shortenBottom}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}"/>\n`;
         }
         
@@ -1261,7 +1267,7 @@ export class VoidExporter {
         // Close Ends: square cap when Round disabled, round cap when Round enabled
         if (closeEnds && localEndpoints && strokesNum > 0) {
             const firstLineX = startX;
-            const lastLineX = startX + (strokesNum - 1) * (strokeWidth + gap);
+            const lastLineX = startX + stripeOffset(strokesNum - 1, strokeWidth, gap);
             const closeCap = closeEndsLineCap(roundedCaps);
             
             // Closing line on top
@@ -1292,13 +1298,13 @@ export class VoidExporter {
         const shortenTop = shouldShorten && localEndpoints.top ? strokeWidth / 2 : 0;
         const shortenBottom = shouldShorten && localEndpoints.bottom ? strokeWidth / 2 : 0;
         
-        const totalLineWidth = (strokesNum * strokeWidth) + ((strokesNum - 1) * gap);
+        const totalLineWidth = stripeBandWidth(strokesNum, strokeWidth, gap);
         const startX = -totalLineWidth / 2 + strokeWidth / 2;
         const lineCap = roundedCaps ? 'round' : 'butt';
         let svg = '';
         
         for (let i = 0; i < strokesNum; i++) {
-            const lineX = startX + i * (strokeWidth + gap);
+            const lineX = startX + stripeOffset(i, strokeWidth, gap);
             svg += `        <line x1="${lineX}" y1="${-h/2 + shortenTop}" x2="${lineX}" y2="${h/2 - shortenBottom}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}"/>\n`;
         }
         
@@ -1306,7 +1312,7 @@ export class VoidExporter {
         // Close Ends: square cap when Round disabled, round cap when Round enabled
         if (closeEnds && localEndpoints && strokesNum > 0) {
             const firstLineX = startX;
-            const lastLineX = startX + (strokesNum - 1) * (strokeWidth + gap);
+            const lastLineX = startX + stripeOffset(strokesNum - 1, strokeWidth, gap);
             const closeCap = closeEndsLineCap(roundedCaps);
             
             // Closing line on top
@@ -1336,22 +1342,22 @@ export class VoidExporter {
         
         // Draw T-shaped lines without intersections
         const vertStartX = -w / 2 + strokeWidth / 2;
-        const totalLineWidth = (strokesNum * strokeWidth) + ((strokesNum - 1) * gap);
+        const totalLineWidth = stripeBandWidth(strokesNum, strokeWidth, gap);
         const horizStartY = -totalLineWidth / 2 + strokeWidth / 2;
         
         // Position of rightmost vertical line - horizontal lines start from it
-        const lastVertX = vertStartX + (strokesNum - 1) * (strokeWidth + gap);
+        const lastVertX = vertStartX + stripeOffset(strokesNum - 1, strokeWidth, gap);
         
         // All vertical lines full height (draw first)
         for (let i = 0; i < strokesNum; i++) {
-            const lineX = vertStartX + i * (strokeWidth + gap);
+            const lineX = vertStartX + stripeOffset(i, strokeWidth, gap);
             // Vertical part: full module height
             svg += `        <line x1="${lineX}" y1="${-h/2}" x2="${lineX}" y2="${h/2}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}"/>\n`;
         }
         
         // All horizontal lines start from rightmost vertical
         for (let i = 0; i < strokesNum; i++) {
-            const lineY = horizStartY + i * (strokeWidth + gap);
+            const lineY = horizStartY + stripeOffset(i, strokeWidth, gap);
             // Horizontal part: from rightmost vertical to right edge
             svg += `        <line x1="${lastVertX}" y1="${lineY}" x2="${w/2}" y2="${lineY}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}"/>\n`;
         }
@@ -1374,13 +1380,13 @@ export class VoidExporter {
         const horizStartY = h / 2 - stem / 2 + strokeWidth / 2;
         
         for (let i = 0; i < strokesNum; i++) {
-            const lineX = vertStartX + i * (strokeWidth + gap);
-            const lineY = horizStartY + i * (strokeWidth + gap);
+            const lineX = vertStartX + stripeOffset(i, strokeWidth, gap);
+            const lineY = horizStartY + stripeOffset(i, strokeWidth, gap);
             
             // L-shaped line: go from top down, then right
             // Order reversed - first line goes to last horizontal position
             const reverseIndex = strokesNum - 1 - i;
-            const reverseLineY = horizStartY + reverseIndex * (strokeWidth + gap);
+            const reverseLineY = horizStartY + stripeOffset(reverseIndex, strokeWidth, gap);
             
             svg += `        <polyline points="${lineX},${-h/2} ${lineX},${reverseLineY} ${w/2},${reverseLineY}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-linejoin="miter" fill="none"/>\n`;
         }
@@ -1409,7 +1415,7 @@ export class VoidExporter {
         let lastRadius = outerRadius;
         
         for (let j = 0; j < strokesNum; j++) {
-            const arcRadius = outerRadius - j * (strokeWidth + gap);
+            const arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
             if (arcRadius > 0) {
                 if (j === strokesNum - 1) {
                     lastRadius = arcRadius;
@@ -1493,7 +1499,7 @@ export class VoidExporter {
         let lastRadius = outerRadius;
         
         for (let j = 0; j < strokesNum; j++) {
-            const arcRadius = outerRadius - j * (strokeWidth + gap);
+            const arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
             if (arcRadius > 0) {
                 if (j === strokesNum - 1) {
                     lastRadius = arcRadius;
@@ -1797,14 +1803,14 @@ export class VoidExporter {
             // even lines (i % 2 === 1) start with full dash
             // If disabled: all lines start with half dash
             const dashOffset = dashChess ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
-            const lineX = startX + i * (strokeWidth + gap);
+            const lineX = startX + stripeOffset(i, strokeWidth, gap);
             svg += `        <line x1="${lineX}" y1="${-h/2 + shortenTop}" x2="${lineX}" y2="${h/2 - shortenBottom}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" stroke-dashoffset="${dashOffset}"/>\n`;
         }
         
         // Closing lines at ends (also dashed in SD mode)
         if (closeEnds && localEndpoints && strokesNum > 0) {
             const firstLineX = startX;
-            const lastLineX = startX + (strokesNum - 1) * (strokeWidth + gap);
+            const lastLineX = startX + stripeOffset(strokesNum - 1, strokeWidth, gap);
             const closeLineLength = lastLineX - firstLineX;
             const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
             // Close Ends: square cap when Round disabled, round cap when Round enabled
@@ -1831,7 +1837,7 @@ export class VoidExporter {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         
-        const totalLineWidth = (strokesNum * strokeWidth) + ((strokesNum - 1) * gap);
+        const totalLineWidth = stripeBandWidth(strokesNum, strokeWidth, gap);
         const startX = -totalLineWidth / 2 + strokeWidth / 2;
         
         const shouldShorten = (roundedCaps || closeEnds) && localEndpoints;
@@ -1851,14 +1857,14 @@ export class VoidExporter {
             // even lines (i % 2 === 1) start with full dash
             // If disabled: all lines start with half dash
             const dashOffset = dashChess ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
-            const lineX = startX + i * (strokeWidth + gap);
+            const lineX = startX + stripeOffset(i, strokeWidth, gap);
             svg += `        <line x1="${lineX}" y1="${-h/2 + shortenTop}" x2="${lineX}" y2="${h/2 - shortenBottom}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" stroke-dashoffset="${dashOffset}"/>\n`;
         }
         
         // Closing lines at ends (also dashed in SD mode)
         if (closeEnds && localEndpoints && strokesNum > 0) {
             const firstLineX = startX;
-            const lastLineX = startX + (strokesNum - 1) * (strokeWidth + gap);
+            const lastLineX = startX + stripeOffset(strokesNum - 1, strokeWidth, gap);
             const closeLineLength = lastLineX - firstLineX;
             const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
             // Close Ends: square cap when Round disabled, round cap when Round enabled
@@ -1886,9 +1892,9 @@ export class VoidExporter {
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         
         const vertStartX = -w / 2 + strokeWidth / 2;
-        const totalLineWidth = (strokesNum * strokeWidth) + ((strokesNum - 1) * gap);
+        const totalLineWidth = stripeBandWidth(strokesNum, strokeWidth, gap);
         const horizStartY = -totalLineWidth / 2 + strokeWidth / 2;
-        const lastVertX = vertStartX + (strokesNum - 1) * (strokeWidth + gap);
+        const lastVertX = vertStartX + stripeOffset(strokesNum - 1, strokeWidth, gap);
         
         const lineCap = roundedCaps ? 'round' : 'butt';
         let svg = '';
@@ -1903,7 +1909,7 @@ export class VoidExporter {
             // Chessboard pattern: odd lines (i % 2 === 0) start with half dash,
             // even lines (i % 2 === 1) start with full dash
             const vertDashOffset = dashChess ? ((i % 2 === 0) ? vertAdaptive.dashLength / 2 : 0) : vertAdaptive.dashLength / 2;
-            const lineX = vertStartX + i * (strokeWidth + gap);
+            const lineX = vertStartX + stripeOffset(i, strokeWidth, gap);
             svg += `        <line x1="${lineX}" y1="${-h/2}" x2="${lineX}" y2="${h/2}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${vertAdaptive.dashLength} ${vertAdaptive.gapLength}" stroke-dashoffset="${vertDashOffset}"/>\n`;
         }
         
@@ -1915,7 +1921,7 @@ export class VoidExporter {
             // Chessboard pattern: odd lines (i % 2 === 0) start with half dash,
             // even lines (i % 2 === 1) start with full dash
             const horizDashOffset = dashChess ? ((i % 2 === 0) ? horizAdaptive.dashLength / 2 : 0) : horizAdaptive.dashLength / 2;
-            const lineY = horizStartY + i * (strokeWidth + gap);
+            const lineY = horizStartY + stripeOffset(i, strokeWidth, gap);
             svg += `        <line x1="${lastVertX}" y1="${lineY}" x2="${w/2}" y2="${lineY}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${horizAdaptive.dashLength} ${horizAdaptive.gapLength}" stroke-dashoffset="${horizDashOffset}"/>\n`;
         }
         
@@ -1940,9 +1946,9 @@ export class VoidExporter {
         const gapPx = strokeWidth * gapLength;
         
         for (let i = 0; i < strokesNum; i++) {
-            const lineX = vertStartX + i * (strokeWidth + gap);
+            const lineX = vertStartX + stripeOffset(i, strokeWidth, gap);
             const reverseIndex = strokesNum - 1 - i;
-            const lineY = horizStartY + reverseIndex * (strokeWidth + gap);
+            const lineY = horizStartY + stripeOffset(reverseIndex, strokeWidth, gap);
             
             const vertLength = h / 2 + lineY;
             const horizLength = w / 2 - lineX;
@@ -1982,7 +1988,7 @@ export class VoidExporter {
         const gapPx = strokeWidth * gapLength;
         
         for (let j = 0; j < strokesNum; j++) {
-            let arcRadius = outerRadius - j * (strokeWidth + gap);
+            let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
             if (arcRadius < minRadius) arcRadius = minRadius;
             if (arcRadius <= 0) continue;
             
@@ -2011,7 +2017,7 @@ export class VoidExporter {
         // Closing lines (also dashed in SD mode)
         if (closeEnds && localEndpoints && strokesNum > 0) {
             const firstRadius = outerRadius;
-            let lastRadius = outerRadius - (strokesNum - 1) * (strokeWidth + gap);
+            let lastRadius = stripeArcRadius(strokesNum - 1, outerRadius, strokeWidth, gap);
             if (lastRadius < minRadius) lastRadius = minRadius;
             
             const closeLineLength = firstRadius - lastRadius;
@@ -2068,7 +2074,7 @@ export class VoidExporter {
         const gapPx = strokeWidth * gapLength;
         
         for (let j = 0; j < strokesNum; j++) {
-            let arcRadius = outerRadius - j * (strokeWidth + gap);
+            let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
             if (arcRadius < minRadius) arcRadius = minRadius;
             if (arcRadius <= 0) continue;
             
@@ -2097,7 +2103,7 @@ export class VoidExporter {
         // Closing lines (also dashed in SD mode)
         if (closeEnds && localEndpoints && strokesNum > 0) {
             const firstRadius = outerRadius;
-            let lastRadius = outerRadius - (strokesNum - 1) * (strokeWidth + gap);
+            let lastRadius = stripeArcRadius(strokesNum - 1, outerRadius, strokeWidth, gap);
             if (lastRadius < minRadius) lastRadius = minRadius;
             
             const closeLineLength = firstRadius - lastRadius;

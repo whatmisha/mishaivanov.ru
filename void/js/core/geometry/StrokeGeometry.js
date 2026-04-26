@@ -58,3 +58,43 @@ export function closeEndsLineCap(roundedCaps) {
     return roundedCaps ? 'round' : 'square';
 }
 
+/**
+ * Total width of a stripe band (used to centre the band against a glyph
+ * cell). Layout: stroke, gap, stroke, gap, ..., stroke.
+ *
+ * @param {number} strokesNum
+ * @param {number} strokeWidth
+ * @param {number} gap
+ * @returns {number}
+ */
+export function stripeBandWidth(strokesNum, strokeWidth, gap) {
+    return strokesNum * strokeWidth + (strokesNum - 1) * gap;
+}
+
+/**
+ * Distance from the start edge of a stripe band to the i-th stripe's
+ * start edge.
+ *
+ * @param {number} i           stripe index (0-based)
+ * @param {number} strokeWidth
+ * @param {number} gap
+ * @returns {number}
+ */
+export function stripeOffset(i, strokeWidth, gap) {
+    return i * (strokeWidth + gap);
+}
+
+/**
+ * Radius of the i-th stripe of a concentric arc / circular bundle, given
+ * the band's outermost radius. Stripes go from outer (i=0) to inner.
+ *
+ * @param {number} i            stripe index (0-based, outer→inner)
+ * @param {number} outerRadius
+ * @param {number} strokeWidth
+ * @param {number} gap
+ * @returns {number}
+ */
+export function stripeArcRadius(i, outerRadius, strokeWidth, gap) {
+    return outerRadius - i * (strokeWidth + gap);
+}
+

@@ -13,7 +13,13 @@
 import { MathUtils } from '../utils/MathUtils.js';
 import { WobblyEffect } from '../effects/WobblyEffect.js';
 import { GradientStrokeEffect } from '../effects/GradientStrokeEffect.js';
-import { computeStripeLayout, closeEndsLineCap } from './geometry/StrokeGeometry.js';
+import {
+    computeStripeLayout,
+    closeEndsLineCap,
+    stripeBandWidth,
+    stripeOffset,
+    stripeArcRadius
+} from './geometry/StrokeGeometry.js';
 
 export class ModuleDrawer {
     constructor(mode = 'fill') {
@@ -216,7 +222,7 @@ export class ModuleDrawer {
             const stripeShortenEnd = (this.roundedCaps || this.closeEnds) ? strokeWidth / 2 : shortenEnd;
             
             for (let i = 0; i < this.strokesNum; i++) {
-                const offset = baseOffset + i * (strokeWidth + gap);
+                const offset = baseOffset + stripeOffset(i, strokeWidth, gap);
                 const lx1 = startX + px * offset + nx * (stripeShortenStart - shortenStart);
                 const ly1 = startY + py * offset + ny * (stripeShortenStart - shortenStart);
                 const lx2 = endX + px * offset - nx * (stripeShortenEnd - shortenEnd);
@@ -271,7 +277,7 @@ export class ModuleDrawer {
                     ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) 
                     : adaptive.dashLength / 2;
                 
-                const offset = baseOffset + i * (strokeWidth + gap);
+                const offset = baseOffset + stripeOffset(i, strokeWidth, gap);
                 const lx1 = startX + px * offset + nx * (stripeShortenStart - shortenStart);
                 const ly1 = startY + py * offset + ny * (stripeShortenStart - shortenStart);
                 const lx2 = endX + px * offset - nx * (stripeShortenEnd - shortenEnd);
@@ -332,7 +338,7 @@ export class ModuleDrawer {
             const stripeShortenAmount = (this.roundedCaps || this.closeEnds) ? strokeWidth / 2 : 0;
             
             for (let j = 0; j < this.strokesNum; j++) {
-                let arcRadius = outerRadius - j * (strokeWidth + gap);
+                let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
                 if (arcRadius < minRadius) arcRadius = minRadius;
                 if (arcRadius <= 0) continue;
                 
@@ -377,7 +383,7 @@ export class ModuleDrawer {
             const gapPx = strokeWidth * this.gapLength;
             
             for (let j = 0; j < this.strokesNum; j++) {
-                let arcRadius = outerRadius - j * (strokeWidth + gap);
+                let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
                 if (arcRadius < minRadius) arcRadius = minRadius;
                 if (arcRadius <= 0) continue;
                 
@@ -568,7 +574,7 @@ export class ModuleDrawer {
             ctx.setLineDash([]);
             
             for (let i = 0; i < this.strokesNum; i++) {
-                const lineX = startX + i * (strokeWidth + gap);
+                const lineX = startX + stripeOffset(i, strokeWidth, gap);
                 ctx.beginPath();
                 ctx.moveTo(lineX, -h / 2 + shortenTopStripes);
                 ctx.lineTo(lineX, h / 2 - shortenBottomStripes);
@@ -579,7 +585,7 @@ export class ModuleDrawer {
             // Close Ends: square cap when Round disabled, round cap when Round enabled
             if (this.closeEnds && localEndpoints) {
                 const firstLineX = startX;
-                const lastLineX = startX + (this.strokesNum - 1) * (strokeWidth + gap);
+                const lastLineX = startX + stripeOffset(this.strokesNum - 1, strokeWidth, gap);
                 
                 ctx.lineCap = closeEndsLineCap(this.roundedCaps);
                 
@@ -650,7 +656,7 @@ export class ModuleDrawer {
                 // If disabled: all lines start with half dash
                 ctx.lineDashOffset = this.dashChess ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
                 
-                const lineX = startX + i * (strokeWidth + gap);
+                const lineX = startX + stripeOffset(i, strokeWidth, gap);
                 ctx.beginPath();
                 ctx.moveTo(lineX, -h / 2 + shortenTopSD);
                 ctx.lineTo(lineX, h / 2 - shortenBottomSD);
@@ -664,7 +670,7 @@ export class ModuleDrawer {
             // Close Ends: square cap when Round disabled, round cap when Round enabled
             if (this.closeEnds && localEndpoints) {
                 const firstLineX = startX;
-                const lastLineX = startX + (this.strokesNum - 1) * (strokeWidth + gap);
+                const lastLineX = startX + stripeOffset(this.strokesNum - 1, strokeWidth, gap);
                 const closeLineLength = lastLineX - firstLineX;
                 
                 ctx.lineCap = closeEndsLineCap(this.roundedCaps);
@@ -732,7 +738,7 @@ export class ModuleDrawer {
             // Stripes mode: multiple parallel lines, centered
             const totalWidth = stem / 2;
             const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
-            const totalLineWidth = (this.strokesNum * strokeWidth) + ((this.strokesNum - 1) * gap);
+            const totalLineWidth = stripeBandWidth(this.strokesNum, strokeWidth, gap);
             const startX = -totalLineWidth / 2 + strokeWidth / 2;
             
             // Shorten by half line width (if Round or Close Ends)
@@ -745,7 +751,7 @@ export class ModuleDrawer {
             ctx.setLineDash([]);
             
             for (let i = 0; i < this.strokesNum; i++) {
-                const lineX = startX + i * (strokeWidth + gap);
+                const lineX = startX + stripeOffset(i, strokeWidth, gap);
                 ctx.beginPath();
                 ctx.moveTo(lineX, -h / 2 + shortenTopStripes);
                 ctx.lineTo(lineX, h / 2 - shortenBottomStripes);
@@ -754,7 +760,7 @@ export class ModuleDrawer {
             
             if (this.closeEnds && localEndpoints) {
                 const firstLineX = startX;
-                const lastLineX = startX + (this.strokesNum - 1) * (strokeWidth + gap);
+                const lastLineX = startX + stripeOffset(this.strokesNum - 1, strokeWidth, gap);
                 
                 ctx.lineCap = 'butt';
                 
@@ -801,7 +807,7 @@ export class ModuleDrawer {
             // SD mode: multiple parallel dashed lines, centered
             const totalWidth = stem / 2;
             const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
-            const totalLineWidth = (this.strokesNum * strokeWidth) + ((this.strokesNum - 1) * gap);
+            const totalLineWidth = stripeBandWidth(this.strokesNum, strokeWidth, gap);
             const startX = -totalLineWidth / 2 + strokeWidth / 2;
             
             const shortenTopSD = this.roundedCaps && localEndpoints && localEndpoints.top ? strokeWidth / 2 : 0;
@@ -823,7 +829,7 @@ export class ModuleDrawer {
                 // If disabled: all lines start with half dash
                 ctx.lineDashOffset = this.dashChess ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
                 
-                const lineX = startX + i * (strokeWidth + gap);
+                const lineX = startX + stripeOffset(i, strokeWidth, gap);
                 ctx.beginPath();
                 ctx.moveTo(lineX, -h / 2 + shortenTopSD);
                 ctx.lineTo(lineX, h / 2 - shortenBottomSD);
@@ -836,7 +842,7 @@ export class ModuleDrawer {
             // Close Ends: square cap when Round disabled, round cap when Round enabled
             if (this.closeEnds && localEndpoints) {
                 const firstLineX = startX;
-                const lastLineX = startX + (this.strokesNum - 1) * (strokeWidth + gap);
+                const lastLineX = startX + stripeOffset(this.strokesNum - 1, strokeWidth, gap);
                 const closeLineLength = lastLineX - firstLineX;
                 
                 ctx.lineCap = closeEndsLineCap(this.roundedCaps);
@@ -909,12 +915,12 @@ export class ModuleDrawer {
             ctx.setLineDash([]);
             
             const vertStartX = -w / 2 + strokeWidth / 2;
-            const totalLineWidth = (this.strokesNum * strokeWidth) + ((this.strokesNum - 1) * gap);
+            const totalLineWidth = stripeBandWidth(this.strokesNum, strokeWidth, gap);
             const horizStartY = -totalLineWidth / 2 + strokeWidth / 2;
-            const lastVertX = vertStartX + (this.strokesNum - 1) * (strokeWidth + gap);
+            const lastVertX = vertStartX + stripeOffset(this.strokesNum - 1, strokeWidth, gap);
             
             for (let i = 0; i < this.strokesNum; i++) {
-                const lineX = vertStartX + i * (strokeWidth + gap);
+                const lineX = vertStartX + stripeOffset(i, strokeWidth, gap);
                 ctx.beginPath();
                 ctx.moveTo(lineX, -h / 2);
                 ctx.lineTo(lineX, h / 2);
@@ -922,7 +928,7 @@ export class ModuleDrawer {
             }
             
             for (let i = 0; i < this.strokesNum; i++) {
-                const lineY = horizStartY + i * (strokeWidth + gap);
+                const lineY = horizStartY + stripeOffset(i, strokeWidth, gap);
                 ctx.beginPath();
                 ctx.moveTo(lastVertX, lineY);
                 ctx.lineTo(w / 2, lineY);
@@ -977,9 +983,9 @@ export class ModuleDrawer {
             ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
             
             const vertStartX = -w / 2 + strokeWidth / 2;
-            const totalLineWidth = (this.strokesNum * strokeWidth) + ((this.strokesNum - 1) * gap);
+            const totalLineWidth = stripeBandWidth(this.strokesNum, strokeWidth, gap);
             const horizStartY = -totalLineWidth / 2 + strokeWidth / 2;
-            const lastVertX = vertStartX + (this.strokesNum - 1) * (strokeWidth + gap);
+            const lastVertX = vertStartX + stripeOffset(this.strokesNum - 1, strokeWidth, gap);
             
             const dashPx = strokeWidth * this.dashLength;
             const gapPx = strokeWidth * this.gapLength;
@@ -993,7 +999,7 @@ export class ModuleDrawer {
                 // even lines (i % 2 === 1) start with full dash
                 ctx.lineDashOffset = this.dashChess ? ((i % 2 === 0) ? vertAdaptive.dashLength / 2 : 0) : vertAdaptive.dashLength / 2;
                 
-                const lineX = vertStartX + i * (strokeWidth + gap);
+                const lineX = vertStartX + stripeOffset(i, strokeWidth, gap);
                 ctx.beginPath();
                 ctx.moveTo(lineX, -h / 2);
                 ctx.lineTo(lineX, h / 2);
@@ -1010,7 +1016,7 @@ export class ModuleDrawer {
                 // even lines (i % 2 === 1) start with full dash
                 ctx.lineDashOffset = this.dashChess ? ((i % 2 === 0) ? horizAdaptive.dashLength / 2 : 0) : horizAdaptive.dashLength / 2;
                 
-                const lineY = horizStartY + i * (strokeWidth + gap);
+                const lineY = horizStartY + stripeOffset(i, strokeWidth, gap);
                 ctx.beginPath();
                 ctx.moveTo(lastVertX, lineY);
                 ctx.lineTo(w / 2, lineY);
@@ -1066,9 +1072,9 @@ export class ModuleDrawer {
             const horizStartY = h / 2 - stem / 2 + strokeWidth / 2;
             
             for (let i = 0; i < this.strokesNum; i++) {
-                const lineX = vertStartX + i * (strokeWidth + gap);
+                const lineX = vertStartX + stripeOffset(i, strokeWidth, gap);
                 const reverseIndex = this.strokesNum - 1 - i;
-                const lineY = horizStartY + reverseIndex * (strokeWidth + gap);
+                const lineY = horizStartY + stripeOffset(reverseIndex, strokeWidth, gap);
                 
                 ctx.beginPath();
                 ctx.moveTo(lineX, -h / 2);
@@ -1126,9 +1132,9 @@ export class ModuleDrawer {
             const gapPx = strokeWidth * this.gapLength;
             
             for (let i = 0; i < this.strokesNum; i++) {
-                const lineX = vertStartX + i * (strokeWidth + gap);
+                const lineX = vertStartX + stripeOffset(i, strokeWidth, gap);
                 const reverseIndex = this.strokesNum - 1 - i;
-                const lineY = horizStartY + reverseIndex * (strokeWidth + gap);
+                const lineY = horizStartY + stripeOffset(reverseIndex, strokeWidth, gap);
                 
                 const vertLength = h / 2 + lineY;
                 const horizLength = w / 2 - lineX;
@@ -1208,7 +1214,7 @@ export class ModuleDrawer {
             const shortenAmount = strokeWidth / 2;
             
             for (let j = 0; j < this.strokesNum; j++) {
-                let arcRadius = outerRadius - j * (strokeWidth + gap);
+                let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
                 if (arcRadius < minRadius) {
                     arcRadius = minRadius;
                 }
@@ -1232,7 +1238,7 @@ export class ModuleDrawer {
                 const centerX = w / 2;
                 const centerY = -h / 2;
                 const firstRadius = outerRadius;
-                let lastRadius = outerRadius - (this.strokesNum - 1) * (strokeWidth + gap);
+                let lastRadius = stripeArcRadius(this.strokesNum - 1, outerRadius, strokeWidth, gap);
                 if (lastRadius < minRadius) {
                     lastRadius = minRadius;
                 }
@@ -1326,7 +1332,7 @@ export class ModuleDrawer {
             const gapPx = strokeWidth * this.gapLength;
             
             for (let j = 0; j < this.strokesNum; j++) {
-                let arcRadius = outerRadius - j * (strokeWidth + gap);
+                let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
                 if (arcRadius < minRadius) {
                     arcRadius = minRadius;
                 }
@@ -1360,7 +1366,7 @@ export class ModuleDrawer {
             // Close Ends: square cap when Round disabled, round cap when Round enabled
             if (this.closeEnds && localEndpoints && this.strokesNum > 0) {
                 const firstRadius = outerRadius;
-                let lastRadius = outerRadius - (this.strokesNum - 1) * (strokeWidth + gap);
+                let lastRadius = stripeArcRadius(this.strokesNum - 1, outerRadius, strokeWidth, gap);
                 if (lastRadius < minRadius) {
                     lastRadius = minRadius;
                 }
@@ -1465,7 +1471,7 @@ export class ModuleDrawer {
             const shortenAmount = strokeWidth / 2;
             
             for (let j = 0; j < this.strokesNum; j++) {
-                let arcRadius = outerRadius - j * (strokeWidth + gap);
+                let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
                 if (arcRadius < minRadius) {
                     arcRadius = minRadius;
                 }
@@ -1489,7 +1495,7 @@ export class ModuleDrawer {
                 const centerX = w / 2;
                 const centerY = -h / 2;
                 const firstRadius = outerRadius;
-                let lastRadius = outerRadius - (this.strokesNum - 1) * (strokeWidth + gap);
+                let lastRadius = stripeArcRadius(this.strokesNum - 1, outerRadius, strokeWidth, gap);
                 if (lastRadius < minRadius) {
                     lastRadius = minRadius;
                 }
@@ -1583,7 +1589,7 @@ export class ModuleDrawer {
             const gapPx = strokeWidth * this.gapLength;
             
             for (let j = 0; j < this.strokesNum; j++) {
-                let arcRadius = outerRadius - j * (strokeWidth + gap);
+                let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
                 if (arcRadius < minRadius) {
                     arcRadius = minRadius;
                 }
@@ -1617,7 +1623,7 @@ export class ModuleDrawer {
             // Close Ends: square cap when Round disabled, round cap when Round enabled
             if (this.closeEnds && localEndpoints && this.strokesNum > 0) {
                 const firstRadius = outerRadius;
-                let lastRadius = outerRadius - (this.strokesNum - 1) * (strokeWidth + gap);
+                let lastRadius = stripeArcRadius(this.strokesNum - 1, outerRadius, strokeWidth, gap);
                 if (lastRadius < minRadius) {
                     lastRadius = minRadius;
                 }
