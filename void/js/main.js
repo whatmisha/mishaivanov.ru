@@ -15,130 +15,19 @@ import { ColorUtils } from './utils/ColorUtils.js';
 import { MathUtils } from './utils/MathUtils.js';
 import GlyphEditor from './core/GlyphEditor.js';
 import { HistoryManager } from './history/HistoryManager.js';
-
-const RANDOM_DICE_TITLE_OFF = 'Add this parameter to random';
-const RANDOM_DICE_TITLE_ON = 'Remove this parameter from random';
-
-function syncRandomDiceTitle(btn, active) {
-    if (!btn) return;
-    btn.title = active ? RANDOM_DICE_TITLE_ON : RANDOM_DICE_TITLE_OFF;
-}
-
-/** Shared config for dice (per-param random) buttons */
-const DICE_CONFIG = {
-    stem: {
-        flag: 'randomizeStem', displayName: 'Stem',
-        diceBtnId: 'stemDiceBtn', singleValueId: 'stemValue',
-        singleWrap: 'stemSingleWrap', rangeWrap: 'stemRangeWrap',
-        singleSlider: 'stemSlider', singleSetting: 'stemMultiplier',
-        rangeSlider: 'randomStemRangeSlider',
-        minSetting: 'randomStemMin', maxSetting: 'randomStemMax',
-        min: 0.1, max: 3.0, defaultMin: 0.5, defaultMax: 1.0
-    },
-    strokes: {
-        flag: 'randomizeStrokes', displayName: 'Lines',
-        diceBtnId: 'strokesDiceBtn', singleValueId: 'strokesValue',
-        singleWrap: 'strokesSingleWrap', rangeWrap: 'strokesRangeWrap',
-        singleSlider: 'strokesSlider', singleSetting: 'strokesNum',
-        rangeSlider: 'randomStrokesRangeSlider',
-        minSetting: 'randomStrokesMin', maxSetting: 'randomStrokesMax',
-        min: 1, max: 64, defaultMin: 1, defaultMax: 4
-    },
-    contrast: {
-        flag: 'randomizeContrast', displayName: 'Contrast',
-        diceBtnId: 'contrastDiceBtn', singleValueId: 'strokeGapRatioValue',
-        singleWrap: 'contrastSingleWrap', rangeWrap: 'contrastRangeWrap',
-        singleSlider: 'strokeGapRatioSlider', singleSetting: 'strokeGapRatio',
-        rangeSlider: 'randomContrastRangeSlider',
-        minSetting: 'randomContrastMin', maxSetting: 'randomContrastMax',
-        min: 0.1, max: 8, defaultMin: 0.1, defaultMax: 2.0
-    },
-    dashLength: {
-        flag: 'randomizeDashLength', displayName: 'Dash',
-        diceBtnId: 'dashLengthDiceBtn', singleValueId: 'dashLengthValue',
-        singleWrap: 'dashLengthSingleWrap', rangeWrap: 'dashLengthRangeWrap',
-        singleSlider: 'dashLengthSlider', singleSetting: 'dashLength',
-        rangeSlider: 'randomDashLengthRangeSlider',
-        minSetting: 'randomDashLengthMin', maxSetting: 'randomDashLengthMax',
-        min: 0.1, max: 5, defaultMin: 1.0, defaultMax: 1.5
-    },
-    gapLength: {
-        flag: 'randomizeGapLength', displayName: 'Gap',
-        diceBtnId: 'gapLengthDiceBtn', singleValueId: 'gapLengthValue',
-        singleWrap: 'gapLengthSingleWrap', rangeWrap: 'gapLengthRangeWrap',
-        singleSlider: 'gapLengthSlider', singleSetting: 'gapLength',
-        rangeSlider: 'randomGapLengthRangeSlider',
-        minSetting: 'randomGapLengthMin', maxSetting: 'randomGapLengthMax',
-        min: 0.1, max: 5, defaultMin: 1.0, defaultMax: 1.5
-    },
-    wobblyAmount: {
-        flag: 'randomizeWobblyAmount', displayName: 'Wobble',
-        diceBtnId: 'wobblyAmountDiceBtn', singleValueId: 'wobblyAmountValue',
-        singleWrap: 'wobblyAmountSingleWrap', rangeWrap: 'wobblyAmountRangeWrap',
-        singleSlider: 'wobblyAmountSlider', singleSetting: 'wobblyAmount',
-        rangeSlider: 'randomWobblyAmountRangeSlider',
-        minSetting: 'randomWobblyAmountMin', maxSetting: 'randomWobblyAmountMax',
-        min: 0, max: 20, defaultMin: 0, defaultMax: 10
-    },
-    wobblyFrequency: {
-        flag: 'randomizeWobblyFrequency', displayName: 'Noise',
-        diceBtnId: 'wobblyFrequencyDiceBtn', singleValueId: 'wobblyFrequencyValue',
-        singleWrap: 'wobblyFrequencySingleWrap', rangeWrap: 'wobblyFrequencyRangeWrap',
-        singleSlider: 'wobblyFrequencySlider', singleSetting: 'wobblyFrequency',
-        rangeSlider: 'randomWobblyFrequencyRangeSlider',
-        minSetting: 'randomWobblyFrequencyMin', maxSetting: 'randomWobblyFrequencyMax',
-        min: 0.01, max: 0.5, defaultMin: 0.05, defaultMax: 0.2
-    },
-    paletteColors: {
-        flag: 'randomizePaletteColors', displayName: 'Palette',
-        singleValueId: 'paletteColorsValue',
-        singleWrap: 'paletteColorsSingleWrap', rangeWrap: 'paletteColorsRangeWrap',
-        singleSlider: 'paletteColorsSlider', singleSetting: 'colorChaosColors',
-        rangeSlider: 'randomPaletteColorsRangeSlider',
-        minSetting: 'randomPaletteColorsMin', maxSetting: 'randomPaletteColorsMax',
-        min: 3, max: 32, defaultMin: 3, defaultMax: 32
-    }
-};
-
-/** Effect pill-toggles: when flag is on, value is re-rolled on Randomize; shown in Random panel list */
-const EFFECT_RANDOM_CONFIG = {
-    roundedCaps: {
-        flag: 'randomizeRoundedCaps', displayName: 'Round Caps',
-        setting: 'roundedCaps', checkboxId: 'roundedCapsCheckbox', type: 'bool'
-    },
-    closeEnds: {
-        flag: 'randomizeCloseEnds', displayName: 'Stems',
-        setting: 'closeEnds', checkboxId: 'closeEndsCheckbox', type: 'bool'
-    },
-    dashChess: {
-        flag: 'randomizeDashChess', displayName: 'Chess',
-        setting: 'dashChess', checkboxId: 'dashChessCheckboxPD', type: 'bool'
-    },
-    altGlyphs: {
-        flag: 'randomizeAltGlyphs', displayName: 'Alt Glyphs',
-        setting: 'useAlternativesInRandom', checkboxId: 'alternativeGlyphsCheckbox', type: 'bool'
-    },
-    chaos: {
-        flag: 'randomizeChaosMode', displayName: 'Unique',
-        setting: 'randomModeType', checkboxId: 'chaosCheckbox', type: 'chaos'
-    },
-    grid: {
-        flag: 'randomizeShowGrid', displayName: 'Grid',
-        setting: 'showGrid', checkboxId: 'showGridCheckbox', type: 'bool'
-    },
-    joints: {
-        flag: 'randomizeShowJoints', displayName: 'Joints',
-        setting: 'showJoints', checkboxId: 'showJointsCheckbox', type: 'bool'
-    },
-    freeEndpoints: {
-        flag: 'randomizeShowFreeEndpoints', displayName: 'Endpoints',
-        setting: 'showFreeEndpoints', checkboxId: 'showFreeEndpointsCheckbox', type: 'bool'
-    },
-    colorBW: {
-        flag: 'randomizeColorBW', displayName: 'BW',
-        setting: 'colorBW', checkboxId: 'colorBWCheckbox', type: 'bool'
-    }
-};
+import {
+    DICE_CONFIG,
+    EFFECT_RANDOM_CONFIG,
+    syncRandomDiceTitle
+} from './config/randomConfig.js';
+import {
+    RENDER_THROTTLE_MS,
+    RESIZE_DEBOUNCE_MS,
+    HISTORY_AUTOSNAPSHOT_DEBOUNCE_MS,
+    HISTORY_MAX_SIZE,
+    MOBILE_BREAKPOINT_PX,
+    TABLET_BREAKPOINT_PX
+} from './config/timings.js';
 
 class VoidTypeface {
     constructor() {
@@ -290,10 +179,10 @@ class VoidTypeface {
         // Render scheduling for performance optimization
         this.renderScheduled = false;
         
-        // Throttled updateRenderer for slider dragging (16ms = ~60fps)
+        // Throttled updateRenderer for slider dragging (~60fps)
         this.throttledUpdateRenderer = MathUtils.throttle(() => {
             this.updateRenderer();
-        }, 16);
+        }, RENDER_THROTTLE_MS);
 
         // Check for mobile device
         this.isMobile = this.checkIsMobile();
@@ -314,7 +203,7 @@ class VoidTypeface {
 
             // Undo/Redo: per-preset history. historyManager — текущий менеджер активного пресета.
             this.presetHistories = new Map();
-            this.historyManager = new HistoryManager({ maxSize: 50 });
+            this.historyManager = new HistoryManager({ maxSize: HISTORY_MAX_SIZE });
             this.isRestoringState = false;
             this.activeSliderTransactions = new Map();
             this.activeInputTransactions = new Set();
@@ -411,7 +300,7 @@ class VoidTypeface {
         // OR explicitly mobile phone by User Agent
         const isMobilePhone = /mobile|iphone|ipod|android.*mobile|blackberry|windows phone/i.test(userAgent);
         
-        return (width < 768 && isTouchDevice && !isTablet) || (isMobilePhone && width < 1024);
+        return (width < MOBILE_BREAKPOINT_PX && isTouchDevice && !isTablet) || (isMobilePhone && width < TABLET_BREAKPOINT_PX);
     }
 
     /**
@@ -909,7 +798,6 @@ class VoidTypeface {
                 if (this.renderer.clearModuleTypeCache) {
                     this.renderer.clearModuleTypeCache();
                 }
-                this.updateParamRangeText('stem');
                 this.throttledUpdateRenderer();
             }
         });
@@ -936,7 +824,6 @@ class VoidTypeface {
                 }
                 this.updateStyleDimmedState();
                 this.updateRoundedCapsVisibility();
-                this.updateParamRangeText('strokes');
                 this.throttledUpdateRenderer();
             }
         });
@@ -955,7 +842,6 @@ class VoidTypeface {
                 if (this.renderer.clearModuleTypeCache) {
                     this.renderer.clearModuleTypeCache();
                 }
-                this.updateParamRangeText('contrast');
                 this.throttledUpdateRenderer();
             }
         });
@@ -974,7 +860,6 @@ class VoidTypeface {
                 if (this.renderer.clearModuleTypeCache) {
                     this.renderer.clearModuleTypeCache();
                 }
-                this.updateParamRangeText('dashLength');
                 this.throttledUpdateRenderer();
             }
         });
@@ -993,7 +878,6 @@ class VoidTypeface {
                 if (this.renderer.clearModuleTypeCache) {
                     this.renderer.clearModuleTypeCache();
                 }
-                this.updateParamRangeText('gapLength');
                 this.throttledUpdateRenderer();
             }
         });
@@ -1029,7 +913,6 @@ class VoidTypeface {
             baseStep: 0.5,
             shiftStep: 1,
             onUpdate: (minValue, maxValue) => {
-                this.updateParamRangeText('wobblyAmount');
                 if (this.settings.get('isRandom')) {
                     this.updateRenderer();
                 }
@@ -1047,7 +930,6 @@ class VoidTypeface {
             baseStep: 0.01,
             shiftStep: 0.05,
             onUpdate: (minValue, maxValue) => {
-                this.updateParamRangeText('wobblyFrequency');
                 if (this.settings.get('isRandom')) {
                     this.updateRenderer();
                 }
@@ -2544,11 +2426,6 @@ class VoidTypeface {
     }
 
     /**
-     * Pills show param name only; range changes do not alter the label.
-     */
-    updateParamRangeText() {}
-
-    /**
      * 🎲 Shuffle: fully randomize except text, module size, letter spacing, line height, align
      */
     initShuffle() {
@@ -3701,8 +3578,6 @@ class VoidTypeface {
         const chaosCb = document.getElementById('chaosCheckbox');
         if (chaosCb) chaosCb.checked = this.settings.get('randomModeType') === 'full';
 
-        this.updateColorModeUI();
-
         // Update all color swatches
         for (const [type, info] of Object.entries(this.colorTypeMap)) {
             this.updateSwatchDisplay(type, this.settings.get(info.setting));
@@ -3805,7 +3680,7 @@ class VoidTypeface {
     initResize() {
         const debouncedResize = MathUtils.debounce(() => {
             this.renderer.resize();
-        }, 100);
+        }, RESIZE_DEBOUNCE_MS);
 
         window.addEventListener('resize', debouncedResize);
     }
@@ -4360,7 +4235,7 @@ class VoidTypeface {
             this.snapshotDebounceTimer = null;
             if (this.historyManager.currentTransaction) return;
             this.historyManager.saveSnapshot(this.getStateSnapshot(), label);
-        }, 250);
+        }, HISTORY_AUTOSNAPSHOT_DEBOUNCE_MS);
     }
 
     /**

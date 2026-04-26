@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Void Typeface - Glyph Editor</title>
     <link rel="stylesheet" href="../styles.css">
     <style>
@@ -553,7 +553,7 @@
     <!-- Top navigation -->
     <div class="editor-top-nav">
         <a href="../index.html" class="top-link">← Void Typeface</a>
-        <button class="editor-clear-all-btn" id="clearAllBtn">Clear All</button>
+        <button class="editor-clear-all-btn" id="clearAllBtn" type="button">Clear All</button>
     </div>
     
     <div class="editor-container">
@@ -571,7 +571,7 @@
             <div style="padding: 20px var(--spacing-lg); border-top: 1px solid var(--color-border); flex: 0 0 auto;">
                 <div style="display: flex; gap: var(--spacing-sm); align-items: stretch;">
                     <input type="text" id="newGlyphInput" placeholder="New Glyph" maxlength="1" style="flex: 1; min-width: 0; padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-sm) var(--spacing-md); background: var(--color-bg-input); border: 1px solid var(--color-border); border-radius: var(--radius-input); color: var(--color-text); font-size: 0.9rem;">
-                    <button class="btn-secondary" id="newGlyphBtn" style="flex-shrink: 0; white-space: nowrap;">Add</button>
+                    <button class="btn-secondary" id="newGlyphBtn" type="button" style="flex-shrink: 0; white-space: nowrap;">Add</button>
                 </div>
             </div>
         </aside>
@@ -620,8 +620,8 @@
     <!-- Bottom buttons -->
     <nav class="editor-bottom-buttons">
         <input type="file" id="importFileInput" accept=".js" style="display: none;">
-        <button class="btn-fixed" id="importBtn">Import</button>
-        <button class="btn-fixed" id="exportBtn">Export Alphabet</button>
+        <button class="btn-fixed" id="importBtn" type="button">Import</button>
+        <button class="btn-fixed" id="exportBtn" type="button">Export Alphabet</button>
     </nav>
     
     <script type="module" src="../js/editor.js"></script>

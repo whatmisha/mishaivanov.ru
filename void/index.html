@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Void Typeface — Misha Ivanov</title>
     <!-- Preload fonts to prevent FOUT -->
     <link rel="preload" href="https://mishaivanov.ru/fonts/CoFoSans-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
@@ -34,7 +34,7 @@
             
             <!-- Preset Dropdown -->
             <div class="preset-dropdown" id="presetDropdown">
-                <button class="preset-dropdown-toggle" id="presetDropdownToggle" type="button" aria-haspopup="listbox" aria-expanded="false">
+                <button class="preset-dropdown-toggle" id="presetDropdownToggle" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="presetDropdownMenu">
                     <span class="preset-dropdown-text">New</span>
                     <svg class="preset-dropdown-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -52,7 +52,8 @@
             <button class="top-link btn-danger" id="deletePresetBtn" type="button" style="display: none;">Delete</button>
         </div>
 
-        <div class="main-content">
+        <main class="main-content" id="mainContent">
+            <h1 class="sr-only">Void Typeface</h1>
             <!-- Main Canvas -->
             <div class="canvas-container" id="canvasContainer">
                 <!-- Alternatives Panel (shown only in editor mode) -->
@@ -64,8 +65,8 @@
                         <!-- Alternatives will be added dynamically -->
                     </div>
                 </aside>
-                
-                <canvas id="mainCanvas"></canvas>
+
+                <canvas id="mainCanvas" role="img" aria-label="Void typeface preview canvas"></canvas>
                 <!-- Editor hint (shown only in editor mode) -->
                 <div class="editor-hint" id="editorHint" style="display: none;">↑↓ to switch, ←→ to rotate</div>
             </div>
@@ -569,15 +570,15 @@ Code</textarea>
                 </div>
             </aside>
 
-        </div>
+        </main>
     </div>
 
     <!-- Bottom Action Buttons -->
     <nav class="bottom-buttons">
         <button class="btn-fixed" id="exportPngBtn" type="button">Export PNG</button>
         <button class="btn-fixed" id="copyBtn" type="button" title="Copies the SVG to the clipboard — paste it straight into Figma (or any app)">Copy SVG</button>
-        <button class="btn-fixed" id="exportBtn">Export SVG ⌘E</button>
-        <button class="btn-fixed" id="renewBtn" style="display: none;">Update</button>
+        <button class="btn-fixed" id="exportBtn" type="button">Export SVG ⌘E</button>
+        <button class="btn-fixed" id="renewBtn" type="button" style="display: none;">Update</button>
     </nav>
 
     <!-- Modal Dialogs -->

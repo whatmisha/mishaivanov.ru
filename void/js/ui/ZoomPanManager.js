@@ -98,24 +98,36 @@ export class ZoomPanManager {
      * Initialize all event handlers
      */
     initEventListeners() {
-        // Zoom: mouse wheel
-        this.container.addEventListener('wheel', this.handleWheel.bind(this), { passive: false });
-        
-        // Pan: space key
-        document.addEventListener('keydown', this.handleKeyDown.bind(this));
-        document.addEventListener('keyup', this.handleKeyUp.bind(this));
-        
-        // Pan: mouse
-        this.container.addEventListener('mousedown', this.handleMouseDown.bind(this));
-        document.addEventListener('mousemove', this.handleMouseMove.bind(this));
-        document.addEventListener('mouseup', this.handleMouseUp.bind(this));
-        
-        // Prevent context menu on middle button
-        this.container.addEventListener('contextmenu', (e) => {
+        // Bind once and store references so destroy() can detach them.
+        // Without stored references, `removeEventListener` is given a different
+        // function instance than the one passed to `addEventListener` and the
+        // listeners remain attached for the lifetime of the document.
+        this._onWheel = this.handleWheel.bind(this);
+        this._onKeyDown = this.handleKeyDown.bind(this);
+        this._onKeyUp = this.handleKeyUp.bind(this);
+        this._onMouseDown = this.handleMouseDown.bind(this);
+        this._onMouseMove = this.handleMouseMove.bind(this);
+        this._onMouseUp = this.handleMouseUp.bind(this);
+        this._onContextMenu = (e) => {
             if (e.button === 1) {
                 e.preventDefault();
             }
-        });
+        };
+
+        // Zoom: mouse wheel
+        this.container.addEventListener('wheel', this._onWheel, { passive: false });
+
+        // Pan: space key
+        document.addEventListener('keydown', this._onKeyDown);
+        document.addEventListener('keyup', this._onKeyUp);
+
+        // Pan: mouse
+        this.container.addEventListener('mousedown', this._onMouseDown);
+        document.addEventListener('mousemove', this._onMouseMove);
+        document.addEventListener('mouseup', this._onMouseUp);
+
+        // Prevent context menu on middle button
+        this.container.addEventListener('contextmenu', this._onContextMenu);
     }
     
     /**
@@ -449,12 +461,13 @@ export class ZoomPanManager {
      * Cleanup handlers
      */
     destroy() {
-        this.container.removeEventListener('wheel', this.handleWheel);
-        document.removeEventListener('keydown', this.handleKeyDown);
-        document.removeEventListener('keyup', this.handleKeyUp);
-        this.container.removeEventListener('mousedown', this.handleMouseDown);
-        document.removeEventListener('mousemove', this.handleMouseMove);
-        document.removeEventListener('mouseup', this.handleMouseUp);
+        if (this._onWheel) this.container.removeEventListener('wheel', this._onWheel);
+        if (this._onKeyDown) document.removeEventListener('keydown', this._onKeyDown);
+        if (this._onKeyUp) document.removeEventListener('keyup', this._onKeyUp);
+        if (this._onMouseDown) this.container.removeEventListener('mousedown', this._onMouseDown);
+        if (this._onMouseMove) document.removeEventListener('mousemove', this._onMouseMove);
+        if (this._onMouseUp) document.removeEventListener('mouseup', this._onMouseUp);
+        if (this._onContextMenu) this.container.removeEventListener('contextmenu', this._onContextMenu);
     }
 }
 
