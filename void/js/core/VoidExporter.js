@@ -1262,7 +1262,7 @@ export class VoidExporter {
         if (closeEnds && localEndpoints && strokesNum > 0) {
             const firstLineX = startX;
             const lastLineX = startX + (strokesNum - 1) * (strokeWidth + gap);
-            const closeCap = roundedCaps ? 'round' : 'square';
+            const closeCap = closeEndsLineCap(roundedCaps);
             
             // Closing line on top
             if (localEndpoints.top) {
@@ -1307,7 +1307,7 @@ export class VoidExporter {
         if (closeEnds && localEndpoints && strokesNum > 0) {
             const firstLineX = startX;
             const lastLineX = startX + (strokesNum - 1) * (strokeWidth + gap);
-            const closeCap = roundedCaps ? 'round' : 'square';
+            const closeCap = closeEndsLineCap(roundedCaps);
             
             // Closing line on top
             if (localEndpoints.top) {
@@ -1440,7 +1440,7 @@ export class VoidExporter {
             const deltaAngleLast_right = localEndpoints.right ? shortenAmount / lastRadius : 0;
             const deltaAngleFirst_top = localEndpoints.top ? shortenAmount / firstRadius : 0;
             const deltaAngleLast_top = localEndpoints.top ? shortenAmount / lastRadius : 0;
-            const closeCap = roundedCaps ? 'round' : 'square';
+            const closeCap = closeEndsLineCap(roundedCaps);
             
             // Closing line on right
             if (localEndpoints.right) {
@@ -1524,7 +1524,7 @@ export class VoidExporter {
             const deltaAngleLast_right = localEndpoints.right ? shortenAmount / lastRadius : 0;
             const deltaAngleFirst_top = localEndpoints.top ? shortenAmount / firstRadius : 0;
             const deltaAngleLast_top = localEndpoints.top ? shortenAmount / lastRadius : 0;
-            const closeCap = roundedCaps ? 'round' : 'square';
+            const closeCap = closeEndsLineCap(roundedCaps);
             
             // Closing line on right
             if (localEndpoints.right) {
@@ -1808,7 +1808,7 @@ export class VoidExporter {
             const closeLineLength = lastLineX - firstLineX;
             const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
             // Close Ends: square cap when Round disabled, round cap when Round enabled
-            const closeCap = roundedCaps ? 'round' : 'square';
+            const closeCap = closeEndsLineCap(roundedCaps);
             
             if (localEndpoints.top) {
                 const yClos = -h / 2 + shortenTop;
@@ -1862,7 +1862,7 @@ export class VoidExporter {
             const closeLineLength = lastLineX - firstLineX;
             const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
             // Close Ends: square cap when Round disabled, round cap when Round enabled
-            const closeCap = roundedCaps ? 'round' : 'square';
+            const closeCap = closeEndsLineCap(roundedCaps);
             
             if (localEndpoints.top) {
                 const yClos = -h / 2 + shortenTop;
@@ -2017,7 +2017,7 @@ export class VoidExporter {
             const closeLineLength = firstRadius - lastRadius;
             const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
             // Close Ends: square cap when Round disabled, round cap when Round enabled
-            const closeCap = roundedCaps ? 'round' : 'square';
+            const closeCap = closeEndsLineCap(roundedCaps);
             
             if (localEndpoints.right) {
                 const deltaAngleFirst = shortenAmount / firstRadius;
@@ -2103,7 +2103,7 @@ export class VoidExporter {
             const closeLineLength = firstRadius - lastRadius;
             const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
             // Close Ends: square cap when Round disabled, round cap when Round enabled
-            const closeCap = roundedCaps ? 'round' : 'square';
+            const closeCap = closeEndsLineCap(roundedCaps);
             
             if (localEndpoints.right) {
                 const deltaAngleFirst = shortenAmount / firstRadius;

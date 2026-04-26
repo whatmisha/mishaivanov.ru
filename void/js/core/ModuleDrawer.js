@@ -417,7 +417,7 @@ export class ModuleDrawer {
         if (points.length < 2) return;
         
         ctx.lineWidth = strokeWidth;
-        ctx.lineCap = this.roundedCaps ? 'round' : 'square';
+        ctx.lineCap = closeEndsLineCap(this.roundedCaps);
         
         const lineLength = Math.sqrt(
             Math.pow(points[1].x - points[0].x, 2) + 
@@ -581,7 +581,7 @@ export class ModuleDrawer {
                 const firstLineX = startX;
                 const lastLineX = startX + (this.strokesNum - 1) * (strokeWidth + gap);
                 
-                ctx.lineCap = this.roundedCaps ? 'round' : 'square';
+                ctx.lineCap = closeEndsLineCap(this.roundedCaps);
                 
                 if (localEndpoints.top) {
                     const y = -h / 2 + shortenTopStripes;
@@ -667,7 +667,7 @@ export class ModuleDrawer {
                 const lastLineX = startX + (this.strokesNum - 1) * (strokeWidth + gap);
                 const closeLineLength = lastLineX - firstLineX;
                 
-                ctx.lineCap = this.roundedCaps ? 'round' : 'square';
+                ctx.lineCap = closeEndsLineCap(this.roundedCaps);
                 
                 // Closing lines are also dashed in SD mode
                 const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
@@ -839,7 +839,7 @@ export class ModuleDrawer {
                 const lastLineX = startX + (this.strokesNum - 1) * (strokeWidth + gap);
                 const closeLineLength = lastLineX - firstLineX;
                 
-                ctx.lineCap = this.roundedCaps ? 'round' : 'square';
+                ctx.lineCap = closeEndsLineCap(this.roundedCaps);
                 
                 // Closing lines are also dashed in SD mode
                 const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
@@ -1237,7 +1237,7 @@ export class ModuleDrawer {
                     lastRadius = minRadius;
                 }
                 
-                ctx.lineCap = this.roundedCaps ? 'round' : 'square';
+                ctx.lineCap = closeEndsLineCap(this.roundedCaps);
                 
                 if (localEndpoints.right) {
                     const deltaAngleFirst = shortenAmount / firstRadius;
@@ -1365,7 +1365,7 @@ export class ModuleDrawer {
                     lastRadius = minRadius;
                 }
                 
-                ctx.lineCap = this.roundedCaps ? 'round' : 'square';
+                ctx.lineCap = closeEndsLineCap(this.roundedCaps);
                 
                 // Closing lines are also dashed in SD mode
                 const closeLineLength = firstRadius - lastRadius;
@@ -1494,7 +1494,7 @@ export class ModuleDrawer {
                     lastRadius = minRadius;
                 }
                 
-                ctx.lineCap = this.roundedCaps ? 'round' : 'square';
+                ctx.lineCap = closeEndsLineCap(this.roundedCaps);
                 
                 if (localEndpoints.right) {
                     const deltaAngleFirst = shortenAmount / firstRadius;
@@ -1622,7 +1622,7 @@ export class ModuleDrawer {
                     lastRadius = minRadius;
                 }
                 
-                ctx.lineCap = this.roundedCaps ? 'round' : 'square';
+                ctx.lineCap = closeEndsLineCap(this.roundedCaps);
                 
                 // Closing lines are also dashed in SD mode
                 const closeLineLength = firstRadius - lastRadius;
