@@ -28,6 +28,9 @@ import {
     MOBILE_BREAKPOINT_PX,
     TABLET_BREAKPOINT_PX
 } from './config/timings.js';
+import { TooltipService } from './controllers/TooltipService.js';
+import { MobileBootstrap, isMobileDevice } from './controllers/MobileBootstrap.js';
+import { HistoryController } from './controllers/HistoryController.js';
 
 class VoidTypeface {
     constructor() {
@@ -185,16 +188,17 @@ class VoidTypeface {
         }, RENDER_THROTTLE_MS);
 
         // Check for mobile device
-        this.isMobile = this.checkIsMobile();
-        
+        this.isMobile = isMobileDevice();
+
         // Initialize components
         this.initCanvas();
         this.initExporter();
         this.initPresetManager();
-        
+
         if (this.isMobile) {
             // On mobile devices hide panels and show message
-            this.initMobileView();
+            this.mobileBootstrap = new MobileBootstrap(this);
+            this.mobileBootstrap.init();
         } else {
             // Preset UI + change tracking must exist before any init that calls markAsChanged (e.g. ColorPicker onChange)
             this.currentPresetName = 'New';
@@ -208,6 +212,7 @@ class VoidTypeface {
             this.activeSliderTransactions = new Map();
             this.activeInputTransactions = new Set();
             this.snapshotDebounceTimer = null;
+            this.historyController = new HistoryController(this);
             // On desktop initialize everything as usual
             this.initPanels();
             this.initSliders();
@@ -241,7 +246,9 @@ class VoidTypeface {
             this.initPresets();
             this.initExport();
             this.initResize();
-            this.initCursorTooltips();
+
+            this.tooltipService = new TooltipService();
+            this.tooltipService.init();
             
             // Clear random values cache before first render
             // to use correct values from settings
@@ -281,211 +288,6 @@ class VoidTypeface {
                 this.updateSaveDeleteButtons();
             }
         }
-    }
-
-    /**
-     * Check for mobile device
-     * Returns true if screen width < 768px AND it's a touch device
-     * OR if it's a mobile phone (not tablet) by User Agent
-     */
-    checkIsMobile() {
-        const width = window.innerWidth;
-        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-        const userAgent = navigator.userAgent.toLowerCase();
-        
-        // Check for tablets (iPad, Android tablets)
-        const isTablet = /ipad|android(?!.*mobile)|tablet/i.test(userAgent);
-        
-        // Mobile device = small screen AND touch device AND NOT tablet
-        // OR explicitly mobile phone by User Agent
-        const isMobilePhone = /mobile|iphone|ipod|android.*mobile|blackberry|windows phone/i.test(userAgent);
-        
-        return (width < MOBILE_BREAKPOINT_PX && isTouchDevice && !isTablet) || (isMobilePhone && width < TABLET_BREAKPOINT_PX);
-    }
-
-    /**
-     * Initialize mobile view
-     */
-    initMobileView() {
-        // Hide all control panels
-        const panels = document.querySelectorAll('.controls-panel');
-        panels.forEach(panel => { panel.style.display = 'none'; });
-        
-        // Hide preset/save/delete
-        const presetDropdown = document.getElementById('presetDropdown');
-        const saveBtn        = document.getElementById('savePresetBtn');
-        const deleteBtn      = document.getElementById('deletePresetBtn');
-        if (presetDropdown) presetDropdown.style.display = 'none';
-        if (saveBtn)        saveBtn.style.display = 'none';
-        if (deleteBtn)      deleteBtn.style.display = 'none';
-        
-        // Remove PNG export from DOM (desktop-only feature). SVG / Copy hidden via CSS.
-        document.getElementById('exportPngBtn')?.remove();
-        
-        // Show Update button
-        const renewBtn = document.getElementById('renewBtn');
-        if (renewBtn) {
-            renewBtn.style.display = 'inline-flex';
-            renewBtn.addEventListener('click', () => {
-                this.renderer.clearModuleTypeCache();
-                if (this.renderer.clearAlternativeGlyphCache) {
-                    this.renderer.clearAlternativeGlyphCache();
-                }
-                this.applyMobileChaos();
-                this.calculateMobileModuleSize();
-            });
-        }
-
-        this.settings.set('text', 'DESK\nTOP\nONLY');
-
-        // Apply safe mobile chaos on first load
-        this.applyMobileChaos();
-        
-        // Touch: tap a letter to cycle its alternative
-        const canvas = document.getElementById('mainCanvas');
-        if (canvas) {
-            canvas.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                const rect   = canvas.getBoundingClientRect();
-                const touch  = e.changedTouches[0];
-                const touchX = touch.clientX - rect.left;
-                const touchY = touch.clientY - rect.top;
-                const position = this.renderer.getLetterPositionAt(touchX, touchY);
-                if (position) {
-                    const char = position.char.toUpperCase();
-                    const hasAlternatives = VOID_ALPHABET_ALTERNATIVES &&
-                        VOID_ALPHABET_ALTERNATIVES[char] &&
-                        VOID_ALPHABET_ALTERNATIVES[char].length > 0;
-                    if (hasAlternatives) {
-                        const toggled = this.renderer.toggleLetterAlternative(
-                            position.lineIndex, position.charIndex);
-                        if (toggled) this.updateRenderer();
-                    }
-                }
-            });
-        }
-
-        this.calculateMobileModuleSize();
-
-        window.addEventListener('resize', () => {
-            const wasMobile = this.isMobile;
-            this.isMobile = this.checkIsMobile();
-            if (wasMobile && !this.isMobile) {
-                window.location.reload();
-            } else if (this.isMobile) {
-                this.calculateMobileModuleSize();
-            }
-        });
-    }
-
-    /**
-     * Apply a safe, performance-friendly randomisation preset for mobile.
-     * Fixed 3-colour palette (white letters / black bg / grey grid).
-     * No Wobble, no Dashes, no Alt Glyphs, no per-module Full Chaos,
-     * no colour randomisation — all of which are expensive on weak hardware.
-     */
-    applyMobileChaos() {
-        // --- colours: always fixed, never randomised ---
-        this.settings.set('letterColor', '#ffffff');
-        this.settings.set('bgColor', '#000000');
-        this.settings.set('gridColor', '#333333');
-        this.settings.set('colorMode', 'manual');
-        this.settings.set('colorSource', 'solid');
-        this.settings.set('randomizeColor', false);
-        this.settings.set('randomizePaletteColors', false);
-
-        // --- cheap shape randomisers ---
-        this.settings.set('randomizeStem',     true);
-        this.settings.set('randomizeStrokes',  true);
-        this.settings.set('randomizeContrast', true);
-
-        // --- off: dashes add heavy path-subdivision per module ---
-        this.settings.set('dashEnabled',          false);
-        this.settings.set('randomizeDashLength',   false);
-        this.settings.set('randomizeGapLength',    false);
-
-        // --- off: Perlin noise recomputed per module every frame ---
-        this.settings.set('wobblyEnabled',          false);
-        this.settings.set('randomizeWobblyAmount',   false);
-        this.settings.set('randomizeWobblyFrequency',false);
-
-        // --- off: per-module full-chaos cache is very large ---
-        this.settings.set('randomModeType', 'byType');
-        this.settings.set('randomizeChaosMode', false);
-
-        // --- off: alt-glyph cache lookup per letter ---
-        this.settings.set('useAlternativesInRandom', false);
-
-        // --- cosmetic extras off ---
-        this.settings.set('roundedCaps',           false);
-        this.settings.set('closeEnds',             false);
-        this.settings.set('randomizeRoundedCaps',  false);
-        this.settings.set('randomizeCloseEnds',    false);
-        this.settings.set('randomizeDashChess',    false);
-        this.settings.set('randomizeAltGlyphs',    false);
-        this.settings.set('randomizeShowGrid',     false);
-        this.settings.set('randomizeShowJoints',   false);
-        this.settings.set('randomizeShowFreeEndpoints', false);
-        this.settings.set('randomizeColorBW',     false);
-        this.settings.set('colorBW', false);
-        this.settings.set('showGrid',              true);
-        this.settings.set('showJoints',            false);
-        this.settings.set('showFreeEndpoints',     false);
-    }
-
-    /**
-     * Calculate optimal module size for mobile device
-     * so text "DESK\nTOP\nONLY" fits in window without clipping
-     */
-    calculateMobileModuleSize() {
-        // Wait for next frame so canvas gets dimensions
-        requestAnimationFrame(() => {
-            const canvasContainer = document.getElementById('canvasContainer');
-            const canvas = document.getElementById('mainCanvas');
-            
-            // Get container or window dimensions
-            const containerRect = canvasContainer ? canvasContainer.getBoundingClientRect() : null;
-            const availableWidth  = containerRect ? containerRect.width  : window.innerWidth;
-            const availableHeight = containerRect ? containerRect.height : window.innerHeight;
-            
-            // Text consists of 3 lines: "DESK", "TOP", "ONLY"
-            // Longest line - "DESK" and "ONLY" (4 characters)
-            const maxLineLength = 4;
-            const numLines = 3;
-            
-            // Single character dimensions: 5 modules wide
-            const cols = 5;
-            const rows = 5;
-            
-            // Use current multiplier values from settings
-            const letterSpacingMultiplier = this.settings.get('letterSpacingMultiplier') || 1;
-            const lineHeightMultiplier = this.settings.get('lineHeightMultiplier') || 1;
-            
-            // Account for padding (10% on each side for safety)
-            const padding = 0.1;
-            const maxWidth = availableWidth * (1 - 2 * padding);
-            const maxHeight = availableHeight * (1 - 2 * padding);
-            
-            // Width calculation:
-            // Line width = maxLineLength * cols * moduleSize + (maxLineLength - 1) * letterSpacingMultiplier * moduleSize
-            // = moduleSize * (maxLineLength * cols + (maxLineLength - 1) * letterSpacingMultiplier)
-            const moduleSizeByWidth = maxWidth / (maxLineLength * cols + (maxLineLength - 1) * letterSpacingMultiplier);
-            
-            // Height calculation:
-            // Text height = numLines * rows * moduleSize + (numLines - 1) * lineHeightMultiplier * moduleSize
-            // = moduleSize * (numLines * rows + (numLines - 1) * lineHeightMultiplier)
-            const moduleSizeByHeight = maxHeight / (numLines * rows + (numLines - 1) * lineHeightMultiplier);
-            
-            // Choose minimum size to fit both width and height
-            const optimalModuleSize = Math.floor(Math.min(moduleSizeByWidth, moduleSizeByHeight));
-            
-            // Set module size (but not less than 8px and not more than 128px)
-            const finalModuleSize = Math.max(8, Math.min(128, optimalModuleSize));
-            this.settings.set('moduleSize', finalModuleSize);
-            
-            // Update renderer after setting module size
-            this.updateRenderer();
-        });
     }
 
     /**
@@ -4078,37 +3880,9 @@ class VoidTypeface {
         return result;
     }
 
-    /**
-     * Setup change tracking
-     */
+    /** Wire up settings/text change tracking — see HistoryController. */
     setupChangeTracking() {
-        // Track changes to all settings
-        const originalSet = this.settings.set.bind(this.settings);
-        const self = this;
-        this.settings.set = function(key, value) {
-            const oldValue = self.settings.values[key];
-            const result = originalSet(key, value);
-            const changed = oldValue !== value;
-            if (changed && !self.isLoadingPreset && !self.isInitializing && !self.isRestoringState && self.currentPresetName) {
-                self.markAsChanged();
-                self._scheduleAutoSnapshot(`set ${key}`);
-            }
-            return result;
-        };
-        
-        // Track text changes through renderer
-        const originalSetText = this.renderer.setText.bind(this.renderer);
-        let lastRendererText = null;
-        this.renderer.setText = (text) => {
-            const oldText = lastRendererText;
-            originalSetText(text);
-            lastRendererText = text;
-            const changed = oldText !== null && oldText !== text;
-            if (changed && !this.isLoadingPreset && !this.isInitializing && !this.isRestoringState && this.currentPresetName) {
-                this.markAsChanged();
-                this._scheduleAutoSnapshot('setText');
-            }
-        };
+        this.historyController.setupChangeTracking();
     }
 
     /**
@@ -4126,280 +3900,18 @@ class VoidTypeface {
     }
 
     // ============================================
-    // History (Undo/Redo)
+    // History (Undo/Redo) — thin delegates to HistoryController
     // ============================================
 
-    /**
-     * Снэпшот текущего состояния приложения для истории.
-     * Включает settings + кэши рендера + Color Chaos состояние.
-     */
-    getStateSnapshot() {
-        const renderer = this.renderer;
-        return {
-            settings: JSON.parse(JSON.stringify(this.settings.values)),
-            renderer: {
-                alternativeGlyphCache: renderer?.alternativeGlyphCache
-                    ? JSON.parse(JSON.stringify(renderer.alternativeGlyphCache)) : {},
-                moduleTypeCache: renderer?.moduleTypeCache
-                    ? JSON.parse(JSON.stringify(renderer.moduleTypeCache)) : {},
-                moduleValueCache: renderer?.moduleValueCache
-                    ? JSON.parse(JSON.stringify(renderer.moduleValueCache)) : {}
-            },
-            colorChaos: {
-                colorPalette: Array.isArray(this.colorPalette) ? [...this.colorPalette] : [],
-                moduleColorCache: this.moduleColorCache instanceof Map
-                    ? Array.from(this.moduleColorCache.entries())
-                    : [],
-                globalModuleIndex: this.globalModuleIndex || 0,
-                globalGradientIndex: this.globalGradientIndex || 0
-            }
-        };
-    }
-
-    /**
-     * Применить снэпшот состояния. Все промежуточные set/изменения UI происходят
-     * под флагом isRestoringState — они не пишутся в историю и не помечают пресет
-     * как изменённый.
-     */
-    applyStateSnapshot(snapshot) {
-        if (!snapshot) return;
-
-        this.isRestoringState = true;
-        this.historyManager.setRestoring(true);
-
-        try {
-            // 1. Прямое восстановление settings.values, минуя обёртку set()
-            //    (иначе пойдут лишние markAsChanged + auto-snapshot)
-            if (snapshot.settings) {
-                Object.assign(this.settings.values, snapshot.settings);
-            }
-
-            // 2. Восстановление кэшей Color Chaos
-            if (snapshot.colorChaos) {
-                this.colorPalette = Array.isArray(snapshot.colorChaos.colorPalette)
-                    ? [...snapshot.colorChaos.colorPalette] : [];
-                this.moduleColorCache = new Map(snapshot.colorChaos.moduleColorCache || []);
-                this.globalModuleIndex = snapshot.colorChaos.globalModuleIndex || 0;
-                this.globalGradientIndex = snapshot.colorChaos.globalGradientIndex || 0;
-            }
-
-            // 3. Подготовка кэшей рендера к восстановлению
-            //    pendingCacheRestore используется внутри updateRenderer()
-            if (snapshot.renderer) {
-                this.pendingCacheRestore = {
-                    moduleTypeCache: snapshot.renderer.moduleTypeCache || null,
-                    moduleValueCache: snapshot.renderer.moduleValueCache || null,
-                    alternativeGlyphCache: snapshot.renderer.alternativeGlyphCache || null
-                };
-                if (this.renderer) {
-                    if (snapshot.renderer.alternativeGlyphCache) {
-                        this.renderer.alternativeGlyphCache = JSON.parse(JSON.stringify(snapshot.renderer.alternativeGlyphCache));
-                    }
-                    if (snapshot.renderer.moduleTypeCache) {
-                        this.renderer.moduleTypeCache = JSON.parse(JSON.stringify(snapshot.renderer.moduleTypeCache));
-                    }
-                    if (snapshot.renderer.moduleValueCache) {
-                        this.renderer.moduleValueCache = JSON.parse(JSON.stringify(snapshot.renderer.moduleValueCache));
-                    }
-                }
-            }
-
-            // 4. Очистка layout-кэшей и обновление UI/рендера
-            if (this.renderer && this.renderer.clearLayoutCache) {
-                this.renderer.clearLayoutCache();
-            }
-            this.updateUIFromSettings();
-            this.updateRenderer(true);
-
-            this.pendingCacheRestore = null;
-        } finally {
-            this.isRestoringState = false;
-            this.historyManager.setRestoring(false);
-        }
-    }
-
-    /**
-     * Запланировать автоматический snapshot после серии изменений.
-     * Дебаунс — чтобы быстрая последовательность set'ов превратилась в один шаг истории.
-     * Не пишет, если идёт активная транзакция (её закроет commitAction).
-     */
-    _scheduleAutoSnapshot(label = '') {
-        if (this.isRestoringState || this.isLoadingPreset || this.isInitializing) return;
-        if (this.settings.get('currentMode') === 'editor') return;
-        if (this.historyManager.currentTransaction) return;
-
-        if (this.snapshotDebounceTimer) {
-            clearTimeout(this.snapshotDebounceTimer);
-        }
-        this.snapshotDebounceTimer = setTimeout(() => {
-            this.snapshotDebounceTimer = null;
-            if (this.historyManager.currentTransaction) return;
-            this.historyManager.saveSnapshot(this.getStateSnapshot(), label);
-        }, HISTORY_AUTOSNAPSHOT_DEBOUNCE_MS);
-    }
-
-    /**
-     * Принудительно сбросить отложенный snapshot (например, перед началом транзакции).
-     */
-    _flushAutoSnapshot() {
-        if (this.snapshotDebounceTimer) {
-            clearTimeout(this.snapshotDebounceTimer);
-            this.snapshotDebounceTimer = null;
-        }
-    }
-
-    /**
-     * Сохранить начальный снэпшот в историю текущего пресета.
-     * Вызывается после загрузки/создания пресета, когда история пуста.
-     */
-    saveInitialHistorySnapshot(label = 'initial') {
-        this._flushAutoSnapshot();
-        this.historyManager.saveSnapshot(this.getStateSnapshot(), label);
-    }
-
-    /**
-     * Cmd/Ctrl+Z
-     */
-    undo() {
-        if (this.settings.get('currentMode') === 'editor') return;
-        // Закрываем активный input (его blur закоммитит транзакцию текстового поля)
-        const activeEl = document.activeElement;
-        if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
-            activeEl.blur();
-        }
-        this._flushAutoSnapshot();
-        const previousState = this.historyManager.undo();
-        if (previousState) {
-            this.applyStateSnapshot(previousState);
-            this._afterHistoryNav();
-        }
-    }
-
-    /**
-     * Cmd/Ctrl+Shift+Z
-     */
-    redo() {
-        if (this.settings.get('currentMode') === 'editor') return;
-        const activeEl = document.activeElement;
-        if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) {
-            activeEl.blur();
-        }
-        this._flushAutoSnapshot();
-        const nextState = this.historyManager.redo();
-        if (nextState) {
-            this.applyStateSnapshot(nextState);
-            this._afterHistoryNav();
-        }
-    }
-
-    /**
-     * Сделать вид, что после undo/redo нужно отметить пресет как изменённый
-     * (если индекс не на стартовой позиции истории пресета).
-     */
-    _afterHistoryNav() {
-        // hasUnsavedChanges вычисляем относительно стартового снэпшота истории (index 0)
-        const idx = this.historyManager.historyIndex;
-        const hasChanges = idx > 0;
-        this.hasUnsavedChanges = hasChanges;
-        this.updateSaveDeleteButtons();
-    }
-
-    /**
-     * Привязать к каждому слайдеру/range-слайдеру обработчики транзакций:
-     *  - mousedown на ползунке  → beginAction (snapshot "до")
-     *  - глобальный mouseup     → commitAction (snapshot "после")
-     *  - focus  на value-input  → beginAction
-     *  - blur   на value-input  → commitAction
-     * Это превращает один drag/один сеанс ввода в один шаг истории.
-     */
-    initSliderHistoryHandlers() {
-        // ---- SliderController (одиночные слайдеры) ----
-        if (this.sliderController?.sliders) {
-            this.sliderController.sliders.forEach((sliderData, sliderId) => {
-                const slider = sliderData.element;
-                const valueInput = sliderData.valueInput;
-
-                if (slider) {
-                    slider.addEventListener('mousedown', (e) => {
-                        if (e.button !== 0) return;
-                        this._flushAutoSnapshot();
-                        this.historyManager.beginAction(`adjust ${sliderId}`, this.getStateSnapshot());
-                        this.activeSliderTransactions.set(sliderId, true);
-                    });
-                }
-
-                if (valueInput) {
-                    valueInput.addEventListener('focus', () => {
-                        if (this.activeInputTransactions.has(sliderId)) return;
-                        this._flushAutoSnapshot();
-                        this.historyManager.beginAction(`type ${sliderId}`, this.getStateSnapshot());
-                        this.activeInputTransactions.add(sliderId);
-                    });
-                    valueInput.addEventListener('blur', () => {
-                        if (!this.activeInputTransactions.has(sliderId)) return;
-                        this.historyManager.commitAction(this.getStateSnapshot());
-                        this.activeInputTransactions.delete(sliderId);
-                    });
-                }
-            });
-        }
-
-        // ---- RangeSliderController (двойные ползунки) ----
-        if (this.rangeSliderController?.ranges) {
-            this.rangeSliderController.ranges.forEach((rangeData, rangeId) => {
-                const beginRange = (label) => {
-                    if (this.activeSliderTransactions.has(rangeId)) return;
-                    this._flushAutoSnapshot();
-                    this.historyManager.beginAction(label, this.getStateSnapshot());
-                    this.activeSliderTransactions.set(rangeId, true);
-                };
-
-                if (rangeData.minThumb) {
-                    rangeData.minThumb.addEventListener('mousedown', (e) => {
-                        if (e.button !== 0) return;
-                        beginRange(`adjust ${rangeId} (min)`);
-                    });
-                }
-                if (rangeData.maxThumb) {
-                    rangeData.maxThumb.addEventListener('mousedown', (e) => {
-                        if (e.button !== 0) return;
-                        beginRange(`adjust ${rangeId} (max)`);
-                    });
-                }
-
-                // Текстовые поля min/max
-                const cfg = rangeData.config || {};
-                ['minValueId', 'maxValueId'].forEach(idKey => {
-                    const inputId = cfg[idKey];
-                    if (!inputId) return;
-                    const input = document.getElementById(inputId);
-                    if (!input) return;
-                    const txKey = `${rangeId}:${inputId}`;
-                    input.addEventListener('focus', () => {
-                        if (this.activeInputTransactions.has(txKey)) return;
-                        this._flushAutoSnapshot();
-                        this.historyManager.beginAction(`type ${inputId}`, this.getStateSnapshot());
-                        this.activeInputTransactions.add(txKey);
-                    });
-                    input.addEventListener('blur', () => {
-                        if (!this.activeInputTransactions.has(txKey)) return;
-                        this.historyManager.commitAction(this.getStateSnapshot());
-                        this.activeInputTransactions.delete(txKey);
-                    });
-                });
-            });
-        }
-
-        // Глобальный mouseup закрывает все активные slider/range-транзакции
-        document.addEventListener('mouseup', (e) => {
-            if (e.button !== 0) return;
-            if (this.activeSliderTransactions.size === 0) return;
-            this.activeSliderTransactions.forEach((_, id) => {
-                this.historyManager.commitAction(this.getStateSnapshot());
-            });
-            this.activeSliderTransactions.clear();
-        });
-    }
+    getStateSnapshot() { return this.historyController.getStateSnapshot(); }
+    applyStateSnapshot(snapshot) { this.historyController.applyStateSnapshot(snapshot); }
+    _scheduleAutoSnapshot(label = '') { this.historyController.scheduleAutoSnapshot(label); }
+    _flushAutoSnapshot() { this.historyController.flushAutoSnapshot(); }
+    saveInitialHistorySnapshot(label = 'initial') { this.historyController.saveInitialSnapshot(label); }
+    undo() { this.historyController.undo(); }
+    redo() { this.historyController.redo(); }
+    _afterHistoryNav() { this.historyController._afterHistoryNav(); }
+    initSliderHistoryHandlers() { this.historyController.initSliderHistoryHandlers(); }
 
     /**
      * Update Save and Delete buttons visibility and dropdown state
@@ -4595,137 +4107,6 @@ class VoidTypeface {
         }
     }
 
-    /**
-     * Initialize cursor-following tooltips system
-     * Creates a global tooltip element that follows the cursor
-     */
-    initCursorTooltips() {
-        // Create tooltip element
-        const tooltip = document.createElement('div');
-        tooltip.className = 'cursor-tooltip';
-        tooltip.id = 'cursorTooltip';
-        document.body.appendChild(tooltip);
-        
-        this.tooltipElement = tooltip;
-        this.tooltipVisible = false;
-        
-        // Track mouse position
-        let mouseX = 0;
-        let mouseY = 0;
-        
-        // Update tooltip position on mouse move
-        document.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-            
-            if (this.tooltipVisible) {
-                this.positionTooltip(mouseX, mouseY);
-            }
-        });
-        
-        const getTooltipText = (target) => {
-            const unavailable =
-                target.classList.contains('inactive') ||
-                target.classList.contains('controls-disabled') ||
-                (target.querySelector && target.querySelector('input:disabled'));
-            if (unavailable && target.hasAttribute('data-tooltip-disabled')) {
-                return target.getAttribute('data-tooltip-disabled');
-            }
-            return target.getAttribute('data-tooltip') || null;
-        };
-
-        const tooltipHostSelector = '[data-tooltip], [data-tooltip-disabled]';
-
-        // Delegate event listeners for elements with tooltips
-        document.addEventListener('mouseenter', (e) => {
-            const target = e.target.closest(tooltipHostSelector);
-            if (target) {
-                const text = getTooltipText(target);
-                if (text) {
-                    this.showTooltip(text, mouseX, mouseY);
-                }
-            }
-        }, true);
-        
-        document.addEventListener('mouseleave', (e) => {
-            const target = e.target.closest(tooltipHostSelector);
-            if (target) {
-                this.hideTooltip();
-            }
-        }, true);
-        
-        document.addEventListener('mouseover', (e) => {
-            const target = e.target.closest(tooltipHostSelector);
-            if (target) {
-                const text = getTooltipText(target);
-                if (text) {
-                    this.showTooltip(text, mouseX, mouseY);
-                }
-            }
-        });
-        
-        document.addEventListener('mouseout', (e) => {
-            const target = e.target;
-            const relatedTarget = e.relatedTarget;
-            
-            if (target.closest && target.closest(tooltipHostSelector)) {
-                const targetTooltipEl = target.closest(tooltipHostSelector);
-                const relatedTooltipEl = relatedTarget?.closest?.(tooltipHostSelector);
-                
-                if (targetTooltipEl !== relatedTooltipEl) {
-                    this.hideTooltip();
-                }
-            }
-        });
-    }
-    
-    /**
-     * Show tooltip with text at cursor position
-     */
-    showTooltip(text, x, y) {
-        if (!this.tooltipElement) return;
-        
-        this.tooltipElement.textContent = text;
-        this.tooltipVisible = true;
-        this.positionTooltip(x, y);
-        this.tooltipElement.classList.add('visible');
-    }
-    
-    /**
-     * Hide tooltip
-     */
-    hideTooltip() {
-        if (!this.tooltipElement) return;
-        
-        this.tooltipVisible = false;
-        this.tooltipElement.classList.remove('visible');
-    }
-    
-    /**
-     * Position tooltip near cursor
-     */
-    positionTooltip(x, y) {
-        if (!this.tooltipElement) return;
-        
-        const offset = 12; // Offset from cursor
-        const tooltipRect = this.tooltipElement.getBoundingClientRect();
-        
-        let left = x + offset;
-        let top = y + offset;
-        
-        // Keep tooltip within viewport
-        if (left + tooltipRect.width > window.innerWidth) {
-            left = x - tooltipRect.width - offset;
-        }
-        if (top + tooltipRect.height > window.innerHeight) {
-            top = y - tooltipRect.height - offset;
-        }
-        if (left < 0) left = offset;
-        if (top < 0) top = offset;
-        
-        this.tooltipElement.style.left = `${left}px`;
-        this.tooltipElement.style.top = `${top}px`;
-    }
 }
 
 // Initialize on load
