@@ -54,7 +54,17 @@ export class PresetsController {
                 defaultPreset.useAlternativesInRandom !== false ||
                 defaultPreset.lineHeightMultiplier !== 1;
 
+            // Detect drift either via active random palette state OR via
+            // a stale schema (preset saved before per-swatch palette dice
+            // existed) — in both cases we want to rewrite a clean default.
+            const paletteSchemaMissing =
+                defaultPreset.paletteDiceLetter === undefined ||
+                defaultPreset.paletteDiceBg === undefined ||
+                defaultPreset.paletteDiceGrid === undefined ||
+                defaultPreset.paletteDiceGradientStart === undefined ||
+                defaultPreset.paletteDiceGradientEnd === undefined;
             const paletteDrift =
+                paletteSchemaMissing ||
                 defaultPreset.randomizePaletteColors === true ||
                 defaultPreset.colorMode === 'randomChaos' ||
                 defaultPreset.colorMode === 'randomGradient' ||
@@ -513,7 +523,8 @@ export class PresetsController {
         if (preset.randomizeColor && (app.settings.get('colorChaosColors') || 3) <= 3) {
             app.settings.set('colorChaosColors', preset.colorChaosColors || 16);
         }
-        // Migrate → per-swatch palette dice (replaces colorRandomMode)
+        // Migrate → per-swatch palette dice (replaces colorRandomMode).
+        // NB: do NOT use `colorChaosColors > 3` as an indicator — 16 is the default.
         if (preset.paletteDiceLetter === undefined) {
             const legacyRandom =
                 preset.colorRandomMode === true ||
@@ -521,8 +532,7 @@ export class PresetsController {
                 preset.colorMode === 'chaos' ||
                 preset.colorMode === 'randomChaos' ||
                 preset.colorMode === 'randomGradient' ||
-                preset.randomizeColor === true ||
-                (preset.colorChaosColors ?? 3) > 3;
+                preset.randomizeColor === true;
             if (legacyRandom) {
                 app.settings.set('paletteDiceLetter', true);
                 app.settings.set('paletteDiceGradientStart', true);
@@ -534,6 +544,11 @@ export class PresetsController {
                     app.settings.set('colorChaosColors', 16);
                 }
             } else {
+                app.settings.set('paletteDiceLetter', false);
+                app.settings.set('paletteDiceBg', false);
+                app.settings.set('paletteDiceGrid', false);
+                app.settings.set('paletteDiceGradientStart', false);
+                app.settings.set('paletteDiceGradientEnd', false);
                 app.settings.set('randomizePaletteColors', false);
             }
         }
