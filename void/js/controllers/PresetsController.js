@@ -216,8 +216,15 @@ export class PresetsController {
                     return;
                 }
 
-                if (presetName && presetName !== app.currentPresetName) {
-                    if (presetName === 'Unsaved' && app.currentPresetName === 'New' && app.hasUnsavedChanges) {
+                // While the user is on `New` with unsaved changes, the
+                // dropdown shows both `Unsaved` (current state) and `New`
+                // (clean defaults). Clicking `New` here means "reset" — so
+                // we must NOT bail on `presetName === currentPresetName`.
+                const isOnUnsaved = app.currentPresetName === 'New' && app.hasUnsavedChanges;
+                const wantsResetToNew = isOnUnsaved && presetName === 'New';
+
+                if (presetName && (presetName !== app.currentPresetName || wantsResetToNew)) {
+                    if (presetName === 'Unsaved' && isOnUnsaved) {
                         presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
                         item.classList.add('selected');
                         presetDropdownToggle.setAttribute('aria-expanded', 'false');
@@ -249,6 +256,16 @@ export class PresetsController {
                         }
                     }
 
+                    // Reset to clean defaults: drop both the in-session cached
+                    // history for `New` and the live historyManager, otherwise
+                    // loadPreset stashes the dirty manager back under `New`
+                    // and immediately restores it.
+                    if (wantsResetToNew) {
+                        app.presetHistories.delete('New');
+                        app.historyManager = null;
+                        app.hasUnsavedChanges = false;
+                    }
+
                     this.loadPreset(presetName);
 
                     const displayName = presetName === 'New' ? 'New' : this.getDisplayName(presetName);
@@ -258,6 +275,11 @@ export class PresetsController {
 
                     presetDropdownToggle.setAttribute('aria-expanded', 'false');
                     presetDropdownMenu.classList.remove('active');
+
+                    if (wantsResetToNew) {
+                        this.updatePresetList();
+                        this.updateSaveDeleteButtons();
+                    }
                 }
             }
         });
