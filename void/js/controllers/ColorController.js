@@ -412,6 +412,15 @@ export class ColorController {
             }
         }
 
+        // Reset render caches and indices BEFORE any UI updates that could
+        // synchronously trigger a re-render. Keeping this order guarantees
+        // the renderer always observes a consistent palette/cache state and
+        // never mixes pairs from a previous palette with newly rolled ones.
+        app.moduleColorCache = new Map();
+        app.moduleGradientCache = new Map();
+        app.globalModuleIndex = 0;
+        app.globalGradientIndex = 0;
+
         this.updateSwatchDisplay('bg', bgColor);
         this.updateSwatchDisplay('grid', gridColor);
         this.updateSwatchDisplay('gradientBg', bgColor);
@@ -428,14 +437,11 @@ export class ColorController {
                 gradientGrid: gridColor
             };
             if (app.activeColorType && colorMap[app.activeColorType] !== undefined) {
+                // setColor() is silent — does not invoke onChange — so this
+                // only syncs the picker UI without re-rendering the canvas.
                 app.unifiedColorPicker.setColor(colorMap[app.activeColorType]);
             }
         }
-
-        app.moduleColorCache = new Map();
-        app.moduleGradientCache = new Map();
-        app.globalModuleIndex = 0;
-        app.globalGradientIndex = 0;
     }
 
     /** Get gradient pair for a module in randomGradient multi-pair mode */

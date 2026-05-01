@@ -1469,16 +1469,38 @@ class VoidTypeface {
     }
 
     /**
-     * Экспорт в SVG
+     * Make sure the color state required for rendering exists, but never
+     * re-roll it on export. Re-rolling here would mutate settings,
+     * `gradientPairs` and the per-module caches, which leaks back into
+     * the canvas on the next render and visibly changes the picture
+     * (the bug we used to have when exporting in randomGradient mode).
      */
-    exportSVG() {
-        // Ensure color palette is generated if Color Chaos is enabled
-        const colorMode = this.getDerivedColorMode();
-        if (colorMode === 'randomChaos' || colorMode === 'randomGradient') {
+    _ensureColorStateForExport() {
+        const mode = this.getDerivedColorMode();
+        if (mode === 'randomChaos') {
             if (!this.colorPalette || this.colorPalette.length === 0) {
                 this.generateColorPalette();
             }
+            return;
         }
+        if (mode === 'randomGradient') {
+            const hasGradientDice =
+                !!this.settings.get('paletteDiceGradientStart') ||
+                !!this.settings.get('paletteDiceGradientEnd');
+            // Pairs are only meaningful when at least one of the gradient
+            // dice is on. Otherwise the renderer falls back to the static
+            // gradientStartColor / gradientEndColor — nothing to generate.
+            if (hasGradientDice && (!this.gradientPairs || this.gradientPairs.length === 0)) {
+                this.generateColorPalette();
+            }
+        }
+    }
+
+    /**
+     * Экспорт в SVG
+     */
+    exportSVG() {
+        this._ensureColorStateForExport();
         this.globalModuleIndex = 0;
         this.globalGradientIndex = 0;
         this.exporter.exportToSVG();
@@ -1488,13 +1510,7 @@ class VoidTypeface {
      * Копировать SVG в буфер обмена
      */
     async copySVG() {
-        // Ensure color palette is generated if Color Chaos is enabled
-        const copyColorMode = this.getDerivedColorMode();
-        if (copyColorMode === 'randomChaos' || copyColorMode === 'randomGradient') {
-            if (!this.colorPalette || this.colorPalette.length === 0) {
-                this.generateColorPalette();
-            }
-        }
+        this._ensureColorStateForExport();
         this.globalModuleIndex = 0;
         this.globalGradientIndex = 0;
         await this.exporter.copySVG();

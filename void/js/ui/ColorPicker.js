@@ -190,8 +190,13 @@ export class ColorPicker {
 
     /**
      * Set color from HEX
+     * @param {string} hex
+     * @param {Object} [options]
+     * @param {boolean} [options.silent=false] - When true, skip the onChange
+     *   callback. Use this for purely programmatic display updates so they
+     *   don't accidentally re-trigger renderer/state changes.
      */
-    setColorFromHex(hex) {
+    setColorFromHex(hex, options = {}) {
         this.isUpdating = true;
 
         const rgb = ColorUtils.hexToRgb(hex);
@@ -205,8 +210,9 @@ export class ColorPicker {
         // Update UI
         this.updateUI();
         
-        // Call callback
-        if (this.options.onChange) {
+        // Call callback (skip when called silently — e.g. when syncing the
+        // picker to externally changed settings)
+        if (!options.silent && this.options.onChange) {
             this.options.onChange(hex);
         }
 
@@ -355,9 +361,12 @@ export class ColorPicker {
     }
 
     /**
-     * Set color
+     * Set color programmatically (e.g. when syncing the picker to
+     * externally changed settings). Does NOT fire the onChange callback —
+     * callers are responsible for any side-effects (settings.set,
+     * updateRenderer, markAsChanged).
      */
     setColor(hex) {
-        this.setColorFromHex(hex);
+        this.setColorFromHex(hex, { silent: true });
     }
 }
