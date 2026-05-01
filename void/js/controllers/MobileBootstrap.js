@@ -5,7 +5,8 @@
  * - hides desktop panels and the Save/Delete preset bar,
  * - removes the PNG export button (desktop-only feature),
  * - enables a "renew" button for re-randomising,
- * - applies a performance-friendly random profile (applyMobileChaos),
+ * - applies a performance-friendly random profile + effect-dice roll (refreshMobileRandomLook),
+ *   including Alt Glyphs like desktop Randomize,
  * - sizes the module grid so the "DESK / TOP / ONLY" text fits.
  *
  * Listens to window resize: switches to desktop on widening.
@@ -65,14 +66,14 @@ export class MobileBootstrap {
                 if (this.app.renderer.clearAlternativeGlyphCache) {
                     this.app.renderer.clearAlternativeGlyphCache();
                 }
-                this.applyMobileChaos();
+                this.refreshMobileRandomLook();
                 this.calculateMobileModuleSize();
             });
         }
 
         this.app.settings.set('text', 'DESK\nTOP\nONLY');
 
-        this.applyMobileChaos();
+        this.refreshMobileRandomLook();
 
         // Touch: tap a letter to cycle its alternative
         const canvas = document.getElementById('mainCanvas');
@@ -116,10 +117,21 @@ export class MobileBootstrap {
     }
 
     /**
-     * Apply a safe, performance-friendly randomisation preset for mobile.
+     * Apply a safe, performance-friendly randomisation preset for mobile, then run
+     * one effect-dice roll (same logic as desktop Randomize) for flags that stay on.
      * Fixed 3-colour palette (white letters / black bg / grey grid).
-     * No Wobble, no Dashes, no Alt Glyphs, no per-module Full Chaos,
-     * no colour randomisation — all of which are expensive on weak hardware.
+     * Alt Glyphs: ◆ включён — на каждый Update подбрасывается включение и новый набор альтернатив.
+     * No Wobble, no Dashes, no per-module Full Chaos,
+     * no colour randomisation — heavier stuff stays off on weak hardware.
+     */
+    refreshMobileRandomLook() {
+        this.applyMobileChaos();
+        this.app.rollEffectRandomValues();
+    }
+
+    /**
+     * Baseline flags + colours for mobile random mode (before effect-dice roll).
+     * @see refreshMobileRandomLook
      */
     applyMobileChaos() {
         const s = this.app.settings;
@@ -152,8 +164,8 @@ export class MobileBootstrap {
         s.set('randomModeType', 'byType');
         s.set('randomizeChaosMode', false);
 
-        // off: alt-glyph cache lookup per letter
-        s.set('useAlternativesInRandom', false);
+        // On: участвует в рандоме; фактическое useAlternativesInRandom — после rollEffectRandomValues()
+        s.set('randomizeAltGlyphs', true);
 
         // cosmetic extras off
         s.set('roundedCaps', false);
@@ -161,7 +173,6 @@ export class MobileBootstrap {
         s.set('randomizeRoundedCaps', false);
         s.set('randomizeCloseEnds', false);
         s.set('randomizeDashChess', false);
-        s.set('randomizeAltGlyphs', false);
         s.set('randomizeShowGrid', false);
         s.set('randomizeShowJoints', false);
         s.set('randomizeShowFreeEndpoints', false);
