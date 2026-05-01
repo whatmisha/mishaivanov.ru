@@ -312,6 +312,29 @@ body {
     padding: 0 var(--spacing-3xl) var(--spacing-3xl);
 }
 
+.random-panel-actions__stretch {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.random-panel-actions__randomize {
+    flex: 0 1 auto;
+    min-width: 0;
+    padding-top: calc(var(--spacing-md) - 4px);
+    padding-bottom: calc(var(--spacing-md) - 4px);
+    padding-left: var(--spacing-md);
+    padding-right: var(--spacing-md);
+    white-space: nowrap;
+    /* Визуально «сжата» / вдавлена относительно соседних кнопок */
+    box-shadow:
+        inset 0 3px 5px rgba(0, 0, 0, 0.35),
+        inset 0 -1px 1px rgba(255, 255, 255, 0.05);
+}
+
+.random-panel-actions__randomize:hover:not(:disabled) {
+    box-shadow: none;
+}
+
 .random-panel-actions #resetAllDiceBtn {
     padding-left: var(--spacing-xl);
     padding-right: var(--spacing-xl);
@@ -1510,6 +1533,18 @@ input[name="textAlign"]:checked + .align-icon-btn {
     transform: none;
 }
 
+/* Temp: preset JSON dump — muted like Save preset (dark surface, not inverted white bar) */
+.btn-fixed.btn-fixed--muted,
+#exportJsonBtn {
+    background: var(--color-bg-panel);
+    color: var(--color-text);
+}
+
+.btn-fixed.btn-fixed--muted:hover:not(:disabled),
+#exportJsonBtn:hover:not(:disabled) {
+    background-color: #2a2a2a;
+}
+
 /* Apply/Close Buttons in modal panels */
 .btn-apply {
     padding: var(--spacing-sm) var(--spacing-2xl);
@@ -1950,6 +1985,10 @@ legend {
 
 .section-divider-header .section-toggle-label:has(input:checked) {
     color: var(--color-text);
+}
+
+.section-divider-header .section-toggle-label:has(input:checked):hover {
+    color: #fff;
 }
 
 /* Row of pill toggles (Grid / Joints / …) */
@@ -2614,7 +2653,7 @@ button.color-dot--expandable:focus-visible {
 
 .preset-dropdown-item-colors {
     display: inline-flex;
-    gap: 4px;
+    gap: 5px;
     margin-left: 8px;
     align-items: center;
     flex-shrink: 0;
@@ -2623,6 +2662,93 @@ button.color-dot--expandable:focus-visible {
 .preset-dropdown-item-colors span {
     font-size: 0.75rem;
     line-height: 1;
+}
+
+.preset-dropdown-color-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #000;
+    /* Тонкая обводка нужна, чтобы чёрные кружки не сливались с тёмным фоном */
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+}
+
+.preset-dropdown-color-dot--random {
+    background: conic-gradient(
+        from 0deg,
+        #ff5f6d,
+        #ffc371,
+        #c2e063,
+        #5ad1c8,
+        #6e8bff,
+        #c46bff,
+        #ff5f6d
+    );
+}
+
+.preset-dropdown-item-random {
+    margin-left: 2px;
+    color: var(--color-text-dim);
+    font-size: 0.75rem;
+    line-height: 1;
+    transform: translateY(-0.5px);
+}
+
+.preset-dropdown-item.selected .preset-dropdown-item-random,
+.preset-dropdown-item:hover .preset-dropdown-item-random {
+    color: var(--color-text-secondary);
+}
+
+/* Вспышки invert на панели Random (ритм задаёт JS — резкое переключение, без интерполяции). */
+.controls-panel-random.preset-random-attention-invert {
+    filter: invert(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .controls-panel-random.preset-random-attention-invert {
+        filter: none;
+    }
+
+    #renewRandomBtn.btn-randomize-attention-glare::after {
+        animation: none;
+    }
+}
+
+/* Лёгкий блик на Randomize после мигания invert (preset с рандомом). */
+#renewRandomBtn.btn-randomize-attention-glare {
+    position: relative;
+    overflow: hidden;
+}
+
+#renewRandomBtn.btn-randomize-attention-glare::after {
+    content: '';
+    position: absolute;
+    top: -15%;
+    left: -75%;
+    width: 62%;
+    height: 130%;
+    background: linear-gradient(
+        105deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.18) 35%,
+        rgba(255, 255, 255, 0.48) 50%,
+        rgba(255, 255, 255, 0.18) 65%,
+        transparent 100%
+    );
+    transform: skewX(-14deg);
+    pointer-events: none;
+    opacity: 1;
+    animation: btn-randomize-glare-slide 1.15s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes btn-randomize-glare-slide {
+    from {
+        transform: skewX(-14deg) translateX(-130%);
+    }
+    to {
+        transform: skewX(-14deg) translateX(320%);
+    }
 }
 
 .preset-dropdown-item-edit {
@@ -3162,6 +3288,7 @@ textarea::-moz-selection {
 .is-mobile #deletePresetBtn,
 .is-mobile #exportBtn,
 .is-mobile #exportPngBtn,
+.is-mobile #exportJsonBtn,
 .is-mobile #copyBtn {
     display: none !important;
 }

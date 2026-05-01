@@ -231,10 +231,10 @@ Code</textarea>
                                 <div class="control-group dice-slider-group" id="dashLengthControlGroup">
                                     <label for="dashLengthSlider">
                                         <span>Dash Length <span class="unit">mod</span> <button type="button" class="dice-btn dice-btn--diamond" id="dashLengthDiceBtn" data-param="dashLength" title="Add this parameter to random" aria-label="Toggle random range for Dash length"></button></span>
-                                        <input type="text" class="value-display" id="dashLengthValue" value="1.00">
+                                        <input type="text" class="value-display" id="dashLengthValue" value="0.50">
                                     </label>
                                     <div class="dice-single" id="dashLengthSingleWrap">
-                                        <input type="range" id="dashLengthSlider" min="0.01" max="8" value="1.00" step="0.01">
+                                        <input type="range" id="dashLengthSlider" min="0.01" max="8" value="0.5" step="0.01">
                                     </div>
                                     <div class="dice-range" id="dashLengthRangeWrap" style="display: none;">
                                         <div id="randomDashLengthRangeSlider" class="range-slider-container"></div>
@@ -283,9 +283,9 @@ Code</textarea>
                     </section>
                 </div>
                 <div class="random-panel-actions">
-                    <button type="button" class="btn-secondary" id="shuffleBtn" style="flex: 1;" title="Unpredictable result">Chaos</button>
-                    <button type="button" class="btn-secondary" id="renewRandomBtn" style="flex: 1;" title="Randomizes the parameters you selected">Randomize</button>
-                    <button type="button" class="btn-secondary" id="resetAllDiceBtn" style="flex: 1;" title="Reset to this preset’s default settings">↺</button>
+                    <button type="button" class="btn-secondary random-panel-actions__randomize" id="renewRandomBtn" title="Randomizes the parameters you selected">Randomize</button>
+                    <button type="button" class="btn-secondary random-panel-actions__stretch" id="shuffleBtn" title="Unpredictable result">Chaos</button>
+                    <button type="button" class="btn-secondary random-panel-actions__stretch" id="resetAllDiceBtn" title="Reset to this preset’s default settings">↺</button>
                 </div>
             </aside>
 
@@ -310,10 +310,10 @@ Code</textarea>
                         <div class="control-group dice-slider-group wobbly-slider" id="wobblyAmountControlGroup" data-tooltip="Wobble — how far strokes move off-grid (px)" data-tooltip-disabled="Turn on Wobble (● Wobble), or add Amount / Noise to Random (turn ◆ on for those sliders).">
                             <label for="wobblyAmountSlider">
                                 <span>Amount <span class="unit">px</span> <button type="button" class="dice-btn dice-btn--diamond" id="wobblyAmountDiceBtn" data-param="wobblyAmount" title="Add this parameter to random" aria-label="Toggle random range for Wobble amount"></button></span>
-                                <input type="text" class="value-display" id="wobblyAmountValue" value="3">
+                                <input type="text" class="value-display" id="wobblyAmountValue" value="4">
                             </label>
                             <div class="dice-single" id="wobblyAmountSingleWrap">
-                                <input type="range" id="wobblyAmountSlider" min="0" max="20" value="3" step="0.5">
+                                <input type="range" id="wobblyAmountSlider" min="0" max="20" value="4" step="0.5">
                             </div>
                             <div class="dice-range" id="wobblyAmountRangeWrap" style="display: none;">
                                 <div id="randomWobblyAmountRangeSlider" class="range-slider-container"></div>
@@ -575,6 +575,7 @@ Code</textarea>
 
     <!-- Bottom Action Buttons -->
     <nav class="bottom-buttons">
+        <button type="button" id="exportJsonBtn" class="btn-fixed btn-fixed--muted" style="display: none;" title="Сохранить настройки в JSON для папки presets (видимость: клавиша J)">JSON</button>
         <button class="btn-fixed" id="exportPngBtn" type="button">Export PNG</button>
         <button class="btn-fixed" id="copyBtn" type="button" title="Copies the SVG to the clipboard — paste it straight into Figma (or any app)">Copy SVG</button>
         <button class="btn-fixed" id="exportBtn" type="button">Export SVG ⌘E</button>

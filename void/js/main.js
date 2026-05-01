@@ -30,7 +30,7 @@ import { HistoryController } from './controllers/HistoryController.js';
 import { SlidersSetup } from './controllers/SlidersSetup.js';
 import { RandomPanelController } from './controllers/RandomPanelController.js';
 import { ColorController } from './controllers/ColorController.js';
-import { PresetsController } from './controllers/PresetsController.js';
+import { PresetsController, EXTRA_PRESET_SNAPSHOT_KEYS } from './controllers/PresetsController.js';
 
 class VoidTypeface {
     constructor() {
@@ -101,12 +101,12 @@ class VoidTypeface {
                 gradientEndColor: '#0000ff', // gradient end color
                 roundedCaps: false, // rounded line ends (Rounded)
                 closeEnds: false, // closing lines at ends in Stripes mode
-                dashLength: 1.00, // dash length for Dash mode (multiplier of stem)
+                dashLength: 0.5, // dash length for Dash mode (multiplier of stem)
                 gapLength: 1.50, // gap length for Dash mode (multiplier of stem)
                 dashChess: false, // chess pattern for Dash mode (alternating dash starts)
                 useAlternativesInRandom: false, // use alternative glyphs (auto-enabled on glyph click)
                 wobblyEnabled: false, // wobbly/jittery lines effect
-                wobblyAmount: 3, // wobbly displacement amount (px)
+                wobblyAmount: 4, // wobbly displacement amount (px)
                 wobblyFrequency: 0.1, // wobbly noise frequency/scale
                 currentMode: 'normal' // 'normal' or 'editor'
             },
@@ -176,8 +176,14 @@ class VoidTypeface {
         this.globalModuleIndex = 0;
         this.globalGradientIndex = 0;
         
+        /** Снимок состояния на момент открытия текущего пресета — для Reset (↺) после Chaos и т.п. */
+        this.presetSessionBaselineSnapshot = null;
+
         // Glyph Editor
         this.glyphEditor = null;
+
+        /** Кнопка экспорта JSON в нижней панели: по умолчанию скрыта, вкл./выкл. клавишей J */
+        this._exportJsonButtonVisible = false;
 
         // Render scheduling for performance optimization
         this.renderScheduled = false;
@@ -213,6 +219,12 @@ class VoidTypeface {
             this.activeInputTransactions = new Set();
             this.snapshotDebounceTimer = null;
             this.historyController = new HistoryController(this);
+
+            // Capture pristine settings BEFORE any DOM init and kick off seed-preset
+            // import in parallel — built-in presets shipped in /presets/*.json.
+            const pristineDefaults = JSON.parse(JSON.stringify(this.settings.values));
+            const seedsPromise = this.presetManager.loadSeedPresets(pristineDefaults);
+
             // On desktop initialize everything as usual
             this.initPanels();
             this.initSliders();
@@ -243,51 +255,67 @@ class VoidTypeface {
             
             this.setupChangeTracking();
             this.initSliderHistoryHandlers();
-            this.initPresets();
-            this.initExport();
-            this.initResize();
 
-            this.tooltipService = new TooltipService();
-            this.tooltipService.init();
-            
-            // Clear random values cache before first render
-            // to use correct values from settings
-            if (this.renderer && this.renderer.clearModuleTypeCache) {
-                this.renderer.clearModuleTypeCache();
-            }
-            
-            // Initialize color palette if Color Chaos is enabled
-            const initColorMode = this.getDerivedColorMode();
-            if (initColorMode === 'randomChaos' || initColorMode === 'randomGradient') {
-                this.generateColorPalette();
-            }
-            
-            // Initialize global module index counters
-            this.globalModuleIndex = 0;
-            this.globalGradientIndex = 0;
-            
-            // First render (with correct parameter calculation)
-            this.updateRenderer();
-            
-            // Complete initialization and update buttons
-            this.isInitializing = false;
-            this.hasUnsavedChanges = false; // Ensure no changes after initialization
-
-            // Записываем стартовый снэпшот в историю текущего пресета, если её ещё нет.
-            // (loadPreset во время init мог уже это сделать — saveInitialHistorySnapshot
-            // не дублирует одинаковое состояние благодаря compare-проверке.)
-            if (this.historyManager.history.length === 0) {
-                this.saveInitialHistorySnapshot(`init: ${this.currentPresetName || 'New'}`);
-            }
-            // Регистрируем активный менеджер в Map (на случай если init шёл без loadPreset)
-            if (this.currentPresetName) {
-                this.presetHistories.set(this.currentPresetName, this.historyManager);
-            }
-
-            if (this.currentPresetName === 'New') {
-                this.updateSaveDeleteButtons();
-            }
+            // Wait for seed presets to land in localStorage, then finish init
+            // (initPresets() reads the full preset list to populate the dropdown).
+            seedsPromise
+                .catch((e) => console.warn('[VoidTypeface] seed presets failed:', e))
+                .finally(() => this._finishDesktopInit());
         }
+    }
+
+    /**
+     * Tail of the desktop init sequence — runs after seed presets finish loading.
+     * Splits out so we can defer it on a Promise without hanging the rest of the
+     * sync DOM setup.
+     */
+    _finishDesktopInit() {
+        this.initPresets();
+        this.initExport();
+        this.initResize();
+
+        this.tooltipService = new TooltipService();
+        this.tooltipService.init();
+
+        // Clear random values cache before first render
+        // to use correct values from settings
+        if (this.renderer && this.renderer.clearModuleTypeCache) {
+            this.renderer.clearModuleTypeCache();
+        }
+
+        // Initialize color palette if Color Chaos is enabled
+        const initColorMode = this.getDerivedColorMode();
+        if (initColorMode === 'randomChaos' || initColorMode === 'randomGradient') {
+            this.generateColorPalette();
+        }
+
+        // Initialize global module index counters
+        this.globalModuleIndex = 0;
+        this.globalGradientIndex = 0;
+
+        // First render (with correct parameter calculation)
+        this.updateRenderer();
+
+        // Complete initialization and update buttons
+        this.isInitializing = false;
+        this.hasUnsavedChanges = false;
+
+        // Записываем стартовый снэпшот в историю текущего пресета, если её ещё нет.
+        // (loadPreset во время init мог уже это сделать — saveInitialHistorySnapshot
+        // не дублирует одинаковое состояние благодаря compare-проверке.)
+        if (this.historyManager.history.length === 0) {
+            this.saveInitialHistorySnapshot(`init: ${this.currentPresetName || 'New'}`);
+        }
+        // Регистрируем активный менеджер в Map (на случай если init шёл без loadPreset)
+        if (this.currentPresetName) {
+            this.presetHistories.set(this.currentPresetName, this.historyManager);
+        }
+
+        if (this.currentPresetName === 'New') {
+            this.updateSaveDeleteButtons();
+        }
+
+        this.presetSessionBaselineSnapshot = this.getStateSnapshot();
     }
 
     /**
@@ -433,7 +461,7 @@ class VoidTypeface {
     updatePresetList() { this._ensurePresetsController().updatePresetList(); }
     loadPreset(name, updateUI = true) { this._ensurePresetsController().loadPreset(name, updateUI); }
     saveCurrentPreset() { return this._ensurePresetsController().saveCurrentPreset(); }
-    collectPresetData() { return this._ensurePresetsController().collectPresetData(); }
+    collectPresetData(options) { return this._ensurePresetsController().collectPresetData(options); }
     generatePresetName() { return this._ensurePresetsController().generatePresetName(); }
     getDisplayName(fullName) { return this._ensurePresetsController().getDisplayName(fullName); }
     updateSaveDeleteButtons() { this._ensurePresetsController().updateSaveDeleteButtons(); }
@@ -717,7 +745,10 @@ class VoidTypeface {
         wobblyCheckbox.addEventListener('change', () => {
             const enabled = wobblyCheckbox.checked;
             this.settings.set('wobblyEnabled', enabled);
-            if (!enabled) {
+            if (enabled) {
+                this.settings.set('wobblyAmount', 4);
+                this.sliderController.setValue('wobblyAmountSlider', 4, false);
+            } else {
                 this.resetDiceForParam('wobblyAmount');
                 this.resetDiceForParam('wobblyFrequency');
                 this.updateRandomParamsList();
@@ -787,7 +818,7 @@ class VoidTypeface {
 
     /**
      * Apply default values for SD mode
-     * Lines: 3, Contrast: 0.5, Dash Length: 1, Gap Length: 1.5, Round: enabled, Close Ends: disabled
+     * Lines: 3, Contrast: 0.5, Dash Length: 0.5, Gap Length: 1.5, Round: enabled, Close Ends: disabled
      */
     applySDDefaults() {
         // Lines: 3
@@ -804,12 +835,12 @@ class VoidTypeface {
         if (strokeGapRatioValue) strokeGapRatioValue.value = '0.5';
         if (strokeGapRatioSlider) strokeGapRatioSlider.value = '0.5';
         
-        // Dash Length: 1
-        this.settings.set('dashLength', 1);
+        // Dash Length: 0.5
+        this.settings.set('dashLength', 0.5);
         const dashLengthValue = document.getElementById('dashLengthValue');
         const dashLengthSlider = document.getElementById('dashLengthSlider');
-        if (dashLengthValue) dashLengthValue.value = '1.00';
-        if (dashLengthSlider) dashLengthSlider.value = '1';
+        if (dashLengthValue) dashLengthValue.value = '0.50';
+        if (dashLengthSlider) dashLengthSlider.value = '0.5';
         
         // Gap Length: 1.5
         this.settings.set('gapLength', 1.5);
@@ -881,10 +912,10 @@ class VoidTypeface {
                 const enabled = dashEnabledCheckbox.checked;
                 this.settings.set('dashEnabled', enabled);
                 if (enabled) {
-                    // Apply defaults when first enabling Dashes
-                    this.settings.set('dashLength', 1.00);
+                    // Defaults when enabling Dashes
+                    this.settings.set('dashLength', 0.5);
                     this.settings.set('gapLength', 1.50);
-                    this.sliderController.setValue('dashLengthSlider', 1.00, false);
+                    this.sliderController.setValue('dashLengthSlider', 0.5, false);
                     this.sliderController.setValue('gapLengthSlider', 1.50, false);
                 } else {
                     // Reset dice for Dash Length and Gap Length
@@ -1169,16 +1200,50 @@ class VoidTypeface {
     }
 
     /**
+     * Кнопка JSON в нижней панели: видна только в normal desktop и если включено ⌨ J.
+     */
+    syncExportJsonButtonVisibility() {
+        const btn = document.getElementById('exportJsonBtn');
+        if (!btn) return;
+        const editor = (this.settings.get('currentMode') || 'normal') === 'editor';
+        const show = !this.isMobile && !editor && this._exportJsonButtonVisible;
+        btn.style.display = show ? 'inline-flex' : 'none';
+    }
+
+    /** Не обрабатывать J, когда пользователь что-то вводит или открыт dialog */
+    shouldIgnoreTypingShortcutFocus() {
+        const ae = document.activeElement;
+        if (!ae || ae === document.body || ae === document.documentElement) return false;
+        if (ae.isContentEditable) return true;
+        const t = ae.tagName;
+        if (t === 'TEXTAREA' || t === 'SELECT') return true;
+        if (t === 'INPUT') {
+            const type = (ae.type || '').toLowerCase();
+            return !['button', 'checkbox', 'radio', 'range', 'submit', 'reset'].includes(type);
+        }
+        if (ae.closest?.('dialog[open]')) return true;
+        return false;
+    }
+
+    /**
      * Initialize export
      */
     initExport() {
         const exportBtn = document.getElementById('exportBtn');
+        const exportJsonBtn = document.getElementById('exportJsonBtn');
         const exportPngBtn = document.getElementById('exportPngBtn');
         const copyBtn = document.getElementById('copyBtn');
-        
+
         exportBtn.addEventListener('click', () => {
             this.exportSVG();
         });
+
+        if (exportJsonBtn) {
+            exportJsonBtn.addEventListener('click', () => {
+                if ((this.settings.get('currentMode') || 'normal') === 'editor') return;
+                this.exportSettingsPresetJson();
+            });
+        }
 
         if (exportPngBtn) {
             exportPngBtn.addEventListener('click', () => {
@@ -1189,6 +1254,8 @@ class VoidTypeface {
         copyBtn.addEventListener('click', () => {
             this.copySVG();
         });
+
+        this.syncExportJsonButtonVisibility();
 
         // Shortcut ⌘E (Cmd on Mac, Ctrl on Windows/Linux)
         document.addEventListener('keydown', (e) => {
@@ -1213,7 +1280,73 @@ class VoidTypeface {
                     this.undo();
                 }
             }
+
+            // J — показать/скрыть кнопку экспорта JSON (без модификаторов)
+            if (
+                typeof e.key === 'string' &&
+                e.key.length === 1 &&
+                e.key.toLowerCase() === 'j' &&
+                !(e.metaKey || e.ctrlKey || e.altKey)
+            ) {
+                if (this.isMobile || (this.settings.get('currentMode') || 'normal') === 'editor') return;
+                if (this.shouldIgnoreTypingShortcutFocus()) return;
+                const btn = document.getElementById('exportJsonBtn');
+                if (!btn) return;
+                e.preventDefault();
+                this._exportJsonButtonVisible = !this._exportJsonButtonVisible;
+                this.syncExportJsonButtonVisibility();
+            }
         });
+    }
+
+    /**
+     * Скачать настройки как JSON для папки `presets/`:
+     * `{ name, settings }` и при необходимости снимок кэшей рендера
+     * (`alternativeGlyphCache` и др.) как в полном сохранении пресета.
+     */
+    exportSettingsPresetJson() {
+        const raw = this.collectPresetData();
+        const settingsKeys = Object.keys(this.settings.values);
+        const settings = {};
+        for (let i = 0; i < settingsKeys.length; i++) {
+            const k = settingsKeys[i];
+            if (Object.prototype.hasOwnProperty.call(raw, k)) {
+                settings[k] = raw[k];
+            }
+        }
+
+        let name = this.currentPresetName;
+        if (!name || name === 'New' || name === 'Unsaved') {
+            const line = ((this.settings.get('text') || '').trim().split(/\r?\n/)[0] || '').trim();
+            name = line.slice(0, 64) || 'Void preset';
+        }
+
+        let slug = name
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w\-]+/g, '');
+        if (!slug) slug = `void-preset-${Date.now()}`;
+
+        const payload = { name, settings };
+        for (const key of EXTRA_PRESET_SNAPSHOT_KEYS) {
+            const v = raw[key];
+            if (v === undefined || v === null) continue;
+            const emptyObj = typeof v === 'object' && !Array.isArray(v) && Object.keys(v).length === 0;
+            const emptyArr = Array.isArray(v) && v.length === 0;
+            if (emptyObj || emptyArr) continue;
+            payload[key] = JSON.parse(JSON.stringify(v));
+        }
+
+        const a = document.createElement('a');
+        a.download = `${slug.slice(0, 80)}.json`;
+        a.href = URL.createObjectURL(
+            new Blob([`${JSON.stringify(payload, null, 2)}\n`], { type: 'application/json' })
+        );
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(a.href);
     }
 
     /**
@@ -1283,7 +1416,7 @@ class VoidTypeface {
             roundedCaps: this.settings.get('roundedCaps') || false,
             closeEnds: this.settings.get('closeEnds') || false,
             dashEnabled: this.settings.get('dashEnabled') ?? false,
-            dashLength: this.settings.get('dashLength') ?? 1.00,
+            dashLength: this.settings.get('dashLength') ?? 0.5,
             gapLength: this.settings.get('gapLength') ?? 1.50,
             dashChess: this.settings.get('dashChess') || false,
             useAlternativesInRandom: this.settings.get('useAlternativesInRandom') || false,
@@ -1498,6 +1631,8 @@ class VoidTypeface {
             if (exportBtn) exportBtn.style.display = 'none';
             if (aboutVoidLink) aboutVoidLink.style.display = 'none';
             
+            this.syncExportJsonButtonVisibility();
+            
             // Show editor panel
             if (editorPanel) editorPanel.style.display = 'block';
             
@@ -1523,6 +1658,7 @@ class VoidTypeface {
             // Show presets and buttons
             if (presetDropdown) presetDropdown.style.display = 'flex';
             if (copyBtn) copyBtn.style.display = 'inline-flex';
+            this.syncExportJsonButtonVisibility();
             if (exportBtn) exportBtn.style.display = 'inline-flex';
             if (aboutVoidLink) aboutVoidLink.style.display = 'inline-flex';
             this.updateSaveDeleteButtons();

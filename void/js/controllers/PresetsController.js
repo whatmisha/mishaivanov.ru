@@ -13,6 +13,7 @@
 
 import { HistoryManager } from '../history/HistoryManager.js';
 import { HISTORY_MAX_SIZE } from '../config/timings.js';
+import { DICE_CONFIG, EFFECT_RANDOM_CONFIG } from '../config/randomConfig.js';
 
 export class PresetsController {
     constructor(app) {
@@ -30,7 +31,7 @@ export class PresetsController {
 
         const defaultPreset = app.presetManager.loadPreset('New');
         if (!defaultPreset) {
-            const presetData = this.collectPresetData();
+            const presetData = this.collectPresetData({ propagateSeeded: false });
             app.presetManager.savePreset('New', presetData);
         } else {
             if (defaultPreset.text === 'Void\nTypeface\ncoded') {
@@ -321,54 +322,219 @@ export class PresetsController {
     }
 
     /**
-     * If the preset (or current Unsaved state) has non-default colours,
-     * return `{ letterColor, bgColor, hasColorChaos }`. Otherwise null.
+     * Описывает цветовые индикаторы для строки в дропдауне:
+     *   { type: { kind, value }, bg: { kind, value } } | null
+     * `kind`:
+     *   'solid'    — value: hex
+     *   'gradient' — value: { start, end }
+     *   'random'   — value: null (рандомный из палитры)
+     *
+     * Возвращает null только если у пресета все цвета дефолтные И нет градиента / рандома —
+     * тогда индикаторы скрываются.
      */
     getPresetColors(presetName) {
         const app = this.app;
         const defaultLetterColor = '#ffffff';
         const defaultBgColor = '#000000';
 
-        if (presetName === 'Unsaved') {
-            const letterColor = this.normalizeColor(app.settings.get('letterColor'));
-            const bgColor = this.normalizeColor(app.settings.get('bgColor'));
-            const normalizedDefaultLetter = this.normalizeColor(defaultLetterColor);
-            const normalizedDefaultBg = this.normalizeColor(defaultBgColor);
+        const buildFrom = (data, derivedMode) => {
+            const letterColor = data.letterColor || defaultLetterColor;
+            const bgColor = data.bgColor || defaultBgColor;
+            const colorSource = data.colorSource || 'solid';
+            const mode = derivedMode || data.colorMode || 'manual';
 
-            const currentColorMode = app.getDerivedColorMode();
-            const hasColorChaos = currentColorMode === 'randomChaos' || currentColorMode === 'randomGradient';
+            // BG dot — отдельный канал: bgColor либо random, если палитра рулит фоном.
+            const bgRandom = !!data.paletteDiceBg && (
+                mode === 'randomChaos' || mode === 'randomGradient' || data.randomizePaletteColors === true
+            );
+            const bgDot = bgRandom
+                ? { kind: 'random', value: null }
+                : { kind: 'solid', value: bgColor };
 
-            if (letterColor !== normalizedDefaultLetter || bgColor !== normalizedDefaultBg) {
-                return {
-                    letterColor: app.settings.get('letterColor'),
-                    bgColor: app.settings.get('bgColor'),
-                    hasColorChaos
+            // Type dot — зависит от colorMode.
+            let typeDot;
+            if (mode === 'randomChaos' || mode === 'randomGradient') {
+                typeDot = { kind: 'random', value: null };
+            } else if (mode === 'gradient' || colorSource === 'gradient') {
+                typeDot = {
+                    kind: 'gradient',
+                    value: {
+                        start: data.gradientStartColor || '#ff0000',
+                        end: data.gradientEndColor || '#0000ff'
+                    }
                 };
+            } else {
+                typeDot = { kind: 'solid', value: letterColor };
             }
-            return null;
+
+            // Скрываем индикаторы только если всё дефолтное и нет градиента/рандома.
+            const isDefault =
+                typeDot.kind === 'solid' &&
+                bgDot.kind === 'solid' &&
+                this.normalizeColor(typeDot.value) === this.normalizeColor(defaultLetterColor) &&
+                this.normalizeColor(bgDot.value) === this.normalizeColor(defaultBgColor);
+            if (isDefault) return null;
+
+            return { type: typeDot, bg: bgDot };
+        };
+
+        if (presetName === 'Unsaved') {
+            const v = app.settings.values;
+            return buildFrom(v, app.getDerivedColorMode());
         }
 
         if (presetName === 'New') return null;
 
         const preset = app.presetManager.loadPreset(presetName);
         if (!preset) return null;
+        return buildFrom(preset, preset.colorMode);
+    }
 
-        const letterColor = this.normalizeColor(preset.letterColor || defaultLetterColor);
-        const bgColor = this.normalizeColor(preset.bgColor || defaultBgColor);
-        const normalizedDefaultLetter = this.normalizeColor(defaultLetterColor);
-        const normalizedDefaultBg = this.normalizeColor(defaultBgColor);
+    /**
+     * У пресета (или текущего Unsaved-состояния) включён хотя бы один параметр рандома (◇/◆).
+     * Используется для метки в дропдауне и пульсации панели Random.
+     */
+    presetHasRandom(presetName) {
+        const app = this.app;
+        if (presetName === 'New') return false;
+        if (presetName === 'Unsaved') return !!app.settings.get('isRandom');
+        const preset = app.presetManager.loadPreset(presetName);
+        return this.presetDataHasRandom(preset);
+    }
 
-        const presetColorMode = preset.colorMode || 'manual';
-        const hasColorChaos = presetColorMode === 'chaos' || presetColorMode === 'randomChaos';
-
-        if (letterColor !== normalizedDefaultLetter || bgColor !== normalizedDefaultBg) {
-            return {
-                letterColor: preset.letterColor || defaultLetterColor,
-                bgColor: preset.bgColor || defaultBgColor,
-                hasColorChaos
-            };
+    /**
+     * Создаёт цветной круглый индикатор для дропдауна.
+     * spec: { kind: 'solid'|'gradient'|'random', value: string | { start, end } | null }
+     */
+    buildColorDot(spec) {
+        const dot = document.createElement('span');
+        dot.className = 'preset-dropdown-color-dot';
+        if (!spec) return dot;
+        if (spec.kind === 'gradient' && spec.value) {
+            dot.classList.add('preset-dropdown-color-dot--gradient');
+            dot.style.background = `linear-gradient(135deg, ${spec.value.start}, ${spec.value.end})`;
+        } else if (spec.kind === 'random') {
+            dot.classList.add('preset-dropdown-color-dot--random');
+        } else {
+            dot.style.background = spec.value || '#000000';
         }
-        return null;
+        return dot;
+    }
+
+    _clearRandomAttentionTimers() {
+        if (this._randomAttentionTimers) {
+            for (let i = 0; i < this._randomAttentionTimers.length; i++) {
+                clearTimeout(this._randomAttentionTimers[i]);
+            }
+        }
+        this._randomAttentionTimers = [];
+
+        const glareBtn = document.getElementById('renewRandomBtn');
+        if (this._randomizeGlareEndHandler && glareBtn) {
+            glareBtn.removeEventListener('animationend', this._randomizeGlareEndHandler);
+        }
+        this._randomizeGlareEndHandler = null;
+        if (glareBtn) glareBtn.classList.remove('btn-randomize-attention-glare');
+    }
+
+    /**
+     * Ненавязчивый блик по кнопке Randomize после последовательности invert.
+     */
+    _runRandomizeButtonGlare(btn) {
+        if (!btn || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        if (this._randomizeGlareEndHandler) {
+            btn.removeEventListener('animationend', this._randomizeGlareEndHandler);
+            this._randomizeGlareEndHandler = null;
+        }
+        btn.classList.remove('btn-randomize-attention-glare');
+        // Перезапуск анимации
+        void btn.offsetWidth;
+        btn.classList.add('btn-randomize-attention-glare');
+
+        this._randomizeGlareEndHandler = (e) => {
+            if (e.animationName !== 'btn-randomize-glare-slide') return;
+            btn.classList.remove('btn-randomize-attention-glare');
+            btn.removeEventListener('animationend', this._randomizeGlareEndHandler);
+            this._randomizeGlareEndHandler = null;
+        };
+        btn.addEventListener('animationend', this._randomizeGlareEndHandler);
+    }
+
+    /**
+     * Резкие инверсии цветов панели Random: два мигания, пауза, два мигания (раз-два, раз-два).
+     * Переключение через класс — без интерполяции filter, в отличие от keyframes-анимации invert.
+     */
+    pulseRandomAttention() {
+        const panel = document.getElementById('randomPanel');
+        const randomizeBtn = document.getElementById('renewRandomBtn');
+        if (!panel) return;
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+        this._clearRandomAttentionTimers();
+
+        panel.classList.remove('preset-random-attention-invert');
+
+        const startDelayMs = 520;
+        const flashMs = 85;
+        const betweenPairsMs = 380;
+        const steps = [
+            { invert: true, ms: flashMs },
+            { invert: false, ms: flashMs },
+            { invert: true, ms: flashMs },
+            { invert: false, ms: flashMs },
+            { invert: false, ms: betweenPairsMs },
+            { invert: true, ms: flashMs },
+            { invert: false, ms: flashMs },
+            { invert: true, ms: flashMs },
+            { invert: false, ms: flashMs }
+        ];
+
+        let t = startDelayMs;
+        for (let i = 0; i < steps.length; i++) {
+            const { invert, ms } = steps[i];
+            const invertOn = invert;
+            const id = window.setTimeout(() => {
+                panel.classList.toggle('preset-random-attention-invert', invertOn);
+            }, t);
+            this._randomAttentionTimers.push(id);
+            t += ms;
+        }
+
+        const endId = window.setTimeout(() => {
+            panel.classList.remove('preset-random-attention-invert');
+            this._runRandomizeButtonGlare(randomizeBtn);
+            this._randomAttentionTimers = [];
+        }, t);
+        this._randomAttentionTimers.push(endId);
+    }
+
+    /** Проверяет «сырые» данные пресета на любые рандом-флаги. */
+    presetDataHasRandom(preset) {
+        if (!preset || typeof preset !== 'object') return false;
+        for (const cfg of Object.values(DICE_CONFIG)) {
+            if (preset[cfg.flag] === true) return true;
+        }
+        for (const cfg of Object.values(EFFECT_RANDOM_CONFIG)) {
+            if (preset[cfg.flag] === true) return true;
+        }
+        const paletteFlags = [
+            'paletteDiceLetter', 'paletteDiceBg', 'paletteDiceGrid',
+            'paletteDiceGradientStart', 'paletteDiceGradientEnd'
+        ];
+        for (const f of paletteFlags) if (preset[f] === true) return true;
+        return false;
+    }
+
+    /**
+     * Invert панели Random + блик на Randomize: только встроенные seed-пресеты
+     * (`seeded: true` задаёт loadSeedPresets) и только если в пресете есть рандом.
+     */
+    shouldPulseRandomTutorialOnLoad(preset) {
+        return (
+            !!(preset && preset.seeded === true) &&
+            this.presetDataHasRandom(preset)
+        );
     }
 
     /** Render the dropdown list of presets (+ Unsaved + delete-all). */
@@ -402,25 +568,24 @@ export class PresetsController {
             item.appendChild(nameSpan);
 
             const colors = this.getPresetColors(name);
-            if (colors) {
+            const hasRandom = this.presetHasRandom(name);
+            if (colors || hasRandom) {
                 const colorIndicators = document.createElement('span');
                 colorIndicators.className = 'preset-dropdown-item-colors';
 
-                const typeDot = document.createElement('span');
-                if (colors.hasColorChaos) {
-                    typeDot.textContent = '◎';
-                    typeDot.style.color = '#ffffff';
-                } else {
-                    typeDot.textContent = '●';
-                    typeDot.style.color = colors.letterColor;
+                if (colors) {
+                    colorIndicators.appendChild(this.buildColorDot(colors.type));
+                    colorIndicators.appendChild(this.buildColorDot(colors.bg));
                 }
 
-                const backDot = document.createElement('span');
-                backDot.textContent = '●';
-                backDot.style.color = colors.bgColor;
+                if (hasRandom) {
+                    const randomMark = document.createElement('span');
+                    randomMark.className = 'preset-dropdown-item-random';
+                    randomMark.textContent = '◇';
+                    randomMark.title = 'Содержит рандомные параметры';
+                    colorIndicators.appendChild(randomMark);
+                }
 
-                colorIndicators.appendChild(typeDot);
-                colorIndicators.appendChild(backDot);
                 nameSpan.appendChild(colorIndicators);
             }
 
@@ -487,6 +652,12 @@ export class PresetsController {
             }
             app.hasUnsavedChanges = app.historyManager.historyIndex > 0;
             this.updateSaveDeleteButtons();
+
+            const h0 = existingHistory.history[0]?.state;
+            app.presetSessionBaselineSnapshot = h0
+                ? JSON.parse(JSON.stringify(h0))
+                : app.getStateSnapshot();
+
             return;
         }
 
@@ -657,6 +828,16 @@ export class PresetsController {
 
         app.presetHistories.set(name, app.historyManager);
         this.updateSaveDeleteButtons();
+
+        if (updateUI) {
+            app.presetSessionBaselineSnapshot = app.getStateSnapshot();
+        }
+
+        // Подсветка Random-панели: только встроенные seed-пресеты из presets/ (+ рандом).
+        // `seeded: true` выставляет только loadSeedPresets; пользовательские save/new не получают флаг.
+        if (updateUI && !app.isInitializing && this.shouldPulseRandomTutorialOnLoad(preset)) {
+            this.pulseRandomAttention();
+        }
     }
 
     async saveCurrentPreset() {
@@ -675,7 +856,7 @@ export class PresetsController {
                 return this.saveCurrentPreset();
             }
 
-            const presetData = this.collectPresetData();
+            const presetData = this.collectPresetData({ propagateSeeded: false });
             result = app.presetManager.savePreset(name, presetData);
         } else {
             const action = await app.modalManager.confirmSaveOrNew(app.currentPresetName);
@@ -683,7 +864,7 @@ export class PresetsController {
 
             if (action === 'update') {
                 name = app.currentPresetName;
-                const presetData = this.collectPresetData();
+                const presetData = this.collectPresetData({ propagateSeeded: true });
                 result = app.presetManager.updatePreset(name, presetData);
             } else if (action === 'new') {
                 const defaultName = this.generatePresetName();
@@ -694,7 +875,7 @@ export class PresetsController {
                     await app.modalManager.showError(`Preset "${name}" already exists. Choose a different name.`);
                     return this.saveCurrentPreset();
                 }
-                const presetData = this.collectPresetData();
+                const presetData = this.collectPresetData({ propagateSeeded: false });
                 result = app.presetManager.savePreset(name, presetData);
             }
         }
@@ -719,7 +900,8 @@ export class PresetsController {
     }
 
     /** Snapshot current settings + renderer caches as a preset blob. */
-    collectPresetData() {
+    collectPresetData(options = {}) {
+        const { propagateSeeded = true } = options;
         const app = this.app;
         let alternativeGlyphCache = {};
         let moduleTypeCache = {};
@@ -735,7 +917,7 @@ export class PresetsController {
             moduleValueCache = JSON.parse(JSON.stringify(app.renderer.moduleValueCache));
         }
 
-        return {
+        const blob = {
             ...app.settings.values,
             alternativeGlyphCache,
             moduleTypeCache,
@@ -743,6 +925,19 @@ export class PresetsController {
             colorPalette: app.colorPalette ? [...app.colorPalette] : [],
             moduleColorCache: app.moduleColorCache ? Object.fromEntries(app.moduleColorCache) : {}
         };
+
+        if (
+            propagateSeeded &&
+            app.currentPresetName &&
+            app.currentPresetName !== 'New'
+        ) {
+            const existing = app.presetManager.loadPreset(app.currentPresetName);
+            if (existing && existing.seeded === true) {
+                blob.seeded = true;
+            }
+        }
+
+        return blob;
     }
 
     /** Auto-name new presets as "<text> <Mode>" with a counter on collision. */
@@ -861,3 +1056,15 @@ export class PresetsController {
         this.updatePresetList();
     }
 }
+
+/**
+ * Коллекционные части пресета (не входят в `settings.values`): кэши рендера и палитры.
+ * Допускаются в JSON из кнопки «json» и в seed-файлах `/presets/*.json`.
+ */
+export const EXTRA_PRESET_SNAPSHOT_KEYS = [
+    'alternativeGlyphCache',
+    'moduleTypeCache',
+    'moduleValueCache',
+    'colorPalette',
+    'moduleColorCache'
+];

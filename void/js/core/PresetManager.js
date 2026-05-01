@@ -3,6 +3,8 @@
  * Saves and loads parameter sets to/from localStorage
  */
 
+import { EXTRA_PRESET_SNAPSHOT_KEYS } from '../controllers/PresetsController.js';
+
 export class PresetManager {
     constructor(storageKey = 'voidTypefacePresets') {
         this.storageKey = storageKey;
@@ -180,6 +182,101 @@ export class PresetManager {
      */
     hasPreset(name) {
         return name in this.presets;
+    }
+
+    /**
+     * Bootstrap built-in (seed) presets shipped in /presets/*.json.
+     *
+     * Each browser imports a seed file ONCE: a list of seeded filenames is kept
+     * under `${storageKey}__seeded`. Subsequent loads skip already-seeded entries —
+     * so if a user deletes a built-in preset, it stays gone, and if they have a
+     * preset with the same name we don't overwrite it.
+     *
+     * @param {object|null} defaults — pristine `settings.values` snapshot used
+     *   as the base; seed JSON `settings` are spread on top to form the full
+     *   preset blob (this matches `collectPresetData()` shape).
+     * @param {string} basePath — prefix for fetch URLs (default: 'presets/').
+     */
+    async loadSeedPresets(defaults = null, basePath = 'presets/') {
+        const seededKey = `${this.storageKey}__seeded`;
+
+        let seeded = [];
+        try {
+            const raw = localStorage.getItem(seededKey);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) seeded = parsed;
+            }
+        } catch (_) { /* ignore corrupt marker */ }
+
+        let manifest;
+        try {
+            const res = await fetch(`${basePath}index.json`, { cache: 'no-cache' });
+            if (!res.ok) return;
+            manifest = await res.json();
+        } catch (_) {
+            // Site served from file:// or no manifest — silently skip.
+            return;
+        }
+
+        const files = Array.isArray(manifest?.presets) ? manifest.presets : [];
+        if (files.length === 0) return;
+
+        const base = defaults && typeof defaults === 'object' ? defaults : {};
+        let mutated = false;
+
+        const mergeSnapshotExtras = (target, seed) => {
+            for (const key of EXTRA_PRESET_SNAPSHOT_KEYS) {
+                if (seed[key] !== undefined && seed[key] !== null) {
+                    try {
+                        target[key] = JSON.parse(JSON.stringify(seed[key]));
+                    } catch (_) { /* skip corrupt */ }
+                }
+            }
+        };
+
+        for (const entry of files) {
+            const file = typeof entry === 'string' ? entry : entry?.file;
+            if (!file || typeof file !== 'string') continue;
+            if (seeded.includes(file)) continue;
+
+            try {
+                const r = await fetch(`${basePath}${file}`, { cache: 'no-cache' });
+                if (!r.ok) continue;
+                const seed = await r.json();
+                const name = (seed?.name || '').trim();
+                if (!name) continue;
+
+                // Mark as seeded regardless of whether we wrote it — that way a
+                // user-owned preset with the same name is preserved AND we don't
+                // keep retrying the same file.
+                if (!this.presets[name]) {
+                    const overrides = (seed.settings && typeof seed.settings === 'object')
+                        ? seed.settings
+                        : {};
+                    const preset = {
+                        ...base,
+                        ...overrides,
+                        createdAt: new Date().toISOString(),
+                        /** Встроенный JSON из `presets/` (manifest). Нужен для UX: анимация Random-панели только на seed-пресетах. Не копируется при Save as new. */
+                        seeded: true
+                    };
+                    mergeSnapshotExtras(preset, seed);
+                    this.presets[name] = preset;
+                }
+                seeded.push(file);
+                mutated = true;
+            } catch (e) {
+                console.warn(`[PresetManager] failed to seed preset "${file}":`, e);
+            }
+        }
+
+        if (mutated) {
+            this.savePresets();
+            try {
+                localStorage.setItem(seededKey, JSON.stringify(seeded));
+            } catch (_) { /* quota — ignore */ }
+        }
     }
 }
 

@@ -55,6 +55,7 @@ export class MobileBootstrap {
 
         // PNG export is desktop-only. SVG / Copy buttons are hidden via CSS.
         document.getElementById('exportPngBtn')?.remove();
+        document.getElementById('exportJsonBtn')?.remove();
 
         const renewBtn = document.getElementById('renewBtn');
         if (renewBtn) {

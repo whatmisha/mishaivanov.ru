@@ -471,7 +471,8 @@ export class RandomPanelController {
     }
 
     /**
-     * ↺ Reset: restore all settings to factory defaults (keep text)
+     * ↺ Reset: вернуть полное состояние к моменту открытия текущего пресета (снимок
+     * после load); текст в инпуте не трогаем. Если снимка нет — заводские defaults.
      */
     initResetAllDice() {
         const app = this.app;
@@ -480,7 +481,9 @@ export class RandomPanelController {
         btn.addEventListener('click', async () => {
             const confirmed = await app.modalManager.show({
                 title: 'Reset Random Settings?',
-                text: 'All randomization parameters will be cleared and settings will return to defaults.',
+                text: app.presetSessionBaselineSnapshot
+                    ? 'Everything will return to how it was when this preset was opened — including randomization flags and the look. Your text in the box is left as-is.'
+                    : 'All randomization parameters will be cleared and settings will return to defaults.',
                 buttons: [
                     { id: 'reset', text: 'Reset', type: 'danger' },
                     { id: 'cancel', text: 'No', type: 'ghost' }
@@ -491,55 +494,68 @@ export class RandomPanelController {
             app._flushAutoSnapshot();
             app.historyManager.beginAction('reset all', app.getStateSnapshot());
 
-            const defaults = {
-                stemMultiplier: 0.5, strokesNum: 1, strokeGapRatio: 1.0,
-                dashEnabled: false, dashLength: 1.00, gapLength: 1.50, dashChess: false,
-                wobblyEnabled: false, wobblyAmount: 3, wobblyFrequency: 0.1,
-                roundedCaps: false, closeEnds: false, useAlternativesInRandom: false,
-                showGrid: true, showJoints: false, showFreeEndpoints: false,
-                letterColor: '#ffffff', bgColor: '#000000', gridColor: '#333333',
-                colorMode: 'manual', colorSource: 'solid', randomModeType: 'byType',
-                paletteDiceLetter: false, paletteDiceBg: false, paletteDiceGrid: false,
-                paletteDiceGradientStart: false, paletteDiceGradientEnd: false,
-                colorChaosColors: 16, randomizePaletteColors: false,
-                randomPaletteColorsMin: 3, randomPaletteColorsMax: 32,
-                colorBW: false, randomizeColorBW: false,
-                gradientStartColor: '#ff0000', gradientEndColor: '#0000ff',
-                letterSpacingMultiplier: 1, lineHeightMultiplier: 1,
-                randomStemMin: 0.5, randomStemMax: 1.0,
-                randomStrokesMin: 1, randomStrokesMax: 4,
-                randomContrastMin: 0.1, randomContrastMax: 2.0,
-                randomDashLengthMin: 1.0, randomDashLengthMax: 1.5,
-                randomGapLengthMin: 1.0, randomGapLengthMax: 1.5,
-                randomWobblyAmountMin: 0, randomWobblyAmountMax: 10,
-                randomWobblyFrequencyMin: 0.05, randomWobblyFrequencyMax: 0.2,
-                randomizeRoundedCaps: false, randomizeCloseEnds: false, randomizeDashChess: false,
-                randomizeAltGlyphs: false, randomizeChaosMode: false, randomizeShowGrid: false,
-                randomizeShowJoints: false, randomizeShowFreeEndpoints: false,
-            };
+            const textNow = app.settings.get('text');
+            const baseline = app.presetSessionBaselineSnapshot
+                ? JSON.parse(JSON.stringify(app.presetSessionBaselineSnapshot))
+                : null;
 
-            // Reset dice UI first — otherwise restore-from-range average overwrites colorChaosColors (e.g. 17.5) after defaults
-            for (const param of Object.keys(DICE_CONFIG)) {
-                this.resetDiceForParam(param);
+            if (baseline) {
+                app.applyStateSnapshot(baseline);
+                app.settings.values.text = textNow;
+                app.updateUIFromSettings();
+                app.updateRenderer(true);
+            } else {
+                const defaults = {
+                    stemMultiplier: 0.5, strokesNum: 1, strokeGapRatio: 1.0,
+                    dashEnabled: false, dashLength: 0.5, gapLength: 1.50, dashChess: false,
+                    wobblyEnabled: false, wobblyAmount: 4, wobblyFrequency: 0.1,
+                    roundedCaps: false, closeEnds: false, useAlternativesInRandom: false,
+                    showGrid: true, showJoints: false, showFreeEndpoints: false,
+                    letterColor: '#ffffff', bgColor: '#000000', gridColor: '#333333',
+                    colorMode: 'manual', colorSource: 'solid', randomModeType: 'byType',
+                    paletteDiceLetter: false, paletteDiceBg: false, paletteDiceGrid: false,
+                    paletteDiceGradientStart: false, paletteDiceGradientEnd: false,
+                    colorChaosColors: 16, randomizePaletteColors: false,
+                    randomPaletteColorsMin: 3, randomPaletteColorsMax: 32,
+                    colorBW: false, randomizeColorBW: false,
+                    gradientStartColor: '#ff0000', gradientEndColor: '#0000ff',
+                    letterSpacingMultiplier: 1, lineHeightMultiplier: 1,
+                    randomStemMin: 0.5, randomStemMax: 1.0,
+                    randomStrokesMin: 1, randomStrokesMax: 4,
+                    randomContrastMin: 0.1, randomContrastMax: 2.0,
+                    randomDashLengthMin: 1.0, randomDashLengthMax: 1.5,
+                    randomGapLengthMin: 1.0, randomGapLengthMax: 1.5,
+                    randomWobblyAmountMin: 0, randomWobblyAmountMax: 10,
+                    randomWobblyFrequencyMin: 0.05, randomWobblyFrequencyMax: 0.2,
+                    randomizeRoundedCaps: false, randomizeCloseEnds: false, randomizeDashChess: false,
+                    randomizeAltGlyphs: false, randomizeChaosMode: false, randomizeShowGrid: false,
+                    randomizeShowJoints: false, randomizeShowFreeEndpoints: false,
+                };
+
+                for (const param of Object.keys(DICE_CONFIG)) {
+                    this.resetDiceForParam(param);
+                }
+
+                for (const [key, val] of Object.entries(defaults)) {
+                    app.settings.set(key, val);
+                }
+
+                app.sliderController.setValue('stemSlider', 0.5, false);
+                app.sliderController.setValue('strokesSlider', 1, false);
+                app.sliderController.setValue('strokeGapRatioSlider', 1.0, false);
+                app.sliderController.setValue('dashLengthSlider', 0.5, false);
+                app.sliderController.setValue('gapLengthSlider', 1.50, false);
+                app.sliderController.setValue('wobblyAmountSlider', 4, false);
+                app.sliderController.setValue('wobblyFrequencySlider', 0.1, false);
+                app.sliderController.setValue('paletteColorsSlider', app.settings.get('colorChaosColors') || 16, false);
             }
-
-            for (const [key, val] of Object.entries(defaults)) {
-                app.settings.set(key, val);
-            }
-
-            app.sliderController.setValue('stemSlider', 0.5, false);
-            app.sliderController.setValue('strokesSlider', 1, false);
-            app.sliderController.setValue('strokeGapRatioSlider', 1.0, false);
-            app.sliderController.setValue('dashLengthSlider', 1.00, false);
-            app.sliderController.setValue('gapLengthSlider', 1.50, false);
-            app.sliderController.setValue('wobblyAmountSlider', 3, false);
-            app.sliderController.setValue('wobblyFrequencySlider', 0.1, false);
-            app.sliderController.setValue('paletteColorsSlider', app.settings.get('colorChaosColors') || 16, false);
 
             app.updateColorModeUI();
 
-            if (app.renderer.clearModuleTypeCache) app.renderer.clearModuleTypeCache();
-            if (app.renderer.clearAlternativeGlyphCache) app.renderer.clearAlternativeGlyphCache();
+            if (!baseline) {
+                if (app.renderer.clearModuleTypeCache) app.renderer.clearModuleTypeCache();
+                if (app.renderer.clearAlternativeGlyphCache) app.renderer.clearAlternativeGlyphCache();
+            }
 
             app.updateStyleDimmedState();
             app.updateRoundedCapsVisibility();
