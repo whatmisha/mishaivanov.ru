@@ -34,8 +34,12 @@ export class PresetsController {
             const presetData = this.collectPresetData({ propagateSeeded: false });
             app.presetManager.savePreset('New', presetData);
         } else {
-            if (defaultPreset.text === 'Void\nTypeface\ncoded') {
-                defaultPreset.text = 'Void\nTypeface\nCode';
+            const newPresetDefaultText = 'Void\nTypeface\nTool';
+            if (
+                defaultPreset.text === 'Void\nTypeface\ncoded' ||
+                defaultPreset.text === 'Void\nTypeface\nCode'
+            ) {
+                defaultPreset.text = newPresetDefaultText;
                 app.presetManager.presets['New'] = defaultPreset;
                 app.presetManager.savePresets();
             }

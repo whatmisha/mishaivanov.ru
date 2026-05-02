@@ -42,7 +42,7 @@
     "randomStrokesMin": 1,
     "randomStrokesMax": 4,
     "randomContrastMin": 0.1,
-    "randomContrastMax": 2,
+    "randomContrastMax": 1,
     "randomDashLengthMin": 1,
     "randomDashLengthMax": 1.5,
     "randomGapLengthMin": 1,
