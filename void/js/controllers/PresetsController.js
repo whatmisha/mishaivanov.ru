@@ -123,19 +123,33 @@ export class PresetsController {
 
         // loadPreset will set currentPresetName and hasUnsavedChanges = false
         this.loadPreset('New', false);
-        presetDropdownText.textContent = 'New';
+        presetDropdownText.textContent = this.getPresetToggleButtonLabel();
 
         presetDropdownToggle.addEventListener('click', (e) => {
             e.stopPropagation();
-            const isExpanded = presetDropdownToggle.getAttribute('aria-expanded') === 'true';
-            presetDropdownToggle.setAttribute('aria-expanded', !isExpanded);
+            const wasExpanded = presetDropdownToggle.getAttribute('aria-expanded') === 'true';
+            presetDropdownToggle.setAttribute('aria-expanded', String(!wasExpanded));
             presetDropdownMenu.classList.toggle('active');
+            if (wasExpanded) {
+                this.resetPresetDropdownMenuScroll(presetDropdownMenu);
+            } else {
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => this.syncPresetDropdownMenuScroll());
+                });
+            }
         });
 
         document.addEventListener('click', (e) => {
             if (!presetDropdown.contains(e.target)) {
                 presetDropdownToggle.setAttribute('aria-expanded', 'false');
                 presetDropdownMenu.classList.remove('active');
+                this.resetPresetDropdownMenuScroll(presetDropdownMenu);
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (presetDropdownMenu.classList.contains('active')) {
+                this.syncPresetDropdownMenuScroll();
             }
         });
 
@@ -146,6 +160,7 @@ export class PresetsController {
                 const presetName = editBtn.dataset.preset;
                 presetDropdownToggle.setAttribute('aria-expanded', 'false');
                 presetDropdownMenu.classList.remove('active');
+                this.resetPresetDropdownMenuScroll(presetDropdownMenu);
 
                 const renameResult = await app.modalManager.promptRename(presetName);
                 if (renameResult.action === 'rename' && renameResult.newName) {
@@ -174,7 +189,7 @@ export class PresetsController {
                             if (app.currentPresetName === presetName) {
                                 this.loadPreset('New');
                             }
-                            presetDropdownText.textContent = 'New';
+                            presetDropdownText.textContent = this.getPresetToggleButtonLabel();
                             const defaultItem = Array.from(presetDropdownMenu.children).find(el => el.dataset.value === 'New');
                             if (defaultItem) {
                                 presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
@@ -193,6 +208,7 @@ export class PresetsController {
                 if (presetName === '__delete_all__') {
                     presetDropdownToggle.setAttribute('aria-expanded', 'false');
                     presetDropdownMenu.classList.remove('active');
+                    this.resetPresetDropdownMenuScroll(presetDropdownMenu);
 
                     const confirmed = await app.modalManager.confirmDeleteAll();
                     if (confirmed) {
@@ -207,7 +223,7 @@ export class PresetsController {
                         this.updatePresetList();
                         this.loadPreset('New');
 
-                        presetDropdownText.textContent = 'New';
+                        presetDropdownText.textContent = this.getPresetToggleButtonLabel();
                         const defaultItem = Array.from(presetDropdownMenu.children).find(el => el.dataset.value === 'New');
                         if (defaultItem) {
                             presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
@@ -230,12 +246,14 @@ export class PresetsController {
                         item.classList.add('selected');
                         presetDropdownToggle.setAttribute('aria-expanded', 'false');
                         presetDropdownMenu.classList.remove('active');
+                        this.resetPresetDropdownMenuScroll(presetDropdownMenu);
                         return;
                     }
 
                     if (app.hasUnsavedChanges) {
                         presetDropdownToggle.setAttribute('aria-expanded', 'false');
                         presetDropdownMenu.classList.remove('active');
+                        this.resetPresetDropdownMenuScroll(presetDropdownMenu);
 
                         const presetNameForDialog = app.currentPresetName === 'New' ? 'New' : app.currentPresetName;
                         const action = await app.modalManager.confirmUnsavedChanges(presetNameForDialog);
@@ -269,13 +287,13 @@ export class PresetsController {
 
                     this.loadPreset(presetName);
 
-                    const displayName = presetName === 'New' ? 'New' : this.getDisplayName(presetName);
-                    presetDropdownText.textContent = displayName;
+                    presetDropdownText.textContent = this.getPresetListItemLabel(presetName);
                     presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
                     item.classList.add('selected');
 
                     presetDropdownToggle.setAttribute('aria-expanded', 'false');
                     presetDropdownMenu.classList.remove('active');
+                    this.resetPresetDropdownMenuScroll(presetDropdownMenu);
 
                     if (wantsResetToNew) {
                         this.updatePresetList();
@@ -299,7 +317,7 @@ export class PresetsController {
                     this.updatePresetList();
                     this.loadPreset('New');
 
-                    presetDropdownText.textContent = 'New';
+                    presetDropdownText.textContent = this.getPresetToggleButtonLabel();
                     const defaultItem = Array.from(presetDropdownMenu.children).find(el => el.dataset.value === 'New');
                     if (defaultItem) {
                         presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
@@ -313,6 +331,50 @@ export class PresetsController {
             app.hasUnsavedChanges = false;
         }
         this.updateSaveDeleteButtons();
+    }
+
+    /** Сброс inline-ограничений высоты меню после закрытия. */
+    resetPresetDropdownMenuScroll(menu) {
+        if (!menu) return;
+        menu.style.maxHeight = '';
+        menu.style.overflowY = '';
+    }
+
+    /**
+     * Скролл только если список ниже нижней границы окна (cap 400px).
+     */
+    syncPresetDropdownMenuScroll() {
+        const menu = document.getElementById('presetDropdownMenu');
+        if (!menu || !menu.classList.contains('active')) return;
+        const bottomMargin = 16;
+        const maxCapPx = 400;
+        menu.style.maxHeight = '';
+        menu.style.overflowY = '';
+        const rect = menu.getBoundingClientRect();
+        const available = Math.max(120, window.innerHeight - rect.top - bottomMargin);
+        const cap = Math.min(maxCapPx, available);
+        const natural = menu.scrollHeight;
+        if (natural <= cap + 2) {
+            menu.style.maxHeight = 'none';
+            menu.style.overflowY = 'visible';
+        } else {
+            menu.style.maxHeight = `${cap}px`;
+            menu.style.overflowY = 'auto';
+        }
+    }
+
+    /** Текст строки в выпадающем списке (data-value без изменений). */
+    getPresetListItemLabel(internalName) {
+        if (internalName === 'New') return '+ New';
+        if (internalName === 'Unsaved') return 'Unsaved';
+        return this.getDisplayName(internalName);
+    }
+
+    /** Подпись на кнопке выбора пресета сверху. */
+    getPresetToggleButtonLabel() {
+        const app = this.app;
+        if (app.currentPresetName === 'New' && app.hasUnsavedChanges) return 'Unsaved';
+        return this.getPresetListItemLabel(app.currentPresetName || 'New');
     }
 
     /** Normalize hex string for comparison (lowercase, trim). */
@@ -329,8 +391,7 @@ export class PresetsController {
      *   'gradient' — value: { start, end }
      *   'random'   — value: null (рандомный из палитры)
      *
-     * Возвращает null только если у пресета все цвета дефолтные И нет градиента / рандома —
-     * тогда индикаторы скрываются.
+     * Возвращает null только для служебного пункта «New» (не пресет) — без кружков.
      */
     getPresetColors(presetName) {
         const app = this.app;
@@ -366,14 +427,6 @@ export class PresetsController {
             } else {
                 typeDot = { kind: 'solid', value: letterColor };
             }
-
-            // Скрываем индикаторы только если всё дефолтное и нет градиента/рандома.
-            const isDefault =
-                typeDot.kind === 'solid' &&
-                bgDot.kind === 'solid' &&
-                this.normalizeColor(typeDot.value) === this.normalizeColor(defaultLetterColor) &&
-                this.normalizeColor(bgDot.value) === this.normalizeColor(defaultBgColor);
-            if (isDefault) return null;
 
             return { type: typeDot, bg: bgDot };
         };
@@ -560,9 +613,8 @@ export class PresetsController {
             const nameSpan = document.createElement('span');
             nameSpan.className = 'preset-dropdown-item-name';
             let displayName;
-            if (name === 'New') displayName = 'New';
-            else if (name === 'Unsaved') displayName = 'Unsaved';
-            else displayName = this.getDisplayName(name);
+            if (name === 'Unsaved') displayName = 'Unsaved';
+            else displayName = this.getPresetListItemLabel(name);
             nameSpan.textContent = displayName;
             nameSpan.title = name;
             item.appendChild(nameSpan);
@@ -613,6 +665,11 @@ export class PresetsController {
             deleteAllItem.textContent = '× delete all';
             deleteAllItem.setAttribute('role', 'option');
             presetDropdownMenu.appendChild(deleteAllItem);
+        }
+
+        const menuEl = presetDropdownMenu;
+        if (menuEl?.classList.contains('active')) {
+            requestAnimationFrame(() => this.syncPresetDropdownMenuScroll());
         }
     }
 
@@ -884,10 +941,11 @@ export class PresetsController {
             this.updatePresetList();
             const presetDropdownText = document.querySelector('.preset-dropdown-text');
             const presetDropdownMenu = document.getElementById('presetDropdownMenu');
-            const displayName = name === 'New' ? 'New' : this.getDisplayName(name);
-            presetDropdownText.textContent = displayName;
             app.currentPresetName = name;
             app.hasUnsavedChanges = false;
+            if (presetDropdownText) {
+                presetDropdownText.textContent = this.getPresetToggleButtonLabel();
+            }
             this.updateSaveDeleteButtons();
             const newItem = Array.from(presetDropdownMenu.children).find(item => item.dataset.value === name);
             if (newItem) {
@@ -1025,14 +1083,7 @@ export class PresetsController {
         const hasCustomPresets = names.length > 1;
 
         if (presetDropdownText) {
-            if (isDefaultPreset && app.hasUnsavedChanges) {
-                presetDropdownText.textContent = 'Unsaved';
-            } else {
-                const displayName = app.currentPresetName === 'New'
-                    ? 'New'
-                    : this.getDisplayName(app.currentPresetName || 'New');
-                presetDropdownText.textContent = displayName;
-            }
+            presetDropdownText.textContent = this.getPresetToggleButtonLabel();
         }
 
         if (presetDropdownToggle) {

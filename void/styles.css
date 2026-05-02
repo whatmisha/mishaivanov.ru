@@ -2605,8 +2605,9 @@ button.color-dot--expandable:focus-visible {
     margin: 0;
     list-style: none;
     z-index: 10001;
-    max-height: 400px;
-    overflow-y: auto;
+    /* Высота и overflow подстраиваются в JS: скролл только если список ниже края окна */
+    max-height: none;
+    overflow-y: visible;
     opacity: 0;
     visibility: hidden;
     transform: translateY(-8px) scale(0.98);

@@ -1,6 +1,7 @@
 {
   "version": 1,
   "presets": [
+    "base.json",
     "max-chaos.json",
     "acid-ox.json",
     "bender.json",
