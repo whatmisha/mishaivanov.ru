@@ -258,7 +258,7 @@ export class PresetManager {
                         ...base,
                         ...overrides,
                         createdAt: new Date().toISOString(),
-                        /** Встроенный JSON из `presets/` (manifest). Нужен для UX: анимация Random-панели только на seed-пресетах. Не копируется при Save as new. */
+                        /** Shipped preset JSON manifest flag: enables Random onboarding pulse UX only for seed imports. Ignored when user duplicates via Save-as-new. */
                         seeded: true
                     };
                     mergeSnapshotExtras(preset, seed);

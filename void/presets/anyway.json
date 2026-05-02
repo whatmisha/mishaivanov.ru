@@ -1,10 +1,10 @@
 {
   "name": "Anyway",
   "settings": {
-    "stemMultiplier": 0.5,
-    "moduleSize": 24,
+    "stemMultiplier": 0.75,
+    "moduleSize": 18,
     "letterSpacingMultiplier": 1,
-    "lineHeightMultiplier": 1,
+    "lineHeightMultiplier": 2,
     "strokesNum": 1,
     "strokeGapRatio": 1,
     "dashEnabled": false,
@@ -16,7 +16,7 @@
     "showGrid": true,
     "showJoints": false,
     "showFreeEndpoints": false,
-    "randomizeStem": true,
+    "randomizeStem": false,
     "randomizeStrokes": true,
     "randomizeContrast": true,
     "randomizeDashLength": false,
@@ -73,7 +73,85 @@
     "wobblyFrequency": 0.1,
     "currentMode": "normal"
   },
-  "alternativeGlyphCache": {},
-  "moduleTypeCache": {},
-  "moduleValueCache": {}
+  "alternativeGlyphCache": {
+    "0_0": 2,
+    "0_1": 0,
+    "0_2": 7,
+    "0_4": 0,
+    "0_5": 4,
+    "0_6": 7,
+    "1_0": 0,
+    "1_1": 11,
+    "1_2": 1,
+    "1_4": 4,
+    "1_5": 13,
+    "1_6": 3,
+    "1_8": 10,
+    "1_9": 5,
+    "1_10": 7,
+    "2_0": 0,
+    "2_1": 8,
+    "2_2": 5,
+    "2_4": 2,
+    "2_5": 2,
+    "2_6": 0
+  },
+  "moduleTypeCache": {
+    "R": {
+      "stem": 27,
+      "strokesNum": 3,
+      "strokeGapRatio": 0.483986732502134,
+      "dashLength": 0.5,
+      "gapLength": 1.5,
+      "useDash": false
+    },
+    "E": {
+      "stem": 27,
+      "strokesNum": 4,
+      "strokeGapRatio": 0.8025392458354283,
+      "dashLength": 0.5,
+      "gapLength": 1.5,
+      "useDash": false
+    },
+    "S": {
+      "stem": 27,
+      "strokesNum": 1,
+      "strokeGapRatio": 0.7387412667634157,
+      "dashLength": 0.5,
+      "gapLength": 1.5,
+      "useDash": false
+    },
+    "B": {
+      "stem": 27,
+      "strokesNum": 2,
+      "strokeGapRatio": 0.7760240651437845,
+      "dashLength": 0.5,
+      "gapLength": 1.5,
+      "useDash": false
+    },
+    "L": {
+      "stem": 27,
+      "strokesNum": 2,
+      "strokeGapRatio": 0.5804848947808824,
+      "dashLength": 0.5,
+      "gapLength": 1.5,
+      "useDash": false
+    },
+    "J": {
+      "stem": 27,
+      "strokesNum": 2,
+      "strokeGapRatio": 0.6214169629717264,
+      "dashLength": 0.5,
+      "gapLength": 1.5,
+      "useDash": false
+    },
+    "C": {
+      "stem": 27,
+      "strokesNum": 2,
+      "strokeGapRatio": 0.5384546629691492,
+      "dashLength": 0.5,
+      "gapLength": 1.5,
+      "useDash": false
+    }
+  }
 }

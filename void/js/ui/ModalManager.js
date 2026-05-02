@@ -1,6 +1,5 @@
 /**
- * ModalManager - управление модальными окнами
- * Использует HTML <dialog> элемент
+ * ModalManager — native `<dialog>` host for preset prompts/notifications.
  */
 
 export class ModalManager {

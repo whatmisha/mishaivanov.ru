@@ -176,13 +176,13 @@ class VoidTypeface {
         this.globalModuleIndex = 0;
         this.globalGradientIndex = 0;
         
-        /** Снимок состояния на момент открытия текущего пресета — для Reset (↺) после Chaos и т.п. */
+        /** Snapshot of state when the current preset was opened — for Reset (↺) after Chaos, etc. */
         this.presetSessionBaselineSnapshot = null;
 
         // Glyph Editor
         this.glyphEditor = null;
 
-        /** Кнопка экспорта JSON в нижней панели: по умолчанию скрыта, вкл./выкл. клавишей J */
+        /** Bottom-bar JSON export button: hidden by default; toggled with the J key */
         this._exportJsonButtonVisible = false;
 
         // Render scheduling for performance optimization
@@ -211,7 +211,7 @@ class VoidTypeface {
             this.hasUnsavedChanges = false;
             this.isInitializing = true;
 
-            // Undo/Redo: per-preset history. historyManager — текущий менеджер активного пресета.
+            // Undo/Redo: per-preset history. historyManager is the HistoryManager for the active preset.
             this.presetHistories = new Map();
             this.historyManager = new HistoryManager({ maxSize: HISTORY_MAX_SIZE });
             this.isRestoringState = false;
@@ -300,13 +300,13 @@ class VoidTypeface {
         this.isInitializing = false;
         this.hasUnsavedChanges = false;
 
-        // Записываем стартовый снэпшот в историю текущего пресета, если её ещё нет.
-        // (loadPreset во время init мог уже это сделать — saveInitialHistorySnapshot
-        // не дублирует одинаковое состояние благодаря compare-проверке.)
+        // Seed the active preset history with an initial snapshot if empty.
+        // (loadPreset during init may have done this — saveInitialHistorySnapshot
+        // skips duplicates via equality checks.)
         if (this.historyManager.history.length === 0) {
             this.saveInitialHistorySnapshot(`init: ${this.currentPresetName || 'New'}`);
         }
-        // Регистрируем активный менеджер в Map (на случай если init шёл без loadPreset)
+        // Register the active history manager on the preset map (e.g. if init skipped loadPreset)
         if (this.currentPresetName) {
             this.presetHistories.set(this.currentPresetName, this.historyManager);
         }
@@ -467,7 +467,7 @@ class VoidTypeface {
     updateSaveDeleteButtons() { this._ensurePresetsController().updateSaveDeleteButtons(); }
 
     /**
-     * Инициализация color pickers
+     * Initialize color pickers
      */
     /** Map of color types → {setting, dotId, hexId, itemId, hsbSlotId} */
     get colorTypeMap() {
@@ -537,7 +537,7 @@ class VoidTypeface {
 
 
     /**
-     * Инициализация управления альтернативными глифами
+     * Initialize alternative-glyphs behaviour
      */
     initAlternativeGlyphs() {
         const alternativeGlyphsCheckbox = document.getElementById('alternativeGlyphsCheckbox');
@@ -665,8 +665,8 @@ class VoidTypeface {
 
 
     /**
-     * Инициализация тогла Rounded
-     * Round и Close Ends работают независимо друг от друга
+     * Initialize Rounded Caps toggle.
+     * Rounded and Close Ends are independent of each other.
      */
     initRoundedCapsToggle() {
         const roundedCapsCheckbox = document.getElementById('roundedCapsCheckbox');
@@ -697,8 +697,8 @@ class VoidTypeface {
     }
 
     /**
-     * Инициализация тогла Close Ends
-     * Round и Close Ends работают независимо друг от друга
+     * Initialize Close Ends toggle.
+     * Rounded and Close Ends are independent of each other.
      */
     initCloseEndsToggle() {
         const closeEndsCheckbox = document.getElementById('closeEndsCheckbox');
@@ -716,7 +716,7 @@ class VoidTypeface {
     }
 
     /**
-     * Инициализация тогла Dash Chess
+     * Initialise Chess Order (staggered dash phase) toggle
      */
     initDashChessToggle() {
         const dashChessCheckbox = document.getElementById('dashChessCheckboxPD');
@@ -781,7 +781,7 @@ class VoidTypeface {
     }
 
     /**
-     * Обновить видимость Rounded (для стилей Solid, Stripes и Dash)
+     * Update Rounded / Close Ends / Chess dimming for Solid, Stripes, and Dash styles
      */
     updateRoundedCapsVisibility() {
         const multiLine = this.linesAllowMultiLineForStyleUI();
@@ -1200,7 +1200,7 @@ class VoidTypeface {
     }
 
     /**
-     * Кнопка JSON в нижней панели: видна только в normal desktop и если включено ⌨ J.
+     * Bottom JSON button: desktop normal mode only, visible when ⌨ J has revealed it.
      */
     syncExportJsonButtonVisibility() {
         const btn = document.getElementById('exportJsonBtn');
@@ -1210,7 +1210,7 @@ class VoidTypeface {
         btn.style.display = show ? 'inline-flex' : 'none';
     }
 
-    /** Не обрабатывать J, когда пользователь что-то вводит или открыт dialog */
+    /** Ignore bare J while typing/focusing inputs or when a <dialog> is open */
     shouldIgnoreTypingShortcutFocus() {
         const ae = document.activeElement;
         if (!ae || ae === document.body || ae === document.documentElement) return false;
@@ -1269,7 +1269,7 @@ class VoidTypeface {
             }
 
             // Cmd/Ctrl+Z — Undo, Cmd/Ctrl+Shift+Z — Redo
-            // toLowerCase т.к. при зажатом Shift e.key может быть 'Z'
+            // Need toLowerCase: with Shift held, e.key can be uppercase 'Z'
             if ((e.metaKey || e.ctrlKey) && typeof e.key === 'string' && e.key.toLowerCase() === 'z') {
                 const currentMode = this.settings.get('currentMode') || 'normal';
                 if (currentMode === 'editor') return;
@@ -1281,7 +1281,7 @@ class VoidTypeface {
                 }
             }
 
-            // J — показать/скрыть кнопку экспорта JSON (без модификаторов)
+            // J — toggle JSON export button visibility (no modifiers)
             if (
                 typeof e.key === 'string' &&
                 e.key.length === 1 &&
@@ -1300,9 +1300,9 @@ class VoidTypeface {
     }
 
     /**
-     * Скачать настройки как JSON для папки `presets/`:
-     * `{ name, settings }` и при необходимости снимок кэшей рендера
-     * (`alternativeGlyphCache` и др.) как в полном сохранении пресета.
+     * Download settings JSON for manually placing in `presets/`:
+     * `{ name, settings }` plus, when relevant, renderer cache snapshots such as
+     * `alternativeGlyphCache` — same shape as full preset saves.
      */
     exportSettingsPresetJson() {
         const raw = this.collectPresetData();
@@ -1497,7 +1497,7 @@ class VoidTypeface {
     }
 
     /**
-     * Экспорт в SVG
+     * Export SVG
      */
     exportSVG() {
         this._ensureColorStateForExport();
@@ -1507,7 +1507,7 @@ class VoidTypeface {
     }
 
     /**
-     * Копировать SVG в буфер обмена
+     * Copy SVG markup to clipboard
      */
     async copySVG() {
         this._ensureColorStateForExport();
@@ -1517,7 +1517,7 @@ class VoidTypeface {
     }
 
     /**
-     * Экспорт PNG размером с видимую область окна (viewport): фон страницы + main canvas в его позиции.
+     * Export PNG scaled to browser viewport — page backdrop plus main canvas positioned in the viewport.
      */
     exportViewportPng() {
         const canvas = this.renderer?.canvas;
@@ -1705,7 +1705,7 @@ class VoidTypeface {
     }
     
     /**
-     * Инициализация редактора глифов
+     * Initialize Glyph Editor subsystem
      */
     initGlyphEditor() {
         const canvas = document.getElementById('mainCanvas');

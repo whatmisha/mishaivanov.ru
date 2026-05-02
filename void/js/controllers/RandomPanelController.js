@@ -471,8 +471,8 @@ export class RandomPanelController {
     }
 
     /**
-     * ↺ Reset: вернуть полное состояние к моменту открытия текущего пресета (снимок
-     * после load); текст в инпуте не трогаем. Если снимка нет — заводские defaults.
+     * ↺ Reset: restore baseline snapshot taken when preset opened (`presetSessionBaselineSnapshot`).
+     * Keeps user's current textarea string by re-applying after `applyStateSnapshot`. Defaults if no baseline.
      */
     initResetAllDice() {
         const app = this.app;

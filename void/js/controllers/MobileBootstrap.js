@@ -120,7 +120,7 @@ export class MobileBootstrap {
      * Apply a safe, performance-friendly randomisation preset for mobile, then run
      * one effect-dice roll (same logic as desktop Randomize) for flags that stay on.
      * Fixed 3-colour palette (white letters / black bg / grey grid).
-     * Alt Glyphs: ◆ включён — на каждый Update подбрасывается включение и новый набор альтернатив.
+     * Alt glyphs dice on: each Randomize recomputes whether alternatives participate and reshuffles selections.
      * No Wobble, no Dashes, no per-module Full Chaos,
      * no colour randomisation — heavier stuff stays off on weak hardware.
      */
@@ -164,7 +164,7 @@ export class MobileBootstrap {
         s.set('randomModeType', 'byType');
         s.set('randomizeChaosMode', false);
 
-        // On: участвует в рандоме; фактическое useAlternativesInRandom — после rollEffectRandomValues()
+        // Dice on: participates in Randomize; canonical `useAlternativesInRandom` is applied after rollEffectRandomValues().
         s.set('randomizeAltGlyphs', true);
 
         // cosmetic extras off

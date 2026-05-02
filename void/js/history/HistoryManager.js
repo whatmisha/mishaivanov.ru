@@ -1,30 +1,30 @@
 /**
- * HistoryManager — управление историей изменений (undo/redo)
+ * HistoryManager — undo/redo stacks for app state.
  *
- * Snapshot-based: хранит полные снэпшоты состояния. Поддерживает транзакции
- * для группировки серии изменений в одно действие (например, drag слайдера).
+ * Snapshot-based: keeps full deep-cloned state payloads. Supports transactions
+ * grouping several logical updates (e.g., slider drags) into one undo step.
  *
- * Базовый сценарий:
+ * Basic flow:
  *   const history = new HistoryManager({ maxSize: 50 });
  *
- *   // Мгновенное действие
+ *   // Instant action
  *   history.saveSnapshot(getState(), 'toggle grid');
  *
- *   // Транзакция (drag, серия set-ов)
+ *   // Transaction (drag burst, multiple setters)
  *   history.beginAction('adjust stem', getState());
- *   // ... изменения состояния ...
+ *   // ... mutate state ...
  *   history.commitAction(getState());
  *
- *   // Откат
+ *   // Roll back
  *   const prev = history.undo();
  *   if (prev) applyState(prev);
  */
 export class HistoryManager {
     /**
      * @param {Object} [options]
-     * @param {number} [options.maxSize=50] — максимальный размер истории
-     * @param {Function} [options.stateSerializer] — кастомный сериализатор состояния
-     * @param {Function} [options.stateComparator] — кастомная функция сравнения
+     * @param {number} [options.maxSize=50] — max stack depth
+     * @param {Function} [options.stateSerializer] — custom state serializer
+     * @param {Function} [options.stateComparator] — custom equality check
      */
     constructor(options = {}) {
         this.maxSize = options.maxSize || 50;
@@ -46,9 +46,9 @@ export class HistoryManager {
     }
 
     /**
-     * Начать транзакцию: сохраняет состояние "до"
-     * @param {string} [label] — метка для отладки
-     * @param {Object} [currentState] — состояние "до"
+     * Start a transaction capturing the "before" snapshot.
+     * @param {string} [label] — debug label
+     * @param {Object} [currentState] — pre-mutation state
      */
     beginAction(label = '', currentState = null) {
         if (this.isRestoring) return;
@@ -67,9 +67,9 @@ export class HistoryManager {
     }
 
     /**
-     * Завершить транзакцию. Если состояние не изменилось — ничего не пишет.
+     * Finish a transaction — no-op append if before/after snapshots match.
      * @param {Object} afterState
-     * @returns {boolean} true если запись произошла
+     * @returns {boolean} true when a history entry was appended
      */
     commitAction(afterState) {
         if (this.isRestoring) return false;
@@ -109,17 +109,17 @@ export class HistoryManager {
     }
 
     /**
-     * Отменить текущую транзакцию без записи в историю
+     * Abort the in-flight transaction without mutating history.
      */
     cancelAction() {
         this.currentTransaction = null;
     }
 
     /**
-     * Сохранить снэпшот без транзакции (для мгновенных действий)
+     * Push a standalone snapshot (instant actions).
      * @param {Object} state
      * @param {string} [label]
-     * @returns {boolean} true если запись произошла
+     * @returns {boolean} true when appended
      */
     saveSnapshot(state, label = '') {
         if (this.isRestoring) return false;
@@ -171,7 +171,7 @@ export class HistoryManager {
     }
 
     /**
-     * Откат к предыдущему состоянию
+     * Navigate one step backward in the undo stack.
      * @returns {Object|null}
      */
     undo() {
@@ -188,7 +188,7 @@ export class HistoryManager {
     }
 
     /**
-     * Повтор отменённого действия
+     * Reapply the next forward snapshot after undo().
      * @returns {Object|null}
      */
     redo() {
@@ -228,7 +228,7 @@ export class HistoryManager {
     }
 
     /**
-     * Блокирует запись в историю на время восстановления состояния
+     * Suppress history writes while hydrating external snapshots.
      * @param {boolean} value
      */
     setRestoring(value) {
@@ -236,7 +236,7 @@ export class HistoryManager {
     }
 
     /**
-     * Диагностика
+     * Debug summary of stack health.
      * @returns {Object}
      */
     getHistoryInfo() {

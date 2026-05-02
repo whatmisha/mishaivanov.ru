@@ -357,7 +357,7 @@ export class PresetsController {
         this.updateSaveDeleteButtons();
     }
 
-    /** Сброс inline-ограничений высоты меню после закрытия. */
+    /** Clears preset menu inline height clamps after closing. */
     resetPresetDropdownMenuScroll(menu) {
         if (!menu) return;
         menu.style.maxHeight = '';
@@ -366,15 +366,15 @@ export class PresetsController {
     }
 
     /**
-     * Полоса прокрутки только когда контент реально не помещается по высоте
-     * между верхом меню и нижним краем окна — без жёсткого cap.
+     * Scrollbar appears only when the list truly overflows vertically
+     * between the menu top and the viewport bottom — no hardcoded max height cap.
      */
     syncPresetDropdownMenuScroll() {
         const menu = document.getElementById('presetDropdownMenu');
         if (!menu || !menu.classList.contains('active')) return;
         const bottomMargin = 16;
 
-        // Сначала сбрасываем любые предыдущие ограничения, чтобы измерить реальный scrollHeight
+        // Drop previous height clamps first so scrollHeight reflects natural content
         menu.style.maxHeight = '';
         menu.style.overflowY = '';
         menu.classList.remove('preset-dropdown-menu--scrollable');
@@ -384,24 +384,24 @@ export class PresetsController {
         const viewportRoom = Math.max(120, window.innerHeight - rect.top - bottomMargin);
 
         if (contentHeight <= viewportRoom + 1) {
-            // Список помещается — никакого ограничения, никакой полосы прокрутки
+            // Fits: no scrollbar
             menu.style.overflowY = 'hidden';
         } else {
-            // Список выходит за нижний край окна — ограничиваем и включаем скролл
+            // Overflows viewport bottom — clamp height and scroll
             menu.style.maxHeight = `${viewportRoom}px`;
             menu.style.overflowY = 'auto';
             menu.classList.add('preset-dropdown-menu--scrollable');
         }
     }
 
-    /** Текст строки в выпадающем списке (data-value без изменений). */
+    /** Row label shown in preset dropdown (`data-value` stays internal). */
     getPresetListItemLabel(internalName) {
         if (internalName === 'New') return '+ New';
         if (internalName === 'Unsaved') return 'Unsaved';
         return this.getDisplayName(internalName);
     }
 
-    /** Подпись на кнопке выбора пресета сверху. */
+    /** Label on preset dropdown toggle button. */
     getPresetToggleButtonLabel() {
         const app = this.app;
         if (app.currentPresetName === 'New' && app.hasUnsavedChanges) return 'Unsaved';
@@ -414,7 +414,7 @@ export class PresetsController {
         return color.toLowerCase().trim();
     }
 
-    /** Два описания дают один и тот же визуальный кружок (без дублирования type/bg). */
+    /** True when two dot specs produce the same visual (dedupe type vs bg). */
     presetColorDotsEqual(a, b) {
         if (!a || !b) return false;
         if (a.kind !== b.kind) return false;
@@ -432,14 +432,14 @@ export class PresetsController {
     }
 
     /**
-     * Описывает цветовые индикаторы для строки в дропдауне:
+     * Color indicator specs for preset dropdown rows:
      *   { type: { kind, value }, bg: { kind, value } } | null
      * `kind`:
      *   'solid'    — value: hex
      *   'gradient' — value: { start, end }
-     *   'random'   — value: null (рандомный из палитры)
+     *   'random'   — value: null (randomised from palette)
      *
-     * Возвращает null только для служебного пункта «New» (не пресет) — без кружков.
+     * Returns null for the non-preset sentinel `New` (no dots rendered).
      */
     getPresetColors(presetName) {
         const app = this.app;
@@ -452,7 +452,7 @@ export class PresetsController {
             const colorSource = data.colorSource || 'solid';
             const mode = derivedMode || data.colorMode || 'manual';
 
-            // BG dot — отдельный канал: bgColor либо random, если палитра рулит фоном.
+            // BG dot: solid bg color vs random driven by palette dice
             const bgRandom = !!data.paletteDiceBg && (
                 mode === 'randomChaos' || mode === 'randomGradient' || data.randomizePaletteColors === true
             );
@@ -460,7 +460,7 @@ export class PresetsController {
                 ? { kind: 'random', value: null }
                 : { kind: 'solid', value: bgColor };
 
-            // Type dot — зависит от colorMode.
+            // Type dot: depends on color mode
             let typeDot;
             if (mode === 'randomChaos' || mode === 'randomGradient') {
                 typeDot = { kind: 'random', value: null };
@@ -492,8 +492,8 @@ export class PresetsController {
     }
 
     /**
-     * У пресета (или текущего Unsaved-состояния) включён хотя бы один параметр рандома (иконка-ромб в списке).
-     * Используется для метки в дропдауне и пульсации панели Random.
+     * Whether the preset (or current Unsaved-from-New state) enables any Random dice —
+     * toggles preset-list diamond badge and Random panel onboarding pulse.
      */
     presetHasRandom(presetName) {
         const app = this.app;
@@ -504,7 +504,7 @@ export class PresetsController {
     }
 
     /**
-     * Создаёт цветной круглый индикатор для дропдауна.
+     * Build colored circle preset-dot element for dropdown rows.
      * spec: { kind: 'solid'|'gradient'|'random', value: string | { start, end } | null }
      */
     buildColorDot(spec) {
@@ -522,7 +522,7 @@ export class PresetsController {
         return dot;
     }
 
-    /** Ромб 10×10 на цвет текстовых подсказок (индикатор рандома рядом с кружочками). */
+    /** 10×10 diamond tinted like tooltip text color (random marker beside preset color dots). */
     buildRandomPresetDiamond() {
         const wrap = document.createElement('span');
         wrap.className = 'preset-dropdown-item-random';
@@ -548,7 +548,7 @@ export class PresetsController {
     }
 
     /**
-     * Ненавязчивый блик по кнопке Randomize после последовательности invert.
+     * Subtle glare animation on Randomize button after invert tutorial sequence completes.
      */
     _runRandomizeButtonGlare(btn) {
         if (!btn || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -558,7 +558,7 @@ export class PresetsController {
             this._randomizeGlareEndHandler = null;
         }
         btn.classList.remove('btn-randomize-attention-glare');
-        // Перезапуск анимации
+        // Force animation restart via reflow
         void btn.offsetWidth;
         btn.classList.add('btn-randomize-attention-glare');
 
@@ -572,8 +572,8 @@ export class PresetsController {
     }
 
     /**
-     * Резкие инверсии цветов панели Random: два мигания, пауза, два мигания (раз-два, раз-два).
-     * Переключение через класс — без интерполяции filter, в отличие от keyframes-анимации invert.
+     * Hard-edge Random panel flashes: invert on/off rhythm (two pairs with pause between).
+     * CSS class toggle — abrupt filter swaps, unlike smooth keyframe fades.
      */
     pulseRandomAttention() {
         const panel = document.getElementById('randomPanel');
@@ -619,7 +619,7 @@ export class PresetsController {
         this._randomAttentionTimers.push(endId);
     }
 
-    /** Проверяет «сырые» данные пресета на любые рандом-флаги. */
+    /** Inspect raw preset object for enabled random-ish flags across dice palettes. */
     presetDataHasRandom(preset) {
         if (!preset || typeof preset !== 'object') return false;
         for (const cfg of Object.values(DICE_CONFIG)) {
@@ -637,8 +637,8 @@ export class PresetsController {
     }
 
     /**
-     * Invert панели Random + блик на Randomize: только встроенные seed-пресеты
-     * (`seeded: true` задаёт loadSeedPresets) и только если в пресете есть рандом.
+     * Random panel invert + Randomize glare should run only for shipped seed presets
+     * (`seeded: true` from loadSeedPresets) that include random dice.
      */
     shouldPulseRandomTutorialOnLoad(preset) {
         return (
@@ -967,8 +967,8 @@ export class PresetsController {
             app.presetSessionBaselineSnapshot = app.getStateSnapshot();
         }
 
-        // Подсветка Random-панели: только встроенные seed-пресеты из presets/ (+ рандом).
-        // `seeded: true` выставляет только loadSeedPresets; пользовательские save/new не получают флаг.
+        // Random onboarding pulse: seeded presets bundled from `presets/` only.
+        // `seeded: true` is assigned during loadSeedPresets; user-saved clones never copy it.
         if (updateUI && !app.isInitializing && this.shouldPulseRandomTutorialOnLoad(preset)) {
             this.pulseRandomAttention();
         }
@@ -1186,8 +1186,8 @@ export class PresetsController {
 }
 
 /**
- * Коллекционные части пресета (не входят в `settings.values`): кэши рендера и палитры.
- * Допускаются в JSON из кнопки «json» и в seed-файлах `/presets/*.json`.
+ * Payload keys outside `settings.values` bundled with presets (renderer + palette caches).
+ * Allowed alongside JSON-export button payloads and bundled `/presets/*.json` imports.
  */
 export const EXTRA_PRESET_SNAPSHOT_KEYS = [
     'alternativeGlyphCache',

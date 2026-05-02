@@ -467,7 +467,7 @@ export default class GlyphEditor {
         
         let shouldUpdate = false;
         
-        // Arrow up/down or W/S (or Ц/Ы in Russian layout) - select module
+        // Arrow up/down or W/S (same physical keys on Russian JCUKEN) — select module
         if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === 'ц' || e.key === 'Ц') {
             e.preventDefault();
             this.currentModuleIndex = (this.currentModuleIndex - 1 + this.moduleTypes.length) % this.moduleTypes.length;
@@ -477,7 +477,7 @@ export default class GlyphEditor {
             this.currentModuleIndex = (this.currentModuleIndex + 1) % this.moduleTypes.length;
             shouldUpdate = true;
         }
-        // Arrow left/right or A/D (or Ф/В in Russian layout) - rotate
+        // Arrow left/right or A/D (same physical keys on Russian JCUKEN) — rotate
         else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A' || e.key === 'ф' || e.key === 'Ф') {
             e.preventDefault();
             this.currentRotation = (this.currentRotation - 1 + 4) % 4;
@@ -1158,11 +1158,11 @@ export default class GlyphEditor {
     }
     
     /**
-     * DEPRECATED: Этот метод больше не используется в изолированном редакторе.
-     * Редактор работает ТОЛЬКО с импортированными данными из localStorage.
-     * 
-     * Получить оригинальный глиф (из VOID_ALPHABET или альтернатив)
-     * Метод сохранён для обратной совместимости, но не должен вызываться в редакторе.
+     * DEPRECATED: unused in the standalone glyph editor workflow.
+     * The editor consumes only glyphs imported via localStorage.
+     *
+     * Resolve the canonical glyph payload from VOID_ALPHABET (or alternatives).
+     * Kept for backward compatibility; callers in the standalone editor must avoid this path.
      */
     getOriginalGlyph(char, alternativeIndex) {
         console.warn('[getOriginalGlyph] DEPRECATED: This method should not be used in the standalone editor!');

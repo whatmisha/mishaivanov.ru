@@ -705,7 +705,7 @@ export class ModuleDrawer {
     }
 
     /**
-     * C — Central: вертикальная линия по центру
+     * C — Central: vertical stroke through module centre
      */
     drawCentral(ctx, x, y, w, h, angle, stem) {
         ctx.save();
@@ -877,7 +877,7 @@ export class ModuleDrawer {
     }
 
     /**
-     * J — Joint: Т-образное соединение
+     * J — Joint: T junction
      */
     drawJoint(ctx, x, y, w, h, angle, stem) {
         ctx.save();
@@ -1031,7 +1031,7 @@ export class ModuleDrawer {
     }
 
     /**
-     * L — Link/Corner: L-образное соединение
+     * L — Link/Corner: L junction
      */
     drawLink(ctx, x, y, w, h, angle, stem) {
         ctx.save();
@@ -1163,10 +1163,10 @@ export class ModuleDrawer {
     }
 
     /**
-     * R — Round: плавная дуга (радиус = размер модуля)
-     * В Processing arc() использует ДИАМЕТР, в Canvas — РАДИУС
-     * Рисуем кольцевой сектор (arc ring), а не сплошной
-     * Processing: arc(w/2, -h/2, w*2-stem, h*2-stem) -> радиус = w - stem/2
+     * R — Round: smooth arc (radius ~= module span)
+     * Legacy Processing `arc()` expects DIAMETERS; Canvas `arc()` uses RADII.
+     * Stroke rendering uses an arc ring slice instead of filled pie.
+     * Legacy mapping: arc(w/2,-h/2,w*2-stem,h*2-stem) -> radius ~= w - stem/2
      */
     drawRound(ctx, x, y, w, h, angle, stem) {
         ctx.save();
@@ -1420,10 +1420,10 @@ export class ModuleDrawer {
     }
 
     /**
-     * B — Bend: крутая дуга (радиус = половина модуля)
-     * В Processing: arc(w/2, -h/2, stem, stem, HALF_PI, PI)
-     * stem — это ДИАМЕТР, значит радиус = stem/2
-     * ВАЖНО: внешний радиус = stem/2 (как в fill mode), а НЕ w/2!
+     * B — Bend: tighter arc (radius ~= half module)
+     * Legacy Processing sketch: arc(w/2,-h/2,stem,stem,HALF_PI,PI)
+     * Passing `stem` doubles as diameter => radius stem/2
+     * NOTE: Outer radius stays stem/2 (fill-mode parity), not w/2.
      */
     drawBend(ctx, x, y, w, h, angle, stem) {
         ctx.save();
