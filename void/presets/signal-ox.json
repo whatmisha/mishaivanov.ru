@@ -1,5 +1,5 @@
 {
-  "name": "Acid Ox",
+  "name": "Signal Ox",
   "settings": {
     "stemMultiplier": 1,
     "moduleSize": 88,
@@ -9,8 +9,8 @@
     "strokeGapRatio": 8,
     "dashEnabled": true,
     "letterColor": "#55ff00",
-    "bgColor": "#bfbfbf",
-    "gridColor": "#808080",
+    "bgColor": "#33f177",
+    "gridColor": "#8c9a6d",
     "text": "OX",
     "textAlign": "center",
     "showGrid": true,
@@ -26,13 +26,13 @@
     "randomizeRoundedCaps": false,
     "randomizeCloseEnds": false,
     "randomizeDashChess": false,
-    "randomizeAltGlyphs": false,
+    "randomizeAltGlyphs": true,
     "randomizeChaosMode": false,
     "randomizeShowGrid": false,
     "randomizeShowJoints": false,
     "randomizeShowFreeEndpoints": false,
     "randomizeColorBW": false,
-    "randomizePaletteColors": false,
+    "randomizePaletteColors": true,
     "randomPaletteColorsMin": 3,
     "randomPaletteColorsMax": 32,
     "colorBW": false,
@@ -52,11 +52,11 @@
     "randomWobblyAmountMax": 10,
     "randomWobblyFrequencyMin": 0.05,
     "randomWobblyFrequencyMax": 0.2,
-    "colorMode": "manual",
+    "colorMode": "randomChaos",
     "colorChaos": false,
     "paletteDiceLetter": false,
-    "paletteDiceBg": false,
-    "paletteDiceGrid": false,
+    "paletteDiceBg": true,
+    "paletteDiceGrid": true,
     "paletteDiceGradientStart": false,
     "paletteDiceGradientEnd": false,
     "colorChaosColors": 16,
@@ -76,5 +76,47 @@
   "alternativeGlyphCache": {
     "0_1": 4,
     "0_0": 7
+  },
+  "moduleTypeCache": {
+    "E": {
+      "stem": 176,
+      "strokesNum": 7,
+      "strokeGapRatio": 8,
+      "dashLength": 5,
+      "gapLength": 0.01,
+      "useDash": true
+    },
+    "B": {
+      "stem": 176,
+      "strokesNum": 7,
+      "strokeGapRatio": 8,
+      "dashLength": 5,
+      "gapLength": 0.01,
+      "useDash": true
+    },
+    "S": {
+      "stem": 176,
+      "strokesNum": 7,
+      "strokeGapRatio": 8,
+      "dashLength": 5,
+      "gapLength": 0.01,
+      "useDash": true
+    },
+    "R": {
+      "stem": 176,
+      "strokesNum": 7,
+      "strokeGapRatio": 8,
+      "dashLength": 5,
+      "gapLength": 0.01,
+      "useDash": true
+    },
+    "J": {
+      "stem": 176,
+      "strokesNum": 7,
+      "strokeGapRatio": 8,
+      "dashLength": 5,
+      "gapLength": 0.01,
+      "useDash": true
+    }
   }
 }

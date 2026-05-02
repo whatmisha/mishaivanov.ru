@@ -19,8 +19,8 @@
 
 @font-face {
     font-family: 'CoFo Sans';
-    src: url('https://mishaivanov.ru/fonts/CoFoSans-Regular.woff2') format('woff2'),
-         url('https://mishaivanov.ru/fonts/CoFoSans-Regular.woff') format('woff');
+    src: url('https://mishaivanov.com/fonts/CoFoSans-Regular.woff2') format('woff2'),
+         url('https://mishaivanov.com/fonts/CoFoSans-Regular.woff') format('woff');
     font-weight: 400;
     font-style: normal;
     font-display: block;
@@ -28,8 +28,8 @@
 
 @font-face {
     font-family: 'CoFo Sans';
-    src: url('https://mishaivanov.ru/fonts/CoFoSans-Medium.woff2') format('woff2'),
-         url('https://mishaivanov.ru/fonts/CoFoSans-Medium.woff') format('woff');
+    src: url('https://mishaivanov.com/fonts/CoFoSans-Medium.woff2') format('woff2'),
+         url('https://mishaivanov.com/fonts/CoFoSans-Medium.woff') format('woff');
     font-weight: 500;
     font-style: normal;
     font-display: block;
@@ -2648,21 +2648,27 @@ button.color-dot--expandable:focus-visible {
     text-overflow: ellipsis;
     flex: 1;
     min-width: 0;
+}
+
+.preset-dropdown-item-trailing {
+    margin-left: auto;
     display: flex;
     align-items: center;
+    flex-shrink: 0;
+    gap: 6px;
 }
 
 .preset-dropdown-item-colors {
     display: inline-flex;
     gap: 5px;
-    margin-left: 8px;
     align-items: center;
     flex-shrink: 0;
 }
 
-.preset-dropdown-item-colors span {
-    font-size: 0.75rem;
-    line-height: 1;
+.preset-dropdown-item-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
 }
 
 .preset-dropdown-color-dot {
@@ -2689,11 +2695,19 @@ button.color-dot--expandable:focus-visible {
 }
 
 .preset-dropdown-item-random {
-    margin-left: 2px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 10px;
+    height: 10px;
     color: var(--color-text-dim);
-    font-size: 0.75rem;
-    line-height: 1;
-    transform: translateY(-0.5px);
+}
+
+.preset-dropdown-random-shape {
+    width: 10px;
+    height: 10px;
+    display: block;
 }
 
 .preset-dropdown-item.selected .preset-dropdown-item-random,
@@ -2752,7 +2766,7 @@ button.color-dot--expandable:focus-visible {
     }
 }
 
-.preset-dropdown-item-edit {
+.preset-dropdown-item-action {
     flex-shrink: 0;
     width: 20px;
     height: 20px;
@@ -2760,16 +2774,17 @@ button.color-dot--expandable:focus-visible {
     align-items: center;
     justify-content: center;
     opacity: 0;
+    cursor: pointer;
     transition: opacity var(--transition-fast);
     color: var(--color-text-muted);
     border-radius: 4px;
 }
 
-.preset-dropdown-item:hover .preset-dropdown-item-edit {
+.preset-dropdown-item:hover .preset-dropdown-item-action {
     opacity: 1;
 }
 
-.preset-dropdown-item-edit:hover {
+.preset-dropdown-item-action:hover {
     color: var(--color-text);
     background: rgba(255, 255, 255, 0.1);
 }
@@ -3232,24 +3247,48 @@ textarea::-moz-selection {
 }
 
 /* Dropdown Menu Scrollbar */
-.dropdown-menu::-webkit-scrollbar,
-.preset-dropdown-menu::-webkit-scrollbar {
+.dropdown-menu::-webkit-scrollbar {
     width: 6px;
 }
 
-.dropdown-menu::-webkit-scrollbar-track,
-.preset-dropdown-menu::-webkit-scrollbar-track {
+.dropdown-menu::-webkit-scrollbar-track {
     background: transparent;
 }
 
-.dropdown-menu::-webkit-scrollbar-thumb,
-.preset-dropdown-menu::-webkit-scrollbar-thumb {
+.dropdown-menu::-webkit-scrollbar-thumb {
     background: var(--color-border);
     border-radius: 3px;
 }
 
-.dropdown-menu::-webkit-scrollbar-thumb:hover,
-.preset-dropdown-menu::-webkit-scrollbar-thumb:hover {
+.dropdown-menu::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-dim);
+}
+
+/* Префикс выпадающий список пресетов: скроллбар только при классе JS --scrollable */
+.preset-dropdown-menu {
+    scrollbar-width: none;
+}
+.preset-dropdown-menu.preset-dropdown-menu--scrollable {
+    scrollbar-width: thin;
+}
+.preset-dropdown-menu::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+.preset-dropdown-menu::-webkit-scrollbar-thumb {
+    background: transparent;
+}
+.preset-dropdown-menu.preset-dropdown-menu--scrollable::-webkit-scrollbar {
+    width: 6px;
+}
+.preset-dropdown-menu.preset-dropdown-menu--scrollable::-webkit-scrollbar-track {
+    background: transparent;
+}
+.preset-dropdown-menu.preset-dropdown-menu--scrollable::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+}
+.preset-dropdown-menu.preset-dropdown-menu--scrollable::-webkit-scrollbar-thumb:hover {
     background: var(--color-text-dim);
 }
 

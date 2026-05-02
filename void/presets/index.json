@@ -1,9 +1,9 @@
 {
   "version": 1,
   "presets": [
-    "base.json",
+    "anyway.json",
     "max-chaos.json",
-    "acid-ox.json",
+    "signal-ox.json",
     "bender.json",
     "bushy.json",
     "cracks.json",

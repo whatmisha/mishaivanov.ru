@@ -154,33 +154,53 @@ export class PresetsController {
         });
 
         presetDropdownMenu.addEventListener('click', async (e) => {
-            const editBtn = e.target.closest('.preset-dropdown-item-edit');
-            if (editBtn) {
+            const actionBtn = e.target.closest('.preset-dropdown-item-action');
+            if (actionBtn) {
                 e.stopPropagation();
-                const presetName = editBtn.dataset.preset;
+                const presetName = actionBtn.dataset.preset;
+                const action = actionBtn.dataset.action;
                 presetDropdownToggle.setAttribute('aria-expanded', 'false');
                 presetDropdownMenu.classList.remove('active');
                 this.resetPresetDropdownMenuScroll(presetDropdownMenu);
 
-                const renameResult = await app.modalManager.promptRename(presetName);
-                if (renameResult.action === 'rename' && renameResult.newName) {
-                    if (app.presetManager.hasPreset(renameResult.newName)) {
-                        await app.modalManager.showError(`Preset "${renameResult.newName}" already exists.`);
-                        return;
-                    }
-                    const result = app.presetManager.renamePreset(presetName, renameResult.newName);
-                    if (result.success) {
-                        if (app.currentPresetName === presetName) {
-                            app.currentPresetName = renameResult.newName;
+                if (action === 'rename') {
+                    const renameResult = await app.modalManager.promptRename(presetName);
+                    if (renameResult.action === 'rename' && renameResult.newName) {
+                        if (app.presetManager.hasPreset(renameResult.newName)) {
+                            await app.modalManager.showError(`Preset "${renameResult.newName}" already exists.`);
+                            return;
                         }
-                        this.updatePresetList();
-                        if (app.currentPresetName === renameResult.newName) {
-                            presetDropdownText.textContent = this.getDisplayName(renameResult.newName);
+                        const result = app.presetManager.renamePreset(presetName, renameResult.newName);
+                        if (result.success) {
+                            if (app.currentPresetName === presetName) {
+                                app.currentPresetName = renameResult.newName;
+                            }
+                            this.updatePresetList();
+                            if (app.currentPresetName === renameResult.newName) {
+                                presetDropdownText.textContent = this.getDisplayName(renameResult.newName);
+                            }
+                        } else {
+                            await app.modalManager.showError(result.error || 'Failed to rename preset.');
                         }
-                    } else {
-                        await app.modalManager.showError(result.error || 'Failed to rename preset.');
+                    } else if (renameResult.action === 'delete') {
+                        const confirmed = await app.modalManager.confirmDelete(presetName);
+                        if (confirmed) {
+                            if (app.presetManager.deletePreset(presetName)) {
+                                app.presetHistories.delete(presetName);
+                                this.updatePresetList();
+                                if (app.currentPresetName === presetName) {
+                                    this.loadPreset('New');
+                                }
+                                presetDropdownText.textContent = this.getPresetToggleButtonLabel();
+                                const defaultItem = Array.from(presetDropdownMenu.children).find(el => el.dataset.value === 'New');
+                                if (defaultItem) {
+                                    presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
+                                    defaultItem.classList.add('selected');
+                                }
+                            }
+                        }
                     }
-                } else if (renameResult.action === 'delete') {
+                } else if (action === 'delete') {
                     const confirmed = await app.modalManager.confirmDelete(presetName);
                     if (confirmed) {
                         if (app.presetManager.deletePreset(presetName)) {
@@ -338,28 +358,35 @@ export class PresetsController {
         if (!menu) return;
         menu.style.maxHeight = '';
         menu.style.overflowY = '';
+        menu.classList.remove('preset-dropdown-menu--scrollable');
     }
 
     /**
-     * Скролл только если список ниже нижней границы окна (cap 400px).
+     * Полоса прокрутки только когда контент реально не помещается по высоте
+     * между верхом меню и нижним краем окна — без жёсткого cap.
      */
     syncPresetDropdownMenuScroll() {
         const menu = document.getElementById('presetDropdownMenu');
         if (!menu || !menu.classList.contains('active')) return;
         const bottomMargin = 16;
-        const maxCapPx = 400;
+
+        // Сначала сбрасываем любые предыдущие ограничения, чтобы измерить реальный scrollHeight
         menu.style.maxHeight = '';
         menu.style.overflowY = '';
+        menu.classList.remove('preset-dropdown-menu--scrollable');
+
         const rect = menu.getBoundingClientRect();
-        const available = Math.max(120, window.innerHeight - rect.top - bottomMargin);
-        const cap = Math.min(maxCapPx, available);
-        const natural = menu.scrollHeight;
-        if (natural <= cap + 2) {
-            menu.style.maxHeight = 'none';
-            menu.style.overflowY = 'visible';
+        const contentHeight = menu.scrollHeight;
+        const viewportRoom = Math.max(120, window.innerHeight - rect.top - bottomMargin);
+
+        if (contentHeight <= viewportRoom + 1) {
+            // Список помещается — никакого ограничения, никакой полосы прокрутки
+            menu.style.overflowY = 'hidden';
         } else {
-            menu.style.maxHeight = `${cap}px`;
+            // Список выходит за нижний край окна — ограничиваем и включаем скролл
+            menu.style.maxHeight = `${viewportRoom}px`;
             menu.style.overflowY = 'auto';
+            menu.classList.add('preset-dropdown-menu--scrollable');
         }
     }
 
@@ -381,6 +408,23 @@ export class PresetsController {
     normalizeColor(color) {
         if (!color) return '';
         return color.toLowerCase().trim();
+    }
+
+    /** Два описания дают один и тот же визуальный кружок (без дублирования type/bg). */
+    presetColorDotsEqual(a, b) {
+        if (!a || !b) return false;
+        if (a.kind !== b.kind) return false;
+        if (a.kind === 'random') return true;
+        if (a.kind === 'solid') {
+            return this.normalizeColor(a.value) === this.normalizeColor(b.value);
+        }
+        if (a.kind === 'gradient' && a.value && b.value) {
+            return (
+                this.normalizeColor(a.value.start) === this.normalizeColor(b.value.start) &&
+                this.normalizeColor(a.value.end) === this.normalizeColor(b.value.end)
+            );
+        }
+        return false;
     }
 
     /**
@@ -444,7 +488,7 @@ export class PresetsController {
     }
 
     /**
-     * У пресета (или текущего Unsaved-состояния) включён хотя бы один параметр рандома (◇/◆).
+     * У пресета (или текущего Unsaved-состояния) включён хотя бы один параметр рандома (иконка-ромб в списке).
      * Используется для метки в дропдауне и пульсации панели Random.
      */
     presetHasRandom(presetName) {
@@ -472,6 +516,15 @@ export class PresetsController {
             dot.style.background = spec.value || '#000000';
         }
         return dot;
+    }
+
+    /** Ромб 10×10 на цвет текстовых подсказок (индикатор рандома рядом с кружочками). */
+    buildRandomPresetDiamond() {
+        const wrap = document.createElement('span');
+        wrap.className = 'preset-dropdown-item-random';
+        wrap.innerHTML =
+            '<svg class="preset-dropdown-random-shape" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" width="10" height="10" focusable="false"><path fill="currentColor" d="M5 0L10 5 5 10 0 5z"/></svg>';
+        return wrap;
     }
 
     _clearRandomAttentionTimers() {
@@ -619,36 +672,56 @@ export class PresetsController {
             nameSpan.title = name;
             item.appendChild(nameSpan);
 
+            const trailing = document.createElement('span');
+            trailing.className = 'preset-dropdown-item-trailing';
+
             const colors = this.getPresetColors(name);
             const hasRandom = this.presetHasRandom(name);
-            if (colors || hasRandom) {
-                const colorIndicators = document.createElement('span');
-                colorIndicators.className = 'preset-dropdown-item-colors';
-
-                if (colors) {
-                    colorIndicators.appendChild(this.buildColorDot(colors.type));
-                    colorIndicators.appendChild(this.buildColorDot(colors.bg));
-                }
-
-                if (hasRandom) {
-                    const randomMark = document.createElement('span');
-                    randomMark.className = 'preset-dropdown-item-random';
-                    randomMark.textContent = '◇';
-                    randomMark.title = 'Содержит рандомные параметры';
-                    colorIndicators.appendChild(randomMark);
-                }
-
-                nameSpan.appendChild(colorIndicators);
-            }
 
             if (name !== 'New' && name !== 'Unsaved') {
                 const editBtn = document.createElement('span');
-                editBtn.className = 'preset-dropdown-item-edit';
+                editBtn.className = 'preset-dropdown-item-action';
                 editBtn.dataset.action = 'rename';
                 editBtn.dataset.preset = name;
                 editBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.5 1.5L10.5 3.5L4 10H2V8L8.5 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
                 editBtn.title = 'Rename';
-                item.appendChild(editBtn);
+
+                const deleteBtn = document.createElement('span');
+                deleteBtn.className = 'preset-dropdown-item-action';
+                deleteBtn.dataset.action = 'delete';
+                deleteBtn.dataset.preset = name;
+                deleteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" width="12" height="12" fill="none"><defs><style>.preset-del-st0{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.2px}</style></defs><polyline class="preset-del-st0" points="5.001144 2.7699421 5.001144 1.7891858 6.998856 1.7891858 6.998856 2.7699421"/><polyline class="preset-del-st0" points="8.6261951 2.7699421 8.3008282 10 3.6993139 10 3.37286 2.7699421"/><line class="preset-del-st0" x1="2.4330709" y1="2.7699421" x2="9.5669291" y2="2.7699421"/></svg>';
+                deleteBtn.title = 'Delete';
+
+                const actionGroup = document.createElement('span');
+                actionGroup.className = 'preset-dropdown-item-actions';
+                actionGroup.appendChild(deleteBtn);
+                actionGroup.appendChild(editBtn);
+                trailing.appendChild(actionGroup);
+            }
+
+            if (colors || hasRandom) {
+                const colorIndicators = document.createElement('span');
+                colorIndicators.className = 'preset-dropdown-item-colors';
+
+                if (hasRandom) {
+                    const randomIcon = this.buildRandomPresetDiamond();
+                    randomIcon.title = 'Contains random parameters';
+                    colorIndicators.appendChild(randomIcon);
+                }
+
+                if (colors) {
+                    colorIndicators.appendChild(this.buildColorDot(colors.type));
+                    if (!this.presetColorDotsEqual(colors.type, colors.bg)) {
+                        colorIndicators.appendChild(this.buildColorDot(colors.bg));
+                    }
+                }
+
+                trailing.appendChild(colorIndicators);
+            }
+
+            if (trailing.childNodes.length > 0) {
+                item.appendChild(trailing);
             }
 
             if (name === app.currentPresetName ||
