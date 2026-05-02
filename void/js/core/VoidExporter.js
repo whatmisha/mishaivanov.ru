@@ -575,7 +575,11 @@ export class VoidExporter {
                 } else {
                     actualMode = params.mode;
                 }
-                const actualStrokesNum = params.mode === 'fill' ? 1 : strokesNum;
+                // Match VoidRenderer.drawLetter: global "fill" (Lines slider = 1) means single stripe —
+                // unless Random is on and per-module cache supplies strokesNum/contrast for export.
+                const actualStrokesNum = params.isRandom
+                    ? strokesNum
+                    : (params.mode === 'fill' ? 1 : strokesNum);
                 
                 // Get color for this module if custom module color is enabled (Color Chaos)
                 let moduleColor = null;
