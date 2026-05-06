@@ -22,11 +22,11 @@
     "randomizeDashLength": false,
     "randomizeGapLength": false,
     "randomizeWobblyAmount": false,
-    "randomizeWobblyFrequency": false,
+    "randomizeWobblyFrequency": true,
     "randomizeRoundedCaps": false,
     "randomizeCloseEnds": false,
     "randomizeDashChess": false,
-    "randomizeAltGlyphs": false,
+    "randomizeAltGlyphs": true,
     "randomizeChaosMode": false,
     "randomizeShowGrid": false,
     "randomizeShowJoints": false,
@@ -74,15 +74,65 @@
     "currentMode": "normal"
   },
   "alternativeGlyphCache": {
-    "1_0": 3,
-    "1_1": 1,
-    "1_2": 2,
-    "1_3": 1,
-    "1_4": 1,
-    "1_5": 1,
+    "0_0": 11,
+    "0_1": 14,
+    "0_2": 13,
     "0_3": 4,
-    "0_2": 1,
-    "0_1": 1,
-    "0_0": 3
+    "1_0": 4,
+    "1_1": 3,
+    "1_2": 2,
+    "1_3": 7,
+    "1_4": 2,
+    "1_5": 7
+  },
+  "moduleTypeCache": {
+    "E": {
+      "stem": 25.2,
+      "strokesNum": 3,
+      "strokeGapRatio": 0.7,
+      "dashLength": 1.25,
+      "gapLength": 1.25,
+      "useDash": false
+    },
+    "R": {
+      "stem": 25.2,
+      "strokesNum": 3,
+      "strokeGapRatio": 0.7,
+      "dashLength": 1.25,
+      "gapLength": 1.25,
+      "useDash": false
+    },
+    "L": {
+      "stem": 25.2,
+      "strokesNum": 3,
+      "strokeGapRatio": 0.7,
+      "dashLength": 1.25,
+      "gapLength": 1.25,
+      "useDash": false
+    },
+    "S": {
+      "stem": 25.2,
+      "strokesNum": 3,
+      "strokeGapRatio": 0.7,
+      "dashLength": 1.25,
+      "gapLength": 1.25,
+      "useDash": false
+    },
+    "B": {
+      "stem": 25.2,
+      "strokesNum": 3,
+      "strokeGapRatio": 0.7,
+      "dashLength": 1.25,
+      "gapLength": 1.25,
+      "useDash": false
+    },
+    "J": {
+      "stem": 25.2,
+      "strokesNum": 3,
+      "strokeGapRatio": 0.7,
+      "dashLength": 1.25,
+      "gapLength": 1.25,
+      "useDash": false
+    }
   }
 }
