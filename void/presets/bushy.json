@@ -2,7 +2,7 @@
   "name": "Bushy",
   "settings": {
     "stemMultiplier": 0.29156382672459835,
-    "moduleSize": 24,
+    "moduleSize": 48,
     "letterSpacingMultiplier": 1,
     "lineHeightMultiplier": 1,
     "strokesNum": 63,
@@ -10,7 +10,7 @@
     "dashEnabled": false,
     "letterColor": "#cfcb81",
     "bgColor": "#ffc821",
-    "gridColor": "#4b4b4b",
+    "gridColor": "#bebebe",
     "text": "Bushy",
     "textAlign": "center",
     "showGrid": false,
@@ -47,7 +47,7 @@
     "randomDashLengthMax": 3.955652931894598,
     "randomGapLengthMin": 1.808206210844656,
     "randomGapLengthMax": 1.88351809930082,
-    "randomModeType": "byType",
+    "randomModeType": "full",
     "randomWobblyAmountMin": 1,
     "randomWobblyAmountMax": 18,
     "randomWobblyFrequencyMin": 0.3068022005774529,
@@ -61,8 +61,8 @@
     "paletteDiceGradientEnd": true,
     "colorChaosColors": 23,
     "gradientStartColor": "#134901",
-    "gradientEndColor": "#b7b7b7",
-    "roundedCaps": true,
+    "gradientEndColor": "#060606",
+    "roundedCaps": false,
     "closeEnds": true,
     "dashLength": 0.25984520523330956,
     "gapLength": 0.5850143775699318,
@@ -74,66 +74,1009 @@
     "currentMode": "normal"
   },
   "alternativeGlyphCache": {
-    "0_2": 3,
-    "0_3": 1,
-    "0_4": 8,
-    "0_5": 7,
-    "0_1": 0,
-    "0_0": 6
+    "0_0": 1,
+    "0_1": 2,
+    "0_2": 4,
+    "0_3": 2,
+    "0_4": 4
   },
-  "moduleTypeCache": {
-    "S": {
-      "stem": 58.49154932211869,
+  "moduleValueCache": {
+    "0_0_0_0": {
+      "stem": 62.424423874602894,
       "strokesNum": 63,
-      "strokeGapRatio": 5.02136169260333,
+      "strokeGapRatio": 4.1646331068017375,
       "dashLength": 0.25984520523330956,
       "gapLength": 0.5850143775699318,
       "useDash": false
     },
-    "R": {
-      "stem": 17.315245604560644,
+    "0_0_0_1": {
+      "stem": 74.70392624787891,
       "strokesNum": 63,
-      "strokeGapRatio": 4.063344897718719,
+      "strokeGapRatio": 4.0826083841498715,
       "dashLength": 0.25984520523330956,
       "gapLength": 0.5850143775699318,
       "useDash": false
     },
-    "E": {
-      "stem": 67.56493074885321,
+    "0_0_0_2": {
+      "stem": 96.9724936177592,
       "strokesNum": 63,
-      "strokeGapRatio": 4.293504240046528,
+      "strokeGapRatio": 4.994291511318805,
       "dashLength": 0.25984520523330956,
       "gapLength": 0.5850143775699318,
       "useDash": false
     },
-    "B": {
-      "stem": 38.79565887390645,
+    "0_0_0_3": {
+      "stem": 49.62318271843054,
       "strokesNum": 63,
-      "strokeGapRatio": 4.653089338102268,
+      "strokeGapRatio": 4.180558737241576,
       "dashLength": 0.25984520523330956,
       "gapLength": 0.5850143775699318,
       "useDash": false
     },
-    "C": {
-      "stem": 20.973861249719494,
+    "0_0_0_4": {
+      "stem": 127.0548869143161,
       "strokesNum": 63,
-      "strokeGapRatio": 3.8509443986065652,
+      "strokeGapRatio": 4.591606922965721,
       "dashLength": 0.25984520523330956,
       "gapLength": 0.5850143775699318,
       "useDash": false
     },
-    "J": {
-      "stem": 35.618399179534634,
+    "0_0_1_0": {
+      "stem": 70.14849151470503,
       "strokesNum": 63,
-      "strokeGapRatio": 4.3722016309497596,
+      "strokeGapRatio": 4.625555555129784,
       "dashLength": 0.25984520523330956,
       "gapLength": 0.5850143775699318,
       "useDash": false
     },
-    "L": {
-      "stem": 47.94420055534021,
+    "0_0_1_1": {
+      "stem": 63.26584616538168,
       "strokesNum": 63,
-      "strokeGapRatio": 4.586587277244778,
+      "strokeGapRatio": 5.177431179975912,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_0_1_2": {
+      "stem": 102.0296906269675,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.612667502028026,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_0_1_3": {
+      "stem": 76.77644263385098,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.489113097828186,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_0_1_4": {
+      "stem": 108.03546997691896,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.888172851360268,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_0_2_0": {
+      "stem": 86.78680852081611,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.382895369937572,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_0_2_1": {
+      "stem": 82.86051496427,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.117410830782061,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_0_2_2": {
+      "stem": 86.23093076821945,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.5379103424667546,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_0_2_3": {
+      "stem": 36.23939415662549,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.840268254573999,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_0_2_4": {
+      "stem": 75.87440687982968,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.764958882696053,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_0_3_0": {
+      "stem": 87.51635655652251,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.8870431735597375,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_0_3_1": {
+      "stem": 63.291655576696954,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.9169791940476015,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_0_3_2": {
+      "stem": 60.32262037716667,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.0854663330036045,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_0_3_3": {
+      "stem": 84.25935180125235,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.0160618620299235,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_0_3_4": {
+      "stem": 84.91106764226362,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.256019250043057,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_0_4_0": {
+      "stem": 35.235471347267506,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.254035896321476,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_0_4_1": {
+      "stem": 117.39499682269849,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.9133486265856914,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_0_4_2": {
+      "stem": 87.88861830657267,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.994858213550565,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_0_4_3": {
+      "stem": 126.89719252828584,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.9965198325528304,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_0_4_4": {
+      "stem": 53.041899159572594,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.586507715978836,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_0_0": {
+      "stem": 97.88291027799265,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.9313997031017074,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_0_1": {
+      "stem": 33.96016457972539,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.730033512735446,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_0_2": {
+      "stem": 94.2186981899012,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.251464774894546,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_0_3": {
+      "stem": 90.77612963771965,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.795088093137202,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_0_4": {
+      "stem": 120.78615624176865,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.856714686692664,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_1_0": {
+      "stem": 81.51956081347399,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.8055624397849024,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_1_1": {
+      "stem": 60.0045277780746,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.563676453681705,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_1_2": {
+      "stem": 60.597294421900926,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.567149546868516,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_1_3": {
+      "stem": 41.38112085825907,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.639816143932074,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_1_4": {
+      "stem": 105.85801370539207,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.015943346960397,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_2_0": {
+      "stem": 94.51633596033862,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.301013586983194,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_2_1": {
+      "stem": 53.061581548000596,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.37493499623511,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_2_2": {
+      "stem": 49.16953564060932,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.0440940431245656,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_2_3": {
+      "stem": 115.93504751484828,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.057274306114097,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_2_4": {
+      "stem": 57.56201137827054,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.823982559281313,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_3_0": {
+      "stem": 85.02299192108472,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.7685533672321903,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_3_1": {
+      "stem": 59.44766471456262,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.09600283067876,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_3_2": {
+      "stem": 39.24691586028931,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.211486498617035,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_3_3": {
+      "stem": 48.452974782437124,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.0113388227061755,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_3_4": {
+      "stem": 126.3129695791653,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.7762367700365456,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_4_0": {
+      "stem": 92.22682707826596,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.719143888020272,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_4_1": {
+      "stem": 49.754046265215116,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.951745547520196,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_4_2": {
+      "stem": 71.12057544065425,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.8143084175189306,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_4_3": {
+      "stem": 34.13576871565826,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.6266498090433696,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_1_4_4": {
+      "stem": 102.14818270731591,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.6772889900696772,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_0_0": {
+      "stem": 43.285503980705265,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.331402725096772,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_0_1": {
+      "stem": 114.95663137451719,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.860031048244242,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_0_2": {
+      "stem": 44.14395157330446,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.7024045430479395,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_0_3": {
+      "stem": 101.18054821804824,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.076392525902575,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_0_4": {
+      "stem": 62.52604380240002,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.624924267257427,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_1_0": {
+      "stem": 120.50501599408717,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.8330539509225883,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_1_1": {
+      "stem": 107.55836530620154,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.230951764531738,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_1_2": {
+      "stem": 80.13751127800751,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.291590157157021,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_1_3": {
+      "stem": 70.91894778818224,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.328534072146398,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_1_4": {
+      "stem": 106.21069757047934,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.582757578187704,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_2_0": {
+      "stem": 134.98840134513864,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.982601713235136,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_2_1": {
+      "stem": 114.0800675889512,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.966491578305226,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_2_2": {
+      "stem": 102.92235648615883,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.8634654480604733,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_2_3": {
+      "stem": 66.58085486633273,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.628838996580243,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_2_4": {
+      "stem": 112.78378603291792,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.027725893458323,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_3_0": {
+      "stem": 86.894049678681,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.853691313987999,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_3_1": {
+      "stem": 54.67274670899453,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.014667147821023,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_3_2": {
+      "stem": 50.944949476468366,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.728803016013279,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_3_3": {
+      "stem": 122.66955082170617,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.319616989757731,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_3_4": {
+      "stem": 116.80376979865382,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.263093723319394,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_4_0": {
+      "stem": 115.97364186315545,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.406227483436248,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_4_1": {
+      "stem": 134.77639995141453,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.200090639060439,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_4_2": {
+      "stem": 114.37797240775024,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.17352964833882,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_4_3": {
+      "stem": 42.247597264031455,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.914330301283946,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_2_4_4": {
+      "stem": 37.93514980219261,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.973618214207097,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_0_0": {
+      "stem": 93.23011343449241,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.047637751054322,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_0_1": {
+      "stem": 126.47890626107882,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.1676621133580545,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_0_2": {
+      "stem": 128.67682618059933,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.285366034459397,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_0_3": {
+      "stem": 93.52642523185649,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.261288337883347,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_0_4": {
+      "stem": 123.61845343382451,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.716883554028606,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_1_0": {
+      "stem": 82.172816186528,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.5093600614340446,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_1_1": {
+      "stem": 39.5188370201123,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.826470548154956,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_1_2": {
+      "stem": 103.66386841982735,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.7566674460031404,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_1_3": {
+      "stem": 81.49285016459869,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.167842585484416,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_1_4": {
+      "stem": 127.47367621131974,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.392659660212514,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_2_0": {
+      "stem": 121.2384996226846,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.894937843549476,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_2_1": {
+      "stem": 37.18793539607419,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.353165007744158,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_2_2": {
+      "stem": 67.7141853573595,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.798967096731184,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_2_3": {
+      "stem": 80.4658159803757,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.100954576284944,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_2_4": {
+      "stem": 47.55994663028708,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.150089611237001,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_3_0": {
+      "stem": 80.4686208656763,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.260382324951226,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_3_1": {
+      "stem": 68.33086955420622,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.124481257481347,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_3_2": {
+      "stem": 82.57631101224125,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.627576983099187,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_3_3": {
+      "stem": 69.1552180644037,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.135037981752804,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_3_4": {
+      "stem": 70.51645940570131,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.142637358054286,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_4_0": {
+      "stem": 123.69156238590452,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.439521907898333,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_4_1": {
+      "stem": 134.0359370355787,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.258055263316673,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_4_2": {
+      "stem": 121.01655579188815,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.214769186377043,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_4_3": {
+      "stem": 40.18965437945858,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.655847703585837,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_3_4_4": {
+      "stem": 88.98277109068388,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.755134789711409,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_0_0": {
+      "stem": 101.9713007108731,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.375424752659928,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_0_1": {
+      "stem": 65.92298206211854,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.39311035933866,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_0_2": {
+      "stem": 79.81512824395,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.430093691457761,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_0_3": {
+      "stem": 90.79557515574834,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.538299945593602,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_0_4": {
+      "stem": 102.60532089057176,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.168124797642327,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_1_0": {
+      "stem": 38.12222713030275,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.179257651013485,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_1_1": {
+      "stem": 41.28890519188337,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.696043434663034,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_1_2": {
+      "stem": 58.13490125012718,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.712991055976081,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_1_3": {
+      "stem": 45.30756606375296,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.001027771091395,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_1_4": {
+      "stem": 75.53322744357874,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.8025446069721927,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_2_0": {
+      "stem": 94.19623373349884,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.6994725288436494,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_2_1": {
+      "stem": 89.2283467375214,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.173788109269794,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_2_2": {
+      "stem": 113.6494584360748,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.521296151278591,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_2_3": {
+      "stem": 70.96570587631807,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.462618819262646,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_2_4": {
+      "stem": 76.11240626437106,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.868430102033631,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_3_0": {
+      "stem": 131.772416688855,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.7913462224051626,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_3_1": {
+      "stem": 54.27840718738803,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.772977155491168,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_3_2": {
+      "stem": 97.66601020661624,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.049838999440375,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_3_3": {
+      "stem": 69.99289449618028,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.664472990647775,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_3_4": {
+      "stem": 119.07797047618416,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.0234475526534474,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_4_0": {
+      "stem": 121.0923961919604,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.439800417455357,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_4_1": {
+      "stem": 83.17798896454424,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.3745789499819505,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_4_2": {
+      "stem": 48.247102589806985,
+      "strokesNum": 63,
+      "strokeGapRatio": 3.753392560804099,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_4_3": {
+      "stem": 122.86394964929055,
+      "strokesNum": 63,
+      "strokeGapRatio": 4.334007070816636,
+      "dashLength": 0.25984520523330956,
+      "gapLength": 0.5850143775699318,
+      "useDash": false
+    },
+    "0_4_4_4": {
+      "stem": 60.39034322576303,
+      "strokesNum": 63,
+      "strokeGapRatio": 5.1304435987757655,
       "dashLength": 0.25984520523330956,
       "gapLength": 0.5850143775699318,
       "useDash": false

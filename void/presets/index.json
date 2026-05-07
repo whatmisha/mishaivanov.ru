@@ -3,7 +3,6 @@
   "presets": [
     "anyway.json",
     "max-chaos.json",
-    "signal-ox.json",
     "bender.json",
     "bushy.json",
     "cracks.json",

@@ -75,60 +75,60 @@
   },
   "moduleTypeCache": {
     "E": {
-      "stem": 14.806402648937954,
-      "strokesNum": 6,
+      "stem": 15.34284990728679,
+      "strokesNum": 1,
       "strokeGapRatio": 1,
-      "dashLength": 1.473430633955391,
-      "gapLength": 0.36684504662485995,
-      "useDash": true
+      "dashLength": 1.0277491188320103,
+      "gapLength": 0.7647905426639521,
+      "useDash": false
     },
     "R": {
-      "stem": 19.37239497668464,
-      "strokesNum": 3,
+      "stem": 15.653600058110948,
+      "strokesNum": 1,
       "strokeGapRatio": 1,
-      "dashLength": 1.2794171913729464,
-      "gapLength": 0.5666897193847186,
-      "useDash": true
+      "dashLength": 1.4230215763243865,
+      "gapLength": 0.8202271804355109,
+      "useDash": false
     },
     "S": {
-      "stem": 22.388841882184213,
-      "strokesNum": 5,
+      "stem": 7.569767384813726,
+      "strokesNum": 3,
       "strokeGapRatio": 1,
-      "dashLength": 1.2189477171973624,
-      "gapLength": 0.3181863819449383,
+      "dashLength": 1.4065440707213699,
+      "gapLength": 0.19792773266944047,
       "useDash": true
     },
     "B": {
-      "stem": 11.087036809168765,
-      "strokesNum": 3,
+      "stem": 41.97424282544363,
+      "strokesNum": 6,
       "strokeGapRatio": 1,
-      "dashLength": 1.4191679033206437,
-      "gapLength": 0.7660629205830104,
+      "dashLength": 1.014106653435494,
+      "gapLength": 0.4087928046397934,
       "useDash": true
     },
     "L": {
-      "stem": 20.009635244731328,
-      "strokesNum": 5,
+      "stem": 35.08858391541806,
+      "strokesNum": 1,
       "strokeGapRatio": 1,
-      "dashLength": 1.3467416895921107,
-      "gapLength": 0.561697317484993,
-      "useDash": true
+      "dashLength": 1.1814027365285535,
+      "gapLength": 0.4898700778065139,
+      "useDash": false
     },
     "J": {
-      "stem": 31.005879851496495,
-      "strokesNum": 1,
+      "stem": 43.8254803612025,
+      "strokesNum": 6,
       "strokeGapRatio": 1,
-      "dashLength": 1.1140180864019107,
-      "gapLength": 0.6942563539892596,
-      "useDash": false
+      "dashLength": 1.1893514718739897,
+      "gapLength": 0.11482763726692564,
+      "useDash": true
     },
     "C": {
-      "stem": 26.370069397581368,
-      "strokesNum": 1,
+      "stem": 7.996462493112673,
+      "strokesNum": 2,
       "strokeGapRatio": 1,
-      "dashLength": 1.354435568145755,
-      "gapLength": 0.46852107683259325,
-      "useDash": false
+      "dashLength": 1.270763432919548,
+      "gapLength": 0.1939973214118968,
+      "useDash": true
     }
   }
 }
