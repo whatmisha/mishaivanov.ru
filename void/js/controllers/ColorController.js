@@ -444,6 +444,65 @@ export class ColorController {
         }
     }
 
+    /**
+     * After loading a preset: build gradientPairs / clears from settings only (no RNG),
+     * so shipped JSON hexes stay authoritative. Used when preset has Chaos on but omits colorPalette.
+     */
+    bootstrapColorPaletteFromLoadedPresetSettings() {
+        const app = this.app;
+        const colorMode = this.getDerivedColorMode();
+        const minN = app.settings.get('randomPaletteColorsMin') ?? 3;
+        const maxN = app.settings.get('randomPaletteColorsMax') ?? 32;
+        let numColors = app.settings.get('colorChaosColors') || 16;
+        if (app.settings.get('randomizePaletteColors')) {
+            numColors = Math.round(
+                (Math.min(minN, maxN) + Math.max(minN, maxN)) / 2
+            );
+        }
+
+        const diceGS = !!app.settings.get('paletteDiceGradientStart');
+        const diceGE = !!app.settings.get('paletteDiceGradientEnd');
+
+        app.colorPalette = [];
+        app.gradientPairs = [];
+
+        if (colorMode === 'randomGradient' && (diceGS || diceGE)) {
+            const pairCount = Math.max(1, Math.floor(numColors / 2));
+            const start = app.settings.get('gradientStartColor');
+            const end = app.settings.get('gradientEndColor');
+            for (let i = 0; i < pairCount; i++) {
+                app.gradientPairs.push({ start, end });
+            }
+        }
+
+        app.moduleColorCache = new Map();
+        app.moduleGradientCache = new Map();
+        app.globalModuleIndex = 0;
+        app.globalGradientIndex = 0;
+
+        const bgColor = app.settings.get('bgColor');
+        const gridColor = app.settings.get('gridColor');
+        this.updateSwatchDisplay('bg', bgColor);
+        this.updateSwatchDisplay('grid', gridColor);
+        this.updateSwatchDisplay('gradientBg', bgColor);
+        this.updateSwatchDisplay('gradientGrid', gridColor);
+
+        if (app.unifiedColorPicker) {
+            const colorMap = {
+                letter: app.settings.get('letterColor'),
+                bg: bgColor,
+                grid: gridColor,
+                gradientStart: app.settings.get('gradientStartColor'),
+                gradientEnd: app.settings.get('gradientEndColor'),
+                gradientBg: bgColor,
+                gradientGrid: gridColor
+            };
+            if (app.activeColorType && colorMap[app.activeColorType] !== undefined) {
+                app.unifiedColorPicker.setColor(colorMap[app.activeColorType]);
+            }
+        }
+    }
+
     /** Get gradient pair for a module in randomGradient multi-pair mode */
     getModuleGradient(moduleIndex) {
         const app = this.app;
@@ -468,7 +527,7 @@ export class ColorController {
         const idx = app.globalGradientIndex++;
         if (!app.moduleGradientCache) app.moduleGradientCache = new Map();
         if (!app.moduleGradientCache.has(idx)) {
-            const pairIdx = Math.floor(Math.random() * app.gradientPairs.length);
+            const pairIdx = idx % app.gradientPairs.length;
             app.moduleGradientCache.set(idx, app.gradientPairs[pairIdx]);
         }
         return app.moduleGradientCache.get(idx);
@@ -490,7 +549,7 @@ export class ColorController {
         const currentIndex = app.globalModuleIndex++;
 
         if (!app.moduleColorCache.has(currentIndex)) {
-            const colorIndex = Math.floor(Math.random() * app.colorPalette.length);
+            const colorIndex = currentIndex % app.colorPalette.length;
             app.moduleColorCache.set(currentIndex, app.colorPalette[colorIndex]);
         }
 

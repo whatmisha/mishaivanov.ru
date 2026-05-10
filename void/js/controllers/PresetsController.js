@@ -998,7 +998,12 @@ export class PresetsController {
             }
             app.globalModuleIndex = app.moduleColorCache.size;
         } else {
-            app.generateColorPalette();
+            const cm = app.getDerivedColorMode();
+            if (cm === 'randomGradient') {
+                app.bootstrapColorPaletteFromLoadedPresetSettings();
+            } else {
+                app.generateColorPalette();
+            }
         }
 
         // Pass restored caches to updateRenderer

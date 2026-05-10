@@ -454,6 +454,9 @@ class VoidTypeface {
     generateRandomColor() { return this._ensureColorController().generateRandomColor(); }
     generateRandomGrayscaleColor() { return this._ensureColorController().generateRandomGrayscaleColor(); }
     generateColorPalette() { this._ensureColorController().generateColorPalette(); }
+    bootstrapColorPaletteFromLoadedPresetSettings() {
+        this._ensureColorController().bootstrapColorPaletteFromLoadedPresetSettings();
+    }
     getModuleGradient(moduleIndex) { return this._ensureColorController().getModuleGradient(moduleIndex); }
     getGradientForModule() { return this._ensureColorController().getGradientForModule(); }
     getModuleColor() { return this._ensureColorController().getModuleColor(); }
