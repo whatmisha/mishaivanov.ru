@@ -14,20 +14,36 @@
 import { HistoryManager } from '../history/HistoryManager.js';
 import { HISTORY_MAX_SIZE } from '../config/timings.js';
 import { DICE_CONFIG, EFFECT_RANDOM_CONFIG } from '../config/randomConfig.js';
+import {
+    decodePresetShare,
+    encodePresetShare,
+    SHARE_SOFT_LIMIT_CHARS
+} from '../share/PresetShareCodec.js';
 
 export class PresetsController {
     constructor(app) {
         this.app = app;
     }
 
-    initPresets() {
+    async initPresets() {
         const app = this.app;
         const presetDropdown = document.getElementById('presetDropdown');
         const presetDropdownToggle = document.getElementById('presetDropdownToggle');
         const presetDropdownMenu = document.getElementById('presetDropdownMenu');
+        if (!presetDropdown || !presetDropdownToggle || !presetDropdownMenu) {
+            console.error(
+                '[PresetsController] Missing preset dropdown DOM (#presetDropdown / toggle / menu). Wrong page or incomplete HTML.'
+            );
+            return;
+        }
         const presetDropdownText = presetDropdownToggle.querySelector('.preset-dropdown-text');
         const savePresetBtn = document.getElementById('savePresetBtn');
         const deletePresetBtn = document.getElementById('deletePresetBtn');
+
+        if (!presetDropdownText) {
+            console.error('[PresetsController] Missing .preset-dropdown-text inside toggle.');
+            return;
+        }
 
         const defaultPreset = app.presetManager.loadPreset('New');
         if (!defaultPreset) {
@@ -125,8 +141,17 @@ export class PresetsController {
 
         this.updatePresetList();
 
-        // loadPreset will set currentPresetName and hasUnsavedChanges = false
-        this.loadPreset('New', false);
+        const sharePayload = app._pendingSharePayload;
+        app._pendingSharePayload = null;
+        if (sharePayload) {
+            const applied = await this.applySharedPresetFromEncodedFragment(sharePayload.trim());
+            if (!applied) {
+                this.loadPreset('New', false);
+            }
+        } else {
+            this.loadPreset('New', false);
+        }
+
         presetDropdownText.textContent = this.getPresetToggleButtonLabel();
 
         presetDropdownToggle.addEventListener('click', (e) => {
@@ -203,6 +228,8 @@ export class PresetsController {
                                 }
                             }
                         }
+                    } else if (renameResult.action === 'share') {
+                        await this.sharePresetToClipboard(presetName);
                     }
                 } else if (action === 'delete') {
                     const confirmed = await app.modalManager.confirmDelete(presetName);
@@ -221,6 +248,8 @@ export class PresetsController {
                             }
                         }
                     }
+                } else if (action === 'share') {
+                    await this.sharePresetToClipboard(presetName);
                 }
                 return;
             }
@@ -404,6 +433,10 @@ export class PresetsController {
     /** Label on preset dropdown toggle button. */
     getPresetToggleButtonLabel() {
         const app = this.app;
+        if (app.currentPresetName === '__shared__') {
+            const nm = app.sharedPresetSuggestedName || 'Shared preset';
+            return `Shared · ${this.getDisplayName(nm)}`;
+        }
         if (app.currentPresetName === 'New' && app.hasUnsavedChanges) return 'Unsaved';
         return this.getPresetListItemLabel(app.currentPresetName || 'New');
     }
@@ -683,12 +716,10 @@ export class PresetsController {
             const hasRandom = this.presetHasRandom(name);
 
             if (name !== 'New' && name !== 'Unsaved') {
-                const editBtn = document.createElement('span');
-                editBtn.className = 'preset-dropdown-item-action';
-                editBtn.dataset.action = 'rename';
-                editBtn.dataset.preset = name;
-                editBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.5 1.5L10.5 3.5L4 10H2V8L8.5 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-                editBtn.title = 'Rename';
+                const presetRow = app.presetManager.loadPreset(name);
+
+                const actionGroup = document.createElement('span');
+                actionGroup.className = 'preset-dropdown-item-actions';
 
                 const deleteBtn = document.createElement('span');
                 deleteBtn.className = 'preset-dropdown-item-action';
@@ -697,9 +728,26 @@ export class PresetsController {
                 deleteBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" width="12" height="12" fill="none"><defs><style>.preset-del-st0{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.2px}</style></defs><polyline class="preset-del-st0" points="5.001144 2.7699421 5.001144 1.7891858 6.998856 1.7891858 6.998856 2.7699421"/><polyline class="preset-del-st0" points="8.6261951 2.7699421 8.3008282 10 3.6993139 10 3.37286 2.7699421"/><line class="preset-del-st0" x1="2.4330709" y1="2.7699421" x2="9.5669291" y2="2.7699421"/></svg>';
                 deleteBtn.title = 'Delete';
 
-                const actionGroup = document.createElement('span');
-                actionGroup.className = 'preset-dropdown-item-actions';
+                const editBtn = document.createElement('span');
+                editBtn.className = 'preset-dropdown-item-action';
+                editBtn.dataset.action = 'rename';
+                editBtn.dataset.preset = name;
+                editBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8.5 1.5L10.5 3.5L4 10H2V8L8.5 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                editBtn.title = 'Edit';
+
                 actionGroup.appendChild(deleteBtn);
+
+                if (presetRow) {
+                    const shareBtn = document.createElement('span');
+                    shareBtn.className = 'preset-dropdown-item-action';
+                    shareBtn.dataset.action = 'share';
+                    shareBtn.dataset.preset = name;
+                    shareBtn.innerHTML =
+                        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" width="12" height="12" fill="none" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M5.7410987,3.4304742l.6124561-.6124561c.7810478-.7810478,2.0473765-.7810478,2.8284243,0l.0000028.0000028c.7810478.7810478.7810478,2.0473765,0,2.8284243l-.6124561.6124561"/><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M6.2589013,8.5695258l-.6124561.6124561c-.7810478.7810478-2.0473765.7810478-2.8284243,0l-.0000028-.0000028c-.7810478-.7810478-.7810478-2.0473765,0-2.8284243l.6124561-.6124561"/><line x1="7.5184826" y1="4.4815174" x2="4.4815174" y2="7.5184826" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2"/>';
+                    shareBtn.title = 'Copy share link';
+                    actionGroup.appendChild(shareBtn);
+                }
+
                 actionGroup.appendChild(editBtn);
                 trailing.appendChild(actionGroup);
             }
@@ -756,6 +804,14 @@ export class PresetsController {
      */
     loadPreset(name, updateUI = true) {
         const app = this.app;
+        const prev = app.currentPresetName;
+        if (prev === '__shared__' && name !== '__shared__') {
+            delete app.presetManager.presets['__shared__'];
+            app.presetHistories.delete('__shared__');
+            this.hideSharedPresetBanner();
+            app.sharedPresetSuggestedName = '';
+        }
+
         const preset = app.presetManager.loadPreset(name);
         if (!preset) {
             alert('Preset not found');
@@ -976,23 +1032,12 @@ export class PresetsController {
 
     async saveCurrentPreset() {
         const app = this.app;
+        const isShared = app.currentPresetName === '__shared__';
         const isDefaultPreset = app.currentPresetName === 'New';
         let name;
         let result;
 
-        if (isDefaultPreset) {
-            const defaultName = this.generatePresetName();
-            name = await app.modalManager.promptPresetName(defaultName);
-            if (!name) return;
-
-            if (app.presetManager.hasPreset(name)) {
-                await app.modalManager.showError(`Preset "${name}" already exists. Choose a different name.`);
-                return this.saveCurrentPreset();
-            }
-
-            const presetData = this.collectPresetData({ propagateSeeded: false });
-            result = app.presetManager.savePreset(name, presetData);
-        } else {
+        if (!isDefaultPreset && !isShared) {
             const action = await app.modalManager.confirmSaveOrNew(app.currentPresetName);
             if (action === 'cancel') return;
 
@@ -1001,8 +1046,8 @@ export class PresetsController {
                 const presetData = this.collectPresetData({ propagateSeeded: true });
                 result = app.presetManager.updatePreset(name, presetData);
             } else if (action === 'new') {
-                const defaultName = this.generatePresetName();
-                name = await app.modalManager.promptPresetName(defaultName);
+                const defaultGen = this.generatePresetName();
+                name = await app.modalManager.promptPresetName(defaultGen);
                 if (!name) return;
 
                 if (app.presetManager.hasPreset(name)) {
@@ -1012,9 +1057,51 @@ export class PresetsController {
                 const presetData = this.collectPresetData({ propagateSeeded: false });
                 result = app.presetManager.savePreset(name, presetData);
             }
+        } else {
+            const defaultName =
+                isShared && app.sharedPresetSuggestedName
+                    ? app.sharedPresetSuggestedName
+                    : this.generatePresetName();
+            name = await app.modalManager.promptPresetName(defaultName);
+            if (!name) return;
+
+            const presetData = this.collectPresetData({ propagateSeeded: false });
+
+            if (app.presetManager.hasPreset(name)) {
+                if (isShared) {
+                    const choice = await app.modalManager.promptPresetExistsConflict(name);
+                    if (choice === 'cancel') return;
+                    if (choice === 'replace') {
+                        result = app.presetManager.updatePreset(name, presetData);
+                    } else if (choice === 'copy') {
+                        const suggested = this.suggestCopyPresetName(name);
+                        const copyName = await app.modalManager.promptPresetName(suggested);
+                        if (!copyName) return;
+                        if (app.presetManager.hasPreset(copyName)) {
+                            await app.modalManager.showError(
+                                `Preset "${copyName}" already exists. Choose a different name.`
+                            );
+                            return this.saveCurrentPreset();
+                        }
+                        result = app.presetManager.savePreset(copyName, presetData);
+                        name = copyName;
+                    }
+                } else {
+                    await app.modalManager.showError(`Preset "${name}" already exists. Choose a different name.`);
+                    return this.saveCurrentPreset();
+                }
+            } else {
+                result = app.presetManager.savePreset(name, presetData);
+            }
         }
 
         if (result && result.success) {
+            if (isShared) {
+                delete app.presetManager.presets['__shared__'];
+                app.presetHistories.delete('__shared__');
+                this.hideSharedPresetBanner();
+                app.sharedPresetSuggestedName = '';
+            }
             this.updatePresetList();
             const presetDropdownText = document.querySelector('.preset-dropdown-text');
             const presetDropdownMenu = document.getElementById('presetDropdownMenu');
@@ -1155,6 +1242,7 @@ export class PresetsController {
         const presetDropdownToggle = document.getElementById('presetDropdownToggle');
         const presetDropdownText = document.querySelector('.preset-dropdown-text');
         const isDefaultPreset = app.currentPresetName === 'New';
+        const isSharedPreset = app.currentPresetName === '__shared__';
         const isDefaultWithoutChanges = isDefaultPreset && !app.hasUnsavedChanges;
         const names = app.presetManager.getPresetNames();
         const hasCustomPresets = names.length > 1;
@@ -1178,10 +1266,269 @@ export class PresetsController {
         }
 
         if (deletePresetBtn) {
-            deletePresetBtn.style.display = !isDefaultPreset ? 'inline-flex' : 'none';
+            deletePresetBtn.style.display = !isDefaultPreset && !isSharedPreset ? 'inline-flex' : 'none';
         }
 
         this.updatePresetList();
+    }
+
+    suggestCopyPresetName(baseName) {
+        const app = this.app;
+        const names = new Set(app.presetManager.getPresetNames());
+        let candidate = `${baseName} (copy)`;
+        if (!names.has(candidate)) return candidate;
+        let i = 2;
+        for (;;) {
+            candidate = `${baseName} (${i})`;
+            if (!names.has(candidate)) return candidate;
+            i += 1;
+        }
+    }
+
+    gatherPresetBlobForShare(presetName) {
+        const app = this.app;
+        let raw;
+        if (presetName === app.currentPresetName) {
+            raw = this.collectPresetData({ propagateSeeded: false });
+        } else {
+            const stored = app.presetManager.loadPreset(presetName);
+            if (!stored) return null;
+            raw = JSON.parse(JSON.stringify(stored));
+        }
+        delete raw.seeded;
+        delete raw.createdAt;
+        delete raw.updatedAt;
+        delete raw.id;
+        raw.shareDisplayName = presetName;
+        return raw;
+    }
+
+    async copyTextWithFallback(text) {
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(text);
+                return true;
+            }
+        } catch (_) {
+            /* fall through */
+        }
+        try {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            const ok = document.execCommand('copy');
+            document.body.removeChild(ta);
+            return !!ok;
+        } catch (_) {
+            return false;
+        }
+    }
+
+    showShareToast(message) {
+        let el = document.getElementById('voidShareToast');
+        if (!el) {
+            el = document.createElement('div');
+            el.id = 'voidShareToast';
+            el.className = 'void-share-toast';
+            el.setAttribute('role', 'status');
+            document.body.appendChild(el);
+        }
+        el.textContent = message;
+        el.hidden = false;
+        el.classList.add('void-share-toast--visible');
+        if (this._shareToastTimer) clearTimeout(this._shareToastTimer);
+        this._shareToastTimer = window.setTimeout(() => {
+            el.classList.remove('void-share-toast--visible');
+            el.hidden = true;
+        }, 2500);
+    }
+
+    async sharePresetToClipboard(presetName) {
+        const app = this.app;
+        const pristine = app.pristineSettingsDefaults;
+        if (!pristine) {
+            await app.modalManager.showError('Share is not ready yet.');
+            return;
+        }
+        const blob = this.gatherPresetBlobForShare(presetName);
+        if (!blob) {
+            await app.modalManager.showError('Could not read preset data.');
+            return;
+        }
+        let encoded;
+        try {
+            encoded = await encodePresetShare(blob, pristine, { includeCaches: true });
+        } catch (e) {
+            console.warn('[share] encode failed', e);
+            const msg =
+                typeof e?.message === 'string' && e.message.includes('CompressionStream')
+                    ? 'Sharing requires a recent browser with CompressionStream support.'
+                    : 'Could not build share link.';
+            await app.modalManager.showError(msg);
+            return;
+        }
+
+        let url =
+            `${location.origin}${location.pathname}${location.search || ''}#p=${encoded}`;
+        if (url.length > SHARE_SOFT_LIMIT_CHARS) {
+            const choice = await app.modalManager.promptShareLongUrl();
+            if (choice === 'cancel' || choice === undefined) return;
+            if (choice === 'short') {
+                try {
+                    encoded = await encodePresetShare(blob, pristine, { includeCaches: false });
+                    url = `${location.origin}${location.pathname}${location.search || ''}#p=${encoded}`;
+                } catch (err) {
+                    console.warn('[share] re-encode failed', err);
+                }
+            }
+        }
+
+        try {
+            if (typeof localStorage !== 'undefined' && localStorage.getItem('voidShareDebug')) {
+                console.debug('[share] URL chars', url.length, 'payload token chars', encoded.length);
+            }
+        } catch (_) {
+            /* ignore */
+        }
+
+        const copied = await this.copyTextWithFallback(url);
+        if (copied) {
+            this.showShareToast('Link copied');
+            return;
+        }
+
+        await app.modalManager.show({
+            title: 'Copy this link',
+            text:
+                url.length > 800
+                    ? 'Select the URL in the field below and copy it manually.'
+                    : url,
+            showInput: true,
+            inputValue: url,
+            inputPlaceholder: 'Share URL',
+            buttons: [{ id: 'ok', text: 'Close', type: 'primary' }]
+        });
+    }
+
+    ensureSharedPresetBanner() {
+        if (document.getElementById('sharedPresetBanner')) return;
+        const top = document.querySelector('.top-links');
+        if (!top) return;
+        const banner = document.createElement('div');
+        banner.id = 'sharedPresetBanner';
+        banner.className = 'shared-preset-banner';
+        banner.hidden = true;
+
+        const text = document.createElement('span');
+        text.className = 'shared-preset-banner__text';
+
+        const hint = document.createElement('span');
+        hint.className = 'shared-preset-banner__hint';
+        hint.textContent = 'Reloading the page drops this until you save.';
+
+        const saveBtn = document.createElement('button');
+        saveBtn.type = 'button';
+        saveBtn.id = 'sharedPresetBannerSave';
+        saveBtn.className = 'shared-preset-banner__btn btn-secondary';
+        saveBtn.textContent = 'Save to library';
+
+        const discardBtn = document.createElement('button');
+        discardBtn.type = 'button';
+        discardBtn.id = 'sharedPresetBannerDiscard';
+        discardBtn.className = 'shared-preset-banner__btn shared-preset-banner__discard';
+        discardBtn.textContent = 'Discard';
+
+        banner.appendChild(text);
+        banner.appendChild(hint);
+        banner.appendChild(saveBtn);
+        banner.appendChild(discardBtn);
+        top.insertBefore(banner, top.firstChild);
+
+        saveBtn.addEventListener('click', () => {
+            void this.saveCurrentPreset();
+        });
+        discardBtn.addEventListener('click', () => {
+            this.discardSharedPreset();
+        });
+    }
+
+    showSharedPresetBanner() {
+        this.ensureSharedPresetBanner();
+        const el = document.getElementById('sharedPresetBanner');
+        const app = this.app;
+        const textEl = el?.querySelector('.shared-preset-banner__text');
+        if (textEl) {
+            textEl.textContent = app.sharedPresetSuggestedName
+                ? `Friend shared · ${app.sharedPresetSuggestedName}`
+                : 'Friend shared a preset';
+        }
+        if (el) el.hidden = false;
+    }
+
+    hideSharedPresetBanner() {
+        const el = document.getElementById('sharedPresetBanner');
+        if (el) el.hidden = true;
+    }
+
+    discardSharedPreset() {
+        const app = this.app;
+        if (app.currentPresetName !== '__shared__') return;
+        delete app.presetManager.presets['__shared__'];
+        app.presetHistories.delete('__shared__');
+        this.hideSharedPresetBanner();
+        app.sharedPresetSuggestedName = '';
+        this.loadPreset('New');
+        const presetDropdownText = document.querySelector('.preset-dropdown-text');
+        const presetDropdownMenu = document.getElementById('presetDropdownMenu');
+        if (presetDropdownText) {
+            presetDropdownText.textContent = this.getPresetToggleButtonLabel();
+        }
+        if (presetDropdownMenu) {
+            const defaultItem = Array.from(presetDropdownMenu.children).find(
+                (ch) => ch.dataset.value === 'New'
+            );
+            if (defaultItem) {
+                presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
+                defaultItem.classList.add('selected');
+            }
+        }
+        this.updateSaveDeleteButtons();
+    }
+
+    async applySharedPresetFromEncodedFragment(encoded) {
+        const app = this.app;
+        if (!encoded || !app.pristineSettingsDefaults) {
+            return false;
+        }
+        let decoded;
+        try {
+            decoded = await decodePresetShare(encoded.trim(), app.pristineSettingsDefaults);
+        } catch (e) {
+            console.warn('[share] decode failed', e);
+            return false;
+        }
+        if (!decoded) return false;
+        const { full } = decoded;
+        let { shareDisplayName } = decoded;
+        if (!shareDisplayName && full.text) {
+            const line = String(full.text).split('\n')[0].trim();
+            if (line) shareDisplayName = line.slice(0, 80);
+        }
+        delete full.seeded;
+        app.sharedPresetSuggestedName = shareDisplayName || '';
+        app.presetManager.presets['__shared__'] = full;
+        this.loadPreset('__shared__', true);
+        try {
+            window.history.replaceState(null, '', `${location.pathname}${location.search || ''}`);
+        } catch (_) {
+            /* ignore */
+        }
+        this.showSharedPresetBanner();
+        return true;
     }
 }
 

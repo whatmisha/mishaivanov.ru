@@ -152,9 +152,87 @@ body {
     left: 50%;
     transform: translateX(-50%);
     display: flex;
+    flex-wrap: wrap;
     gap: var(--spacing-md);
     z-index: 10000;
     align-items: center;
+    justify-content: center;
+    max-width: min(980px, 96vw);
+}
+
+/* Friend-shared preset banner (opened from `#p=v1…` URL) */
+.shared-preset-banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-sm) var(--spacing-md);
+    width: 100%;
+    flex: 1 1 100%;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: var(--color-bg-panel);
+    color: var(--color-text-secondary);
+    border-radius: var(--radius-button);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 0.85rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.shared-preset-banner__text {
+    flex: 1 1 180px;
+    min-width: 0;
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.shared-preset-banner__hint {
+    opacity: 0.72;
+    font-size: 0.78rem;
+    flex: 1 1 100%;
+}
+
+@media (min-width: 720px) {
+    .shared-preset-banner__hint {
+        flex: 0 1 auto;
+    }
+}
+
+.shared-preset-banner__btn {
+    font-family: inherit;
+    font-size: 0.85rem;
+}
+
+.shared-preset-banner__discard {
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    padding: var(--spacing-xs) var(--spacing-md);
+    cursor: pointer;
+    border-radius: var(--radius-button);
+}
+
+.shared-preset-banner__discard:hover {
+    color: var(--color-text);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.void-share-toast {
+    position: fixed;
+    bottom: calc(24px + env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    padding: var(--spacing-md) var(--spacing-xl);
+    background: var(--color-text);
+    color: var(--color-bg);
+    border-radius: var(--radius-button);
+    font-size: 0.9rem;
+    z-index: 10001;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+}
+
+.void-share-toast--visible {
+    opacity: 1;
 }
 
 /* Top Link - back button */

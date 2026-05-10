@@ -94,6 +94,13 @@ export class ModalManager {
      */
     close(action) {
         this.modal.close();
+        // promptRename assigns inline flex layout — reset so other modals look correct.
+        if (this.buttonsEl) {
+            this.buttonsEl.style.display = '';
+            this.buttonsEl.style.justifyContent = '';
+            this.buttonsEl.style.alignItems = '';
+            this.buttonsEl.style.gap = '';
+        }
         if (this.resolvePromise) {
             this.resolvePromise({
                 action,
@@ -153,9 +160,9 @@ export class ModalManager {
     }
 
     /**
-     * Prompt for renaming a preset
+     * Prompt for renaming a preset — also offers Share + Delete from the same dialog.
      * @param {string} currentName - Current preset name
-     * @returns {Promise<{action: 'rename'|'delete'|'cancel', newName?: string}>} - Action and new name if renamed
+     * @returns {Promise<{action: 'rename'|'delete'|'share'|'cancel', newName?: string}>}
      */
     async promptRename(currentName) {
         // Set content
@@ -167,16 +174,16 @@ export class ModalManager {
         this.inputEl.value = currentName;
         this.inputEl.placeholder = 'Preset name';
         
-        // Create buttons with special layout: Rename and Cancel on left, Delete on right
+        // Rename, Cancel, Share on the left · Delete on the right
         this.buttonsEl.innerHTML = '';
         this.buttonsEl.style.display = 'flex';
         this.buttonsEl.style.justifyContent = 'space-between';
         this.buttonsEl.style.alignItems = 'center';
         this.buttonsEl.style.gap = 'var(--spacing-md)';
         
-        // Left group: Rename and Cancel
         const leftGroup = document.createElement('div');
         leftGroup.style.display = 'flex';
+        leftGroup.style.flexWrap = 'wrap';
         leftGroup.style.gap = 'var(--spacing-md)';
         leftGroup.style.flex = '1';
         
@@ -191,8 +198,14 @@ export class ModalManager {
         cancelBtn.textContent = 'Cancel';
         cancelBtn.addEventListener('click', () => this.close('cancel'));
         leftGroup.appendChild(cancelBtn);
+
+        const shareBtn = document.createElement('button');
+        shareBtn.type = 'button';
+        shareBtn.className = 'modal-btn modal-btn-secondary';
+        shareBtn.textContent = 'Share';
+        shareBtn.addEventListener('click', () => this.close('share'));
+        leftGroup.appendChild(shareBtn);
         
-        // Right group: Delete
         const deleteBtn = document.createElement('button');
         deleteBtn.className = 'modal-btn modal-btn-danger';
         deleteBtn.textContent = 'Delete';
@@ -213,6 +226,9 @@ export class ModalManager {
             this.resolvePromise = resolve;
         });
         
+        if (result.action === 'share') {
+            return { action: 'share' };
+        }
         if (result.action === 'save' && result.inputValue && result.inputValue !== currentName) {
             return { action: 'rename', newName: result.inputValue };
         } else if (result.action === 'delete') {
@@ -273,6 +289,35 @@ export class ModalManager {
             ]
         });
         return result.action === 'delete';
+    }
+
+    async promptShareLongUrl() {
+        const result = await this.show({
+            title: 'Long share link',
+            text:
+                'This preset makes a very long URL. Copy the full link for an exact match (random / Chaos caches), or a shorter link without those caches—the recipient may see small differences.',
+            buttons: [
+                { id: 'full', text: 'Copy full link', type: 'secondary' },
+                { id: 'short', text: 'Copy shorter link', type: 'primary' },
+                { id: 'cancel', text: 'Cancel', type: 'ghost' }
+            ]
+        });
+        return result.action;
+    }
+
+    async promptPresetExistsConflict(presetName) {
+        const displayName =
+            presetName.length > 30 ? presetName.substring(0, 27) + '…' : presetName;
+        const result = await this.show({
+            title: 'Preset already exists',
+            text: `"${displayName}" is already in your library.`,
+            buttons: [
+                { id: 'replace', text: 'Replace', type: 'danger' },
+                { id: 'copy', text: 'Save as copy…', type: 'primary' },
+                { id: 'cancel', text: 'Cancel', type: 'ghost' }
+            ]
+        });
+        return result.action;
     }
 
     /**

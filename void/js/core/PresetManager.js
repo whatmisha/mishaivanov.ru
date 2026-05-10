@@ -50,6 +50,10 @@ export class PresetManager {
         // Remove extra spaces from name
         name = name.trim();
 
+        if (name.startsWith('__')) {
+            return { success: false, error: 'Invalid preset name' };
+        }
+
         // Check if preset with this name already exists
         if (this.presets[name]) {
             return { success: false, error: 'Preset with this name already exists' };
@@ -79,6 +83,10 @@ export class PresetManager {
         }
 
         name = name.trim();
+
+        if (name.startsWith('__')) {
+            return { success: false, error: 'Invalid preset name' };
+        }
 
         // Check if preset exists
         if (!this.presets[name]) {
@@ -112,6 +120,10 @@ export class PresetManager {
 
         oldName = oldName.trim();
         newName = newName.trim();
+
+        if (newName.startsWith('__')) {
+            return { success: false, error: 'Invalid preset name' };
+        }
 
         if (oldName === newName) {
             return { success: true }; // No change needed
@@ -162,7 +174,7 @@ export class PresetManager {
      * @returns {string[]} - array of preset names
      */
     getPresetNames() {
-        const names = Object.keys(this.presets);
+        const names = Object.keys(this.presets).filter((n) => !n.startsWith('__'));
         const sorted = names.sort();
         
         // Always put "New" first if it exists

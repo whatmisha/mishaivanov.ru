@@ -31,6 +31,7 @@ import { SlidersSetup } from './controllers/SlidersSetup.js';
 import { RandomPanelController } from './controllers/RandomPanelController.js';
 import { ColorController } from './controllers/ColorController.js';
 import { PresetsController, EXTRA_PRESET_SNAPSHOT_KEYS } from './controllers/PresetsController.js';
+import { parseSharePayloadFromHash } from './share/PresetShareCodec.js';
 
 class VoidTypeface {
     constructor() {
@@ -223,6 +224,7 @@ class VoidTypeface {
             // Capture pristine settings BEFORE any DOM init and kick off seed-preset
             // import in parallel — built-in presets shipped in /presets/*.json.
             const pristineDefaults = JSON.parse(JSON.stringify(this.settings.values));
+            this.pristineSettingsDefaults = pristineDefaults;
             const seedsPromise = this.presetManager.loadSeedPresets(pristineDefaults);
 
             // On desktop initialize everything as usual
@@ -260,7 +262,11 @@ class VoidTypeface {
             // (initPresets() reads the full preset list to populate the dropdown).
             seedsPromise
                 .catch((e) => console.warn('[VoidTypeface] seed presets failed:', e))
-                .finally(() => this._finishDesktopInit());
+                .finally(() => {
+                    this._finishDesktopInitAsync().catch((err) => {
+                        console.error('[VoidTypeface] desktop init failed:', err);
+                    });
+                });
         }
     }
 
@@ -269,8 +275,11 @@ class VoidTypeface {
      * Splits out so we can defer it on a Promise without hanging the rest of the
      * sync DOM setup.
      */
-    _finishDesktopInit() {
-        this.initPresets();
+    async _finishDesktopInitAsync() {
+        const h = typeof location !== 'undefined' ? (location.hash || '') : '';
+        this._pendingSharePayload = parseSharePayloadFromHash(h) || null;
+
+        await this.initPresets();
         this.initExport();
         this.initResize();
 
@@ -311,7 +320,7 @@ class VoidTypeface {
             this.presetHistories.set(this.currentPresetName, this.historyManager);
         }
 
-        if (this.currentPresetName === 'New') {
+        if (this.currentPresetName === 'New' || this.currentPresetName === '__shared__') {
             this.updateSaveDeleteButtons();
         }
 
@@ -455,7 +464,7 @@ class VoidTypeface {
         if (!this.presetsController) this.presetsController = new PresetsController(this);
         return this.presetsController;
     }
-    initPresets() { this._ensurePresetsController().initPresets(); }
+    initPresets() { return this._ensurePresetsController().initPresets(); }
     normalizeColor(color) { return this._ensurePresetsController().normalizeColor(color); }
     getPresetColors(presetName) { return this._ensurePresetsController().getPresetColors(presetName); }
     updatePresetList() { this._ensurePresetsController().updatePresetList(); }
