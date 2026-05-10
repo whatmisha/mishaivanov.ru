@@ -3930,6 +3930,18 @@ textarea::-moz-selection {
     -webkit-tap-highlight-color: transparent;
 }
 
+/* Icon-only actions (e.g. rename modal Share / Delete — matches preset row icons). */
+.modal-btn--icon-only {
+    padding: 0;
+    width: var(--button-height);
+    min-width: var(--button-height);
+}
+
+.modal-btn--icon-only svg {
+    display: block;
+    flex-shrink: 0;
+}
+
 .modal-btn-primary {
     background: var(--color-text);
     color: var(--color-bg);
