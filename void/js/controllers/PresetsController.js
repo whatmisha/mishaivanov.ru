@@ -276,11 +276,12 @@ export class PresetsController {
 
                     const confirmed = await app.modalManager.confirmDeleteAll();
                     if (confirmed) {
+                        delete app.presetManager.presets['__shared__'];
+                        app.presetHistories.delete('__shared__');
+                        app.sharedPresetSuggestedName = '';
                         const names = app.presetManager.getPresetNames();
                         names.forEach(name => {
                             if (name === 'New') return;
-                            const p = app.presetManager.loadPreset(name);
-                            if (p?.seeded === true) return; // keep shipped defaults
                             app.presetManager.deletePreset(name);
                             app.presetHistories.delete(name);
                         });
@@ -719,12 +720,18 @@ export class PresetsController {
         const app = this.app;
         const presetDropdownMenu = document.getElementById('presetDropdownMenu');
         const names = app.presetManager.getPresetNames();
-        const hasCustomPresets = names.length > 1;
-
         const showUnsaved = app.currentPresetName === 'New' && app.hasUnsavedChanges;
-        const listNames = [...names];
-        if (showUnsaved && !listNames.includes('Unsaved')) {
-            listNames.push('Unsaved');
+
+        let listNames;
+        const newIdx = names.indexOf('New');
+        if (showUnsaved && newIdx !== -1) {
+            listNames = [...names];
+            listNames.splice(newIdx + 1, 0, 'Unsaved');
+        } else {
+            listNames = [...names];
+            if (showUnsaved && newIdx === -1) {
+                listNames.unshift('New', 'Unsaved');
+            }
         }
 
         presetDropdownMenu.innerHTML = '';
@@ -817,14 +824,16 @@ export class PresetsController {
             presetDropdownMenu.appendChild(item);
         });
 
-        if (hasCustomPresets) {
-            const restoreDefaultsItem = document.createElement('li');
-            restoreDefaultsItem.className = 'preset-dropdown-item preset-dropdown-item-utility';
-            restoreDefaultsItem.dataset.value = '__restore_defaults__';
-            restoreDefaultsItem.textContent = '↻ restore default presets';
-            restoreDefaultsItem.setAttribute('role', 'option');
-            presetDropdownMenu.appendChild(restoreDefaultsItem);
+        const canBulkDeleteAll = names.some((n) => n !== 'New');
 
+        const restoreDefaultsItem = document.createElement('li');
+        restoreDefaultsItem.className = 'preset-dropdown-item preset-dropdown-item-utility';
+        restoreDefaultsItem.dataset.value = '__restore_defaults__';
+        restoreDefaultsItem.textContent = '↻ restore default presets';
+        restoreDefaultsItem.setAttribute('role', 'option');
+        presetDropdownMenu.appendChild(restoreDefaultsItem);
+
+        if (canBulkDeleteAll) {
             const deleteAllItem = document.createElement('li');
             deleteAllItem.className = 'preset-dropdown-item preset-dropdown-item-danger';
             deleteAllItem.dataset.value = '__delete_all__';
@@ -1387,17 +1396,13 @@ export class PresetsController {
 
         const presetDropdownToggle = document.getElementById('presetDropdownToggle');
         const presetDropdownText = document.querySelector('.preset-dropdown-text');
-        const isDefaultPreset = app.currentPresetName === 'New';
-        const isDefaultWithoutChanges = isDefaultPreset && !app.hasUnsavedChanges;
-        const names = app.presetManager.getPresetNames();
-        const hasCustomPresets = names.length > 1;
 
         if (presetDropdownText) {
             presetDropdownText.textContent = this.getPresetToggleButtonLabel();
         }
 
         if (presetDropdownToggle) {
-            presetDropdownToggle.disabled = !hasCustomPresets && isDefaultWithoutChanges;
+            presetDropdownToggle.disabled = false;
         }
 
         // "Save preset" when edits exist or when viewing an ephemeral opened share.

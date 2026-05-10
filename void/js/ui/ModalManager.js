@@ -340,8 +340,9 @@ export class ModalManager {
      */
     async confirmDeleteAll() {
         const result = await this.show({
-            title: 'Delete saved presets?',
-            text: 'Presets you saved yourself will be removed. Built-in defaults stay.',
+            title: 'Delete all presets?',
+            text:
+                'All presets—including built-in defaults—will be removed from this browser. Only + New remains. Use "restore default presets" to reload the shipped library.',
             buttons: [
                 { id: 'delete', text: 'Delete', type: 'danger' },
                 { id: 'cancel', text: 'Cancel', type: 'ghost' }
