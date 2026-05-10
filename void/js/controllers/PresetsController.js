@@ -972,6 +972,7 @@ export class PresetsController {
         const hasColorChaos = !!app.settings.get('randomizeColor');
         if (!hasColorChaos) {
             app.colorPalette = [];
+            app.gradientPairs = [];
             app.moduleColorCache = new Map();
             app.moduleGradientCache = new Map();
             app.globalModuleIndex = 0;

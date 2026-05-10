@@ -7,8 +7,8 @@
  *
  * Reads/writes state on the host VoidTypeface ("app"):
  *   - app.settings, app.renderer, app.historyManager
- *   - app.colorPalette, app.moduleColorCache, app.globalModuleIndex,
- *     app.globalGradientIndex (Color Chaos caches restored alongside settings)
+ *   - app.colorPalette, app.gradientPairs, moduleColor/moduleGradient caches,
+ *     app.globalModuleIndex, app.globalGradientIndex (colour chaos restored with settings)
  *   - app.snapshotDebounceTimer, app.isRestoringState, app.pendingCacheRestore,
  *     app.activeSliderTransactions, app.activeInputTransactions
  *   - app.isLoadingPreset, app.isInitializing, app.currentPresetName
@@ -54,6 +54,17 @@ export class HistoryController {
                 moduleColorCache: app.moduleColorCache instanceof Map
                     ? Array.from(app.moduleColorCache.entries())
                     : [],
+                /** randomGradient auxiliary state — required for undo and per-preset session restore */
+                gradientPairs: Array.isArray(app.gradientPairs)
+                    ? deepCloneJSON(app.gradientPairs)
+                    : [],
+                moduleGradientCache:
+                    app.moduleGradientCache instanceof Map
+                        ? Array.from(app.moduleGradientCache.entries()).map(([k, v]) => [
+                              k,
+                              deepCloneJSON(v)
+                          ])
+                        : [],
                 globalModuleIndex: app.globalModuleIndex || 0,
                 globalGradientIndex: app.globalGradientIndex || 0
             }
@@ -81,11 +92,37 @@ export class HistoryController {
 
             // 2. Restore Color Chaos caches.
             if (snapshot.colorChaos) {
-                app.colorPalette = Array.isArray(snapshot.colorChaos.colorPalette)
-                    ? [...snapshot.colorChaos.colorPalette] : [];
-                app.moduleColorCache = new Map(snapshot.colorChaos.moduleColorCache || []);
-                app.globalModuleIndex = snapshot.colorChaos.globalModuleIndex || 0;
-                app.globalGradientIndex = snapshot.colorChaos.globalGradientIndex || 0;
+                const cc = snapshot.colorChaos;
+                app.colorPalette = Array.isArray(cc.colorPalette)
+                    ? [...cc.colorPalette] : [];
+                app.moduleColorCache = new Map(cc.moduleColorCache || []);
+                const hasGpKey = Object.prototype.hasOwnProperty.call(cc, 'gradientPairs');
+                if (hasGpKey && Array.isArray(cc.gradientPairs)) {
+                    app.gradientPairs = deepCloneJSON(cc.gradientPairs);
+                } else {
+                    app.gradientPairs = [];
+                }
+                const mgRaw = cc.moduleGradientCache;
+                const hasMgKey = Object.prototype.hasOwnProperty.call(cc, 'moduleGradientCache');
+                if (hasMgKey && Array.isArray(mgRaw) && mgRaw.length > 0) {
+                    app.moduleGradientCache = new Map(
+                        mgRaw.map(([k, v]) => [Number(k), deepCloneJSON(v)])
+                    );
+                } else {
+                    app.moduleGradientCache = new Map();
+                }
+                app.globalModuleIndex = cc.globalModuleIndex || 0;
+                app.globalGradientIndex = cc.globalGradientIndex || 0;
+
+                // Undo / session snapshots captured before gradientPairs existed:
+                // rebuild pairs from restored swatch hexes (same as preset load bootstrap).
+                if (
+                    !hasGpKey &&
+                    !!app.settings.get('randomizeColor') &&
+                    app.getDerivedColorMode() === 'randomGradient'
+                ) {
+                    app.bootstrapColorPaletteFromLoadedPresetSettings();
+                }
             }
 
             // 3. Stage renderer caches; updateRenderer() reads pendingCacheRestore.
