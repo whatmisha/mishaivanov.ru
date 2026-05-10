@@ -48,10 +48,10 @@ export class PresetsController {
         if (!defaultPreset) {
             this.ensureDefaultNewPreset();
         } else {
-            const newPresetDefaultText = 'void';
+            const newPresetDefaultText = 'Void\nTypeface\nCode';
             if (
+                defaultPreset.text === 'void' ||
                 defaultPreset.text === 'Void\nTypeface\ncoded' ||
-                defaultPreset.text === 'Void\nTypeface\nCode' ||
                 defaultPreset.text === 'Void\nTypeface\nTool'
             ) {
                 defaultPreset.text = newPresetDefaultText;

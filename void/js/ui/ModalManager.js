@@ -363,20 +363,6 @@ export class ModalManager {
         return result.action === 'restore';
     }
 
-    async promptShareLongUrl() {
-        const result = await this.show({
-            title: 'Long share link',
-            text:
-                'This preset makes a very long URL. Copy the full link for an exact match (random / Chaos caches), or a shorter link without those caches—the recipient may see small differences.',
-            buttons: [
-                { id: 'full', text: 'Copy full link', type: 'secondary' },
-                { id: 'short', text: 'Copy shorter link', type: 'primary' },
-                { id: 'cancel', text: 'Cancel', type: 'ghost' }
-            ]
-        });
-        return result.action;
-    }
-
     async promptPresetExistsConflict(presetName) {
         const displayName =
             presetName.length > 30 ? presetName.substring(0, 27) + '…' : presetName;
