@@ -1885,5 +1885,42 @@
       "gapLength": 8,
       "useDash": false
     }
-  }
+  },
+  "colorPalette": [],
+  "gradientPairs": [
+    {
+      "start": "#ff00dd",
+      "end": "#9cf957"
+    },
+    {
+      "start": "#ff00dd",
+      "end": "#97d454"
+    },
+    {
+      "start": "#ff00dd",
+      "end": "#dffc1e"
+    },
+    {
+      "start": "#ff00dd",
+      "end": "#c6424d"
+    },
+    {
+      "start": "#ff00dd",
+      "end": "#3568e2"
+    },
+    {
+      "start": "#ff00dd",
+      "end": "#dc5f0d"
+    },
+    {
+      "start": "#ff00dd",
+      "end": "#d64b04"
+    },
+    {
+      "start": "#ff00dd",
+      "end": "#2b6b43"
+    }
+  ],
+  "moduleColorCache": {},
+  "moduleGradientCache": {}
 }

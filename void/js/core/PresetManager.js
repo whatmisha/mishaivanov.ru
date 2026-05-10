@@ -247,6 +247,45 @@ export class PresetManager {
             }
         };
 
+        // One-shot migration: top up already-seeded presets that were imported
+        // before gradientPairs / a baked colorPalette became part of the seed
+        // payload. Without this, user browsers keep showing the legacy
+        // randomGradient look for Bender / Bushy / Ellipsis (and skip them
+        // here because their filenames are already in `seeded`).
+        const seedPaletteMigrationKey = `${this.storageKey}__seedPalettesV2`;
+        let alreadyMigrated = false;
+        try {
+            alreadyMigrated = localStorage.getItem(seedPaletteMigrationKey) === 'true';
+        } catch (_) { /* private mode — try migration anyway */ }
+
+        if (!alreadyMigrated) {
+            for (const entry of files) {
+                const file = typeof entry === 'string' ? entry : entry?.file;
+                if (!file || typeof file !== 'string') continue;
+                if (!seeded.includes(file)) continue;
+                try {
+                    const r = await fetch(`${basePath}${file}`, { cache: 'no-cache' });
+                    if (!r.ok) continue;
+                    const seed = await r.json();
+                    const name = (seed?.name || '').trim();
+                    if (!name) continue;
+                    const target = this.presets[name];
+                    if (!target) continue;
+                    const seedHasPairs =
+                        Array.isArray(seed.gradientPairs) && seed.gradientPairs.length > 0;
+                    const seedHasPalette =
+                        Array.isArray(seed.colorPalette) && seed.colorPalette.length > 0;
+                    const needsPairs = !Array.isArray(target.gradientPairs) || target.gradientPairs.length === 0;
+                    const needsPalette = !Array.isArray(target.colorPalette) || target.colorPalette.length === 0;
+                    if ((seedHasPairs && needsPairs) || (seedHasPalette && needsPalette)) {
+                        mergeSnapshotExtras(target, seed);
+                        mutated = true;
+                    }
+                } catch (_) { /* ignore individual failures */ }
+            }
+            try { localStorage.setItem(seedPaletteMigrationKey, 'true'); } catch (_) {}
+        }
+
         for (const entry of files) {
             const file = typeof entry === 'string' ? entry : entry?.file;
             if (!file || typeof file !== 'string') continue;

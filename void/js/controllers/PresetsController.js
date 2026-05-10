@@ -857,7 +857,7 @@ export class PresetsController {
         app.isLoadingPreset = true;
         app.currentPresetName = name;
 
-        const cacheKeys = ['createdAt', 'updatedAt', 'alternativeGlyphCache', 'moduleTypeCache', 'moduleValueCache', 'colorPalette', 'moduleColorCache'];
+        const cacheKeys = ['createdAt', 'updatedAt', 'alternativeGlyphCache', 'moduleTypeCache', 'moduleValueCache', 'colorPalette', 'gradientPairs', 'moduleColorCache', 'moduleGradientCache'];
 
         Object.keys(preset).forEach(key => {
             if (!cacheKeys.includes(key) && app.settings.values.hasOwnProperty(key)) {
@@ -970,6 +970,9 @@ export class PresetsController {
 
         // Restore or clear Color Chaos palette/cache
         const hasColorChaos = !!app.settings.get('randomizeColor');
+        const hasBakedPalette =
+            (Array.isArray(preset.colorPalette) && preset.colorPalette.length > 0) ||
+            (Array.isArray(preset.gradientPairs) && preset.gradientPairs.length > 0);
         if (!hasColorChaos) {
             app.colorPalette = [];
             app.gradientPairs = [];
@@ -977,8 +980,13 @@ export class PresetsController {
             app.moduleGradientCache = new Map();
             app.globalModuleIndex = 0;
             app.globalGradientIndex = 0;
-        } else if (preset.colorPalette && preset.colorPalette.length > 0) {
-            app.colorPalette = [...preset.colorPalette];
+        } else if (hasBakedPalette) {
+            app.colorPalette = Array.isArray(preset.colorPalette)
+                ? [...preset.colorPalette]
+                : [];
+            app.gradientPairs = Array.isArray(preset.gradientPairs)
+                ? JSON.parse(JSON.stringify(preset.gradientPairs))
+                : [];
             if (preset.moduleColorCache) {
                 app.moduleColorCache = new Map(
                     Object.entries(preset.moduleColorCache).map(([k, v]) => [parseInt(k), v])
@@ -998,7 +1006,11 @@ export class PresetsController {
                 app.moduleGradientCache = new Map();
             }
             app.globalModuleIndex = app.moduleColorCache.size;
+            app.globalGradientIndex = app.moduleGradientCache.size;
         } else {
+            // Safety net for legacy presets that have neither colorPalette nor gradientPairs:
+            // randomChaos still gets a fresh RNG palette (so e.g. max-chaos keeps re-rolling),
+            // randomGradient falls back to a deterministic single-pair bootstrap.
             const cm = app.getDerivedColorMode();
             if (cm === 'randomGradient') {
                 app.bootstrapColorPaletteFromLoadedPresetSettings();
@@ -1162,6 +1174,9 @@ export class PresetsController {
             moduleTypeCache,
             moduleValueCache,
             colorPalette: app.colorPalette ? [...app.colorPalette] : [],
+            gradientPairs: Array.isArray(app.gradientPairs)
+                ? JSON.parse(JSON.stringify(app.gradientPairs))
+                : [],
             moduleColorCache: app.moduleColorCache ? Object.fromEntries(app.moduleColorCache) : {},
             moduleGradientCache: app.moduleGradientCache
                 ? Object.fromEntries(
@@ -1566,6 +1581,7 @@ export const EXTRA_PRESET_SNAPSHOT_KEYS = [
     'moduleTypeCache',
     'moduleValueCache',
     'colorPalette',
+    'gradientPairs',
     'moduleColorCache',
     'moduleGradientCache'
 ];

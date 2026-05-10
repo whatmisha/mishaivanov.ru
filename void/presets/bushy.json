@@ -1081,5 +1081,54 @@
       "gapLength": 0.5850143775699318,
       "useDash": false
     }
-  }
+  },
+  "colorPalette": [],
+  "gradientPairs": [
+    {
+      "start": "#134901",
+      "end": "#c4c4c4"
+    },
+    {
+      "start": "#134901",
+      "end": "#7f7f7f"
+    },
+    {
+      "start": "#134901",
+      "end": "#929292"
+    },
+    {
+      "start": "#134901",
+      "end": "#c1c1c1"
+    },
+    {
+      "start": "#134901",
+      "end": "#828282"
+    },
+    {
+      "start": "#134901",
+      "end": "#525252"
+    },
+    {
+      "start": "#134901",
+      "end": "#e4e4e4"
+    },
+    {
+      "start": "#134901",
+      "end": "#5c5c5c"
+    },
+    {
+      "start": "#134901",
+      "end": "#727272"
+    },
+    {
+      "start": "#134901",
+      "end": "#a9a9a9"
+    },
+    {
+      "start": "#134901",
+      "end": "#989898"
+    }
+  ],
+  "moduleColorCache": {},
+  "moduleGradientCache": {}
 }

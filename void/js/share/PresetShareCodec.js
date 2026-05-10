@@ -25,6 +25,7 @@ const EXTRA_SNAPSHOT_KEYS = [
     'moduleTypeCache',
     'moduleValueCache',
     'colorPalette',
+    'gradientPairs',
     'moduleColorCache',
     'moduleGradientCache'
 ];

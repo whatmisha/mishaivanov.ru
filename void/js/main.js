@@ -292,12 +292,16 @@ class VoidTypeface {
         this.tooltipService = new TooltipService();
         this.tooltipService.init();
 
-        // Only build a palette if chaos/gradient mode is on but palette is empty
-        // (avoid clobbering a preset or share payload already restored above).
+        // Only build a palette if chaos/gradient mode is on but the relevant
+        // structure is empty. randomGradient is "alive" as long as we have
+        // gradientPairs; checking only colorPalette would re-roll on every
+        // cold open of presets that ship with baked pairs but no palette.
         const initColorMode = this.getDerivedColorMode();
+        const initPaletteEmpty = !this.colorPalette || this.colorPalette.length === 0;
+        const initPairsEmpty = !this.gradientPairs || this.gradientPairs.length === 0;
         if (
-            (initColorMode === 'randomChaos' || initColorMode === 'randomGradient') &&
-            (!this.colorPalette || this.colorPalette.length === 0)
+            (initColorMode === 'randomChaos' && initPaletteEmpty) ||
+            (initColorMode === 'randomGradient' && initPaletteEmpty && initPairsEmpty)
         ) {
             this.generateColorPalette();
         }
