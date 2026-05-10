@@ -3430,6 +3430,8 @@ textarea::-moz-selection {
 .is-mobile #presetDropdown,
 .is-mobile #savePresetBtn,
 .is-mobile #deletePresetBtn,
+.is-mobile #aboutVoidLink,
+.is-mobile #introHelpBtn,
 .is-mobile #exportBtn,
 .is-mobile #exportPngBtn,
 .is-mobile #exportJsonBtn,
