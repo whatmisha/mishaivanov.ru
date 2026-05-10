@@ -300,14 +300,27 @@ export class ModalManager {
      */
     async confirmDeleteAll() {
         const result = await this.show({
-            title: 'Delete All Presets?',
-            text: 'All saved presets will be deleted. "New" preset will remain.',
+            title: 'Delete saved presets?',
+            text: 'Presets you saved yourself will be removed. Built-in defaults stay.',
             buttons: [
-                { id: 'delete', text: 'Delete All', type: 'danger' },
+                { id: 'delete', text: 'Delete', type: 'danger' },
                 { id: 'cancel', text: 'Cancel', type: 'ghost' }
             ]
         });
         return result.action === 'delete';
+    }
+
+    async confirmRestoreDefaults() {
+        const result = await this.show({
+            title: 'Restore default presets?',
+            text:
+                'Every saved preset will be removed and the original library will be re-loaded — same state as on a brand-new browser. This cannot be undone.',
+            buttons: [
+                { id: 'restore', text: 'Restore', type: 'danger' },
+                { id: 'cancel', text: 'Cancel', type: 'ghost' }
+            ]
+        });
+        return result.action === 'restore';
     }
 
     async promptShareLongUrl() {

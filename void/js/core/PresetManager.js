@@ -221,6 +221,17 @@ export class PresetManager {
             }
         } catch (_) { /* ignore corrupt marker */ }
 
+        // Auto-reseed: if the user ended up with zero non-default presets
+        // (e.g. by deleting every shipped one), forget the seed marker so
+        // built-in presets come back on this cold open.
+        const hasAnyNonDefault = Object.keys(this.presets).some(
+            (n) => n !== 'New' && !n.startsWith('__')
+        );
+        if (!hasAnyNonDefault && seeded.length > 0) {
+            seeded = [];
+            try { localStorage.removeItem(seededKey); } catch (_) {}
+        }
+
         let manifest;
         try {
             const res = await fetch(`${basePath}index.json`, { cache: 'no-cache' });
@@ -328,6 +339,24 @@ export class PresetManager {
                 localStorage.setItem(seededKey, JSON.stringify(seeded));
             } catch (_) { /* quota — ignore */ }
         }
+    }
+
+    /**
+     * Wipe every persisted preset (including the `New` slot) and re-import
+     * the shipped library from `presets/*.json`. Used by the
+     * "Restore default presets" dropdown action.
+     *
+     * Callers should follow up by recreating the `New` slot (e.g. via
+     * PresetsController.ensureDefaultNewPreset) and loading a preset.
+     */
+    async clearAllAndReseed(defaults = null, basePath = 'presets/') {
+        this.presets = {};
+        try {
+            localStorage.removeItem(this.storageKey);
+            localStorage.removeItem(`${this.storageKey}__seeded`);
+            localStorage.removeItem(`${this.storageKey}__seedPalettesV2`);
+        } catch (_) { /* private mode — best-effort */ }
+        await this.loadSeedPresets(defaults, basePath);
     }
 }
 

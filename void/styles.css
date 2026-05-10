@@ -2882,10 +2882,23 @@ button.color-dot--expandable:focus-visible {
     font-weight: 500;
 }
 
-.preset-dropdown-item-danger {
+.preset-dropdown-item-utility {
     color: var(--color-text-muted);
     margin-top: var(--spacing-sm);
     padding-top: var(--spacing-md);
+}
+
+.preset-dropdown-item-utility:hover {
+    color: var(--color-text);
+}
+
+.preset-dropdown-item-danger {
+    color: var(--color-text-muted);
+}
+
+.preset-dropdown-item-utility + .preset-dropdown-item-danger {
+    margin-top: 0;
+    padding-top: var(--spacing-sm);
 }
 
 .preset-dropdown-item-danger:hover {
