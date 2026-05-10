@@ -57,8 +57,10 @@
     <!-- No flash of Export PNG on mobile before styles.css applies -->
     <style>
         html.is-mobile #exportPngBtn,
-        html.is-mobile #aboutVoidLink,
-        html.is-mobile #introHelpBtn { display: none !important; }
+        html.is-mobile #introHelpBtn,
+        html.is-mobile .preset-toolbar-cluster {
+            display: none !important;
+        }
     </style>
 </head>
 <body>

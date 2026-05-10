@@ -3428,14 +3428,10 @@ textarea::-moz-selection {
 /* Hide panels on mobile devices immediately (before JS loads) */
 .is-mobile .controls-panel,
 .is-mobile #presetDropdown,
+.is-mobile .preset-toolbar-cluster,
 .is-mobile #savePresetBtn,
 .is-mobile #deletePresetBtn,
-.is-mobile #aboutVoidLink,
-.is-mobile #introHelpBtn,
-.is-mobile #exportBtn,
-.is-mobile #exportPngBtn,
-.is-mobile #exportJsonBtn,
-.is-mobile #copyBtn {
+.is-mobile .bottom-buttons > .btn-fixed:not(#renewBtn) {
     display: none !important;
 }
 

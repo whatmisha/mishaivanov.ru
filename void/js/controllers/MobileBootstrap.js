@@ -3,6 +3,7 @@
  *
  * Detects mobile phones (touch + viewport heuristics + UA), then:
  * - hides desktop panels and the Save/Delete preset bar,
+ * - removes preset toolbar (dropdown + share) and the bottom-bar help (?) button,
  * - removes the PNG export button (desktop-only feature),
  * - enables a "renew" button for re-randomising,
  * - applies a performance-friendly random profile + effect-dice roll (refreshMobileRandomLook),
@@ -47,10 +48,11 @@ export class MobileBootstrap {
         const panels = document.querySelectorAll('.controls-panel');
         panels.forEach((panel) => { panel.style.display = 'none'; });
 
-        const presetDropdown = document.getElementById('presetDropdown');
+        document.querySelector('.preset-toolbar-cluster')?.remove();
+        document.getElementById('introHelpBtn')?.remove();
+
         const saveBtn = document.getElementById('savePresetBtn');
         const deleteBtn = document.getElementById('deletePresetBtn');
-        if (presetDropdown) presetDropdown.style.display = 'none';
         if (saveBtn) saveBtn.style.display = 'none';
         if (deleteBtn) deleteBtn.style.display = 'none';
 
