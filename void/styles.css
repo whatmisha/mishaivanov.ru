@@ -3940,6 +3940,8 @@ textarea::-moz-selection {
 .modal-btn--icon-only svg {
     display: block;
     flex-shrink: 0;
+    width: 18px;
+    height: 18px;
 }
 
 .modal-btn-primary {

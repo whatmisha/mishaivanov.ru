@@ -279,6 +279,12 @@ class VoidTypeface {
         const h = typeof location !== 'undefined' ? (location.hash || '') : '';
         this._pendingSharePayload = parseSharePayloadFromHash(h) || null;
 
+        // Clear stale per-module RNG caches BEFORE loadPreset repopulates them from storage / share —
+        // never after a successful restore (would make shared links look re-randomized).
+        if (this.renderer?.clearModuleTypeCache) {
+            this.renderer.clearModuleTypeCache();
+        }
+
         await this.initPresets();
         this.initExport();
         this.initResize();
@@ -286,21 +292,15 @@ class VoidTypeface {
         this.tooltipService = new TooltipService();
         this.tooltipService.init();
 
-        // Clear random values cache before first render
-        // to use correct values from settings
-        if (this.renderer && this.renderer.clearModuleTypeCache) {
-            this.renderer.clearModuleTypeCache();
-        }
-
-        // Initialize color palette if Color Chaos is enabled
+        // Only build a palette if chaos/gradient mode is on but palette is empty
+        // (avoid clobbering a preset or share payload already restored above).
         const initColorMode = this.getDerivedColorMode();
-        if (initColorMode === 'randomChaos' || initColorMode === 'randomGradient') {
+        if (
+            (initColorMode === 'randomChaos' || initColorMode === 'randomGradient') &&
+            (!this.colorPalette || this.colorPalette.length === 0)
+        ) {
             this.generateColorPalette();
         }
-
-        // Initialize global module index counters
-        this.globalModuleIndex = 0;
-        this.globalGradientIndex = 0;
 
         // First render (with correct parameter calculation)
         this.updateRenderer();

@@ -985,6 +985,17 @@ export class PresetsController {
             } else {
                 app.moduleColorCache = new Map();
             }
+            if (
+                preset.moduleGradientCache &&
+                typeof preset.moduleGradientCache === 'object'
+            ) {
+                const gd = Object.entries(preset.moduleGradientCache);
+                app.moduleGradientCache = gd.length
+                    ? new Map(gd.map(([k, v]) => [parseInt(k), JSON.parse(JSON.stringify(v))]))
+                    : new Map();
+            } else {
+                app.moduleGradientCache = new Map();
+            }
             app.globalModuleIndex = app.moduleColorCache.size;
         } else {
             app.generateColorPalette();
@@ -1145,7 +1156,15 @@ export class PresetsController {
             moduleTypeCache,
             moduleValueCache,
             colorPalette: app.colorPalette ? [...app.colorPalette] : [],
-            moduleColorCache: app.moduleColorCache ? Object.fromEntries(app.moduleColorCache) : {}
+            moduleColorCache: app.moduleColorCache ? Object.fromEntries(app.moduleColorCache) : {},
+            moduleGradientCache: app.moduleGradientCache
+                ? Object.fromEntries(
+                      [...app.moduleGradientCache.entries()].map(([k, v]) => [
+                          String(k),
+                          JSON.parse(JSON.stringify(v))
+                      ])
+                  )
+                : {}
         };
 
         if (
@@ -1541,5 +1560,6 @@ export const EXTRA_PRESET_SNAPSHOT_KEYS = [
     'moduleTypeCache',
     'moduleValueCache',
     'colorPalette',
-    'moduleColorCache'
+    'moduleColorCache',
+    'moduleGradientCache'
 ];

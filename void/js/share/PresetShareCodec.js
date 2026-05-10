@@ -16,7 +16,8 @@ export const SHARE_OPTIONAL_CACHE_KEYS = [
     'alternativeGlyphCache',
     'moduleTypeCache',
     'moduleValueCache',
-    'moduleColorCache'
+    'moduleColorCache',
+    'moduleGradientCache'
 ];
 
 const EXTRA_SNAPSHOT_KEYS = [
@@ -24,7 +25,8 @@ const EXTRA_SNAPSHOT_KEYS = [
     'moduleTypeCache',
     'moduleValueCache',
     'colorPalette',
-    'moduleColorCache'
+    'moduleColorCache',
+    'moduleGradientCache'
 ];
 
 function valuesEqual(a, b) {
