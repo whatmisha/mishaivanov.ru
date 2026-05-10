@@ -48,7 +48,7 @@ class VoidTypeface {
                 letterColor: '#ffffff',
                 bgColor: '#000000',
                 gridColor: '#333333',
-                text: 'Void\nTypeface\nTool',
+                text: 'void',
                 textAlign: 'center',
                 showGrid: true,
                 showJoints: false,
@@ -1249,6 +1249,7 @@ class VoidTypeface {
         const exportJsonBtn = document.getElementById('exportJsonBtn');
         const exportPngBtn = document.getElementById('exportPngBtn');
         const copyBtn = document.getElementById('copyBtn');
+        const introHelpBtn = document.getElementById('introHelpBtn');
 
         exportBtn.addEventListener('click', () => {
             this.exportSVG();
@@ -1270,6 +1271,14 @@ class VoidTypeface {
         copyBtn.addEventListener('click', () => {
             this.copySVG();
         });
+
+        if (introHelpBtn && this.modalManager?.showIntroPopup) {
+            introHelpBtn.addEventListener('click', () => {
+                const currentMode = this.settings.get('currentMode') || 'normal';
+                if (currentMode === 'editor') return;
+                void this.modalManager.showIntroPopup();
+            });
+        }
 
         this.syncExportJsonButtonVisibility();
 

@@ -48,10 +48,11 @@ export class PresetsController {
         if (!defaultPreset) {
             this.ensureDefaultNewPreset();
         } else {
-            const newPresetDefaultText = 'Void\nTypeface\nTool';
+            const newPresetDefaultText = 'void';
             if (
                 defaultPreset.text === 'Void\nTypeface\ncoded' ||
-                defaultPreset.text === 'Void\nTypeface\nCode'
+                defaultPreset.text === 'Void\nTypeface\nCode' ||
+                defaultPreset.text === 'Void\nTypeface\nTool'
             ) {
                 defaultPreset.text = newPresetDefaultText;
                 app.presetManager.presets['New'] = defaultPreset;
@@ -314,20 +315,24 @@ export class PresetsController {
                         return;
                     }
 
-                    if (app.hasUnsavedChanges) {
+                    const leavingEphemeralShare = app.currentPresetName === '__shared__';
+                    if (app.hasUnsavedChanges || leavingEphemeralShare) {
                         presetDropdownToggle.setAttribute('aria-expanded', 'false');
                         presetDropdownMenu.classList.remove('active');
                         this.resetPresetDropdownMenuScroll(presetDropdownMenu);
 
-                        const presetNameForDialog = app.currentPresetName === 'New' ? 'New' : app.currentPresetName;
+                        const presetNameForDialog = this._presetUnsavedSwitchDialogLabel(app);
                         const action = await app.modalManager.confirmUnsavedChanges(presetNameForDialog);
 
                         if (action === 'cancel') return;
 
                         if (action === 'save') {
-                            if (app.currentPresetName === 'New') {
+                            if (app.currentPresetName === 'New' || app.currentPresetName === '__shared__') {
                                 await this.saveCurrentPreset();
-                                if (app.currentPresetName !== 'New') {
+                                const stillLeaving =
+                                    app.currentPresetName === 'New' ||
+                                    app.currentPresetName === '__shared__';
+                                if (!stillLeaving) {
                                     this.updatePresetList();
                                     return;
                                 }
@@ -351,7 +356,9 @@ export class PresetsController {
 
                     this.loadPreset(presetName);
 
-                    presetDropdownText.textContent = this.getPresetListItemLabel(presetName);
+                    if (presetDropdownText) {
+                        presetDropdownText.textContent = this.getPresetToggleButtonLabel();
+                    }
                     presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
                     item.classList.add('selected');
 
@@ -373,10 +380,35 @@ export class PresetsController {
             });
         }
 
+        const presetToolbarShareBtn = document.getElementById('presetToolbarShareBtn');
+        if (presetToolbarShareBtn) {
+            presetToolbarShareBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                void this.sharePresetToClipboard(app.currentPresetName || 'New');
+            });
+        }
+
         if (app.currentPresetName === 'New') {
             app.hasUnsavedChanges = false;
         }
         this.updateSaveDeleteButtons();
+    }
+
+    /** Label shown in confirmUnsavedChanges when switching away from preset. */
+    _presetUnsavedSwitchDialogLabel(app) {
+        const n = app.currentPresetName;
+        if (n === 'New') return 'New';
+        if (n === '__shared__') {
+            const s = String(app.sharedPresetSuggestedName || '').trim();
+            return s || 'Unsaved*';
+        }
+        return n;
+    }
+
+    /** Remove legacy `#sharedPresetBanner` node if present (sharing UI was removed). */
+    removeStaleSharedBanner() {
+        document.getElementById('sharedPresetBanner')?.remove();
     }
 
     /** Clears preset menu inline height clamps after closing. */
@@ -419,7 +451,7 @@ export class PresetsController {
     /** Row label shown in preset dropdown (`data-value` stays internal). */
     getPresetListItemLabel(internalName) {
         if (internalName === 'New') return '+ New';
-        if (internalName === 'Unsaved') return 'Unsaved';
+        if (internalName === 'Unsaved') return 'Unsaved*';
         return this.getDisplayName(internalName);
     }
 
@@ -428,11 +460,14 @@ export class PresetsController {
         const app = this.app;
         const dirty = !!app.hasUnsavedChanges;
         if (app.currentPresetName === '__shared__') {
-            const nm = app.sharedPresetSuggestedName || 'Shared preset';
-            const base = `Shared · ${this.getDisplayName(nm)}`;
-            return dirty ? `${base} *` : base;
+            const suggested = String(app.sharedPresetSuggestedName || '').trim();
+            if (suggested) {
+                const base = this.getDisplayName(suggested);
+                return dirty ? `${base} *` : base;
+            }
+            return 'Unsaved*';
         }
-        if (app.currentPresetName === 'New' && dirty) return 'Unsaved';
+        if (app.currentPresetName === 'New' && dirty) return 'Unsaved*';
         const base = this.getPresetListItemLabel(app.currentPresetName || 'New');
         if (dirty && app.currentPresetName && app.currentPresetName !== 'New') {
             return `${base} *`;
@@ -702,7 +737,7 @@ export class PresetsController {
             const nameSpan = document.createElement('span');
             nameSpan.className = 'preset-dropdown-item-name';
             let displayName;
-            if (name === 'Unsaved') displayName = 'Unsaved';
+            if (name === 'Unsaved') displayName = 'Unsaved*';
             else displayName = this.getPresetListItemLabel(name);
             nameSpan.textContent = displayName;
             nameSpan.title = name;
@@ -814,7 +849,7 @@ export class PresetsController {
         if (prev === '__shared__' && name !== '__shared__') {
             delete app.presetManager.presets['__shared__'];
             app.presetHistories.delete('__shared__');
-            this.hideSharedPresetBanner();
+            this.removeStaleSharedBanner();
             app.sharedPresetSuggestedName = '';
         }
 
@@ -1134,7 +1169,7 @@ export class PresetsController {
             if (isShared) {
                 delete app.presetManager.presets['__shared__'];
                 app.presetHistories.delete('__shared__');
-                this.hideSharedPresetBanner();
+                this.removeStaleSharedBanner();
                 app.sharedPresetSuggestedName = '';
             }
             this.updatePresetList();
@@ -1267,7 +1302,7 @@ export class PresetsController {
         app.currentPresetName = null;
         app.hasUnsavedChanges = false;
         app.sharedPresetSuggestedName = '';
-        this.hideSharedPresetBanner();
+        this.removeStaleSharedBanner();
 
         try {
             await app.presetManager.clearAllAndReseed(
@@ -1342,8 +1377,11 @@ export class PresetsController {
         const currentMode = app.settings.get('currentMode') || 'normal';
         const savePresetBtn = document.getElementById('savePresetBtn');
 
+        const presetToolbarShareBtn = document.getElementById('presetToolbarShareBtn');
+
         if (currentMode === 'editor') {
             if (savePresetBtn) savePresetBtn.style.display = 'none';
+            if (presetToolbarShareBtn) presetToolbarShareBtn.style.display = 'none';
             return;
         }
 
@@ -1362,11 +1400,18 @@ export class PresetsController {
             presetDropdownToggle.disabled = !hasCustomPresets && isDefaultWithoutChanges;
         }
 
-        // "Save preset" is the only top-panel action button; it only appears
-        // when the user has unsaved changes. Delete is intentionally not
-        // surfaced here — per-item delete lives inside the dropdown.
+        // "Save preset" when edits exist or when viewing an ephemeral opened share.
+        const showShareToolbar =
+            !(app.currentPresetName === 'New' && !app.hasUnsavedChanges);
         if (savePresetBtn) {
-            savePresetBtn.style.display = app.hasUnsavedChanges ? 'inline-flex' : 'none';
+            savePresetBtn.style.display =
+                app.hasUnsavedChanges || app.currentPresetName === '__shared__'
+                    ? 'inline-flex'
+                    : 'none';
+        }
+
+        if (presetToolbarShareBtn) {
+            presetToolbarShareBtn.style.display = showShareToolbar ? 'inline-flex' : 'none';
         }
 
         this.updatePresetList();
@@ -1399,7 +1444,21 @@ export class PresetsController {
         delete raw.createdAt;
         delete raw.updatedAt;
         delete raw.id;
-        raw.shareDisplayName = presetName;
+        if (presetName === '__shared__') {
+            const sug = String(app.sharedPresetSuggestedName || '').trim();
+            if (sug) {
+                raw.shareDisplayName = sug;
+            } else {
+                delete raw.shareDisplayName;
+            }
+        } else if (presetName === 'New') {
+            const line = String(raw.text ?? '')
+                .split('\n')[0]
+                .trim();
+            raw.shareDisplayName = line.slice(0, 80) || 'New';
+        } else {
+            raw.shareDisplayName = presetName;
+        }
         return raw;
     }
 
@@ -1497,7 +1556,13 @@ export class PresetsController {
 
         const copied = await this.copyTextWithFallback(url);
         if (copied) {
-            this.showShareToast(result.fits ? 'Link copied' : 'Link copied (still long)');
+            const hintsUnsavedDraft =
+                presetName === app.currentPresetName && app.hasUnsavedChanges;
+            let msg = result.fits ? 'Link copied' : 'Link copied (still long)';
+            if (hintsUnsavedDraft) {
+                msg += ' · includes unsaved changes';
+            }
+            this.showShareToast(msg);
             return;
         }
 
@@ -1514,91 +1579,6 @@ export class PresetsController {
         });
     }
 
-    ensureSharedPresetBanner() {
-        if (document.getElementById('sharedPresetBanner')) return;
-        const top = document.querySelector('.top-links');
-        if (!top) return;
-        const banner = document.createElement('div');
-        banner.id = 'sharedPresetBanner';
-        banner.className = 'shared-preset-banner';
-        banner.hidden = true;
-
-        const text = document.createElement('span');
-        text.className = 'shared-preset-banner__text';
-
-        const hint = document.createElement('span');
-        hint.className = 'shared-preset-banner__hint';
-        hint.textContent = 'Reloading the page drops this until you save.';
-
-        const saveBtn = document.createElement('button');
-        saveBtn.type = 'button';
-        saveBtn.id = 'sharedPresetBannerSave';
-        saveBtn.className = 'shared-preset-banner__btn btn-secondary';
-        saveBtn.textContent = 'Save to library';
-
-        const discardBtn = document.createElement('button');
-        discardBtn.type = 'button';
-        discardBtn.id = 'sharedPresetBannerDiscard';
-        discardBtn.className = 'shared-preset-banner__btn shared-preset-banner__discard';
-        discardBtn.textContent = 'Discard';
-
-        banner.appendChild(text);
-        banner.appendChild(hint);
-        banner.appendChild(saveBtn);
-        banner.appendChild(discardBtn);
-        top.insertBefore(banner, top.firstChild);
-
-        saveBtn.addEventListener('click', () => {
-            void this.saveCurrentPreset();
-        });
-        discardBtn.addEventListener('click', () => {
-            this.discardSharedPreset();
-        });
-    }
-
-    showSharedPresetBanner() {
-        this.ensureSharedPresetBanner();
-        const el = document.getElementById('sharedPresetBanner');
-        const app = this.app;
-        const textEl = el?.querySelector('.shared-preset-banner__text');
-        if (textEl) {
-            textEl.textContent = app.sharedPresetSuggestedName
-                ? `Friend shared · ${app.sharedPresetSuggestedName}`
-                : 'Friend shared a preset';
-        }
-        if (el) el.hidden = false;
-    }
-
-    hideSharedPresetBanner() {
-        const el = document.getElementById('sharedPresetBanner');
-        if (el) el.hidden = true;
-    }
-
-    discardSharedPreset() {
-        const app = this.app;
-        if (app.currentPresetName !== '__shared__') return;
-        delete app.presetManager.presets['__shared__'];
-        app.presetHistories.delete('__shared__');
-        this.hideSharedPresetBanner();
-        app.sharedPresetSuggestedName = '';
-        this.loadPreset('New');
-        const presetDropdownText = document.querySelector('.preset-dropdown-text');
-        const presetDropdownMenu = document.getElementById('presetDropdownMenu');
-        if (presetDropdownText) {
-            presetDropdownText.textContent = this.getPresetToggleButtonLabel();
-        }
-        if (presetDropdownMenu) {
-            const defaultItem = Array.from(presetDropdownMenu.children).find(
-                (ch) => ch.dataset.value === 'New'
-            );
-            if (defaultItem) {
-                presetDropdownMenu.querySelector('.selected')?.classList.remove('selected');
-                defaultItem.classList.add('selected');
-            }
-        }
-        this.updateSaveDeleteButtons();
-    }
-
     async applySharedPresetFromEncodedFragment(encoded) {
         const app = this.app;
         if (!encoded || !app.pristineSettingsDefaults) {
@@ -1612,14 +1592,9 @@ export class PresetsController {
             return false;
         }
         if (!decoded) return false;
-        const { full } = decoded;
-        let { shareDisplayName } = decoded;
-        if (!shareDisplayName && full.text) {
-            const line = String(full.text).split('\n')[0].trim();
-            if (line) shareDisplayName = line.slice(0, 80);
-        }
+        const { full, shareDisplayName = '' } = decoded;
         delete full.seeded;
-        app.sharedPresetSuggestedName = shareDisplayName || '';
+        app.sharedPresetSuggestedName = String(shareDisplayName || '').trim();
         app.presetManager.presets['__shared__'] = full;
         this.loadPreset('__shared__', true);
         try {
@@ -1627,7 +1602,6 @@ export class PresetsController {
         } catch (_) {
             /* ignore */
         }
-        this.showSharedPresetBanner();
         return true;
     }
 }

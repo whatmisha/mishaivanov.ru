@@ -117,6 +117,46 @@ export class ModalManager {
         }
     }
 
+    async showIntroPopup() {
+        this.titleEl.textContent = 'What is Void?';
+        this.textEl.innerHTML = '';
+        this.textEl.classList.add('modal-text--intro');
+
+        const intro = document.createElement('p');
+        intro.textContent =
+            'Void is not just a font. It is a modular generative type system and a web-based tool for designing expressive typography.';
+        this.textEl.appendChild(intro);
+
+        const list = document.createElement('ul');
+        const items = [
+            'If the interface feels too complex, start simple: type your text in the General panel, then press Chaos in the Random panel.',
+            'You can use the built-in presets from the preset list, tweak them to your taste, create presets from scratch, and share them with a link.',
+            'You can export your graphics as vector artwork and use them for free in non-commercial projects. For commercial use, email <a href="mailto:yo@mishaivanov.com">yo@mishaivanov.com</a>.'
+        ];
+        items.forEach((text) => {
+            const item = document.createElement('li');
+            item.innerHTML = text;
+            list.appendChild(item);
+        });
+        this.textEl.appendChild(list);
+
+        this.inputEl.style.display = 'none';
+        this.buttonsEl.innerHTML = '';
+        const button = document.createElement('button');
+        button.className = 'modal-btn modal-btn-primary';
+        button.textContent = 'Start creating';
+        button.addEventListener('click', () => this.close('ok'));
+        this.buttonsEl.appendChild(button);
+
+        this.modal.showModal();
+        button.focus();
+
+        await new Promise(resolve => {
+            this.resolvePromise = resolve;
+        });
+        this.textEl.classList.remove('modal-text--intro');
+    }
+
     // ========================================
     // Preset-specific modal methods
     // ========================================
@@ -314,7 +354,7 @@ export class ModalManager {
         const result = await this.show({
             title: 'Restore default presets?',
             text:
-                'Every saved preset will be removed and the original library will be re-loaded — same state as on a brand-new browser. This cannot be undone.',
+                'Every saved preset will be removed and the original library will be re-loaded. This cannot be undone.',
             buttons: [
                 { id: 'restore', text: 'Restore', type: 'danger' },
                 { id: 'cancel', text: 'Cancel', type: 'ghost' }

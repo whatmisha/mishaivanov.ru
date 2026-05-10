@@ -129,6 +129,21 @@ body {
     touch-action: pan-x pan-y;
 }
 
+/* CoFo Sans is only bundled as 400 / 500 — avoid browser synthetic bold/heavy weights */
+b,
+strong {
+    font-weight: 500;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: 500;
+}
+
 /* ============================================
    3. LAYOUT
    ============================================ */
@@ -158,61 +173,6 @@ body {
     align-items: center;
     justify-content: center;
     max-width: min(980px, 96vw);
-}
-
-/* Friend-shared preset banner (opened from `#p=v1…` URL) */
-.shared-preset-banner {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--spacing-sm) var(--spacing-md);
-    width: 100%;
-    flex: 1 1 100%;
-    padding: var(--spacing-sm) var(--spacing-lg);
-    background: var(--color-bg-panel);
-    color: var(--color-text-secondary);
-    border-radius: var(--radius-button);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    font-size: 0.85rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
-}
-
-.shared-preset-banner__text {
-    flex: 1 1 180px;
-    min-width: 0;
-    font-weight: 500;
-    color: var(--color-text);
-}
-
-.shared-preset-banner__hint {
-    opacity: 0.72;
-    font-size: 0.78rem;
-    flex: 1 1 100%;
-}
-
-@media (min-width: 720px) {
-    .shared-preset-banner__hint {
-        flex: 0 1 auto;
-    }
-}
-
-.shared-preset-banner__btn {
-    font-family: inherit;
-    font-size: 0.85rem;
-}
-
-.shared-preset-banner__discard {
-    background: transparent;
-    border: none;
-    color: var(--color-text-secondary);
-    padding: var(--spacing-xs) var(--spacing-md);
-    cursor: pointer;
-    border-radius: var(--radius-button);
-}
-
-.shared-preset-banner__discard:hover {
-    color: var(--color-text);
-    background: rgba(255, 255, 255, 0.06);
 }
 
 .void-share-toast {
@@ -1623,6 +1583,28 @@ input[name="textAlign"]:checked + .align-icon-btn {
     background-color: #2a2a2a;
 }
 
+/* Intro help (?): circular, opens “What is Void?” modal — left of Export PNG */
+.btn-fixed.btn-intro-help {
+    width: var(--button-height);
+    min-width: var(--button-height);
+    padding: 0;
+    border-radius: 50%;
+    font-size: 1.125rem;
+    font-weight: 500;
+    line-height: 1;
+    background: #1a1a1a;
+    color: #d2d2d2;
+}
+
+.btn-fixed.btn-intro-help:hover:not(:disabled) {
+    background: #2a2a2a;
+    color: #d2d2d2;
+}
+
+.btn-fixed.btn-intro-help:active {
+    transform: none;
+}
+
 /* Apply/Close Buttons in modal panels */
 .btn-apply {
     padding: var(--spacing-sm) var(--spacing-2xl);
@@ -2608,6 +2590,12 @@ button.color-dot--expandable:focus-visible {
 }
 
 /* Custom Preset Dropdown (in top-links) */
+.preset-toolbar-cluster {
+    display: inline-flex;
+    align-items: stretch;
+    gap: var(--spacing-sm);
+}
+
 .preset-dropdown {
     position: relative;
     display: inline-block;
@@ -2667,6 +2655,35 @@ button.color-dot--expandable:focus-visible {
 
 .preset-dropdown-toggle[aria-expanded="true"] .preset-dropdown-arrow {
     transform: rotate(180deg);
+}
+
+.preset-toolbar-share-btn {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--button-height);
+    min-width: var(--button-height);
+    height: var(--button-height);
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: var(--radius-button);
+    background: var(--color-bg-panel);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.7);
+    transition: background-color var(--transition-slow), color var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.preset-toolbar-share-btn:hover {
+    background-color: #2a2a2a;
+    color: var(--color-text);
+}
+
+.preset-toolbar-share-btn:active {
+    transform: scale(0.98);
 }
 
 .preset-dropdown-menu {
@@ -2883,10 +2900,10 @@ button.color-dot--expandable:focus-visible {
 }
 
 /* Footer rows: same padding as .preset-dropdown-item (no extra inset — avoids hover “jump”).
-   Idle text #ccc; Restore matches normal row hover; Delete only swaps to red hover. */
+   Idle text #666666; Restore matches normal row hover; Delete only swaps to red hover. */
 .preset-dropdown-item.preset-dropdown-item-utility,
 .preset-dropdown-item.preset-dropdown-item-danger {
-    color: #cccccc;
+    color: #666666;
     transition:
         background-color var(--transition-fast),
         color var(--transition-fast);
@@ -2950,7 +2967,7 @@ textarea::-moz-selection {
 
 .char-counter {
     font-size: 0.75rem;
-    font-weight: normal;
+    font-weight: 400;
 }
 
 /* Text Input - regular text field */
@@ -3877,6 +3894,28 @@ textarea::-moz-selection {
 .modal-text:empty {
     display: none;
     margin: 0;
+}
+
+.modal-text--intro p {
+    margin: 0 0 var(--spacing-xl) 0;
+}
+
+.modal-text--intro ul {
+    margin: 0;
+    padding-left: 1.15rem;
+}
+
+.modal-text--intro li {
+    margin: 0 0 var(--spacing-lg) 0;
+}
+
+.modal-text--intro li:last-child {
+    margin-bottom: 0;
+}
+
+.modal-text--intro a {
+    color: var(--color-text);
+    text-decoration: none;
 }
 
 .modal-input {
