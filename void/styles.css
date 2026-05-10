@@ -2882,28 +2882,24 @@ button.color-dot--expandable:focus-visible {
     font-weight: 500;
 }
 
-.preset-dropdown-item-utility {
-    color: var(--color-text-muted);
-    margin-top: var(--spacing-sm);
-    padding-top: var(--spacing-md);
+/* Footer rows: same padding as .preset-dropdown-item (no extra inset — avoids hover “jump”).
+   Idle text #ccc; Restore matches normal row hover; Delete only swaps to red hover. */
+.preset-dropdown-item.preset-dropdown-item-utility,
+.preset-dropdown-item.preset-dropdown-item-danger {
+    color: #cccccc;
+    transition:
+        background-color var(--transition-fast),
+        color var(--transition-fast);
 }
 
-.preset-dropdown-item-utility:hover {
+.preset-dropdown-item.preset-dropdown-item-utility:hover {
+    background: rgba(255, 255, 255, 0.08);
     color: var(--color-text);
 }
 
-.preset-dropdown-item-danger {
-    color: var(--color-text-muted);
-}
-
-.preset-dropdown-item-utility + .preset-dropdown-item-danger {
-    margin-top: 0;
-    padding-top: var(--spacing-sm);
-}
-
-.preset-dropdown-item-danger:hover {
+.preset-dropdown-item.preset-dropdown-item-danger:hover {
     background: #c0392b;
-    color: white;
+    color: #ffffff;
 }
 
 /* ============================================
