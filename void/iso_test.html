@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html><head><style>body{margin:0;background:#f0f0f0;font-family:sans-serif;}.row{display:flex;gap:20px;padding:20px;}canvas,svg{background:white;border:1px solid #aaa}</style></head>
+<body>
+<div class="row">
+<div><h3>Canvas (lineDashOffset)</h3><canvas id="c" width="240" height="240"></canvas></div>
+<div><h3>SVG (stroke-dashoffset)</h3><div id="s"></div></div>
+</div>
+<script>
+const sw = 7.27;
+const gap = 18.18;
+const lineH = 48;
+const dash = sw * 5.27;
+const adaptiveGap = lineH / 1 - dash;
+const strokes = 5;
+
+const c = document.getElementById('c').getContext('2d');
+c.fillStyle = 'white';
+c.fillRect(0, 0, 240, 240);
+c.translate(20, 30);
+c.scale(2, 2);
+c.lineWidth = sw;
+c.lineCap = 'round';
+c.strokeStyle = 'black';
+c.setLineDash([dash, adaptiveGap]);
+for (let i = 0; i < strokes; i++) {
+    c.lineDashOffset = (i % 2 === 0) ? dash / 2 : 0;
+    const x = i * (sw + gap);
+    c.beginPath();
+    c.moveTo(x, 0);
+    c.lineTo(x, lineH);
+    c.stroke();
+}
+
+// SVG with no scaling - direct units
+let svg = '<svg width="240" height="240" xmlns="http://www.w3.org/2000/svg">';
+svg += '<rect width="240" height="240" fill="white"/>';
+svg += '<g transform="translate(20, 30) scale(2)" fill="none" stroke="black">';
+for (let i = 0; i < strokes; i++) {
+    const offset = (i % 2 === 0) ? dash / 2 : 0;
+    const x = i * (sw + gap);
+    svg += `<line x1="${x}" y1="0" x2="${x}" y2="${lineH}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${dash} ${adaptiveGap}" stroke-dashoffset="${offset}"/>`;
+}
+svg += '</g></svg>';
+document.getElementById('s').innerHTML = svg;
+</script>
+</body></html>

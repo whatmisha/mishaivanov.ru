@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>body{margin:0;background:#0a0a0a;color:#fff;font-family:monospace;}</style>
+</head>
+<body>
+<iframe id="app" src="/index.html" style="width:1200px;height:800px;border:0"></iframe>
+<pre id="log" style="padding:8px;font-size:11px"></pre>
+<script type="module">
+const params = new URLSearchParams(location.search);
+const presetName = params.get('preset') || "N's Ropes";
+const log = document.getElementById('log');
+const out = (m) => { log.textContent += m + '\n'; };
+
+const iframe = document.getElementById('app');
+iframe.addEventListener('load', async () => {
+    out('iframe loaded');
+    await new Promise(r => setTimeout(r, 3000));
+    const w = iframe.contentWindow;
+    const app = w.voidApp;
+    if (!app) { out('no voidApp on iframe window'); return; }
+    out('app found');
+
+    // Capture errors from iframe
+    w.addEventListener('error', (e) => { out('IFRAME ERROR: ' + e.message + ' ' + e.filename + ':' + e.lineno); });
+    w.addEventListener('unhandledrejection', (e) => { out('IFRAME REJECT: ' + (e.reason?.message || e.reason)); });
+
+    // Load preset directly from JSON file
+    const presetFile = params.get('file') || 'nikitas-ropes.json';
+    const presetRes = await fetch('/presets/' + presetFile);
+    const target = await presetRes.json();
+    out('loaded preset from file: ' + target.name);
+
+    // Apply overrides from URL params (override.dashChess=true)
+    for (const [k, v] of params.entries()) {
+        if (k.startsWith('o.')) {
+            const key = k.slice(2);
+            const val = v === 'true' ? true : v === 'false' ? false : isNaN(+v) ? v : +v;
+            target.settings[key] = val;
+            out('override ' + key + '=' + val);
+        }
+    }
+
+    try {
+        // Inject preset into manager
+        const mgr = app.presetManager;
+        const name = target.name;
+        mgr.presets[name] = {
+            ...target.settings,
+            alternativeGlyphCache: target.alternativeGlyphCache,
+            moduleTypeCache: target.moduleTypeCache,
+            gradientPairs: target.gradientPairs,
+            createdAt: new Date().toISOString()
+        };
+        out('injected preset, count=' + Object.keys(mgr.presets).length);
+        app.presetsController.loadPreset(name);
+    } catch (e) {
+        out('loadPreset error: ' + e.message + '\n' + e.stack);
+        return;
+    }
+    out('after loadPreset');
+    await new Promise(r => setTimeout(r, 800));
+    out('after wait');
+
+    out('settings.dashChess=' + app.settings.get('dashChess'));
+    out('settings.dashEnabled=' + app.settings.get('dashEnabled'));
+    out('settings.strokesNum=' + app.settings.get('strokesNum'));
+    out('settings.colorMode=' + app.settings.get('colorMode'));
+    out('settings.isRandom=' + app.settings.get('isRandom'));
+    out('renderer.params.mode=' + app.renderer?.params?.mode);
+    out('renderer.params.dashChess=' + app.renderer?.params?.dashChess);
+
+    app._ensureColorStateForExport();
+    app.globalModuleIndex = 0;
+    app.globalGradientIndex = 0;
+    const svg = app.exporter.getSVGContent();
+    out('SVG size: ' + svg.length);
+
+    const pre = document.createElement('pre');
+    pre.id = 'rawsvg';
+    pre.textContent = svg;
+    pre.style.display = 'none';
+    document.body.appendChild(pre);
+    out('SVG dumped to #rawsvg');
+
+    // Also extract a snapshot of the actual canvas
+    const canvas = app.renderer?.canvas;
+    if (canvas) {
+        const dataUrl = canvas.toDataURL('image/png');
+        const pre2 = document.createElement('pre');
+        pre2.id = 'rawcanvas';
+        pre2.textContent = dataUrl;
+        pre2.style.display = 'none';
+        document.body.appendChild(pre2);
+        out('canvas dumped to #rawcanvas, size=' + dataUrl.length);
+    }
+});
+</script>
+</body></html>

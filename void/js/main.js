@@ -1763,6 +1763,6 @@ class VoidTypeface {
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', () => {
-    new VoidTypeface();
+    window.voidApp = new VoidTypeface();
 });
 
