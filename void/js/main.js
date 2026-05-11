@@ -48,7 +48,7 @@ class VoidTypeface {
                 letterColor: '#ffffff',
                 bgColor: '#000000',
                 gridColor: '#333333',
-                text: 'Void\nTypeface\nCode',
+                text: 'Void\nTypeface\Tool',
                 textAlign: 'center',
                 showGrid: true,
                 showJoints: false,
