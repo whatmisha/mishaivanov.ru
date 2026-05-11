@@ -816,6 +816,34 @@ export class VoidExporter {
                 return `<path d="${d}"${cleanAttrs} stroke="url(#${gradId})"/>`;
             }
         );
+
+        // Process <polyline> elements - use first and last point of `points` for gradient axis.
+        // Without this, polylines (e.g. L modules in stripes mode) have no stroke and disappear,
+        // because the parent <g id="typo"> intentionally omits stroke in gradient mode.
+        paths = paths.replace(
+            /<polyline\s+points="([^"]+)"([^/]*?)\/>/g,
+            (match, pointsStr, attrs) => {
+                const pts = pointsStr.trim().split(/\s+/);
+                if (pts.length < 2) return match;
+                const parsePt = (s) => {
+                    const parts = s.split(',');
+                    return { x: parseFloat(parts[0]), y: parseFloat(parts[1]) };
+                };
+                const first = parsePt(pts[0]);
+                const last = parsePt(pts[pts.length - 1]);
+                if (!isFinite(first.x) || !isFinite(first.y) || !isFinite(last.x) || !isFinite(last.y)) return match;
+
+                const x1 = Math.round(first.x * 100) / 100;
+                const y1 = Math.round(first.y * 100) / 100;
+                const x2 = Math.round(last.x * 100) / 100;
+                const y2 = Math.round(last.y * 100) / 100;
+
+                const gradId = `sg${this._gradientCounter++}`;
+                defs += `        <defs><linearGradient id="${gradId}" gradientUnits="userSpaceOnUse" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"><stop offset="0" stop-color="${startColor}"/><stop offset="1" stop-color="${endColor}"/></linearGradient></defs>\n`;
+                const cleanAttrs = attrs.replace(/\s*stroke="[^"]*"/g, '');
+                return `<polyline points="${pointsStr}"${cleanAttrs} stroke="url(#${gradId})"/>`;
+            }
+        );
         
         return { defs, paths };
     }
