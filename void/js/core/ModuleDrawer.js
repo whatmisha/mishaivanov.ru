@@ -30,6 +30,8 @@ export class ModuleDrawer {
         this.roundedCaps = false; // rounded line caps (Rounded)
         /** UI "Round Caps" toggle; not overridden per-module in VoidRenderer.drawLetter — used so L elbows can stay round joins with butt caps on interior strokes */
         this.roundCapsPreference = false;
+        /** L only: false when a neighbor connects on a non-exit side (T-junction — no round join at elbow) */
+        this.linkElbowAllowRound = true;
         this.dashLength = 0.10; // dash length for dash mode (multiplier of stem)
         this.gapLength = 0.30; // gap length for dash mode (multiplier of stem)
         this.dashChess = false; // chessboard pattern for dash mode (alternating dash start)
@@ -1047,8 +1049,10 @@ export class ModuleDrawer {
         
         const lineWidth = stem / 2;
         ctx.lineWidth = lineWidth;
+        const joinRound = this.roundedCaps ||
+            (this.roundCapsPreference && this.linkElbowAllowRound);
         ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
-        ctx.lineJoin = this.roundedCaps || this.roundCapsPreference ? 'round' : 'miter';
+        ctx.lineJoin = joinRound ? 'round' : 'miter';
         
         if (this.mode === 'fill') {
             // Solid mode: L-shaped connection
@@ -1067,8 +1071,10 @@ export class ModuleDrawer {
             const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
             
             ctx.lineWidth = strokeWidth;
+            const joinRoundS = this.roundedCaps ||
+                (this.roundCapsPreference && this.linkElbowAllowRound);
             ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
-            ctx.lineJoin = this.roundedCaps || this.roundCapsPreference ? 'round' : 'miter';
+            ctx.lineJoin = joinRoundS ? 'round' : 'miter';
             ctx.setLineDash([]);
             
             const vertStartX = -w / 2 + strokeWidth / 2;
@@ -1090,8 +1096,10 @@ export class ModuleDrawer {
             const vertLineX = -w / 2 + stem / 4;
             const horizLineY = h / 2 - stem / 4;
             
+            const joinRoundD = this.roundedCaps ||
+                (this.roundCapsPreference && this.linkElbowAllowRound);
             ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
-            ctx.lineJoin = this.roundedCaps || this.roundCapsPreference ? 'round' : 'miter';
+            ctx.lineJoin = joinRoundD ? 'round' : 'miter';
             
             const shouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
             const shortenTop = shouldShorten && localEndpoints.top ? stem * 0.25 : 0;
@@ -1125,8 +1133,10 @@ export class ModuleDrawer {
             const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
             
             ctx.lineWidth = strokeWidth;
+            const joinRoundSD = this.roundedCaps ||
+                (this.roundCapsPreference && this.linkElbowAllowRound);
             ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
-            ctx.lineJoin = this.roundedCaps || this.roundCapsPreference ? 'round' : 'miter';
+            ctx.lineJoin = joinRoundSD ? 'round' : 'miter';
             
             const vertStartX = -w / 2 + strokeWidth / 2;
             const horizStartY = h / 2 - stem / 2 + strokeWidth / 2;

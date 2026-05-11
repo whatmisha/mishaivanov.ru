@@ -275,6 +275,66 @@ export class EndpointDetector {
     }
 
     /**
+     * Whether two adjacent modules "connect" across the edge from module1 toward sideFrom1.
+     * Mirrors the rules in analyzeGlyph (direct exit, corner exit, R/B pair).
+     */
+    areModulesConnected(type1, rot1, type2, rot2, sideFrom1TowardNeighbor) {
+        const currentExits = this.getExits(type1, rot1);
+        const neighborExits = this.getExits(type2, rot2);
+        const oppositeSide = this.getOppositeSide(sideFrom1TowardNeighbor);
+
+        let isConnected = false;
+        if (neighborExits[oppositeSide]) {
+            isConnected = true;
+        }
+        if (!isConnected) {
+            const allSides = ['top', 'right', 'bottom', 'left'];
+            for (const commonSide of allSides) {
+                if (commonSide === oppositeSide) continue;
+                if (currentExits[commonSide] && neighborExits[commonSide]) {
+                    isConnected = true;
+                    break;
+                }
+            }
+        }
+        if (!isConnected) {
+            const isCurve = (t) => t === 'R' || t === 'B';
+            if (isCurve(type1) && isCurve(type2)) {
+                isConnected = true;
+            }
+        }
+        return isConnected;
+    }
+
+    /**
+     * L module: allow round stroke-linejoin at the elbow only if no neighbor stroke
+     * meets the inner corner — i.e. no connection on a side that is NOT an exit for this L.
+     */
+    shouldRoundLinkElbow(glyphString, cols, rows, col, row) {
+        const index = (row * cols + col) * 2;
+        const type = glyphString.charAt(index);
+        if (type !== 'L') return true;
+        const rotation = parseInt(glyphString.charAt(index + 1));
+        const exits = this.getExits(type, rotation);
+        const sides = ['top', 'right', 'bottom', 'left'];
+        for (const side of sides) {
+            if (exits[side]) continue;
+            const neighbor = this.getNeighborCoords(col, row, side);
+            if (neighbor.row < 0 || neighbor.row >= rows || neighbor.col < 0 || neighbor.col >= cols) {
+                continue;
+            }
+            const nIndex = (neighbor.row * cols + neighbor.col) * 2;
+            const nType = glyphString.charAt(nIndex);
+            if (nType === 'E') continue;
+            const nRot = parseInt(glyphString.charAt(nIndex + 1));
+            if (this.areModulesConnected(type, rotation, nType, nRot, side)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * Get neighbor coordinates
      */
     getNeighborCoords(col, row, side) {

@@ -756,6 +756,9 @@ export class VoidExporter {
                 if (this.renderer && this.renderer.getGradientForModule) {
                     moduleGradientPair = this.renderer.getGradientForModule();
                 }
+
+                const linkElbowAllowRound = moduleType !== 'L' ||
+                    this.endpointDetector.shouldRoundLinkElbow(glyphCode, letterCols, this.renderer.rows, i, j);
                 
                 const moduleSVG = this.renderModuleToSVG(
                     moduleType, 
@@ -777,7 +780,8 @@ export class VoidExporter {
                     params.dashChess !== undefined ? params.dashChess : false,
                     moduleColor,
                     moduleGradientPair,
-                    shouldUseRounded
+                    shouldUseRounded,
+                    linkElbowAllowRound
                 );
                 
                 if (moduleSVG) {
@@ -793,7 +797,7 @@ export class VoidExporter {
     /**
      * Render module to SVG
      */
-    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, strokeGapRatio, cornerRadius = 0, roundedCaps = false, dashLength = 0.10, gapLength = 0.30, endpointSides = null, closeEnds = false, dashChess = false, color = null, gradientPairOverride = null, roundedCapsPreference = false) {
+    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, strokeGapRatio, cornerRadius = 0, roundedCaps = false, dashLength = 0.10, gapLength = 0.30, endpointSides = null, closeEnds = false, dashChess = false, color = null, gradientPairOverride = null, roundedCapsPreference = false, linkElbowAllowRound = true) {
         if (type === 'E') return ''; // Empty
         
         // Helper function: get local endpoint sides considering rotation
@@ -817,9 +821,9 @@ export class VoidExporter {
         
         const localEndpoints = getLocalEndpointSides(rotation, endpointSides);
 
-        // Match ModuleDrawer.drawLink: when "Round Caps" is on, L elbows use round joins
-        // even on interior strokes (butt caps on path ends unless this module is an endpoint stripe).
-        const linkJoinRound = roundedCaps || roundedCapsPreference;
+        // Match ModuleDrawer.drawLink: round join at L elbow only if UI round caps and
+        // no third stroke meets the inner corner (linkElbowAllowRound).
+        const linkJoinRound = roundedCaps || (roundedCapsPreference && linkElbowAllowRound);
         const linkCapRound = roundedCaps;
 
         const angle = rotation * 90;

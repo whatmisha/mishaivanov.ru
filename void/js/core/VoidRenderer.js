@@ -654,6 +654,10 @@ export class VoidRenderer {
                 const hasEndpoints = endpointSides ? true : false;
                 const originalRoundedCaps = this.moduleDrawer.roundedCaps;
                 const originalEndpointSides = this.moduleDrawer.endpointSides;
+                const originalLinkElbowAllow = this.moduleDrawer.linkElbowAllowRound;
+
+                this.moduleDrawer.linkElbowAllowRound = moduleType !== 'L' ||
+                    this.endpointDetector.shouldRoundLinkElbow(glyphCode, letterCols, this.rows, i, j);
                 
                 // endpointSides needed for Round and Close Ends
                 if (shouldUseEndpoints) {
@@ -718,6 +722,7 @@ export class VoidRenderer {
                 if (shouldUseRounded) {
                     this.moduleDrawer.roundedCaps = originalRoundedCaps;
                 }
+                this.moduleDrawer.linkElbowAllowRound = originalLinkElbowAllow;
             }
         }
         
