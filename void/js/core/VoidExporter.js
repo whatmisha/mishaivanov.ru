@@ -59,6 +59,170 @@ export class VoidExporter {
     }
 
     /**
+     * Walk a 1D path of a given length and yield visible dash sub-segments [startD, endD]
+     * given a (dashLength, gapLength) pattern with an initial dashOffset (mirroring SVG's
+     * stroke-dashoffset semantics: at path position 0 we are at pattern position offset).
+     * Returns an array of [startD, endD] pairs (both in path-distance units).
+     */
+    _computeDashRanges(totalLength, dashLength, gapLength, dashOffset) {
+        const out = [];
+        if (totalLength <= 0) return out;
+        const cycle = dashLength + gapLength;
+        if (cycle <= 0 || gapLength <= 0 || dashLength >= totalLength) {
+            out.push([0, totalLength]);
+            return out;
+        }
+        const off = ((dashOffset % cycle) + cycle) % cycle;
+        let p = 0;
+        const eps = 1e-6;
+        while (p < totalLength - eps) {
+            const cp = (off + p) % cycle;
+            if (cp < dashLength - eps) {
+                const remaining = dashLength - cp;
+                const endP = Math.min(p + remaining, totalLength);
+                if (endP > p + eps) out.push([p, endP]);
+                p = endP;
+            } else {
+                p += cycle - cp;
+            }
+        }
+        return out;
+    }
+
+    _roundCoord(v) {
+        return Math.round(v * 1000) / 1000;
+    }
+
+    /**
+     * Emit a dashed straight line as individual <line> segments so renderers that
+     * ignore stroke-dashoffset (notably Figma) still preserve the visual pattern.
+     * When more than one segment is produced, they are wrapped in <g class="dl">
+     * carrying the original endpoints as data-l-* attributes so that
+     * _applyGradientToSVG can attach a single gradient that spans the whole logical line.
+     */
+    _emitDashedLine(x1, y1, x2, y2, strokeWidth, dashLength, gapLength, dashOffset, lineCap, extraAttrs = '') {
+        const dx = x2 - x1, dy = y2 - y1;
+        const len = Math.hypot(dx, dy);
+        if (len === 0) return '';
+        const r = (v) => this._roundCoord(v);
+        const ranges = this._computeDashRanges(len, dashLength, gapLength, dashOffset);
+        if (ranges.length === 0) return '';
+
+        const nx = dx / len, ny = dy / len;
+        const pointAt = (d) => ({ x: x1 + nx * d, y: y1 + ny * d });
+
+        if (ranges.length === 1) {
+            const a = pointAt(ranges[0][0]);
+            const b = pointAt(ranges[0][1]);
+            return `        <line x1="${r(a.x)}" y1="${r(a.y)}" x2="${r(b.x)}" y2="${r(b.y)}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}"${extraAttrs}/>\n`;
+        }
+
+        let inner = '';
+        for (const [d1, d2] of ranges) {
+            const a = pointAt(d1);
+            const b = pointAt(d2);
+            inner += `          <line x1="${r(a.x)}" y1="${r(a.y)}" x2="${r(b.x)}" y2="${r(b.y)}" stroke="inherit"/>\n`;
+        }
+        return `        <g class="dl" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}"${extraAttrs} data-l-x1="${r(x1)}" data-l-y1="${r(y1)}" data-l-x2="${r(x2)}" data-l-y2="${r(y2)}">\n${inner}        </g>\n`;
+    }
+
+    /**
+     * Emit a dashed L-shaped path (two straight legs meeting at a corner) as a
+     * collection of <line> / <path> segments. The dash phase carries across the corner.
+     */
+    _emitDashedLPath(x1, y1, xC, yC, x3, y3, strokeWidth, dashLength, gapLength, dashOffset, lineCap, lineJoin, extraAttrs = '') {
+        const len1 = Math.hypot(xC - x1, yC - y1);
+        const len2 = Math.hypot(x3 - xC, y3 - yC);
+        const total = len1 + len2;
+        if (total === 0) return '';
+        const r = (v) => this._roundCoord(v);
+        const ranges = this._computeDashRanges(total, dashLength, gapLength, dashOffset);
+        if (ranges.length === 0) return '';
+
+        const pointAt = (d) => {
+            if (d <= len1) {
+                const t = len1 > 0 ? d / len1 : 0;
+                return { x: x1 + (xC - x1) * t, y: y1 + (yC - y1) * t };
+            }
+            const t = len2 > 0 ? (d - len1) / len2 : 0;
+            return { x: xC + (x3 - xC) * t, y: yC + (y3 - yC) * t };
+        };
+
+        const renderRange = (d1, d2, indent) => {
+            const eps = 1e-6;
+            const a = pointAt(d1);
+            const c = pointAt(len1);
+            const b = pointAt(d2);
+            const spansCorner = d1 < len1 - eps && d2 > len1 + eps;
+            if (spansCorner) {
+                const path = `M ${r(a.x)} ${r(a.y)} L ${r(c.x)} ${r(c.y)} L ${r(b.x)} ${r(b.y)}`;
+                if (indent) {
+                    return `          <path d="${path}" fill="none" stroke="inherit"/>\n`;
+                }
+                return `        <path d="${path}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-linejoin="${lineJoin}" fill="none"${extraAttrs}/>\n`;
+            }
+            if (indent) {
+                return `          <line x1="${r(a.x)}" y1="${r(a.y)}" x2="${r(b.x)}" y2="${r(b.y)}" stroke="inherit"/>\n`;
+            }
+            return `        <line x1="${r(a.x)}" y1="${r(a.y)}" x2="${r(b.x)}" y2="${r(b.y)}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}"${extraAttrs}/>\n`;
+        };
+
+        if (ranges.length === 1) {
+            return renderRange(ranges[0][0], ranges[0][1], false);
+        }
+
+        let inner = '';
+        for (const [d1, d2] of ranges) {
+            inner += renderRange(d1, d2, true);
+        }
+        return `        <g class="dl" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-linejoin="${lineJoin}" fill="none"${extraAttrs} data-l-x1="${r(x1)}" data-l-y1="${r(y1)}" data-l-x2="${r(x3)}" data-l-y2="${r(y3)}">\n${inner}        </g>\n`;
+    }
+
+    /**
+     * Emit a dashed circular arc (constant radius) as individual <path> arc segments.
+     * Gradient axis (when wrapped) goes from the arc's start point to its end point —
+     * matches the chord-based gradient extraction used for non-dashed arcs.
+     */
+    _emitDashedArc(centerX, centerY, radius, startAngle, endAngle, strokeWidth, dashLength, gapLength, dashOffset, lineCap, extraAttrs = '') {
+        const arcAngle = endAngle - startAngle;
+        const arcLength = Math.abs(radius * arcAngle);
+        if (arcLength === 0 || radius <= 0) return '';
+        const r = (v) => this._roundCoord(v);
+        const sign = arcAngle >= 0 ? 1 : -1;
+        const sweepFlag = sign > 0 ? 1 : 0;
+        const ranges = this._computeDashRanges(arcLength, dashLength, gapLength, dashOffset);
+        if (ranges.length === 0) return '';
+
+        const startX = centerX + radius * Math.cos(startAngle);
+        const startY = centerY + radius * Math.sin(startAngle);
+        const endX = centerX + radius * Math.cos(endAngle);
+        const endY = centerY + radius * Math.sin(endAngle);
+        const angleAt = (d) => startAngle + sign * (d / radius);
+
+        const arcPath = (d1, d2) => {
+            const a1 = angleAt(d1);
+            const a2 = angleAt(d2);
+            const x1 = centerX + radius * Math.cos(a1);
+            const y1 = centerY + radius * Math.sin(a1);
+            const x2 = centerX + radius * Math.cos(a2);
+            const y2 = centerY + radius * Math.sin(a2);
+            const largeArc = Math.abs(a2 - a1) > Math.PI ? 1 : 0;
+            return `M ${r(x1)} ${r(y1)} A ${r(radius)} ${r(radius)} 0 ${largeArc} ${sweepFlag} ${r(x2)} ${r(y2)}`;
+        };
+
+        if (ranges.length === 1) {
+            const path = arcPath(ranges[0][0], ranges[0][1]);
+            return `        <path d="${path}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" fill="none"${extraAttrs}/>\n`;
+        }
+
+        let inner = '';
+        for (const [d1, d2] of ranges) {
+            inner += `          <path d="${arcPath(d1, d2)}" fill="none" stroke="inherit"/>\n`;
+        }
+        return `        <g class="dl" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" fill="none"${extraAttrs} data-l-x1="${r(startX)}" data-l-y1="${r(startY)}" data-l-x2="${r(endX)}" data-l-y2="${r(endY)}">\n${inner}        </g>\n`;
+    }
+
+    /**
      * Get SVG content (without downloading)
      */
     getSVGContent() {
@@ -790,11 +954,33 @@ export class VoidExporter {
         
         let defs = '';
         let paths = svgPaths;
-        
-        // Process <line> elements
+
+        // Process <g class="dl"> wrapper groups FIRST. These groups bundle the
+        // individual visible-dash sub-segments of a single logical line/path, and
+        // carry the original endpoints as data-l-* attributes so we can attach a
+        // single gradient that spans the whole logical line (rather than one
+        // gradient per dash segment, which would clamp at each segment).
+        paths = paths.replace(
+            /<g\s+class="dl"([^>]*)>([\s\S]*?)<\/g>/g,
+            (match, attrs, inner) => {
+                const x1m = /data-l-x1="([^"]+)"/.exec(attrs);
+                const y1m = /data-l-y1="([^"]+)"/.exec(attrs);
+                const x2m = /data-l-x2="([^"]+)"/.exec(attrs);
+                const y2m = /data-l-y2="([^"]+)"/.exec(attrs);
+                if (!x1m || !y1m || !x2m || !y2m) return match;
+                const gradId = `sg${this._gradientCounter++}`;
+                defs += `        <defs><linearGradient id="${gradId}" gradientUnits="userSpaceOnUse" x1="${x1m[1]}" y1="${y1m[1]}" x2="${x2m[1]}" y2="${y2m[1]}"><stop offset="0" stop-color="${startColor}"/><stop offset="1" stop-color="${endColor}"/></linearGradient></defs>\n`;
+                const cleanAttrs = attrs.replace(/\s*data-l-[xy][12]="[^"]*"/g, '').replace(/\s*stroke="[^"]*"/g, '');
+                return `<g class="dl"${cleanAttrs} stroke="url(#${gradId})">${inner}</g>`;
+            }
+        );
+
+        // Process <line> elements OUTSIDE wrapper groups (children of wrappers carry
+        // stroke="inherit" so they are skipped here and inherit the group's gradient).
         paths = paths.replace(
             /<line\s+x1="([^"]+)"\s+y1="([^"]+)"\s+x2="([^"]+)"\s+y2="([^"]+)"([^/]*?)\/>/g,
             (match, x1, y1, x2, y2, attrs) => {
+                if (/stroke="inherit"/.test(attrs)) return match;
                 const gradId = `sg${this._gradientCounter++}`;
                 defs += `        <defs><linearGradient id="${gradId}" gradientUnits="userSpaceOnUse" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"><stop offset="0" stop-color="${startColor}"/><stop offset="1" stop-color="${endColor}"/></linearGradient></defs>\n`;
                 // Remove any existing stroke attribute and add gradient stroke
@@ -807,6 +993,7 @@ export class VoidExporter {
         paths = paths.replace(
             /<path\s+d="([^"]+)"([^/]*?)\/>/g,
             (match, d, attrs) => {
+                if (/stroke="inherit"/.test(attrs)) return match;
                 const points = this._extractPathEndpoints(d);
                 if (!points) return match; // can't determine endpoints
                 
@@ -823,6 +1010,7 @@ export class VoidExporter {
         paths = paths.replace(
             /<polyline\s+points="([^"]+)"([^/]*?)\/>/g,
             (match, pointsStr, attrs) => {
+                if (/stroke="inherit"/.test(attrs)) return match;
                 const pts = pointsStr.trim().split(/\s+/);
                 if (pts.length < 2) return match;
                 const parsePt = (s) => {
@@ -1619,7 +1807,7 @@ export class VoidExporter {
         // Positive offset shifts pattern backward - first dash starts before line start
         const dashOffset = adaptive.dashLength / 2;
         
-        return `        <line x1="${lineX}" y1="${-h/2 + shortenTop}" x2="${lineX}" y2="${h/2 - shortenBottom}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" stroke-dashoffset="${dashOffset}"/>\n`;
+        return this._emitDashedLine(lineX, -h/2 + shortenTop, lineX, h/2 - shortenBottom, lineWidth, adaptive.dashLength, adaptive.gapLength, dashOffset, lineCap);
     }
 
     /**
@@ -1643,7 +1831,7 @@ export class VoidExporter {
         // Positive offset shifts pattern backward - first dash starts before line start
         const dashOffset = adaptive.dashLength / 2;
         
-        return `        <line x1="${lineX}" y1="${-h/2 + shortenTop}" x2="${lineX}" y2="${h/2 - shortenBottom}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" stroke-dashoffset="${dashOffset}"/>\n`;
+        return this._emitDashedLine(lineX, -h/2 + shortenTop, lineX, h/2 - shortenBottom, lineWidth, adaptive.dashLength, adaptive.gapLength, dashOffset, lineCap);
     }
 
     /**
@@ -1681,8 +1869,8 @@ export class VoidExporter {
         const horizDashOffset = horizAdaptive.dashLength / 2;
         
         let svg = '';
-        svg += `        <line x1="${vertLineX}" y1="${-h/2 + shortenTop}" x2="${vertLineX}" y2="${h/2 - shortenBottom}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${vertAdaptive.dashLength} ${vertAdaptive.gapLength}" stroke-dashoffset="${vertDashOffset}"/>\n`;
-        svg += `        <line x1="${horizStartX}" y1="${horizLineY}" x2="${horizEndX}" y2="${horizLineY}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-linejoin="${lineJoin}" stroke-dasharray="${horizAdaptive.dashLength} ${horizAdaptive.gapLength}" stroke-dashoffset="${horizDashOffset}"/>\n`;
+        svg += this._emitDashedLine(vertLineX, -h/2 + shortenTop, vertLineX, h/2 - shortenBottom, lineWidth, vertAdaptive.dashLength, vertAdaptive.gapLength, vertDashOffset, lineCap);
+        svg += this._emitDashedLine(horizStartX, horizLineY, horizEndX, horizLineY, lineWidth, horizAdaptive.dashLength, horizAdaptive.gapLength, horizDashOffset, lineCap);
         return svg;
     }
 
@@ -1719,9 +1907,8 @@ export class VoidExporter {
         // Positive offset shifts pattern backward - first dash starts before line start
         const dashOffset = adaptive.dashLength / 2;
         
-        // Draw L-shaped connection as single path considering shortening
-        const path = `M ${vertLineX} ${vertStartY} L ${vertLineX} ${horizLineY} L ${horizEndX} ${horizLineY}`;
-        return `        <path d="${path}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-linejoin="${lineJoin}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" stroke-dashoffset="${dashOffset}" fill="none"/>\n`;
+        // Draw L-shaped connection as a series of solid segments (Figma-safe).
+        return this._emitDashedLPath(vertLineX, vertStartY, vertLineX, horizLineY, horizEndX, horizLineY, lineWidth, adaptive.dashLength, adaptive.gapLength, dashOffset, lineCap, lineJoin);
     }
 
     /**
@@ -1741,12 +1928,6 @@ export class VoidExporter {
         const startAngle = Math.PI / 2 + deltaAngleRight;
         const endAngle = Math.PI - deltaAngleTop;
         
-        // SVG arc: M startX startY A rx ry x-axis-rotation large-arc-flag sweep-flag endX endY
-        const startX = centerX + arcRadius * Math.cos(startAngle);
-        const startY = centerY + arcRadius * Math.sin(startAngle);
-        const endX = centerX + arcRadius * Math.cos(endAngle);
-        const endY = centerY + arcRadius * Math.sin(endAngle);
-        
         const lineWidth = stem / 2;
         const lineCap = roundedCaps ? 'round' : 'butt';
         
@@ -1761,8 +1942,7 @@ export class VoidExporter {
         // Positive offset shifts pattern backward - first dash starts before line start
         const dashOffset = adaptive.dashLength / 2;
         
-        const path = `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 1 ${endX} ${endY}`;
-        return `        <path d="${path}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" stroke-dashoffset="${dashOffset}" fill="none"/>\n`;
+        return this._emitDashedArc(centerX, centerY, arcRadius, startAngle, endAngle, lineWidth, adaptive.dashLength, adaptive.gapLength, dashOffset, lineCap);
     }
 
     /**
@@ -1782,11 +1962,6 @@ export class VoidExporter {
         const startAngle = Math.PI / 2 + deltaAngleRight;
         const endAngle = Math.PI - deltaAngleTop;
         
-        const startX = centerX + arcRadius * Math.cos(startAngle);
-        const startY = centerY + arcRadius * Math.sin(startAngle);
-        const endX = centerX + arcRadius * Math.cos(endAngle);
-        const endY = centerY + arcRadius * Math.sin(endAngle);
-        
         const lineWidth = stem / 2;
         const lineCap = roundedCaps ? 'round' : 'butt';
         
@@ -1801,8 +1976,7 @@ export class VoidExporter {
         // Positive offset shifts pattern backward - first dash starts before line start
         const dashOffset = adaptive.dashLength / 2;
         
-        const path = `M ${startX} ${startY} A ${arcRadius} ${arcRadius} 0 0 1 ${endX} ${endY}`;
-        return `        <path d="${path}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" stroke-dashoffset="${dashOffset}" fill="none"/>\n`;
+        return this._emitDashedArc(centerX, centerY, arcRadius, startAngle, endAngle, lineWidth, adaptive.dashLength, adaptive.gapLength, dashOffset, lineCap);
     }
 
     // ============================================
@@ -1836,7 +2010,7 @@ export class VoidExporter {
             // If disabled: all lines start with half dash
             const dashOffset = dashChess ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
             const lineX = startX + stripeOffset(i, strokeWidth, gap);
-            svg += `        <line x1="${lineX}" y1="${-h/2 + shortenTop}" x2="${lineX}" y2="${h/2 - shortenBottom}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" stroke-dashoffset="${dashOffset}"/>\n`;
+            svg += this._emitDashedLine(lineX, -h/2 + shortenTop, lineX, h/2 - shortenBottom, strokeWidth, adaptive.dashLength, adaptive.gapLength, dashOffset, lineCap);
         }
         
         // Closing lines at ends (also dashed in SD mode)
@@ -1850,12 +2024,12 @@ export class VoidExporter {
             
             if (localEndpoints.top) {
                 const yClos = -h / 2 + shortenTop;
-                svg += `        <line x1="${firstLineX}" y1="${yClos}" x2="${lastLineX}" y2="${yClos}" stroke-width="${strokeWidth}" stroke-linecap="${closeCap}" stroke-dasharray="${closeAdaptive.dashLength} ${closeAdaptive.gapLength}" stroke-dashoffset="${closeAdaptive.dashLength / 2}" fill="none"/>\n`;
+                svg += this._emitDashedLine(firstLineX, yClos, lastLineX, yClos, strokeWidth, closeAdaptive.dashLength, closeAdaptive.gapLength, closeAdaptive.dashLength / 2, closeCap);
             }
             
             if (localEndpoints.bottom) {
                 const yClos = h / 2 - shortenBottom;
-                svg += `        <line x1="${firstLineX}" y1="${yClos}" x2="${lastLineX}" y2="${yClos}" stroke-width="${strokeWidth}" stroke-linecap="${closeCap}" stroke-dasharray="${closeAdaptive.dashLength} ${closeAdaptive.gapLength}" stroke-dashoffset="${closeAdaptive.dashLength / 2}" fill="none"/>\n`;
+                svg += this._emitDashedLine(firstLineX, yClos, lastLineX, yClos, strokeWidth, closeAdaptive.dashLength, closeAdaptive.gapLength, closeAdaptive.dashLength / 2, closeCap);
             }
         }
         
@@ -1890,7 +2064,7 @@ export class VoidExporter {
             // If disabled: all lines start with half dash
             const dashOffset = dashChess ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
             const lineX = startX + stripeOffset(i, strokeWidth, gap);
-            svg += `        <line x1="${lineX}" y1="${-h/2 + shortenTop}" x2="${lineX}" y2="${h/2 - shortenBottom}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" stroke-dashoffset="${dashOffset}"/>\n`;
+            svg += this._emitDashedLine(lineX, -h/2 + shortenTop, lineX, h/2 - shortenBottom, strokeWidth, adaptive.dashLength, adaptive.gapLength, dashOffset, lineCap);
         }
         
         // Closing lines at ends (also dashed in SD mode)
@@ -1904,12 +2078,12 @@ export class VoidExporter {
             
             if (localEndpoints.top) {
                 const yClos = -h / 2 + shortenTop;
-                svg += `        <line x1="${firstLineX}" y1="${yClos}" x2="${lastLineX}" y2="${yClos}" stroke-width="${strokeWidth}" stroke-linecap="${closeCap}" stroke-dasharray="${closeAdaptive.dashLength} ${closeAdaptive.gapLength}" stroke-dashoffset="${closeAdaptive.dashLength / 2}" fill="none"/>\n`;
+                svg += this._emitDashedLine(firstLineX, yClos, lastLineX, yClos, strokeWidth, closeAdaptive.dashLength, closeAdaptive.gapLength, closeAdaptive.dashLength / 2, closeCap);
             }
             
             if (localEndpoints.bottom) {
                 const yClos = h / 2 - shortenBottom;
-                svg += `        <line x1="${firstLineX}" y1="${yClos}" x2="${lastLineX}" y2="${yClos}" stroke-width="${strokeWidth}" stroke-linecap="${closeCap}" stroke-dasharray="${closeAdaptive.dashLength} ${closeAdaptive.gapLength}" stroke-dashoffset="${closeAdaptive.dashLength / 2}" fill="none"/>\n`;
+                svg += this._emitDashedLine(firstLineX, yClos, lastLineX, yClos, strokeWidth, closeAdaptive.dashLength, closeAdaptive.gapLength, closeAdaptive.dashLength / 2, closeCap);
             }
         }
         
@@ -1942,7 +2116,7 @@ export class VoidExporter {
             // even lines (i % 2 === 1) start with full dash
             const vertDashOffset = dashChess ? ((i % 2 === 0) ? vertAdaptive.dashLength / 2 : 0) : vertAdaptive.dashLength / 2;
             const lineX = vertStartX + stripeOffset(i, strokeWidth, gap);
-            svg += `        <line x1="${lineX}" y1="${-h/2}" x2="${lineX}" y2="${h/2}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${vertAdaptive.dashLength} ${vertAdaptive.gapLength}" stroke-dashoffset="${vertDashOffset}"/>\n`;
+            svg += this._emitDashedLine(lineX, -h/2, lineX, h/2, strokeWidth, vertAdaptive.dashLength, vertAdaptive.gapLength, vertDashOffset, lineCap);
         }
         
         // Horizontal lines
@@ -1954,7 +2128,7 @@ export class VoidExporter {
             // even lines (i % 2 === 1) start with full dash
             const horizDashOffset = dashChess ? ((i % 2 === 0) ? horizAdaptive.dashLength / 2 : 0) : horizAdaptive.dashLength / 2;
             const lineY = horizStartY + stripeOffset(i, strokeWidth, gap);
-            svg += `        <line x1="${lastVertX}" y1="${lineY}" x2="${w/2}" y2="${lineY}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${horizAdaptive.dashLength} ${horizAdaptive.gapLength}" stroke-dashoffset="${horizDashOffset}"/>\n`;
+            svg += this._emitDashedLine(lastVertX, lineY, w/2, lineY, strokeWidth, horizAdaptive.dashLength, horizAdaptive.gapLength, horizDashOffset, lineCap);
         }
         
         return svg;
@@ -1992,8 +2166,7 @@ export class VoidExporter {
             // If disabled: all lines start with half dash
             const dashOffset = dashChess ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
             
-            const path = `M ${lineX} ${-h/2} L ${lineX} ${lineY} L ${w/2} ${lineY}`;
-            svg += `        <path d="${path}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-linejoin="${lineJoin}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" stroke-dashoffset="${dashOffset}" fill="none"/>\n`;
+            svg += this._emitDashedLPath(lineX, -h/2, lineX, lineY, w/2, lineY, strokeWidth, adaptive.dashLength, adaptive.gapLength, dashOffset, lineCap, lineJoin);
         }
         
         return svg;
@@ -2030,11 +2203,6 @@ export class VoidExporter {
             const startAngle = Math.PI / 2 + deltaAngleRight;
             const endAngle = Math.PI - deltaAngleTop;
             
-            const startArcX = centerX + arcRadius * Math.cos(startAngle);
-            const startArcY = centerY + arcRadius * Math.sin(startAngle);
-            const endArcX = centerX + arcRadius * Math.cos(endAngle);
-            const endArcY = centerY + arcRadius * Math.sin(endAngle);
-            
             const arcAngle = endAngle - startAngle;
             const arcLength = arcRadius * arcAngle;
             const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
@@ -2042,8 +2210,7 @@ export class VoidExporter {
             // even lines (j % 2 === 1) start with full dash
             const dashOffset = dashChess ? ((j % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
             
-            const path = `M ${startArcX} ${startArcY} A ${arcRadius} ${arcRadius} 0 0 1 ${endArcX} ${endArcY}`;
-            svg += `        <path d="${path}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" stroke-dashoffset="${dashOffset}" fill="none"/>\n`;
+            svg += this._emitDashedArc(centerX, centerY, arcRadius, startAngle, endAngle, strokeWidth, adaptive.dashLength, adaptive.gapLength, dashOffset, lineCap);
         }
         
         // Closing lines (also dashed in SD mode)
@@ -2066,7 +2233,7 @@ export class VoidExporter {
                 const y1 = centerY + firstRadius * Math.sin(angle1);
                 const x2 = centerX + lastRadius * Math.cos(angle2);
                 const y2 = centerY + lastRadius * Math.sin(angle2);
-                svg += `        <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="${strokeWidth}" stroke-linecap="${closeCap}" stroke-dasharray="${closeAdaptive.dashLength} ${closeAdaptive.gapLength}" stroke-dashoffset="${closeAdaptive.dashLength / 2}" fill="none"/>\n`;
+                svg += this._emitDashedLine(x1, y1, x2, y2, strokeWidth, closeAdaptive.dashLength, closeAdaptive.gapLength, closeAdaptive.dashLength / 2, closeCap);
             }
             
             if (localEndpoints.top) {
@@ -2078,7 +2245,7 @@ export class VoidExporter {
                 const y1 = centerY + firstRadius * Math.sin(angle1);
                 const x2 = centerX + lastRadius * Math.cos(angle2);
                 const y2 = centerY + lastRadius * Math.sin(angle2);
-                svg += `        <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="${strokeWidth}" stroke-linecap="${closeCap}" stroke-dasharray="${closeAdaptive.dashLength} ${closeAdaptive.gapLength}" stroke-dashoffset="${closeAdaptive.dashLength / 2}" fill="none"/>\n`;
+                svg += this._emitDashedLine(x1, y1, x2, y2, strokeWidth, closeAdaptive.dashLength, closeAdaptive.gapLength, closeAdaptive.dashLength / 2, closeCap);
             }
         }
         
@@ -2116,11 +2283,6 @@ export class VoidExporter {
             const startAngle = Math.PI / 2 + deltaAngleRight;
             const endAngle = Math.PI - deltaAngleTop;
             
-            const startArcX = centerX + arcRadius * Math.cos(startAngle);
-            const startArcY = centerY + arcRadius * Math.sin(startAngle);
-            const endArcX = centerX + arcRadius * Math.cos(endAngle);
-            const endArcY = centerY + arcRadius * Math.sin(endAngle);
-            
             const arcAngle = endAngle - startAngle;
             const arcLength = arcRadius * arcAngle;
             const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
@@ -2128,8 +2290,7 @@ export class VoidExporter {
             // even lines (j % 2 === 1) start with full dash
             const dashOffset = dashChess ? ((j % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
             
-            const path = `M ${startArcX} ${startArcY} A ${arcRadius} ${arcRadius} 0 0 1 ${endArcX} ${endArcY}`;
-            svg += `        <path d="${path}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-dasharray="${adaptive.dashLength} ${adaptive.gapLength}" stroke-dashoffset="${dashOffset}" fill="none"/>\n`;
+            svg += this._emitDashedArc(centerX, centerY, arcRadius, startAngle, endAngle, strokeWidth, adaptive.dashLength, adaptive.gapLength, dashOffset, lineCap);
         }
         
         // Closing lines (also dashed in SD mode)
@@ -2152,7 +2313,7 @@ export class VoidExporter {
                 const y1 = centerY + firstRadius * Math.sin(angle1);
                 const x2 = centerX + lastRadius * Math.cos(angle2);
                 const y2 = centerY + lastRadius * Math.sin(angle2);
-                svg += `        <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="${strokeWidth}" stroke-linecap="${closeCap}" stroke-dasharray="${closeAdaptive.dashLength} ${closeAdaptive.gapLength}" stroke-dashoffset="${closeAdaptive.dashLength / 2}" fill="none"/>\n`;
+                svg += this._emitDashedLine(x1, y1, x2, y2, strokeWidth, closeAdaptive.dashLength, closeAdaptive.gapLength, closeAdaptive.dashLength / 2, closeCap);
             }
             
             if (localEndpoints.top) {
@@ -2164,7 +2325,7 @@ export class VoidExporter {
                 const y1 = centerY + firstRadius * Math.sin(angle1);
                 const x2 = centerX + lastRadius * Math.cos(angle2);
                 const y2 = centerY + lastRadius * Math.sin(angle2);
-                svg += `        <line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="${strokeWidth}" stroke-linecap="${closeCap}" stroke-dasharray="${closeAdaptive.dashLength} ${closeAdaptive.gapLength}" stroke-dashoffset="${closeAdaptive.dashLength / 2}" fill="none"/>\n`;
+                svg += this._emitDashedLine(x1, y1, x2, y2, strokeWidth, closeAdaptive.dashLength, closeAdaptive.gapLength, closeAdaptive.dashLength / 2, closeCap);
             }
         }
         
