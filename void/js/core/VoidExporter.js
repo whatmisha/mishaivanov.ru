@@ -970,8 +970,15 @@ export class VoidExporter {
                 if (!x1m || !y1m || !x2m || !y2m) return match;
                 const gradId = `sg${this._gradientCounter++}`;
                 defs += `        <defs><linearGradient id="${gradId}" gradientUnits="userSpaceOnUse" x1="${x1m[1]}" y1="${y1m[1]}" x2="${x2m[1]}" y2="${y2m[1]}"><stop offset="0" stop-color="${startColor}"/><stop offset="1" stop-color="${endColor}"/></linearGradient></defs>\n`;
-                const cleanAttrs = attrs.replace(/\s*data-l-[xy][12]="[^"]*"/g, '').replace(/\s*stroke="[^"]*"/g, '');
-                return `<g class="dl"${cleanAttrs} stroke="url(#${gradId})">${inner}</g>`;
+                const cleanAttrs = attrs
+                    .replace(/\s*data-l-[xy][12]="[^"]*"/g, '')
+                    .replace(/\s*stroke="[^"]*"/g, '');
+                // Avoid stroke="inherit" in exported SVG for Figma compatibility:
+                // Figma may drop inherited stroke paint when reserializing and turn
+                // some child segments into black strokes. We stamp the same gradient
+                // directly on each child segment instead of relying on group inheritance.
+                const paintedInner = inner.replace(/\s*stroke="inherit"/g, ` stroke="url(#${gradId})"`);
+                return `<g class="dl"${cleanAttrs}>${paintedInner}</g>`;
             }
         );
 
