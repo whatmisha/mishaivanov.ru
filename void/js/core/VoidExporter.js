@@ -776,7 +776,8 @@ export class VoidExporter {
                     shouldUseCloseEnds,
                     params.dashChess !== undefined ? params.dashChess : false,
                     moduleColor,
-                    moduleGradientPair
+                    moduleGradientPair,
+                    shouldUseRounded
                 );
                 
                 if (moduleSVG) {
@@ -792,7 +793,7 @@ export class VoidExporter {
     /**
      * Render module to SVG
      */
-    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, strokeGapRatio, cornerRadius = 0, roundedCaps = false, dashLength = 0.10, gapLength = 0.30, endpointSides = null, closeEnds = false, dashChess = false, color = null, gradientPairOverride = null) {
+    renderModuleToSVG(type, rotation, x, y, w, h, stem, mode, strokesNum, strokeGapRatio, cornerRadius = 0, roundedCaps = false, dashLength = 0.10, gapLength = 0.30, endpointSides = null, closeEnds = false, dashChess = false, color = null, gradientPairOverride = null, roundedCapsPreference = false) {
         if (type === 'E') return ''; // Empty
         
         // Helper function: get local endpoint sides considering rotation
@@ -816,6 +817,11 @@ export class VoidExporter {
         
         const localEndpoints = getLocalEndpointSides(rotation, endpointSides);
 
+        // Match ModuleDrawer.drawLink: when "Round Caps" is on, L elbows use round joins
+        // even on interior strokes (butt caps on path ends unless this module is an endpoint stripe).
+        const linkJoinRound = roundedCaps || roundedCapsPreference;
+        const linkCapRound = roundedCaps;
+
         const angle = rotation * 90;
         const centerX = x + w / 2;
         const centerY = y + h / 2;
@@ -835,7 +841,7 @@ export class VoidExporter {
                         paths = this.renderJointSVGStroke(0, 0, w, h, stem, roundedCaps);
                         break;
                     case 'L':
-                        paths = this.renderLinkSVGStroke(0, 0, w, h, stem, roundedCaps);
+                        paths = this.renderLinkSVGStroke(0, 0, w, h, stem, linkCapRound, linkJoinRound);
                         break;
                     case 'R':
                     paths = this.renderRoundSVGStroke(0, 0, w, h, stem, roundedCaps, localEndpoints);
@@ -857,7 +863,7 @@ export class VoidExporter {
                         paths = this.renderJointSVGStrokeStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio, roundedCaps);
                         break;
                     case 'L':
-                        paths = this.renderLinkSVGStrokeStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio, roundedCaps);
+                        paths = this.renderLinkSVGStrokeStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio, linkCapRound, linkJoinRound);
                         break;
                     case 'R':
                     paths = this.renderRoundSVGStrokeStripes(0, 0, w, h, stem, strokesNum, strokeGapRatio, roundedCaps, localEndpoints, closeEnds);
@@ -879,7 +885,7 @@ export class VoidExporter {
                     paths = this.renderJointSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps, localEndpoints);
                         break;
                     case 'L':
-                    paths = this.renderLinkSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps, localEndpoints);
+                    paths = this.renderLinkSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, linkCapRound, localEndpoints, linkJoinRound);
                         break;
                     case 'R':
                     paths = this.renderRoundSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps, localEndpoints);
@@ -901,7 +907,7 @@ export class VoidExporter {
                     paths = this.renderJointSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps, dashChess);
                         break;
                     case 'L':
-                    paths = this.renderLinkSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps, dashChess);
+                    paths = this.renderLinkSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, linkCapRound, dashChess, linkJoinRound);
                         break;
                     case 'R':
                     paths = this.renderRoundSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps, localEndpoints, closeEnds, dashChess);
@@ -1399,12 +1405,12 @@ export class VoidExporter {
     /**
      * L — Link/Corner: L-shaped connection (stroke)
      */
-    renderLinkSVGStroke(x, y, w, h, stem, roundedCaps = false) {
+    renderLinkSVGStroke(x, y, w, h, stem, strokeCapRound = false, strokeJoinRound = false) {
         const vertLineX = -w / 2 + stem / 4;
         const horizLineY = h / 2 - stem / 4;
         const lineWidth = stem / 2;
-        const lineCap = roundedCaps ? 'round' : 'butt';
-        const lineJoin = roundedCaps ? 'round' : 'miter';
+        const lineCap = strokeCapRound ? 'round' : 'butt';
+        const lineJoin = strokeJoinRound ? 'round' : 'miter';
         // Draw L-shaped connection as single path
         const path = `M ${vertLineX} ${-h/2} L ${vertLineX} ${horizLineY} L ${w/2} ${horizLineY}`;
         return `        <path d="${path}" stroke-width="${lineWidth}" stroke-linecap="${lineCap}" stroke-linejoin="${lineJoin}" fill="none"/>\n`;
@@ -1595,11 +1601,11 @@ export class VoidExporter {
     /**
      * L — Link: multiple parallel lines for each part (stroke stripes)
      */
-    renderLinkSVGStrokeStripes(x, y, w, h, stem, strokesNum, strokeGapRatio, roundedCaps = false) {
+    renderLinkSVGStrokeStripes(x, y, w, h, stem, strokesNum, strokeGapRatio, strokeCapRound = false, strokeJoinRound = false) {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
-        const lineCap = roundedCaps ? 'round' : 'butt';
-        const lineJoin = roundedCaps ? 'round' : 'miter';
+        const lineCap = strokeCapRound ? 'round' : 'butt';
+        const lineJoin = strokeJoinRound ? 'round' : 'miter';
         let svg = '';
         
         // Draw L-shaped lines without intersections
@@ -1885,15 +1891,15 @@ export class VoidExporter {
     /**
      * L — Link/Corner: L-shaped connection (dash)
      */
-    renderLinkSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false, localEndpoints = null) {
+    renderLinkSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, strokeCapRound = false, localEndpoints = null, strokeJoinRound = false) {
         const vertLineX = -w / 2 + stem / 4;
         const horizLineY = h / 2 - stem / 4;
         const lineWidth = stem / 2;
-        const lineCap = roundedCaps ? 'round' : 'butt';
-        const lineJoin = roundedCaps ? 'round' : 'miter';
+        const lineCap = strokeCapRound ? 'round' : 'butt';
+        const lineJoin = strokeJoinRound ? 'round' : 'miter';
         
         // Shortening (if roundedCaps enabled and there are endpoints)
-        const shouldShorten = (roundedCaps || false) && localEndpoints; // closeEnds not passed in dash mode
+        const shouldShorten = (strokeCapRound || false) && localEndpoints; // closeEnds not passed in dash mode
         const shortenTop = shouldShorten && localEndpoints.top ? stem * 0.25 : 0;
         const shortenRight = shouldShorten && localEndpoints.right ? stem * 0.25 : 0;
         const shortenBottom = shouldShorten && localEndpoints.bottom ? stem * 0.25 : 0;
@@ -2145,15 +2151,15 @@ export class VoidExporter {
     /**
      * L — Link/Corner: L-shaped connection with dashes (SD mode)
      */
-    renderLinkSVGStrokeSD(x, y, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps = false, dashChess = false) {
+    renderLinkSVGStrokeSD(x, y, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, strokeCapRound = false, dashChess = false, strokeJoinRound = false) {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         
         const vertStartX = -w / 2 + strokeWidth / 2;
         const horizStartY = h / 2 - stem / 2 + strokeWidth / 2;
         
-        const lineCap = roundedCaps ? 'round' : 'butt';
-        const lineJoin = roundedCaps ? 'round' : 'miter';
+        const lineCap = strokeCapRound ? 'round' : 'butt';
+        const lineJoin = strokeJoinRound ? 'round' : 'miter';
         let svg = '';
         
         const dashPx = strokeWidth * dashLength;
