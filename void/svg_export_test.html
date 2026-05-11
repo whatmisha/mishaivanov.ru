@@ -54,6 +54,13 @@ try {
     const mode = getDerivedMode();
     status.textContent += ` | mode=${mode} | colorMode=${s.colorMode}`;
     
+    // Compute isRandom same way as Settings.get('isRandom') in main.js
+    const effectRandomFlags = ['randomizeRoundedCaps','randomizeCloseEnds','randomizeDashChess','randomizeAltGlyphs','randomizeChaosMode','randomizeShowGrid','randomizeShowJoints','randomizeShowFreeEndpoints'];
+    const colorRandom = !!(s.paletteDiceLetter || s.paletteDiceBg || s.paletteDiceGrid || s.paletteDiceGradientStart || s.paletteDiceGradientEnd || s.randomizePaletteColors);
+    const effectRandom = effectRandomFlags.some(k => !!s[k]);
+    const isRandom = !!(s.randomizeStem || s.randomizeStrokes || s.randomizeContrast || s.randomizeDashLength || s.randomizeGapLength || s.randomizeWobblyAmount || s.randomizeWobblyFrequency || colorRandom || effectRandom);
+    status.textContent += ` | isRandom=${isRandom}`;
+
     const params = {
         stem,
         moduleSize,
@@ -67,7 +74,24 @@ try {
         gridColor: s.gridColor,
         textAlign: s.textAlign || 'center',
         showGrid: s.showGrid,
-        isRandom: false,
+        isRandom,
+        randomizeStem: s.randomizeStem,
+        randomizeStrokes: s.randomizeStrokes,
+        randomizeContrast: s.randomizeContrast,
+        randomizeDashLength: s.randomizeDashLength,
+        randomizeGapLength: s.randomizeGapLength,
+        randomStemMin: s.randomStemMin,
+        randomStemMax: s.randomStemMax,
+        randomStrokesMin: s.randomStrokesMin,
+        randomStrokesMax: s.randomStrokesMax,
+        randomContrastMin: s.randomContrastMin,
+        randomContrastMax: s.randomContrastMax,
+        randomDashLengthMin: s.randomDashLengthMin,
+        randomDashLengthMax: s.randomDashLengthMax,
+        randomGapLengthMin: s.randomGapLengthMin,
+        randomGapLengthMax: s.randomGapLengthMax,
+        randomModeType: s.randomModeType,
+        useAlternativesInRandom: s.useAlternativesInRandom,
         text: s.text,
         roundedCaps: s.roundedCaps || false,
         closeEnds: s.closeEnds || false,
