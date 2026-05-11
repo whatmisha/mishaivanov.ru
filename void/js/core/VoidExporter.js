@@ -1599,6 +1599,7 @@ export class VoidExporter {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         const lineCap = roundedCaps ? 'round' : 'butt';
+        const lineJoin = roundedCaps ? 'round' : 'miter';
         let svg = '';
         
         // Draw L-shaped lines without intersections
@@ -1615,7 +1616,7 @@ export class VoidExporter {
             const reverseIndex = strokesNum - 1 - i;
             const reverseLineY = horizStartY + stripeOffset(reverseIndex, strokeWidth, gap);
             
-            svg += `        <polyline points="${lineX},${-h/2} ${lineX},${reverseLineY} ${w/2},${reverseLineY}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-linejoin="miter" fill="none"/>\n`;
+            svg += `        <polyline points="${lineX},${-h/2} ${lineX},${reverseLineY} ${w/2},${reverseLineY}" stroke-width="${strokeWidth}" stroke-linecap="${lineCap}" stroke-linejoin="${lineJoin}" fill="none"/>\n`;
         }
         
         return svg;
