@@ -397,19 +397,20 @@ export class MobileBootstrap {
         const clean = String(value || '').replace(/\s+/g, ' ').trim();
         if (!clean) return [];
 
-        const maxLineLength = this.getMobileWrapLimit();
+        const measure = this.getMobileTextMeasure();
         const lines = [];
         let current = '';
 
         clean.split(' ').filter(Boolean).forEach((word) => {
-            const chunks = this.splitMobileWord(word, maxLineLength);
+            const chunks = this.splitMobileWord(word, measure);
             chunks.forEach((chunk) => {
                 if (!current) {
                     current = chunk;
                     return;
                 }
-                if (`${current} ${chunk}`.length <= maxLineLength) {
-                    current = `${current} ${chunk}`;
+                const candidate = `${current} ${chunk}`;
+                if (this.mobileLineFits(candidate, measure)) {
+                    current = candidate;
                 } else {
                     lines.push(current);
                     current = chunk;
@@ -421,31 +422,59 @@ export class MobileBootstrap {
         return lines;
     }
 
-    splitMobileWord(word, maxLineLength) {
-        if (word.length <= maxLineLength) return [word];
+    splitMobileWord(word, measure) {
+        if (this.mobileLineFits(word, measure)) return [word];
 
         const chunks = [];
-        for (let i = 0; i < word.length; i += maxLineLength) {
-            chunks.push(word.slice(i, i + maxLineLength));
+        let current = '';
+        Array.from(word).forEach((char) => {
+            const candidate = `${current}${char}`;
+            if (current && !this.mobileLineFits(candidate, measure)) {
+                chunks.push(current);
+                current = char;
+            } else {
+                current = candidate;
+            }
+        });
+
+        if (current) {
+            chunks.push(current);
         }
         return chunks;
     }
 
-    getMobileWrapLimit() {
+    getMobileTextMeasure() {
         const canvasContainer = document.getElementById('canvasContainer');
         const rect = canvasContainer?.getBoundingClientRect?.();
         const availableWidth = rect?.width || window.innerWidth;
+        const moduleSize = this.getMobileReferenceModuleSize();
         const letterSpacingMultiplier = this.app.settings.get('letterSpacingMultiplier') || 1;
-        const usableModules = (
-            availableWidth *
-            (1 - 2 * MOBILE_CANVAS_PADDING_RATIO)
-        ) / MOBILE_MIN_MODULE_SIZE;
-        const charModules = 5 + letterSpacingMultiplier;
+        const letterSpacing = moduleSize * letterSpacingMultiplier;
+        const cols = this.app.renderer?.cols || 5;
 
-        return Math.max(
-            4,
-            Math.floor((usableModules + letterSpacingMultiplier) / charModules)
-        );
+        return {
+            maxWidth: availableWidth * (1 - 2 * MOBILE_CANVAS_PADDING_RATIO),
+            moduleSize,
+            letterW: cols * moduleSize,
+            letterSpacing
+        };
+    }
+
+    mobileLineFits(line, measure) {
+        return this.getMobileLineWidth(line, measure) <= measure.maxWidth + 0.5;
+    }
+
+    getMobileLineWidth(line, measure) {
+        if (this.app.renderer?.calculateLineWidth) {
+            return this.app.renderer.calculateLineWidth(
+                line,
+                measure.letterW,
+                measure.moduleSize,
+                measure.letterSpacing
+            );
+        }
+
+        return line.length * measure.letterW + Math.max(0, line.length - 1) * measure.letterSpacing;
     }
 
     flattenMobileText(text) {
@@ -528,42 +557,52 @@ export class MobileBootstrap {
         s.set('showFreeEndpoints', false);
     }
 
+    getMobileAvailableSize() {
+        const canvasContainer = document.getElementById('canvasContainer');
+        const containerRect = canvasContainer
+            ? canvasContainer.getBoundingClientRect()
+            : null;
+
+        return {
+            width: containerRect ? containerRect.width : window.innerWidth,
+            height: containerRect ? containerRect.height : window.innerHeight
+        };
+    }
+
+    getMobileReferenceModuleSize() {
+        const { width, height } = this.getMobileAvailableSize();
+        const lines = MOBILE_FIXED_TEXT.split('\n');
+        const MAX_LINE_LENGTH = Math.max(1, ...lines.map((line) => line.length));
+        const NUM_LINES = Math.max(1, lines.length);
+        const COLS = this.app.renderer?.cols || 5;
+        const ROWS = this.app.renderer?.rows || 5;
+        const PADDING_RATIO = MOBILE_CANVAS_PADDING_RATIO;
+
+        const letterSpacingMultiplier = this.app.settings.get('letterSpacingMultiplier') || 1;
+        const lineHeightMultiplier = this.app.settings.get('lineHeightMultiplier') || 1;
+
+        const maxWidth = width * (1 - 2 * PADDING_RATIO);
+        const maxHeight = height * (1 - 2 * PADDING_RATIO);
+
+        const moduleSizeByWidth = maxWidth / (
+            MAX_LINE_LENGTH * COLS + (MAX_LINE_LENGTH - 1) * letterSpacingMultiplier
+        );
+        const moduleSizeByHeight = maxHeight / (
+            NUM_LINES * ROWS + (NUM_LINES - 1) * lineHeightMultiplier
+        );
+
+        const optimalModuleSize = Math.floor(Math.min(moduleSizeByWidth, moduleSizeByHeight));
+        return Math.max(MOBILE_MIN_MODULE_SIZE, Math.min(128, optimalModuleSize));
+    }
+
     /**
-     * Calculate optimal module size for mobile device so the text
-     * Current mobile text fits in window without clipping.
+     * Calculate optimal module size for mobile device from the default
+     * mobile text, so custom text wrapping cannot shrink the letters.
      */
     calculateMobileModuleSize() {
         // Wait for next frame so canvas gets dimensions.
         requestAnimationFrame(() => {
-            const canvasContainer = document.getElementById('canvasContainer');
-            const containerRect = canvasContainer
-                ? canvasContainer.getBoundingClientRect()
-                : null;
-            const availableWidth = containerRect ? containerRect.width : window.innerWidth;
-            const availableHeight = containerRect ? containerRect.height : window.innerHeight;
-
-            const lines = String(this.app.settings.get('text') || MOBILE_FIXED_TEXT).split('\n');
-            const MAX_LINE_LENGTH = Math.max(1, ...lines.map((line) => line.length));
-            const NUM_LINES = Math.max(1, lines.length);
-            const COLS = 5;
-            const ROWS = 5;
-            const PADDING_RATIO = MOBILE_CANVAS_PADDING_RATIO; // 10 % on each side
-
-            const letterSpacingMultiplier = this.app.settings.get('letterSpacingMultiplier') || 1;
-            const lineHeightMultiplier = this.app.settings.get('lineHeightMultiplier') || 1;
-
-            const maxWidth = availableWidth * (1 - 2 * PADDING_RATIO);
-            const maxHeight = availableHeight * (1 - 2 * PADDING_RATIO);
-
-            const moduleSizeByWidth = maxWidth / (
-                MAX_LINE_LENGTH * COLS + (MAX_LINE_LENGTH - 1) * letterSpacingMultiplier
-            );
-            const moduleSizeByHeight = maxHeight / (
-                NUM_LINES * ROWS + (NUM_LINES - 1) * lineHeightMultiplier
-            );
-
-            const optimalModuleSize = Math.floor(Math.min(moduleSizeByWidth, moduleSizeByHeight));
-            const finalModuleSize = Math.max(8, Math.min(128, optimalModuleSize));
+            const finalModuleSize = this.getMobileReferenceModuleSize();
 
             this.app.settings.set('moduleSize', finalModuleSize);
             this.app.updateRenderer();

@@ -620,7 +620,12 @@ Tool</textarea>
         <button class="btn-fixed" id="exportPngBtn" type="button">Export PNG</button>
         <button class="btn-fixed" id="copyBtn" type="button" title="Copies the SVG to the clipboard — paste it straight into Figma (or any app)">Copy SVG</button>
         <button class="btn-fixed" id="exportBtn" type="button">Export SVG ⌘E</button>
-        <select class="mobile-preset-select" id="mobilePresetSelect" aria-label="Preset"></select>
+        <span class="mobile-preset-select-wrap">
+            <select class="mobile-preset-select" id="mobilePresetSelect" aria-label="Preset"></select>
+            <svg class="mobile-preset-select-arrow preset-dropdown-arrow" width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </span>
         <input class="mobile-text-input" id="mobileTextInput" type="text" value="TRY DESK TOP" maxlength="48" enterkeyhint="done" aria-label="Text">
         <button class="mobile-randomize-btn" id="mobileRandomizeBtn" type="button" aria-label="Randomize" title="Randomize">
             <svg viewBox="0 0 16 16" width="17" height="17" fill="none" aria-hidden="true">
