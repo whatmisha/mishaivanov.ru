@@ -47,6 +47,7 @@ export class MobileBootstrap {
         this.app = app;
         this.viewportUpdateFrame = null;
         this.pendingTextRefit = false;
+        this.mobileTextEditing = false;
     }
 
     /** Initialise mobile UI; called once when the app starts on a mobile device. */
@@ -74,6 +75,7 @@ export class MobileBootstrap {
 
         this.initMobilePresetSelect();
         this.initMobileTextInput();
+        this.initMobileTextApply();
         this.initMobileRandomize();
         this.initMobilePngExport();
 
@@ -113,6 +115,7 @@ export class MobileBootstrap {
             if (wasMobile && !this.app.isMobile) {
                 window.location.reload();
             } else if (this.app.isMobile) {
+                if (this.mobileTextEditing) return;
                 this.scheduleMobileViewportUpdate({ refitText: true });
             }
         };
@@ -142,6 +145,11 @@ export class MobileBootstrap {
 
         this.viewportUpdateFrame = requestAnimationFrame(() => {
             this.viewportUpdateFrame = null;
+            if (this.mobileTextEditing) {
+                this.pendingTextRefit = false;
+                return;
+            }
+
             const refitText = this.pendingTextRefit;
             this.pendingTextRefit = false;
 
@@ -166,13 +174,36 @@ export class MobileBootstrap {
         if (!input) return;
 
         input.value = this.flattenMobileText(this.app.settings.get('text') || MOBILE_FIXED_TEXT);
+        input.addEventListener('focus', () => {
+            this.mobileTextEditing = true;
+        });
         input.addEventListener('input', () => {
-            const text = this.formatMobileText(input.value);
-            this.applyMobileText(text, { updateInput: false });
+            input.value = input.value.toUpperCase();
         });
-        input.addEventListener('blur', () => {
-            input.value = this.flattenMobileText(this.app.settings.get('text') || MOBILE_FIXED_TEXT);
+        input.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter') return;
+            event.preventDefault();
+            this.confirmMobileText();
         });
+    }
+
+    initMobileTextApply() {
+        const btn = document.getElementById('mobileTextApplyBtn');
+        if (!btn) return;
+
+        btn.addEventListener('click', () => {
+            this.confirmMobileText();
+        });
+    }
+
+    confirmMobileText() {
+        const input = document.getElementById('mobileTextInput');
+        if (!input) return;
+
+        this.mobileTextEditing = false;
+        this.applyMobileText(input.value, { updateInput: true });
+        input.blur();
+        this.scheduleMobileViewportUpdate();
     }
 
     initMobilePngExport() {
@@ -285,7 +316,9 @@ export class MobileBootstrap {
             }
         }
 
-        return presets;
+        return presets.sort((a, b) => a.name.localeCompare(b.name, undefined, {
+            sensitivity: 'base'
+        }));
     }
 
     applyMobilePreset(preset) {
