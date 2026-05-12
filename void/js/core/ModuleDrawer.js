@@ -160,10 +160,70 @@ export class ModuleDrawer {
      * @param {number} lineLength - line length in pixels
      * @param {number} dashLength - dash length in pixels
      * @param {number} gapLength - initial gap length (used for estimation)
-     * @returns {Object} {dashLength, gapLength, numDashes} - adaptive parameters
+     * @returns {Object} {dashLength, gapLength, numDashes, dashOffset} - adaptive parameters
      */
-    calculateAdaptiveDash(lineLength, dashLength, gapLength) {
-        return MathUtils.calculateAdaptiveDash(lineLength, dashLength, gapLength);
+    calculateAdaptiveDash(lineLength, dashLength, gapLength, endMode = 'half') {
+        return MathUtils.calculateAdaptiveDash(lineLength, dashLength, gapLength, endMode);
+    }
+
+    getDashEndModeForIndex(index) {
+        return 'half';
+    }
+
+    getDashOffsetForIndex(index, adaptive) {
+        return this.dashChess && index % 2 === 1 ? 0 : adaptive.dashOffset;
+    }
+
+    applyAdaptiveDash(ctx, adaptive, dashOffset = adaptive.dashOffset) {
+        ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
+        ctx.lineDashOffset = dashOffset;
+    }
+
+    minVisibleDashLength(lineWidth, lineCap) {
+        return lineCap === 'round' ? lineWidth * 0.35 : 0;
+    }
+
+    effectiveDashGapLength(gapLength, lineWidth, lineCap) {
+        return gapLength + (lineCap === 'round' ? lineWidth : 0);
+    }
+
+    dashRanges(totalLength, adaptive, lineWidth, lineCap, dashOffset = adaptive.dashOffset) {
+        return MathUtils.computeDashRanges(
+            totalLength,
+            adaptive.dashLength,
+            adaptive.gapLength,
+            dashOffset,
+            this.minVisibleDashLength(lineWidth, lineCap)
+        );
+    }
+
+    strokeDashedLine(ctx, x1, y1, x2, y2, adaptive, lineWidth, lineCap, dashOffset = adaptive.dashOffset) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const len = Math.hypot(dx, dy);
+        if (len <= 0) return;
+        const nx = dx / len;
+        const ny = dy / len;
+        const ranges = this.dashRanges(len, adaptive, lineWidth, lineCap, dashOffset);
+        ctx.setLineDash([]);
+        for (const [a, b] of ranges) {
+            ctx.beginPath();
+            ctx.moveTo(x1 + nx * a, y1 + ny * a);
+            ctx.lineTo(x1 + nx * b, y1 + ny * b);
+            ctx.stroke();
+        }
+    }
+
+    strokeDashedArc(ctx, centerX, centerY, radius, startAngle, endAngle, adaptive, lineWidth, lineCap, dashOffset = adaptive.dashOffset) {
+        const arcLength = Math.max(0, radius * (endAngle - startAngle));
+        if (arcLength <= 0) return;
+        const ranges = this.dashRanges(arcLength, adaptive, lineWidth, lineCap, dashOffset);
+        ctx.setLineDash([]);
+        for (const [a, b] of ranges) {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, startAngle + a / radius, startAngle + b / radius);
+            ctx.stroke();
+        }
     }
 
     /**
@@ -243,16 +303,10 @@ export class ModuleDrawer {
             ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
             
             const dashPx = stem * this.dashLength;
-            const gapPx = stem * this.gapLength;
+            const gapPx = this.effectiveDashGapLength(stem * this.gapLength, lineWidth, ctx.lineCap);
             const adaptive = this.calculateAdaptiveDash(actualLength, dashPx, gapPx);
             
-            ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-            ctx.lineDashOffset = adaptive.dashLength / 2;
-            
-            ctx.beginPath();
-            ctx.moveTo(startX, startY);
-            ctx.lineTo(endX, endY);
-            ctx.stroke();
+            this.strokeDashedLine(ctx, startX, startY, endX, endY, adaptive, lineWidth, ctx.lineCap);
             
             ctx.setLineDash([]);
             ctx.lineDashOffset = 0;
@@ -272,15 +326,10 @@ export class ModuleDrawer {
             const stripeLength = actualLength - (stripeShortenStart - shortenStart) - (stripeShortenEnd - shortenEnd);
             
             const dashPx = strokeWidth * this.dashLength;
-            const gapPx = strokeWidth * this.gapLength;
-            const adaptive = this.calculateAdaptiveDash(stripeLength, dashPx, gapPx);
-            
-            ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-            
+            const gapPx = this.effectiveDashGapLength(strokeWidth * this.gapLength, strokeWidth, ctx.lineCap);
             for (let i = 0; i < this.strokesNum; i++) {
-                ctx.lineDashOffset = this.dashChess 
-                    ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) 
-                    : adaptive.dashLength / 2;
+                const adaptive = this.calculateAdaptiveDash(stripeLength, dashPx, gapPx, this.getDashEndModeForIndex(i));
+                const dashOffset = this.getDashOffsetForIndex(i, adaptive);
                 
                 const offset = baseOffset + stripeOffset(i, strokeWidth, gap);
                 const lx1 = startX + px * offset + nx * (stripeShortenStart - shortenStart);
@@ -288,10 +337,7 @@ export class ModuleDrawer {
                 const lx2 = endX + px * offset - nx * (stripeShortenEnd - shortenEnd);
                 const ly2 = endY + py * offset + ny * (stripeShortenEnd - shortenEnd);
                 
-                ctx.beginPath();
-                ctx.moveTo(lx1, ly1);
-                ctx.lineTo(lx2, ly2);
-                ctx.stroke();
+                this.strokeDashedLine(ctx, lx1, ly1, lx2, ly2, adaptive, strokeWidth, ctx.lineCap, dashOffset);
             }
             
             ctx.setLineDash([]);
@@ -363,15 +409,10 @@ export class ModuleDrawer {
             const arcAngle = actualEndAngle - actualStartAngle;
             const arcLength = radius * arcAngle;
             const dashPx = stem * this.dashLength;
-            const gapPx = stem * this.gapLength;
+            const gapPx = this.effectiveDashGapLength(stem * this.gapLength, lineWidth, ctx.lineCap);
             const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
             
-            ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-            ctx.lineDashOffset = adaptive.dashLength / 2;
-            
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, actualStartAngle, actualEndAngle);
-            ctx.stroke();
+            this.strokeDashedArc(ctx, centerX, centerY, radius, actualStartAngle, actualEndAngle, adaptive, lineWidth, ctx.lineCap);
             
             ctx.setLineDash([]);
             ctx.lineDashOffset = 0;
@@ -385,8 +426,7 @@ export class ModuleDrawer {
             
             const stripeShortenAmount = (this.roundedCaps || this.closeEnds) ? strokeWidth / 2 : 0;
             const dashPx = strokeWidth * this.dashLength;
-            const gapPx = strokeWidth * this.gapLength;
-            
+            const gapPx = this.effectiveDashGapLength(strokeWidth * this.gapLength, strokeWidth, ctx.lineCap);
             for (let j = 0; j < this.strokesNum; j++) {
                 let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
                 if (arcRadius < minRadius) arcRadius = minRadius;
@@ -399,16 +439,8 @@ export class ModuleDrawer {
                 
                 const arcAngle = stripeEndAngle - stripeStartAngle;
                 const arcLength = arcRadius * arcAngle;
-                const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
-                
-                ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-                ctx.lineDashOffset = this.dashChess 
-                    ? ((j % 2 === 0) ? adaptive.dashLength / 2 : 0) 
-                    : adaptive.dashLength / 2;
-                
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, arcRadius, stripeStartAngle, stripeEndAngle);
-                ctx.stroke();
+                const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx, this.getDashEndModeForIndex(j));
+                this.strokeDashedArc(ctx, centerX, centerY, arcRadius, stripeStartAngle, stripeEndAngle, adaptive, strokeWidth, ctx.lineCap, this.getDashOffsetForIndex(j, adaptive));
             }
             
             ctx.setLineDash([]);
@@ -437,8 +469,7 @@ export class ModuleDrawer {
         
         if (dashPx > 0 && gapPx > 0) {
             const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
-            ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-            ctx.lineDashOffset = adaptive.dashLength / 2;
+            this.applyAdaptiveDash(ctx, adaptive);
         } else {
             ctx.setLineDash([]);
         }
@@ -620,16 +651,10 @@ export class ModuleDrawer {
             
             const lineLength = h - shortenTop - shortenBottom;
             const dashPx = stem * this.dashLength;
-            const gapPx = stem * this.gapLength;
+            const gapPx = this.effectiveDashGapLength(stem * this.gapLength, lineWidth, ctx.lineCap);
             const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
             
-            ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-            ctx.lineDashOffset = adaptive.dashLength / 2;
-            
-            ctx.beginPath();
-            ctx.moveTo(lineX, -h / 2 + shortenTop);
-            ctx.lineTo(lineX, h / 2 - shortenBottom);
-            ctx.stroke();
+            this.strokeDashedLine(ctx, lineX, -h / 2 + shortenTop, lineX, h / 2 - shortenBottom, adaptive, lineWidth, ctx.lineCap);
             
             ctx.setLineDash([]);
             ctx.lineDashOffset = 0;
@@ -650,22 +675,13 @@ export class ModuleDrawer {
             const lineLength = h - shortenTopSD - shortenBottomSD;
             // In SD mode dash/gap calculated relative to strokeWidth (single line width)
             const dashPx = strokeWidth * this.dashLength;
-            const gapPx = strokeWidth * this.gapLength;
-            const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
-            
-            ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-            
+            const gapPx = this.effectiveDashGapLength(strokeWidth * this.gapLength, strokeWidth, ctx.lineCap);
             for (let i = 0; i < this.strokesNum; i++) {
-                // If chessboard pattern enabled: odd lines (i % 2 === 0) start with half dash,
-                // even lines (i % 2 === 1) start with full dash
-                // If disabled: all lines start with half dash
-                ctx.lineDashOffset = this.dashChess ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
+                const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx, this.getDashEndModeForIndex(i));
+                const dashOffset = this.getDashOffsetForIndex(i, adaptive);
                 
                 const lineX = startX + stripeOffset(i, strokeWidth, gap);
-                ctx.beginPath();
-                ctx.moveTo(lineX, -h / 2 + shortenTopSD);
-                ctx.lineTo(lineX, h / 2 - shortenBottomSD);
-                ctx.stroke();
+                this.strokeDashedLine(ctx, lineX, -h / 2 + shortenTopSD, lineX, h / 2 - shortenBottomSD, adaptive, strokeWidth, ctx.lineCap, dashOffset);
             }
             
             ctx.setLineDash([]);
@@ -682,8 +698,7 @@ export class ModuleDrawer {
                 
                 // Closing lines are also dashed in SD mode
                 const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
-                ctx.setLineDash([closeAdaptive.dashLength, closeAdaptive.gapLength]);
-                ctx.lineDashOffset = closeAdaptive.dashLength / 2;
+                this.applyAdaptiveDash(ctx, closeAdaptive);
                 
                 if (localEndpoints.top) {
                     const y = -h / 2 + shortenTopSD;
@@ -795,16 +810,10 @@ export class ModuleDrawer {
             
             const lineLength = h - shortenTop - shortenBottom;
             const dashPx = stem * this.dashLength;
-            const gapPx = stem * this.gapLength;
+            const gapPx = this.effectiveDashGapLength(stem * this.gapLength, lineWidth, ctx.lineCap);
             const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
             
-            ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-            ctx.lineDashOffset = adaptive.dashLength / 2;
-            
-            ctx.beginPath();
-            ctx.moveTo(lineX, -h / 2 + shortenTop);
-            ctx.lineTo(lineX, h / 2 - shortenBottom);
-            ctx.stroke();
+            this.strokeDashedLine(ctx, lineX, -h / 2 + shortenTop, lineX, h / 2 - shortenBottom, adaptive, lineWidth, ctx.lineCap);
             
             ctx.setLineDash([]);
             ctx.lineDashOffset = 0;
@@ -823,22 +832,13 @@ export class ModuleDrawer {
             
             const lineLength = h - shortenTopSD - shortenBottomSD;
             const dashPx = strokeWidth * this.dashLength;
-            const gapPx = strokeWidth * this.gapLength;
-            const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
-            
-            ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-            
+            const gapPx = this.effectiveDashGapLength(strokeWidth * this.gapLength, strokeWidth, ctx.lineCap);
             for (let i = 0; i < this.strokesNum; i++) {
-                // If chessboard pattern enabled: odd lines (i % 2 === 0) start with half dash,
-                // even lines (i % 2 === 1) start with full dash
-                // If disabled: all lines start with half dash
-                ctx.lineDashOffset = this.dashChess ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
+                const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx, this.getDashEndModeForIndex(i));
+                const dashOffset = this.getDashOffsetForIndex(i, adaptive);
                 
                 const lineX = startX + stripeOffset(i, strokeWidth, gap);
-                ctx.beginPath();
-                ctx.moveTo(lineX, -h / 2 + shortenTopSD);
-                ctx.lineTo(lineX, h / 2 - shortenBottomSD);
-                ctx.stroke();
+                this.strokeDashedLine(ctx, lineX, -h / 2 + shortenTopSD, lineX, h / 2 - shortenBottomSD, adaptive, strokeWidth, ctx.lineCap, dashOffset);
             }
             
             ctx.setLineDash([]);
@@ -854,8 +854,7 @@ export class ModuleDrawer {
                 
                 // Closing lines are also dashed in SD mode
                 const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
-                ctx.setLineDash([closeAdaptive.dashLength, closeAdaptive.gapLength]);
-                ctx.lineDashOffset = closeAdaptive.dashLength / 2;
+                this.applyAdaptiveDash(ctx, closeAdaptive);
                 
                 if (localEndpoints.top) {
                     const y = -h / 2 + shortenTopSD;
@@ -953,29 +952,19 @@ export class ModuleDrawer {
             const shortenRight = shouldShorten && localEndpoints.right ? stem * 0.25 : 0;
             
             const dashPx = stem * this.dashLength;
-            const gapPx = stem * this.gapLength;
+            const gapPx = this.effectiveDashGapLength(stem * this.gapLength, lineWidth, ctx.lineCap);
             
             const vertLength = h - shortenTop - shortenBottom;
             const vertAdaptive = this.calculateAdaptiveDash(vertLength, dashPx, gapPx);
             
-            ctx.setLineDash([vertAdaptive.dashLength, vertAdaptive.gapLength]);
-            ctx.lineDashOffset = vertAdaptive.dashLength / 2;
-            ctx.beginPath();
-            ctx.moveTo(vertLineX, -h / 2 + shortenTop);
-            ctx.lineTo(vertLineX, h / 2 - shortenBottom);
-            ctx.stroke();
+            this.strokeDashedLine(ctx, vertLineX, -h / 2 + shortenTop, vertLineX, h / 2 - shortenBottom, vertAdaptive, lineWidth, ctx.lineCap);
             
             const horizStartX = vertLineX;
             const horizEndX = w / 2 - shortenRight;
             const horizLength = horizEndX - horizStartX;
             const horizAdaptive = this.calculateAdaptiveDash(horizLength, dashPx, gapPx);
             
-            ctx.setLineDash([horizAdaptive.dashLength, horizAdaptive.gapLength]);
-            ctx.lineDashOffset = horizAdaptive.dashLength / 2;
-            ctx.beginPath();
-            ctx.moveTo(horizStartX, horizLineY);
-            ctx.lineTo(horizEndX, horizLineY);
-            ctx.stroke();
+            this.strokeDashedLine(ctx, horizStartX, horizLineY, horizEndX, horizLineY, horizAdaptive, lineWidth, ctx.lineCap);
             
             ctx.setLineDash([]);
             ctx.lineDashOffset = 0;
@@ -993,39 +982,25 @@ export class ModuleDrawer {
             const lastVertX = vertStartX + stripeOffset(this.strokesNum - 1, strokeWidth, gap);
             
             const dashPx = strokeWidth * this.dashLength;
-            const gapPx = strokeWidth * this.gapLength;
+            const gapPx = this.effectiveDashGapLength(strokeWidth * this.gapLength, strokeWidth, ctx.lineCap);
             
             // Vertical lines
-            const vertAdaptive = this.calculateAdaptiveDash(h, dashPx, gapPx);
-            ctx.setLineDash([vertAdaptive.dashLength, vertAdaptive.gapLength]);
-            
             for (let i = 0; i < this.strokesNum; i++) {
-                // Chessboard pattern: odd lines (i % 2 === 0) start with half dash,
-                // even lines (i % 2 === 1) start with full dash
-                ctx.lineDashOffset = this.dashChess ? ((i % 2 === 0) ? vertAdaptive.dashLength / 2 : 0) : vertAdaptive.dashLength / 2;
+                const vertAdaptive = this.calculateAdaptiveDash(h, dashPx, gapPx, this.getDashEndModeForIndex(i));
+                const dashOffset = this.getDashOffsetForIndex(i, vertAdaptive);
                 
                 const lineX = vertStartX + stripeOffset(i, strokeWidth, gap);
-                ctx.beginPath();
-                ctx.moveTo(lineX, -h / 2);
-                ctx.lineTo(lineX, h / 2);
-                ctx.stroke();
+                this.strokeDashedLine(ctx, lineX, -h / 2, lineX, h / 2, vertAdaptive, strokeWidth, ctx.lineCap, dashOffset);
             }
             
             // Horizontal lines
             const horizLength = w / 2 - lastVertX;
-            const horizAdaptive = this.calculateAdaptiveDash(horizLength, dashPx, gapPx);
-            ctx.setLineDash([horizAdaptive.dashLength, horizAdaptive.gapLength]);
-            
             for (let i = 0; i < this.strokesNum; i++) {
-                // Chessboard pattern: odd lines (i % 2 === 0) start with half dash,
-                // even lines (i % 2 === 1) start with full dash
-                ctx.lineDashOffset = this.dashChess ? ((i % 2 === 0) ? horizAdaptive.dashLength / 2 : 0) : horizAdaptive.dashLength / 2;
+                const horizAdaptive = this.calculateAdaptiveDash(horizLength, dashPx, gapPx, this.getDashEndModeForIndex(i));
+                const dashOffset = this.getDashOffsetForIndex(i, horizAdaptive);
                 
                 const lineY = horizStartY + stripeOffset(i, strokeWidth, gap);
-                ctx.beginPath();
-                ctx.moveTo(lastVertX, lineY);
-                ctx.lineTo(w / 2, lineY);
-                ctx.stroke();
+                this.strokeDashedLine(ctx, lastVertX, lineY, w / 2, lineY, horizAdaptive, strokeWidth, ctx.lineCap, dashOffset);
             }
             
             ctx.setLineDash([]);
@@ -1106,7 +1081,7 @@ export class ModuleDrawer {
             const shortenRight = shouldShorten && localEndpoints.right ? stem * 0.25 : 0;
             
             const dashPx = stem * this.dashLength;
-            const gapPx = stem * this.gapLength;
+            const gapPx = this.effectiveDashGapLength(stem * this.gapLength, lineWidth, ctx.lineCap);
             
             const vertStartY = -h / 2 + shortenTop;
             const horizEndX = w / 2 - shortenRight;
@@ -1116,8 +1091,7 @@ export class ModuleDrawer {
             
             const adaptive = this.calculateAdaptiveDash(totalLength, dashPx, gapPx);
             
-            ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-            ctx.lineDashOffset = adaptive.dashLength / 2;
+            this.applyAdaptiveDash(ctx, adaptive);
             
             ctx.beginPath();
             ctx.moveTo(vertLineX, vertStartY);
@@ -1142,7 +1116,7 @@ export class ModuleDrawer {
             const horizStartY = h / 2 - stem / 2 + strokeWidth / 2;
             
             const dashPx = strokeWidth * this.dashLength;
-            const gapPx = strokeWidth * this.gapLength;
+            const gapPx = this.effectiveDashGapLength(strokeWidth * this.gapLength, strokeWidth, ctx.lineCap);
             
             for (let i = 0; i < this.strokesNum; i++) {
                 const lineX = vertStartX + stripeOffset(i, strokeWidth, gap);
@@ -1153,13 +1127,8 @@ export class ModuleDrawer {
                 const horizLength = w / 2 - lineX;
                 const totalLength = vertLength + horizLength;
                 
-                const adaptive = this.calculateAdaptiveDash(totalLength, dashPx, gapPx);
-                
-                ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-                // If chessboard pattern enabled: odd lines (i % 2 === 0) start with half dash,
-                // even lines (i % 2 === 1) start with full dash
-                // If disabled: all lines start with half dash
-                ctx.lineDashOffset = this.dashChess ? ((i % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
+                const adaptive = this.calculateAdaptiveDash(totalLength, dashPx, gapPx, this.getDashEndModeForIndex(i));
+                this.applyAdaptiveDash(ctx, adaptive, this.getDashOffsetForIndex(i, adaptive));
                 
                 ctx.beginPath();
                 ctx.moveTo(lineX, -h / 2);
@@ -1311,18 +1280,13 @@ export class ModuleDrawer {
             const endAngle = Math.PI - deltaAngleTop;
             
             const dashPx = stem * this.dashLength;
-            const gapPx = stem * this.gapLength;
+            const gapPx = this.effectiveDashGapLength(stem * this.gapLength, lineWidth, ctx.lineCap);
             
             const arcAngle = endAngle - startAngle;
             const arcLength = arcRadius * arcAngle;
             const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
             
-            ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-            ctx.lineDashOffset = adaptive.dashLength / 2;
-            
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, arcRadius, startAngle, endAngle);
-            ctx.stroke();
+            this.strokeDashedArc(ctx, centerX, centerY, arcRadius, startAngle, endAngle, adaptive, lineWidth, ctx.lineCap);
             
             ctx.setLineDash([]);
             ctx.lineDashOffset = 0;
@@ -1342,7 +1306,13 @@ export class ModuleDrawer {
             const centerY = -h / 2;
             
             const dashPx = strokeWidth * this.dashLength;
-            const gapPx = strokeWidth * this.gapLength;
+            const gapPx = this.effectiveDashGapLength(strokeWidth * this.gapLength, strokeWidth, ctx.lineCap);
+            let referenceRadius = stripeArcRadius((this.strokesNum - 1) / 2, outerRadius, strokeWidth, gap);
+            if (referenceRadius < minRadius) referenceRadius = minRadius;
+            const referenceShouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
+            const referenceStartAngle = Math.PI / 2 + (referenceShouldShorten && localEndpoints.right ? shortenAmount / referenceRadius : 0);
+            const referenceEndAngle = Math.PI - (referenceShouldShorten && localEndpoints.top ? shortenAmount / referenceRadius : 0);
+            const referenceAdaptive = this.calculateAdaptiveDash(referenceRadius * (referenceEndAngle - referenceStartAngle), dashPx, gapPx);
             
             for (let j = 0; j < this.strokesNum; j++) {
                 let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
@@ -1358,18 +1328,8 @@ export class ModuleDrawer {
                     const startAngle = Math.PI / 2 + deltaAngleRight;
                     const endAngle = Math.PI - deltaAngleTop;
                     
-                    const arcAngle = endAngle - startAngle;
-                    const arcLength = arcRadius * arcAngle;
-                    const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
-                    
-                    ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-                    // Chessboard pattern: odd lines (j % 2 === 0) start with half dash,
-                    // even lines (j % 2 === 1) start with full dash
-                    ctx.lineDashOffset = this.dashChess ? ((j % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
-                    
-                    ctx.beginPath();
-                    ctx.arc(centerX, centerY, arcRadius, startAngle, endAngle);
-                    ctx.stroke();
+                    const adaptive = referenceAdaptive;
+                    this.strokeDashedArc(ctx, centerX, centerY, arcRadius, startAngle, endAngle, adaptive, strokeWidth, ctx.lineCap, this.getDashOffsetForIndex(j, adaptive));
                 }
             }
             
@@ -1389,8 +1349,7 @@ export class ModuleDrawer {
                 // Closing lines are also dashed in SD mode
                 const closeLineLength = firstRadius - lastRadius;
                 const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
-                ctx.setLineDash([closeAdaptive.dashLength, closeAdaptive.gapLength]);
-                ctx.lineDashOffset = closeAdaptive.dashLength / 2;
+                this.applyAdaptiveDash(ctx, closeAdaptive);
                 
                 if (localEndpoints.right) {
                     const deltaAngleFirst = shortenAmount / firstRadius;
@@ -1568,18 +1527,13 @@ export class ModuleDrawer {
             const endAngle = Math.PI - deltaAngleTop;
             
             const dashPx = stem * this.dashLength;
-            const gapPx = stem * this.gapLength;
+            const gapPx = this.effectiveDashGapLength(stem * this.gapLength, lineWidth, ctx.lineCap);
             
             const arcAngle = endAngle - startAngle;
             const arcLength = arcRadius * arcAngle;
             const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
             
-            ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-            ctx.lineDashOffset = adaptive.dashLength / 2;
-            
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, arcRadius, startAngle, endAngle);
-            ctx.stroke();
+            this.strokeDashedArc(ctx, centerX, centerY, arcRadius, startAngle, endAngle, adaptive, lineWidth, ctx.lineCap);
             
             ctx.setLineDash([]);
             ctx.lineDashOffset = 0;
@@ -1599,7 +1553,13 @@ export class ModuleDrawer {
             const centerY = -h / 2;
             
             const dashPx = strokeWidth * this.dashLength;
-            const gapPx = strokeWidth * this.gapLength;
+            const gapPx = this.effectiveDashGapLength(strokeWidth * this.gapLength, strokeWidth, ctx.lineCap);
+            let referenceRadius = stripeArcRadius((this.strokesNum - 1) / 2, outerRadius, strokeWidth, gap);
+            if (referenceRadius < minRadius) referenceRadius = minRadius;
+            const referenceShouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
+            const referenceStartAngle = Math.PI / 2 + (referenceShouldShorten && localEndpoints.right ? shortenAmount / referenceRadius : 0);
+            const referenceEndAngle = Math.PI - (referenceShouldShorten && localEndpoints.top ? shortenAmount / referenceRadius : 0);
+            const referenceAdaptive = this.calculateAdaptiveDash(referenceRadius * (referenceEndAngle - referenceStartAngle), dashPx, gapPx);
             
             for (let j = 0; j < this.strokesNum; j++) {
                 let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
@@ -1615,18 +1575,8 @@ export class ModuleDrawer {
                     const startAngle = Math.PI / 2 + deltaAngleRight;
                     const endAngle = Math.PI - deltaAngleTop;
                     
-                    const arcAngle = endAngle - startAngle;
-                    const arcLength = arcRadius * arcAngle;
-                    const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
-                    
-                    ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
-                    // Chessboard pattern: odd lines (j % 2 === 0) start with half dash,
-                    // even lines (j % 2 === 1) start with full dash
-                    ctx.lineDashOffset = this.dashChess ? ((j % 2 === 0) ? adaptive.dashLength / 2 : 0) : adaptive.dashLength / 2;
-                    
-                    ctx.beginPath();
-                    ctx.arc(centerX, centerY, arcRadius, startAngle, endAngle);
-                    ctx.stroke();
+                    const adaptive = referenceAdaptive;
+                    this.strokeDashedArc(ctx, centerX, centerY, arcRadius, startAngle, endAngle, adaptive, strokeWidth, ctx.lineCap, this.getDashOffsetForIndex(j, adaptive));
                 }
             }
             
@@ -1646,8 +1596,7 @@ export class ModuleDrawer {
                 // Closing lines are also dashed in SD mode
                 const closeLineLength = firstRadius - lastRadius;
                 const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
-                ctx.setLineDash([closeAdaptive.dashLength, closeAdaptive.gapLength]);
-                ctx.lineDashOffset = closeAdaptive.dashLength / 2;
+                this.applyAdaptiveDash(ctx, closeAdaptive);
                 
                 if (localEndpoints.right) {
                     const deltaAngleFirst = shortenAmount / firstRadius;
@@ -1689,4 +1638,3 @@ export class ModuleDrawer {
         ctx.restore();
     }
 }
-

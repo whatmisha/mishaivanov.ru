@@ -23,8 +23,9 @@ export class RandomPanelController {
 
     // -------- per-parameter helpers --------
 
-    resetDiceForParam(param) {
+    resetDiceForParam(param, options = {}) {
         const app = this.app;
+        const { resetSingleValue = true } = options;
         if (param === 'paletteColors') {
             app.settings.set('randomizeColor', false);
             app.syncPaletteSwatchDice();
@@ -45,11 +46,14 @@ export class RandomPanelController {
             diceBtn.classList.remove('active');
             syncRandomDiceTitle(diceBtn, false);
         }
-        const min = app.settings.get(cfg.minSetting);
-        const max = app.settings.get(cfg.maxSetting);
-        let val = (min + max) / 2;
-        if (Number.isInteger(cfg.min) && Number.isInteger(cfg.max)) {
-            val = Math.round(val);
+        let val = app.settings.get(cfg.singleSetting);
+        if (resetSingleValue) {
+            const min = app.settings.get(cfg.minSetting);
+            const max = app.settings.get(cfg.maxSetting);
+            val = (min + max) / 2;
+            if (Number.isInteger(cfg.min) && Number.isInteger(cfg.max)) {
+                val = Math.round(val);
+            }
         }
         app.settings.set(cfg.singleSetting, val);
         if (app.sliderController && app.sliderController.setValue) {

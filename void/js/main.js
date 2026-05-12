@@ -48,7 +48,7 @@ class VoidTypeface {
                 letterColor: '#ffffff',
                 bgColor: '#000000',
                 gridColor: '#333333',
-                text: 'Void\nTypeface\nCode',
+                text: 'Void\nTypeface\nTool',
                 textAlign: 'center',
                 showGrid: true,
                 showJoints: false,
@@ -423,7 +423,7 @@ class VoidTypeface {
         if (!this.randomPanel) this.randomPanel = new RandomPanelController(this);
         return this.randomPanel;
     }
-    resetDiceForParam(param) { this._ensureRandomPanel().resetDiceForParam(param); }
+    resetDiceForParam(param, options) { this._ensureRandomPanel().resetDiceForParam(param, options); }
     resetEffectRandomParam(key) { this._ensureRandomPanel().resetEffectRandomParam(key); }
     rollEffectRandomValues() { this._ensureRandomPanel().rollEffectRandomValues(); }
     initDiceButtons() { this._ensureRandomPanel().initDiceButtons(); }
@@ -761,14 +761,9 @@ class VoidTypeface {
         wobblyCheckbox.addEventListener('change', () => {
             const enabled = wobblyCheckbox.checked;
             this.settings.set('wobblyEnabled', enabled);
-            if (enabled) {
-                this.settings.set('wobblyAmount', 4);
-                this.sliderController.setValue('wobblyAmountSlider', 4, false);
-            } else {
-                this.resetDiceForParam('wobblyAmount');
-                this.resetDiceForParam('wobblyFrequency');
-                this.updateRandomParamsList();
-                this.updateRandomSectionVisibility();
+            this.restoreControlledSettingsFromPreset(['wobblyAmount', 'wobblyFrequency']);
+            if (!enabled) {
+                this.resetDiceForControlledSettings(['wobblyAmount', 'wobblyFrequency']);
             }
             this.updateWobblyVisibility();
             this.updateRenderer();
@@ -909,6 +904,37 @@ class VoidTypeface {
         return 'fill';
     }
 
+    getPresetBaselineSetting(key, fallback) {
+        const value = this.presetSessionBaselineSnapshot?.settings?.[key];
+        return value ?? fallback;
+    }
+
+    getSliderIdForSetting(setting) {
+        for (const cfg of Object.values(DICE_CONFIG)) {
+            if (cfg.singleSetting === setting) return cfg.singleSlider;
+        }
+        return null;
+    }
+
+    restoreControlledSettingsFromPreset(settingKeys) {
+        for (const key of settingKeys) {
+            const value = this.getPresetBaselineSetting(key, this.settings.get(key));
+            this.settings.set(key, value);
+            const sliderId = this.getSliderIdForSetting(key);
+            if (sliderId) {
+                this.sliderController.setValue(sliderId, value, false);
+            }
+        }
+    }
+
+    resetDiceForControlledSettings(params) {
+        for (const param of params) {
+            this.resetDiceForParam(param, { resetSingleValue: false });
+        }
+        this.updateRandomParamsList();
+        this.updateRandomSectionVisibility();
+    }
+
     /**
      * Initialize style controls (Lines, Contrast, Dashes toggle)
      */
@@ -927,18 +953,9 @@ class VoidTypeface {
             dashEnabledCheckbox.addEventListener('change', () => {
                 const enabled = dashEnabledCheckbox.checked;
                 this.settings.set('dashEnabled', enabled);
-                if (enabled) {
-                    // Defaults when enabling Dashes
-                    this.settings.set('dashLength', 0.5);
-                    this.settings.set('gapLength', 1.50);
-                    this.sliderController.setValue('dashLengthSlider', 0.5, false);
-                    this.sliderController.setValue('gapLengthSlider', 1.50, false);
-                } else {
-                    // Reset dice for Dash Length and Gap Length
-                    this.resetDiceForParam('dashLength');
-                    this.resetDiceForParam('gapLength');
-                    this.updateRandomParamsList();
-                    this.updateRandomSectionVisibility();
+                this.restoreControlledSettingsFromPreset(['dashLength', 'gapLength']);
+                if (!enabled) {
+                    this.resetDiceForControlledSettings(['dashLength', 'gapLength']);
                 }
                 updateStyleVisibility();
                 requestAnimationFrame(() => {
@@ -1765,4 +1782,3 @@ class VoidTypeface {
 document.addEventListener('DOMContentLoaded', () => {
     new VoidTypeface();
 });
-

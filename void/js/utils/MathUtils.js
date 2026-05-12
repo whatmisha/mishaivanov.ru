@@ -114,44 +114,104 @@ export class MathUtils {
     }
 
     /**
-     * Calculate adaptive Gap for Dash mode
-     * Line starts and ends with dash of dashLength
+     * Calculate an adaptive dash pattern that lands on a clean endpoint.
+     * `half` starts and ends with half a dash; `full` starts and ends with a full dash.
+     * Dash and gap are scaled together so their visual ratio stays stable.
+     *
      * @param {number} lineLength - line length in pixels
-     * @param {number} dashLength - dash length in pixels
-     * @param {number} gapLength - initial gap length (used for estimation)
-     * @returns {Object} {dashLength, gapLength, numDashes} - adaptive parameters
+     * @param {number} dashLength - target dash length in pixels
+     * @param {number} gapLength - target gap length in pixels
+     * @param {'half'|'full'} endMode - endpoint pattern
+     * @returns {Object} {dashLength, gapLength, numDashes, dashOffset, endMode}
      */
-    static calculateAdaptiveDash(lineLength, dashLength, gapLength) {
-        // Minimum one dash
-        if (lineLength <= dashLength) {
-            return { dashLength: lineLength, gapLength: 0, numDashes: 1 };
+    static calculateAdaptiveDash(lineLength, dashLength, gapLength, endMode = 'half') {
+        const safeLine = Math.max(0, Number.isFinite(lineLength) ? lineLength : 0);
+        const safeDash = Math.max(0.001, Number.isFinite(dashLength) ? dashLength : 0.001);
+        const safeGap = Math.max(0, Number.isFinite(gapLength) ? gapLength : 0);
+        const mode = endMode === 'full' ? 'full' : 'half';
+
+        if (safeLine <= 0) {
+            return { dashLength: 0, gapLength: 0, numDashes: 0, dashOffset: 0, endMode: mode };
         }
 
-        // Formula for HALF ends:
-        // lineLength = dashLength/2 + (n-2)*dashLength + dashLength/2 + (n-1)*gap
-        // lineLength = (n-1)*dashLength + (n-1)*gap
-        // lineLength = (n-1)*(dashLength + gap)
-        // n = lineLength/(dashLength + gap) + 1
-        let numDashes = Math.round(lineLength / (dashLength + gapLength)) + 1;
-        
-        // Minimum 2 dashes (start and end)
-        if (numDashes < 2) {
-            numDashes = 2;
+        const cycle = safeDash + safeGap;
+        const candidates = [];
+        const addCandidate = (numDashes) => {
+            if (numDashes < 1) return;
+            let targetLength;
+            if (mode === 'full') {
+                targetLength = numDashes * safeDash + (numDashes - 1) * safeGap;
+            } else {
+                if (numDashes < 2) return;
+                targetLength = (numDashes - 1) * cycle;
+            }
+            if (targetLength <= 0) return;
+            const scale = safeLine / targetLength;
+            candidates.push({
+                dashLength: safeDash * scale,
+                gapLength: safeGap * scale,
+                numDashes,
+                dashOffset: mode === 'full' ? 0 : (safeDash * scale) / 2,
+                endMode: mode,
+                scale
+            });
+        };
+
+        const ideal = mode === 'full'
+            ? Math.max(1, Math.round((safeLine + safeGap) / cycle))
+            : Math.max(2, Math.round(safeLine / cycle) + 1);
+        for (let n = ideal - 3; n <= ideal + 3; n++) {
+            addCandidate(n);
         }
 
-        // Calculate adaptive gap for half ends:
-        // lineLength = (n-1)*(dashLength + gap)
-        // gap = lineLength/(n-1) - dashLength
-        const adaptiveGap = lineLength / (numDashes - 1) - dashLength;
+        candidates.sort((a, b) => {
+            const da = Math.abs(Math.log(a.scale));
+            const db = Math.abs(Math.log(b.scale));
+            if (Math.abs(da - db) > 1e-9) return da - db;
+            return b.numDashes - a.numDashes;
+        });
 
-        // If gap is negative, decrease number of dashes
-        if (adaptiveGap < 0 && numDashes > 2) {
-            numDashes--;
-            const newGap = lineLength / (numDashes - 1) - dashLength;
-            return { dashLength, gapLength: Math.max(0, newGap), numDashes };
+        const best = candidates[0];
+        return {
+            dashLength: best.dashLength,
+            gapLength: best.gapLength,
+            numDashes: best.numDashes,
+            dashOffset: best.dashOffset,
+            endMode: best.endMode
+        };
+    }
+
+    /**
+     * Walk a 1D dashed path and return visible dash ranges [start, end].
+     * Used by both Canvas and SVG renderers so tiny round-cap fragments are
+     * filtered consistently.
+     */
+    static computeDashRanges(totalLength, dashLength, gapLength, dashOffset = 0, minVisibleLength = 0) {
+        const out = [];
+        if (totalLength <= 0) return out;
+        const cycle = dashLength + gapLength;
+        if (cycle <= 0 || gapLength <= 0 || dashLength >= totalLength) {
+            return [[0, totalLength]];
         }
 
-        return { dashLength, gapLength: Math.max(0, adaptiveGap), numDashes };
+        const off = ((dashOffset % cycle) + cycle) % cycle;
+        let p = 0;
+        const eps = 1e-6;
+        while (p < totalLength - eps) {
+            const cp = (off + p) % cycle;
+            if (cp < dashLength - eps) {
+                const remaining = dashLength - cp;
+                const endP = Math.min(p + remaining, totalLength);
+                if (endP > p + eps) out.push([p, endP]);
+                p = Math.max(endP, p + eps);
+            } else {
+                p += Math.max(cycle - cp, eps);
+            }
+        }
+
+        if (minVisibleLength <= 0 || out.length <= 1) return out;
+        return out.filter(([a, b], index) => {
+            return index === 0 || index === out.length - 1 || b - a >= minVisibleLength;
+        });
     }
 }
-

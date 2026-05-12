@@ -48,11 +48,12 @@ export class PresetsController {
         if (!defaultPreset) {
             this.ensureDefaultNewPreset();
         } else {
-            const newPresetDefaultText = 'Void\nTypeface\nCode';
+            const newPresetDefaultText = 'Void\nTypeface\nTool';
             if (
                 defaultPreset.text === 'void' ||
                 defaultPreset.text === 'Void\nTypeface\ncoded' ||
-                defaultPreset.text === 'Void\nTypeface\nTool'
+                defaultPreset.text === 'Void\nTypeface\nCode' ||
+                defaultPreset.text === 'Void\nTypeface Tool'
             ) {
                 defaultPreset.text = newPresetDefaultText;
                 app.presetManager.presets['New'] = defaultPreset;
@@ -1186,6 +1187,7 @@ export class PresetsController {
             const presetDropdownMenu = document.getElementById('presetDropdownMenu');
             app.currentPresetName = name;
             app.hasUnsavedChanges = false;
+            app.presetSessionBaselineSnapshot = app.getStateSnapshot();
             if (presetDropdownText) {
                 presetDropdownText.textContent = this.getPresetToggleButtonLabel();
             }
@@ -1499,7 +1501,7 @@ export class PresetsController {
             el.id = 'voidShareToast';
             el.className = 'void-share-toast';
             el.setAttribute('role', 'status');
-            document.body.appendChild(el);
+            (document.querySelector('.top-links') || document.body).appendChild(el);
         }
         el.textContent = message;
         el.hidden = false;
@@ -1563,7 +1565,7 @@ export class PresetsController {
         if (copied) {
             const hintsUnsavedDraft =
                 presetName === app.currentPresetName && app.hasUnsavedChanges;
-            let msg = result.fits ? 'Link copied' : 'Link copied (still long)';
+            let msg = 'Link copied';
             if (hintsUnsavedDraft) {
                 msg += ' · includes unsaved changes';
             }

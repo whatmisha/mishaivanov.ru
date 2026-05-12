@@ -65,7 +65,7 @@
     "roundedCaps": true,
     "closeEnds": false,
     "dashLength": 8,
-    "gapLength": 8,
+    "gapLength": 2,
     "dashChess": true,
     "useAlternativesInRandom": true,
     "wobblyEnabled": false,
@@ -93,7 +93,7 @@
       "strokesNum": 5,
       "strokeGapRatio": 1.8,
       "dashLength": 8,
-      "gapLength": 8,
+      "gapLength": 2,
       "useDash": true
     },
     "R": {
@@ -101,7 +101,7 @@
       "strokesNum": 5,
       "strokeGapRatio": 1.8,
       "dashLength": 8,
-      "gapLength": 8,
+      "gapLength": 2,
       "useDash": true
     },
     "S": {
@@ -109,7 +109,7 @@
       "strokesNum": 5,
       "strokeGapRatio": 1.8,
       "dashLength": 8,
-      "gapLength": 8,
+      "gapLength": 2,
       "useDash": true
     },
     "B": {
@@ -117,7 +117,7 @@
       "strokesNum": 5,
       "strokeGapRatio": 1.8,
       "dashLength": 8,
-      "gapLength": 8,
+      "gapLength": 2,
       "useDash": true
     },
     "L": {
@@ -125,7 +125,7 @@
       "strokesNum": 5,
       "strokeGapRatio": 1.8,
       "dashLength": 8,
-      "gapLength": 8,
+      "gapLength": 2,
       "useDash": true
     }
   }

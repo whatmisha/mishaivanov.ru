@@ -297,6 +297,28 @@ export class PresetManager {
             try { localStorage.setItem(seedPaletteMigrationKey, 'true'); } catch (_) {}
         }
 
+        const ropesGapMigrationKey = `${this.storageKey}__seedRopesGapV2`;
+        let ropesGapMigrated = false;
+        try {
+            ropesGapMigrated = localStorage.getItem(ropesGapMigrationKey) === 'true';
+        } catch (_) { /* private mode — try migration anyway */ }
+
+        if (!ropesGapMigrated) {
+            const ropesPreset = this.presets["N's Ropes"];
+            if (ropesPreset?.seeded === true && ropesPreset.gapLength === 8) {
+                ropesPreset.gapLength = 2;
+                if (ropesPreset.moduleTypeCache && typeof ropesPreset.moduleTypeCache === 'object') {
+                    for (const moduleDefaults of Object.values(ropesPreset.moduleTypeCache)) {
+                        if (moduleDefaults && moduleDefaults.gapLength === 8) {
+                            moduleDefaults.gapLength = 2;
+                        }
+                    }
+                }
+                mutated = true;
+            }
+            try { localStorage.setItem(ropesGapMigrationKey, 'true'); } catch (_) {}
+        }
+
         for (const entry of files) {
             const file = typeof entry === 'string' ? entry : entry?.file;
             if (!file || typeof file !== 'string') continue;
@@ -359,4 +381,3 @@ export class PresetManager {
         await this.loadSeedPresets(defaults, basePath);
     }
 }
-
