@@ -184,15 +184,22 @@ export class MobileBootstrap {
             event.preventDefault();
             this.confirmMobileText();
         });
+        input.addEventListener('blur', () => {
+            if (this.mobileTextEditing) {
+                this.confirmMobileText({ blurInput: false });
+            }
+        });
     }
 
-    confirmMobileText() {
+    confirmMobileText(options = {}) {
         const input = document.getElementById('mobileTextInput');
         if (!input) return;
 
         this.mobileTextEditing = false;
         this.applyMobileText(input.value, { updateInput: true });
-        input.blur();
+        if (options.blurInput !== false && document.activeElement === input) {
+            input.blur();
+        }
         this.scheduleMobileViewportUpdate();
     }
 
