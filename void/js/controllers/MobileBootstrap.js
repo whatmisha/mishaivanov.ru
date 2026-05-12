@@ -5,9 +5,7 @@
  * - hides desktop panels and the Save/Delete preset bar,
  * - removes preset toolbar (dropdown + share) and the bottom-bar help (?) button,
  * - removes the PNG export button (desktop-only feature),
- * - enables a "renew" button for re-randomising,
- * - applies a performance-friendly random profile + effect-dice roll (refreshMobileRandomLook),
- *   including Alt Glyphs like desktop Randomize,
+ * - enables compact preset / text / PNG controls,
  * - sizes the module grid so the "DESK / TOP / ONLY" text fits.
  *
  * Listens to window resize: switches to desktop on widening.
@@ -18,6 +16,12 @@ import {
     MOBILE_BREAKPOINT_PX,
     TABLET_BREAKPOINT_PX
 } from '../config/timings.js';
+
+const MOBILE_FIXED_TEXT = 'DESK\nTOP\nONLY';
+const MOBILE_PRESETS_BASE_PATH = 'presets/';
+const MOBILE_TEXT_MAX_CHARS = 48;
+const MOBILE_MIN_MODULE_SIZE = 8;
+const MOBILE_CANVAS_PADDING_RATIO = 0.1;
 
 /** Detect a mobile phone (not tablet) by viewport + touch + User Agent. */
 export function isMobileDevice() {
@@ -61,21 +65,13 @@ export class MobileBootstrap {
         document.getElementById('exportJsonBtn')?.remove();
 
         const renewBtn = document.getElementById('renewBtn');
-        if (renewBtn) {
-            renewBtn.style.display = 'inline-flex';
-            renewBtn.addEventListener('click', () => {
-                this.app.renderer.clearModuleTypeCache();
-                if (this.app.renderer.clearAlternativeGlyphCache) {
-                    this.app.renderer.clearAlternativeGlyphCache();
-                }
-                this.refreshMobileRandomLook();
-                this.calculateMobileModuleSize();
-            });
-        }
+        renewBtn?.remove();
 
-        this.app.settings.set('text', 'DESK\nTOP\nONLY');
+        this.applyMobileText(MOBILE_FIXED_TEXT, { updateInput: true });
 
-        this.refreshMobileRandomLook();
+        this.initMobilePresetSelect();
+        this.initMobileTextInput();
+        this.initMobilePngExport();
 
         // Touch: tap a letter to cycle its alternative
         const canvas = document.getElementById('mainCanvas');
@@ -113,9 +109,255 @@ export class MobileBootstrap {
             if (wasMobile && !this.app.isMobile) {
                 window.location.reload();
             } else if (this.app.isMobile) {
-                this.calculateMobileModuleSize();
+                this.applyMobileText(this.app.settings.get('text') || MOBILE_FIXED_TEXT, {
+                    updateInput: true
+                });
             }
         });
+    }
+
+    initMobileTextInput() {
+        const input = document.getElementById('mobileTextInput');
+        if (!input) return;
+
+        input.value = this.flattenMobileText(this.app.settings.get('text') || MOBILE_FIXED_TEXT);
+        input.addEventListener('input', () => {
+            const text = this.formatMobileText(input.value);
+            this.applyMobileText(text, { updateInput: false });
+        });
+        input.addEventListener('blur', () => {
+            input.value = this.flattenMobileText(this.app.settings.get('text') || MOBILE_FIXED_TEXT);
+        });
+    }
+
+    initMobilePngExport() {
+        const btn = document.getElementById('mobileExportPngBtn');
+        if (!btn) return;
+
+        btn.addEventListener('click', () => {
+            this.app.exportViewportPng?.();
+        });
+    }
+
+    async initMobilePresetSelect() {
+        const select = document.getElementById('mobilePresetSelect');
+        if (!select) {
+            this.refreshMobileRandomLook();
+            return;
+        }
+
+        select.disabled = true;
+        select.innerHTML = '<option>Loading...</option>';
+
+        let presets = [];
+        try {
+            presets = await this.fetchBundledPresets();
+        } catch (error) {
+            console.warn('[MobileBootstrap] failed to load mobile presets:', error);
+        }
+
+        if (presets.length === 0) {
+            select.innerHTML = '<option>Presets unavailable</option>';
+            this.refreshMobileRandomLook();
+            this.calculateMobileModuleSize();
+            return;
+        }
+
+        select.innerHTML = '';
+        presets.forEach((preset, index) => {
+            const option = document.createElement('option');
+            option.value = String(index);
+            option.textContent = preset.name;
+            select.appendChild(option);
+        });
+
+        select.disabled = false;
+        select.addEventListener('change', () => {
+            const preset = presets[Number(select.value)];
+            if (preset) this.applyMobilePreset(preset);
+        });
+
+        this.applyMobilePreset(presets[0]);
+    }
+
+    async fetchBundledPresets() {
+        const manifestResponse = await fetch(`${MOBILE_PRESETS_BASE_PATH}index.json`, { cache: 'no-cache' });
+        if (!manifestResponse.ok) return [];
+
+        const manifest = await manifestResponse.json();
+        const files = Array.isArray(manifest?.presets) ? manifest.presets : [];
+        const presets = [];
+
+        for (const entry of files) {
+            const file = typeof entry === 'string' ? entry : entry?.file;
+            if (!file || typeof file !== 'string') continue;
+
+            try {
+                const response = await fetch(`${MOBILE_PRESETS_BASE_PATH}${file}`, { cache: 'no-cache' });
+                if (!response.ok) continue;
+
+                const raw = await response.json();
+                const settings = raw?.settings && typeof raw.settings === 'object'
+                    ? raw.settings
+                    : raw;
+                const name = String(raw?.name || file.replace(/\.json$/i, '')).trim();
+                presets.push({ name, settings, raw });
+            } catch (error) {
+                console.warn(`[MobileBootstrap] failed to load preset "${file}":`, error);
+            }
+        }
+
+        return presets;
+    }
+
+    applyMobilePreset(preset) {
+        const s = this.app.settings;
+        const settings = preset?.settings || {};
+        const cacheSource = preset?.raw || {};
+
+        Object.entries(settings).forEach(([key, value]) => {
+            if (key === 'text') return;
+            if (Object.prototype.hasOwnProperty.call(s.values, key)) {
+                s.set(key, value);
+            }
+        });
+
+        this.applyMobileText(s.get('text') || MOBILE_FIXED_TEXT, { updateInput: true });
+        s.set('textAlign', settings.textAlign || 'center');
+
+        if (this.app.renderer) {
+            this.app.renderer.moduleTypeCache = this.cloneCache(cacheSource.moduleTypeCache) || {};
+            this.app.renderer.moduleValueCache = this.cloneCache(cacheSource.moduleValueCache) || {};
+            this.app.renderer.alternativeGlyphCache = this.cloneCache(cacheSource.alternativeGlyphCache) || {};
+            this.app.renderer.clearLayoutCache?.();
+        }
+
+        this.app.colorPalette = Array.isArray(cacheSource.colorPalette)
+            ? [...cacheSource.colorPalette]
+            : [];
+        this.app.gradientPairs = Array.isArray(cacheSource.gradientPairs)
+            ? this.cloneCache(cacheSource.gradientPairs)
+            : [];
+        this.app.moduleColorCache = cacheSource.moduleColorCache
+            ? new Map(Object.entries(cacheSource.moduleColorCache).map(([k, v]) => [parseInt(k, 10), v]))
+            : new Map();
+        this.app.moduleGradientCache = cacheSource.moduleGradientCache
+            ? new Map(Object.entries(cacheSource.moduleGradientCache).map(([k, v]) => [parseInt(k, 10), this.cloneCache(v)]))
+            : new Map();
+        this.app.globalModuleIndex = this.app.moduleColorCache.size;
+        this.app.globalGradientIndex = this.app.moduleGradientCache.size;
+
+        this.calculateMobileModuleSize();
+    }
+
+    applyMobileText(text, options = {}) {
+        const nextText = this.normalizeMobileText(text);
+        this.app.settings.set('text', nextText);
+
+        if (options.updateInput) {
+            const input = document.getElementById('mobileTextInput');
+            if (input) input.value = this.flattenMobileText(nextText);
+        }
+
+        this.calculateMobileModuleSize();
+    }
+
+    normalizeMobileText(text) {
+        const raw = String(text || '')
+            .replace(/\r/g, '\n')
+            .replace(/[^\S\n]+/g, ' ')
+            .trim();
+
+        if (!raw) return MOBILE_FIXED_TEXT;
+        if (raw.includes('\n')) {
+            return raw
+                .split('\n')
+                .map((line) => line.trim().toUpperCase())
+                .filter(Boolean)
+                .flatMap((line) => this.wrapMobileLine(line))
+                .join('\n') || MOBILE_FIXED_TEXT;
+        }
+
+        return this.formatMobileText(raw);
+    }
+
+    formatMobileText(value) {
+        const clean = String(value || '')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .toUpperCase()
+            .slice(0, MOBILE_TEXT_MAX_CHARS);
+        if (!clean) return MOBILE_FIXED_TEXT;
+
+        return this.wrapMobileLine(clean).join('\n') || MOBILE_FIXED_TEXT;
+    }
+
+    wrapMobileLine(value) {
+        const clean = String(value || '').replace(/\s+/g, ' ').trim();
+        if (!clean) return [];
+
+        const maxLineLength = this.getMobileWrapLimit();
+        const lines = [];
+        let current = '';
+
+        clean.split(' ').filter(Boolean).forEach((word) => {
+            const chunks = this.splitMobileWord(word, maxLineLength);
+            chunks.forEach((chunk) => {
+                if (!current) {
+                    current = chunk;
+                    return;
+                }
+                if (`${current} ${chunk}`.length <= maxLineLength) {
+                    current = `${current} ${chunk}`;
+                } else {
+                    lines.push(current);
+                    current = chunk;
+                }
+            });
+        });
+
+        if (current) lines.push(current);
+        return lines;
+    }
+
+    splitMobileWord(word, maxLineLength) {
+        if (word.length <= maxLineLength) return [word];
+
+        const chunks = [];
+        for (let i = 0; i < word.length; i += maxLineLength) {
+            chunks.push(word.slice(i, i + maxLineLength));
+        }
+        return chunks;
+    }
+
+    getMobileWrapLimit() {
+        const canvasContainer = document.getElementById('canvasContainer');
+        const rect = canvasContainer?.getBoundingClientRect?.();
+        const availableWidth = rect?.width || window.innerWidth;
+        const letterSpacingMultiplier = this.app.settings.get('letterSpacingMultiplier') || 1;
+        const usableModules = (
+            availableWidth *
+            (1 - 2 * MOBILE_CANVAS_PADDING_RATIO)
+        ) / MOBILE_MIN_MODULE_SIZE;
+        const charModules = 5 + letterSpacingMultiplier;
+
+        return Math.max(
+            4,
+            Math.floor((usableModules + letterSpacingMultiplier) / charModules)
+        );
+    }
+
+    flattenMobileText(text) {
+        return String(text || '').replace(/\s*\n\s*/g, ' ').trim();
+    }
+
+    cloneCache(value) {
+        if (!value || typeof value !== 'object') return null;
+        try {
+            return JSON.parse(JSON.stringify(value));
+        } catch (_) {
+            return null;
+        }
     }
 
     /**
@@ -187,7 +429,7 @@ export class MobileBootstrap {
 
     /**
      * Calculate optimal module size for mobile device so the text
-     * "DESK\nTOP\nONLY" fits in window without clipping.
+     * Current mobile text fits in window without clipping.
      */
     calculateMobileModuleSize() {
         // Wait for next frame so canvas gets dimensions.
@@ -199,12 +441,12 @@ export class MobileBootstrap {
             const availableWidth = containerRect ? containerRect.width : window.innerWidth;
             const availableHeight = containerRect ? containerRect.height : window.innerHeight;
 
-            // Text is 3 lines, longest is 4 chars. Each char is 5×5 modules.
-            const MAX_LINE_LENGTH = 4;
-            const NUM_LINES = 3;
+            const lines = String(this.app.settings.get('text') || MOBILE_FIXED_TEXT).split('\n');
+            const MAX_LINE_LENGTH = Math.max(1, ...lines.map((line) => line.length));
+            const NUM_LINES = Math.max(1, lines.length);
             const COLS = 5;
             const ROWS = 5;
-            const PADDING_RATIO = 0.1; // 10 % on each side
+            const PADDING_RATIO = MOBILE_CANVAS_PADDING_RATIO; // 10 % on each side
 
             const letterSpacingMultiplier = this.app.settings.get('letterSpacingMultiplier') || 1;
             const lineHeightMultiplier = this.app.settings.get('lineHeightMultiplier') || 1;
@@ -227,4 +469,3 @@ export class MobileBootstrap {
         });
     }
 }
-

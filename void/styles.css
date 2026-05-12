@@ -3172,6 +3172,106 @@ textarea::-moz-selection {
     z-index: 10000;
 }
 
+.mobile-preset-select {
+    display: none;
+    height: var(--button-height);
+    min-width: 0;
+    width: 37vw;
+    max-width: 150px;
+    padding: 0 30px 0 14px;
+    border: none;
+    border-radius: var(--radius-button);
+    background-color: var(--color-bg-panel);
+    color: var(--color-text);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.7);
+    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image:
+        linear-gradient(45deg, transparent 50%, currentColor 50%),
+        linear-gradient(135deg, currentColor 50%, transparent 50%);
+    background-position:
+        calc(100% - 17px) 50%,
+        calc(100% - 12px) 50%;
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+    cursor: pointer;
+    transition: background-color var(--transition-slow);
+}
+
+.mobile-preset-select:hover:not(:disabled),
+.mobile-preset-select:focus:not(:disabled) {
+    background-color: #2a2a2a;
+    outline: none;
+}
+
+.mobile-preset-select:disabled {
+    background-color: var(--color-inactive-bg);
+    color: var(--color-inactive-text);
+    cursor: default;
+}
+
+.mobile-preset-select:focus-visible {
+    outline: 2px solid var(--color-text);
+    outline-offset: 3px;
+}
+
+.mobile-text-input,
+.mobile-export-png-btn {
+    display: none;
+    height: var(--button-height);
+    border: none;
+    background: var(--color-bg-panel);
+    color: var(--color-text);
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.7);
+    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background-color var(--transition-slow);
+}
+
+.mobile-text-input {
+    min-width: 0;
+    width: 35vw;
+    max-width: 142px;
+    padding: 0 14px;
+    border-radius: 4px;
+    text-transform: uppercase;
+}
+
+.mobile-text-input::placeholder {
+    color: var(--color-text-dim);
+}
+
+.mobile-text-input:focus {
+    outline: none;
+    background-color: #2a2a2a;
+}
+
+.mobile-export-png-btn {
+    align-items: center;
+    justify-content: center;
+    width: var(--button-height);
+    min-width: var(--button-height);
+    padding: 0;
+    border-radius: var(--radius-button);
+    cursor: pointer;
+}
+
+.mobile-export-png-btn svg {
+    display: block;
+    flex: 0 0 auto;
+}
+
+.mobile-export-png-btn:hover,
+.mobile-export-png-btn:focus {
+    background-color: #2a2a2a;
+    outline: none;
+}
+
 /* Toggle Label for "Outline fonts" and similar */
 .toggle-label {
     display: flex;
@@ -3436,11 +3536,45 @@ textarea::-moz-selection {
     display: none !important;
 }
 
-/* Show Update button only on mobile devices */
-.is-mobile #renewBtn {
-    display: inline-flex !important;
-    align-items: center;
+.is-mobile .bottom-buttons {
+    width: calc(100vw - 24px);
+    max-width: 420px;
+    gap: 8px;
     justify-content: center;
+}
+
+.is-mobile .mobile-preset-select {
+    display: block;
+}
+
+.is-mobile .mobile-text-input,
+.is-mobile .mobile-export-png-btn {
+    display: inline-flex;
+}
+
+.is-mobile #renewBtn {
+    display: none !important;
+}
+
+@media (max-width: 360px) {
+    .is-mobile .bottom-buttons {
+        width: calc(100vw - 16px);
+        gap: 6px;
+    }
+
+    .mobile-preset-select {
+        width: 34vw;
+        padding-left: 11px;
+        padding-right: 25px;
+        font-size: 0.82rem;
+    }
+
+    .mobile-text-input {
+        width: 34vw;
+        padding-left: 11px;
+        padding-right: 11px;
+        font-size: 0.82rem;
+    }
 }
 
 @media (max-width: 768px) {
