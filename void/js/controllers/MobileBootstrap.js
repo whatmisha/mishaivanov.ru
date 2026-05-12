@@ -75,7 +75,6 @@ export class MobileBootstrap {
 
         this.initMobilePresetSelect();
         this.initMobileTextInput();
-        this.initMobileTextApply();
         this.initMobileRandomize();
         this.initMobilePngExport();
 
@@ -183,15 +182,6 @@ export class MobileBootstrap {
         input.addEventListener('keydown', (event) => {
             if (event.key !== 'Enter') return;
             event.preventDefault();
-            this.confirmMobileText();
-        });
-    }
-
-    initMobileTextApply() {
-        const btn = document.getElementById('mobileTextApplyBtn');
-        if (!btn) return;
-
-        btn.addEventListener('click', () => {
             this.confirmMobileText();
         });
     }
