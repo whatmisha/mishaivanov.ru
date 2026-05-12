@@ -217,8 +217,19 @@ export class MobileBootstrap {
         if (!btn) return;
 
         btn.addEventListener('click', () => {
+            if (!this.app.settings.get('isRandom')) return;
             this.rerollMobileRandomLook();
         });
+        this.updateMobileRandomizeVisibility();
+    }
+
+    updateMobileRandomizeVisibility() {
+        const btn = document.getElementById('mobileRandomizeBtn');
+        if (!btn) return;
+
+        const hasRandomParams = !!this.app.settings.get('isRandom');
+        btn.hidden = !hasRandomParams;
+        btn.disabled = !hasRandomParams;
     }
 
     rerollMobileRandomLook() {
@@ -355,6 +366,7 @@ export class MobileBootstrap {
         this.app.globalModuleIndex = this.app.moduleColorCache.size;
         this.app.globalGradientIndex = this.app.moduleGradientCache.size;
 
+        this.updateMobileRandomizeVisibility();
         this.calculateMobileModuleSize();
     }
 

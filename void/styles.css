@@ -3585,6 +3585,10 @@ textarea::-moz-selection {
     display: inline-flex;
 }
 
+.is-mobile .mobile-randomize-btn[hidden] {
+    display: none !important;
+}
+
 .is-mobile .mobile-text-input {
     flex: 1 1 0;
     width: auto;
