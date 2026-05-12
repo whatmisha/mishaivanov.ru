@@ -6,7 +6,7 @@
  * - removes preset toolbar (dropdown + share) and the bottom-bar help (?) button,
  * - removes the PNG export button (desktop-only feature),
  * - enables compact preset / text / PNG controls,
- * - sizes the module grid so the "DESK / TOP / ONLY" text fits.
+ * - sizes the module grid so the "TRY / DESK / TOP" text fits.
  *
  * Listens to window resize: switches to desktop on widening.
  */
@@ -17,7 +17,7 @@ import {
     TABLET_BREAKPOINT_PX
 } from '../config/timings.js';
 
-const MOBILE_FIXED_TEXT = 'DESK\nTOP\nONLY';
+const MOBILE_FIXED_TEXT = 'TRY\nDESK\nTOP';
 const MOBILE_PRESETS_BASE_PATH = 'presets/';
 const MOBILE_TEXT_MAX_CHARS = 48;
 const MOBILE_MIN_MODULE_SIZE = 8;
@@ -74,6 +74,7 @@ export class MobileBootstrap {
 
         this.initMobilePresetSelect();
         this.initMobileTextInput();
+        this.initMobileRandomize();
         this.initMobilePngExport();
 
         // Touch: tap a letter to cycle its alternative
@@ -181,6 +182,39 @@ export class MobileBootstrap {
         btn.addEventListener('click', () => {
             this.app.exportViewportPng?.();
         });
+    }
+
+    initMobileRandomize() {
+        const btn = document.getElementById('mobileRandomizeBtn');
+        if (!btn) return;
+
+        btn.addEventListener('click', () => {
+            this.rerollMobileRandomLook();
+        });
+    }
+
+    rerollMobileRandomLook() {
+        if (this.app.renderer?.clearModuleTypeCache) {
+            this.app.renderer.clearModuleTypeCache();
+        }
+        if (this.app.renderer?.clearAlternativeGlyphCache) {
+            this.app.renderer.clearAlternativeGlyphCache();
+        }
+
+        const wobblyEffect = this.app.renderer?.moduleDrawer?.getWobblyEffect?.();
+        if (wobblyEffect) wobblyEffect.reseed();
+
+        if (this.app.settings.get('isRandom')) {
+            this.app.rollEffectRandomValues();
+            const colorMode = this.app.getDerivedColorMode?.();
+            if (colorMode === 'randomChaos' || colorMode === 'randomGradient') {
+                this.app.generateColorPalette?.();
+            }
+        } else {
+            this.refreshMobileRandomLook();
+        }
+
+        this.calculateMobileModuleSize();
     }
 
     async initMobilePresetSelect() {

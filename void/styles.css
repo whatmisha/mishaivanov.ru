@@ -3226,6 +3226,7 @@ textarea::-moz-selection {
 }
 
 .mobile-text-input,
+.mobile-randomize-btn,
 .mobile-export-png-btn {
     display: none;
     height: var(--button-height);
@@ -3257,6 +3258,7 @@ textarea::-moz-selection {
     background-color: #2a2a2a;
 }
 
+.mobile-randomize-btn,
 .mobile-export-png-btn {
     align-items: center;
     justify-content: center;
@@ -3267,14 +3269,23 @@ textarea::-moz-selection {
     cursor: pointer;
 }
 
+.mobile-export-png-btn {
+    background: var(--color-text);
+    color: var(--color-bg);
+}
+
+.mobile-randomize-btn svg,
 .mobile-export-png-btn svg {
     display: block;
     flex: 0 0 auto;
 }
 
+.mobile-randomize-btn:hover,
+.mobile-randomize-btn:focus,
 .mobile-export-png-btn:hover,
 .mobile-export-png-btn:focus {
     background-color: #2a2a2a;
+    color: var(--color-text);
     outline: none;
 }
 
@@ -3558,6 +3569,7 @@ textarea::-moz-selection {
 }
 
 .is-mobile .mobile-text-input,
+.is-mobile .mobile-randomize-btn,
 .is-mobile .mobile-export-png-btn {
     display: inline-flex;
 }
@@ -3567,6 +3579,7 @@ textarea::-moz-selection {
     width: auto;
 }
 
+.is-mobile .mobile-randomize-btn,
 .is-mobile .mobile-export-png-btn {
     flex: 0 0 var(--button-height);
 }
@@ -3716,6 +3729,13 @@ html.is-mobile body {
     top: calc(var(--mobile-vy) + var(--spacing-3xl) + env(safe-area-inset-top, 0px));
     left: calc(var(--mobile-vx) + (var(--mobile-vw) / 2));
     max-width: calc(var(--mobile-vw) - 16px);
+}
+
+.is-mobile .top-link {
+    height: var(--button-height);
+    padding: 0 var(--spacing-3xl);
+    border-radius: var(--radius-button);
+    font-size: 1rem;
 }
 
 .is-mobile .bottom-buttons {
