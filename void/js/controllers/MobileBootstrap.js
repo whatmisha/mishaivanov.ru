@@ -45,6 +45,8 @@ export class MobileBootstrap {
      */
     constructor(app) {
         this.app = app;
+        this.viewportUpdateFrame = null;
+        this.pendingTextRefit = false;
     }
 
     /** Initialise mobile UI; called once when the app starts on a mobile device. */
@@ -67,6 +69,7 @@ export class MobileBootstrap {
         const renewBtn = document.getElementById('renewBtn');
         renewBtn?.remove();
 
+        this.updateMobileViewportVars();
         this.applyMobileText(MOBILE_FIXED_TEXT, { updateInput: true });
 
         this.initMobilePresetSelect();
@@ -103,15 +106,56 @@ export class MobileBootstrap {
 
         // Reload when crossing back to a desktop viewport so the user sees the
         // full UI; otherwise just re-fit the module size on rotation/resize.
-        window.addEventListener('resize', () => {
+        const handleViewportChange = () => {
             const wasMobile = this.app.isMobile;
             this.app.isMobile = isMobileDevice();
             if (wasMobile && !this.app.isMobile) {
                 window.location.reload();
             } else if (this.app.isMobile) {
+                this.scheduleMobileViewportUpdate({ refitText: true });
+            }
+        };
+
+        window.addEventListener('resize', handleViewportChange);
+        window.visualViewport?.addEventListener('resize', handleViewportChange);
+        window.visualViewport?.addEventListener('scroll', handleViewportChange);
+    }
+
+    updateMobileViewportVars() {
+        const viewport = window.visualViewport;
+        const width = viewport?.width || window.innerWidth;
+        const height = viewport?.height || window.innerHeight;
+        const offsetLeft = viewport?.offsetLeft || 0;
+        const offsetTop = viewport?.offsetTop || 0;
+        const rootStyle = document.documentElement.style;
+
+        rootStyle.setProperty('--mobile-vw', `${width}px`);
+        rootStyle.setProperty('--mobile-vh', `${height}px`);
+        rootStyle.setProperty('--mobile-vx', `${offsetLeft}px`);
+        rootStyle.setProperty('--mobile-vy', `${offsetTop}px`);
+    }
+
+    scheduleMobileViewportUpdate(options = {}) {
+        this.pendingTextRefit = this.pendingTextRefit || !!options.refitText;
+        if (this.viewportUpdateFrame) return;
+
+        this.viewportUpdateFrame = requestAnimationFrame(() => {
+            this.viewportUpdateFrame = null;
+            const refitText = this.pendingTextRefit;
+            this.pendingTextRefit = false;
+
+            this.updateMobileViewportVars();
+
+            if (this.app.renderer?.resize) {
+                this.app.renderer.resize();
+            }
+
+            if (refitText) {
                 this.applyMobileText(this.app.settings.get('text') || MOBILE_FIXED_TEXT, {
                     updateInput: true
                 });
+            } else {
+                this.calculateMobileModuleSize();
             }
         });
     }

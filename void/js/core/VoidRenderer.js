@@ -295,19 +295,33 @@ export class VoidRenderer {
      */
     setupCanvas() {
         const dpr = window.devicePixelRatio || 1;
-        const rect = this.canvas.getBoundingClientRect();
+        const isMobile = document.documentElement.classList.contains('is-mobile');
+        const measureElement = isMobile
+            ? (this.canvas.parentElement || this.canvas)
+            : this.canvas;
+
+        if (isMobile) {
+            this.canvas.style.width = '100%';
+            this.canvas.style.height = '100%';
+        }
+
+        const rect = measureElement.getBoundingClientRect();
+        const width = Math.max(1, rect.width);
+        const height = Math.max(1, rect.height);
         
         // Save dimensions in CSS pixels
-        this.canvasWidth = rect.width;
-        this.canvasHeight = rect.height;
+        this.canvasWidth = width;
+        this.canvasHeight = height;
         
-        this.canvas.width = rect.width * dpr;
-        this.canvas.height = rect.height * dpr;
+        this.canvas.width = Math.round(width * dpr);
+        this.canvas.height = Math.round(height * dpr);
         
-        this.ctx.scale(dpr, dpr);
+        this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         
-        this.canvas.style.width = rect.width + 'px';
-        this.canvas.style.height = rect.height + 'px';
+        if (!isMobile) {
+            this.canvas.style.width = width + 'px';
+            this.canvas.style.height = height + 'px';
+        }
     }
 
     /**
@@ -858,4 +872,3 @@ export class VoidRenderer {
         this.hoveredLetter = position;
     }
 }
-

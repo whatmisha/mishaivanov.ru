@@ -93,6 +93,12 @@
     --checkbox-size: 14px;
     --handle-size: 8px;
     --button-height: 36px;
+
+    /* Mobile visual viewport, kept in sync by MobileBootstrap for iOS Safari chrome changes */
+    --mobile-vw: 100vw;
+    --mobile-vh: 100dvh;
+    --mobile-vx: 0px;
+    --mobile-vy: 0px;
 }
 
 /* ============================================
@@ -3537,7 +3543,7 @@ textarea::-moz-selection {
 }
 
 .is-mobile .bottom-buttons {
-    width: calc(100vw - 24px);
+    width: calc(var(--mobile-vw) - 24px);
     max-width: 420px;
     gap: 8px;
     justify-content: center;
@@ -3547,11 +3553,22 @@ textarea::-moz-selection {
 
 .is-mobile .mobile-preset-select {
     display: block;
+    flex: 1 1 0;
+    width: auto;
 }
 
 .is-mobile .mobile-text-input,
 .is-mobile .mobile-export-png-btn {
     display: inline-flex;
+}
+
+.is-mobile .mobile-text-input {
+    flex: 1 1 0;
+    width: auto;
+}
+
+.is-mobile .mobile-export-png-btn {
+    flex: 0 0 var(--button-height);
 }
 
 .is-mobile #renewBtn {
@@ -3648,37 +3665,63 @@ textarea::-moz-selection {
 
 html.is-mobile,
 html.is-mobile body {
-    width: 100%;
-    height: 100dvh;
-    min-height: 100dvh;
+    width: var(--mobile-vw);
+    height: var(--mobile-vh);
+    min-height: var(--mobile-vh);
+    max-width: var(--mobile-vw);
     overflow: hidden;
     overscroll-behavior: none;
 }
 
-html.is-mobile body {
-    position: fixed;
-    inset: 0;
-}
-
 .is-mobile .container {
-    height: 100dvh;
-    min-height: 100dvh;
+    position: fixed;
+    top: var(--mobile-vy);
+    left: var(--mobile-vx);
+    width: var(--mobile-vw);
+    height: var(--mobile-vh);
+    min-height: var(--mobile-vh);
     overflow: hidden;
 }
 
 .is-mobile .main-content {
+    position: fixed;
+    top: var(--mobile-vy);
+    left: var(--mobile-vx);
+    width: var(--mobile-vw);
+    height: var(--mobile-vh);
     min-height: 0;
-    height: 100%;
-    padding-bottom: calc(var(--button-height) + var(--spacing-3xl) + env(safe-area-inset-bottom, 0px));
+    padding: 0;
+    overflow: hidden;
 }
 
 .is-mobile .canvas-container {
+    position: fixed;
+    top: var(--mobile-vy);
+    left: var(--mobile-vx);
+    width: var(--mobile-vw);
+    height: var(--mobile-vh);
     min-height: 0;
-    height: 100%;
+    overflow: hidden;
+}
+
+.is-mobile #mainCanvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none;
+    max-height: none;
+}
+
+.is-mobile .top-links {
+    position: fixed;
+    top: calc(var(--mobile-vy) + var(--spacing-3xl) + env(safe-area-inset-top, 0px));
+    left: calc(var(--mobile-vx) + (var(--mobile-vw) / 2));
+    max-width: calc(var(--mobile-vw) - 16px);
 }
 
 .is-mobile .bottom-buttons {
-    bottom: calc(var(--spacing-3xl) + env(safe-area-inset-bottom, 0px));
+    top: calc(var(--mobile-vy) + var(--mobile-vh) - var(--button-height) - var(--spacing-3xl) - env(safe-area-inset-bottom, 0px));
+    bottom: auto;
+    left: calc(var(--mobile-vx) + (var(--mobile-vw) / 2));
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
@@ -3690,15 +3733,6 @@ html.is-mobile body {
 @media (max-width: 360px) {
     .is-mobile .bottom-buttons {
         gap: 6px;
-    }
-}
-
-@supports (height: 100svh) {
-    html.is-mobile,
-    html.is-mobile body,
-    .is-mobile .container {
-        height: 100svh;
-        min-height: 100svh;
     }
 }
 
