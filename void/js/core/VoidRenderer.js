@@ -590,13 +590,18 @@ export class VoidRenderer {
         
         // Base stem value for circles (used if module not found)
         const baseStem = this.params.stem;
+        const originalDashPhaseOriginX = this.moduleDrawer.dashPhaseOriginX;
+        const originalDashPhaseOriginY = this.moduleDrawer.dashPhaseOriginY;
+        this.moduleDrawer.dashPhaseOriginX = x;
+        this.moduleDrawer.dashPhaseOriginY = y;
         
         // Round Caps / Close Ends from params (Effects panel)
         const shouldUseRounded = this.params.roundedCaps || false;
         const shouldUseCloseEnds = this.params.closeEnds !== undefined ? this.params.closeEnds : true;
+        const usesDashRhythm = this.params.mode === 'dash' || this.params.mode === 'sd' || this.params.isRandom;
         
-        // Endpoints needed if Round OR Close Ends enabled
-        const shouldUseEndpoints = shouldUseRounded || shouldUseCloseEnds;
+        // Endpoints are also needed by dash rendering: only real free ends are fitted.
+        const shouldUseEndpoints = shouldUseRounded || shouldUseCloseEnds || usesDashRhythm;
         
         // Analyze glyph to determine endpoints (if needed for Round or Close Ends)
         let endpointMap = null; // Map: "i_j" -> {top, right, bottom, left}
@@ -742,6 +747,8 @@ export class VoidRenderer {
         
         // Restore globalAlpha
         this.ctx.globalAlpha = originalAlpha;
+        this.moduleDrawer.dashPhaseOriginX = originalDashPhaseOriginX;
+        this.moduleDrawer.dashPhaseOriginY = originalDashPhaseOriginY;
         
         if (this.params.showJoints || this.params.showFreeEndpoints) {
             try {

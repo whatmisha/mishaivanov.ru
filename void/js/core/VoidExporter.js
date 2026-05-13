@@ -58,12 +58,43 @@ export class VoidExporter {
         return MathUtils.calculateAdaptiveDash(lineLength, dashLength, gapLength, endMode);
     }
 
+    calculateEndpointDash(lineLength, dashLength, gapLength, options = {}) {
+        return MathUtils.calculateEndpointDash(lineLength, dashLength, gapLength, options);
+    }
+
     getDashEndModeForIndex(index, dashChess) {
         return dashChess && index % 2 === 1 ? 'full' : 'half';
     }
 
-    getDashOffsetForIndex(index, dashChess, adaptive) {
-        return dashChess && index % 2 === 1 ? 0 : adaptive.dashOffset;
+    getDashBaseOffsetForIndex(index, dashChess, dashLength) {
+        return dashChess && index % 2 === 1 ? 0 : dashLength / 2;
+    }
+
+    _dashPhaseAt(localX, localY, localDirX, localDirY) {
+        const ctx = this._dashPhaseContext;
+        if (!ctx) return 0;
+        const cos = Math.cos(ctx.angleRad);
+        const sin = Math.sin(ctx.angleRad);
+        const globalX = ctx.centerX + localX * cos - localY * sin;
+        const globalY = ctx.centerY + localX * sin + localY * cos;
+        const dirX = localDirX * cos - localDirY * sin;
+        const dirY = localDirX * sin + localDirY * cos;
+        const originX = Number.isFinite(ctx.originX) ? ctx.originX : 0;
+        const originY = Number.isFinite(ctx.originY) ? ctx.originY : 0;
+        return (globalX - originX) * dirX + (globalY - originY) * dirY;
+    }
+
+    _getDashPattern(lineLength, dashLength, gapLength, options = {}) {
+        const index = options.index || 0;
+        const dashChess = !!options.dashChess;
+        const phaseOffset = (Number.isFinite(options.phaseOffset) ? options.phaseOffset : 0) +
+            this.getDashBaseOffsetForIndex(index, dashChess, dashLength);
+        return this.calculateEndpointDash(lineLength, dashLength, gapLength, {
+            startEndpoint: options.startEndpoint,
+            endEndpoint: options.endEndpoint,
+            endMode: this.getDashEndModeForIndex(index, dashChess),
+            phaseOffset
+        });
     }
 
     /**
@@ -652,13 +683,18 @@ export class VoidExporter {
 
         // Group for letter
         svg += `    <g>\n`;
+        const previousDashPhaseOriginX = this._dashPhaseOriginX;
+        const previousDashPhaseOriginY = this._dashPhaseOriginY;
+        this._dashPhaseOriginX = x;
+        this._dashPhaseOriginY = y;
 
         // Round Caps / Close Ends from params (Effects panel)
         const shouldUseRounded = params.roundedCaps || false;
         const shouldUseCloseEnds = params.closeEnds !== undefined ? params.closeEnds : true;
+        const usesDashRhythm = params.mode === 'dash' || params.mode === 'sd' || params.isRandom;
         
-        // Endpoints needed if Round OR Close Ends enabled
-        const shouldUseEndpoints = shouldUseRounded || shouldUseCloseEnds;
+        // Endpoints are also needed by dash rendering: only real free ends are fitted.
+        const shouldUseEndpoints = shouldUseRounded || shouldUseCloseEnds || usesDashRhythm;
         
         // Analyze glyph to determine endpoints (if needed for Round or Close Ends)
         let endpointMap = null; // Map: "i_j" -> {top, right, bottom, left}
@@ -786,6 +822,8 @@ export class VoidExporter {
         }
 
         svg += `    </g>\n`;
+        this._dashPhaseOriginX = previousDashPhaseOriginX;
+        this._dashPhaseOriginY = previousDashPhaseOriginY;
         return svg;
     }
 
@@ -824,6 +862,14 @@ export class VoidExporter {
         const angle = rotation * 90;
         const centerX = x + w / 2;
         const centerY = y + h / 2;
+        const previousDashPhaseContext = this._dashPhaseContext;
+        this._dashPhaseContext = {
+            centerX,
+            centerY,
+            angleRad: rotation * Math.PI / 2,
+            originX: this._dashPhaseOriginX,
+            originY: this._dashPhaseOriginY
+        };
 
         let paths = '';
 
@@ -875,22 +921,22 @@ export class VoidExporter {
             // Dash mode
                 switch (type) {
                     case 'S':
-                    paths = this.renderStraightSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps, localEndpoints);
+                    paths = this.renderStraightSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps, localEndpoints, closeEnds);
                         break;
                     case 'C':
-                    paths = this.renderCentralSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps, localEndpoints);
+                    paths = this.renderCentralSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps, localEndpoints, closeEnds);
                         break;
                     case 'J':
-                    paths = this.renderJointSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps, localEndpoints);
+                    paths = this.renderJointSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps, localEndpoints, closeEnds);
                         break;
                     case 'L':
-                    paths = this.renderLinkSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, linkCapRound, localEndpoints, linkJoinRound);
+                    paths = this.renderLinkSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, linkCapRound, localEndpoints, linkJoinRound, closeEnds);
                         break;
                     case 'R':
-                    paths = this.renderRoundSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps, localEndpoints);
+                    paths = this.renderRoundSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps, localEndpoints, closeEnds);
                         break;
                     case 'B':
-                    paths = this.renderBendSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps, localEndpoints);
+                    paths = this.renderBendSVGStrokeDash(0, 0, w, h, stem, dashLength, gapLength, roundedCaps, localEndpoints, closeEnds);
                         break;
             }
             } else if (mode === 'sd') {
@@ -903,10 +949,10 @@ export class VoidExporter {
                     paths = this.renderCentralSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps, localEndpoints, closeEnds, dashChess);
                         break;
                     case 'J':
-                    paths = this.renderJointSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps, dashChess);
+                    paths = this.renderJointSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps, localEndpoints, closeEnds, dashChess);
                         break;
                     case 'L':
-                    paths = this.renderLinkSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, linkCapRound, dashChess, linkJoinRound);
+                    paths = this.renderLinkSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, linkCapRound, localEndpoints, closeEnds, dashChess, linkJoinRound);
                         break;
                     case 'R':
                     paths = this.renderRoundSVGStrokeSD(0, 0, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps, localEndpoints, closeEnds, dashChess);
@@ -917,7 +963,10 @@ export class VoidExporter {
             }
         }
 
-        if (!paths) return '';
+        if (!paths) {
+            this._dashPhaseContext = previousDashPhaseContext;
+            return '';
+        }
 
         // Apply wobbly effect to SVG paths if enabled
         if (this.wobblyEffect && this.wobblyEffect.enabled && this.wobblyEffect.amplitude > 0) {
@@ -943,7 +992,9 @@ export class VoidExporter {
         // Wrap in group with transformation
         // Add stroke attribute if color is provided (for Color Chaos mode)
         const strokeAttr = color ? ` stroke="${color}"` : '';
-        return `      <g transform="translate(${centerX}, ${centerY}) rotate(${angle})"${strokeAttr}>\n${gradientDefs}${paths}      </g>\n`;
+        const svg = `      <g transform="translate(${centerX}, ${centerY}) rotate(${angle})"${strokeAttr}>\n${gradientDefs}${paths}      </g>\n`;
+        this._dashPhaseContext = previousDashPhaseContext;
+        return svg;
     }
 
     /**
@@ -1802,10 +1853,10 @@ export class VoidExporter {
     /**
      * S — Straight: vertical line on left (dash)
      */
-    renderStraightSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false, localEndpoints = null) {
-        // Shortening by 0.5 * stem weight (if roundedCaps enabled and there are endpoints)
-        const shortenTop = roundedCaps && localEndpoints && localEndpoints.top ? stem * 0.25 : 0;
-        const shortenBottom = roundedCaps && localEndpoints && localEndpoints.bottom ? stem * 0.25 : 0;
+    renderStraightSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false, localEndpoints = null, closeEnds = false) {
+        const shouldShorten = (roundedCaps || closeEnds) && localEndpoints;
+        const shortenTop = shouldShorten && localEndpoints.top ? stem * 0.25 : 0;
+        const shortenBottom = shouldShorten && localEndpoints.bottom ? stem * 0.25 : 0;
         
         const lineX = -w / 2 + stem / 4;
         const lineWidth = stem / 2;
@@ -1815,21 +1866,23 @@ export class VoidExporter {
         const lineLength = h - shortenTop - shortenBottom;
         const dashPx = stem * dashLength;
         const gapPx = this._effectiveDashGapLength(stem * gapLength, lineWidth, lineCap);
-        const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
+        const phaseOffset = this._dashPhaseAt(lineX, -h/2 + shortenTop, 0, 1);
+        const adaptive = this._getDashPattern(lineLength, dashPx, gapPx, {
+            startEndpoint: localEndpoints && localEndpoints.top,
+            endEndpoint: localEndpoints && localEndpoints.bottom,
+            phaseOffset
+        });
         
-        // Positive offset shifts pattern backward - first dash starts before line start
-        const dashOffset = adaptive.dashOffset;
-        
-        return this._emitDashedLine(lineX, -h/2 + shortenTop, lineX, h/2 - shortenBottom, lineWidth, adaptive.dashLength, adaptive.gapLength, dashOffset, lineCap);
+        return this._emitDashedLine(lineX, -h/2 + shortenTop, lineX, h/2 - shortenBottom, lineWidth, adaptive.dashLength, adaptive.gapLength, adaptive.dashOffset, lineCap);
     }
 
     /**
      * C — Central: vertical line centered (dash)
      */
-    renderCentralSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false, localEndpoints = null) {
-        // Shortening by 0.5 * stem weight (if roundedCaps enabled and there are endpoints)
-        const shortenTop = roundedCaps && localEndpoints && localEndpoints.top ? stem * 0.25 : 0;
-        const shortenBottom = roundedCaps && localEndpoints && localEndpoints.bottom ? stem * 0.25 : 0;
+    renderCentralSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false, localEndpoints = null, closeEnds = false) {
+        const shouldShorten = (roundedCaps || closeEnds) && localEndpoints;
+        const shortenTop = shouldShorten && localEndpoints.top ? stem * 0.25 : 0;
+        const shortenBottom = shouldShorten && localEndpoints.bottom ? stem * 0.25 : 0;
         
         const lineX = 0;
         const lineWidth = stem / 2;
@@ -1839,18 +1892,20 @@ export class VoidExporter {
         const lineLength = h - shortenTop - shortenBottom;
         const dashPx = stem * dashLength;
         const gapPx = this._effectiveDashGapLength(stem * gapLength, lineWidth, lineCap);
-        const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
+        const phaseOffset = this._dashPhaseAt(lineX, -h/2 + shortenTop, 0, 1);
+        const adaptive = this._getDashPattern(lineLength, dashPx, gapPx, {
+            startEndpoint: localEndpoints && localEndpoints.top,
+            endEndpoint: localEndpoints && localEndpoints.bottom,
+            phaseOffset
+        });
         
-        // Positive offset shifts pattern backward - first dash starts before line start
-        const dashOffset = adaptive.dashOffset;
-        
-        return this._emitDashedLine(lineX, -h/2 + shortenTop, lineX, h/2 - shortenBottom, lineWidth, adaptive.dashLength, adaptive.gapLength, dashOffset, lineCap);
+        return this._emitDashedLine(lineX, -h/2 + shortenTop, lineX, h/2 - shortenBottom, lineWidth, adaptive.dashLength, adaptive.gapLength, adaptive.dashOffset, lineCap);
     }
 
     /**
      * J — Joint: T-shaped connection (dash)
      */
-    renderJointSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false, localEndpoints = null) {
+    renderJointSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false, localEndpoints = null, closeEnds = false) {
         const vertLineX = -w / 2 + stem / 4;
         const horizLineY = 0;
         const lineWidth = stem / 2;
@@ -1858,7 +1913,7 @@ export class VoidExporter {
         const lineJoin = roundedCaps ? 'round' : 'miter';
         
         // Shortening for vertical line (if roundedCaps enabled and there are endpoints)
-        const shouldShorten = (roundedCaps || false) && localEndpoints; // closeEnds not passed in dash mode
+        const shouldShorten = (roundedCaps || closeEnds) && localEndpoints;
         const shortenTop = shouldShorten && localEndpoints.top ? stem * 0.25 : 0;
         const shortenBottom = shouldShorten && localEndpoints.bottom ? stem * 0.25 : 0;
         
@@ -1871,26 +1926,34 @@ export class VoidExporter {
         
         // Vertical line: calculate dash for SHORTENED length
         const vertLength = h - shortenTop - shortenBottom;
-        const vertAdaptive = this.calculateAdaptiveDash(vertLength, dashPx, gapPx);
-        const vertDashOffset = vertAdaptive.dashOffset;
+        const vertPhaseOffset = this._dashPhaseAt(vertLineX, -h/2 + shortenTop, 0, 1);
+        const vertAdaptive = this._getDashPattern(vertLength, dashPx, gapPx, {
+            startEndpoint: localEndpoints && localEndpoints.top,
+            endEndpoint: localEndpoints && localEndpoints.bottom,
+            phaseOffset: vertPhaseOffset
+        });
         
         // Horizontal line: calculate dash for SHORTENED length
         const horizStartX = vertLineX;
         const horizEndX = w / 2 - shortenRight;
         const horizLength = horizEndX - horizStartX;
-        const horizAdaptive = this.calculateAdaptiveDash(horizLength, dashPx, gapPx);
-        const horizDashOffset = horizAdaptive.dashOffset;
+        const horizPhaseOffset = this._dashPhaseAt(horizStartX, horizLineY, 1, 0);
+        const horizAdaptive = this._getDashPattern(horizLength, dashPx, gapPx, {
+            startEndpoint: false,
+            endEndpoint: localEndpoints && localEndpoints.right,
+            phaseOffset: horizPhaseOffset
+        });
         
         let svg = '';
-        svg += this._emitDashedLine(vertLineX, -h/2 + shortenTop, vertLineX, h/2 - shortenBottom, lineWidth, vertAdaptive.dashLength, vertAdaptive.gapLength, vertDashOffset, lineCap);
-        svg += this._emitDashedLine(horizStartX, horizLineY, horizEndX, horizLineY, lineWidth, horizAdaptive.dashLength, horizAdaptive.gapLength, horizDashOffset, lineCap);
+        svg += this._emitDashedLine(vertLineX, -h/2 + shortenTop, vertLineX, h/2 - shortenBottom, lineWidth, vertAdaptive.dashLength, vertAdaptive.gapLength, vertAdaptive.dashOffset, lineCap);
+        svg += this._emitDashedLine(horizStartX, horizLineY, horizEndX, horizLineY, lineWidth, horizAdaptive.dashLength, horizAdaptive.gapLength, horizAdaptive.dashOffset, lineCap);
         return svg;
     }
 
     /**
      * L — Link/Corner: L-shaped connection (dash)
      */
-    renderLinkSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, strokeCapRound = false, localEndpoints = null, strokeJoinRound = false) {
+    renderLinkSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, strokeCapRound = false, localEndpoints = null, strokeJoinRound = false, closeEnds = false) {
         const vertLineX = -w / 2 + stem / 4;
         const horizLineY = h / 2 - stem / 4;
         const lineWidth = stem / 2;
@@ -1898,7 +1961,7 @@ export class VoidExporter {
         const lineJoin = strokeJoinRound ? 'round' : 'miter';
         
         // Shortening (if roundedCaps enabled and there are endpoints)
-        const shouldShorten = (strokeCapRound || false) && localEndpoints; // closeEnds not passed in dash mode
+        const shouldShorten = (strokeCapRound || closeEnds) && localEndpoints;
         const shortenTop = shouldShorten && localEndpoints.top ? stem * 0.25 : 0;
         const shortenRight = shouldShorten && localEndpoints.right ? stem * 0.25 : 0;
         const shortenBottom = shouldShorten && localEndpoints.bottom ? stem * 0.25 : 0;
@@ -1914,27 +1977,28 @@ export class VoidExporter {
         const horizLength = horizEndX - vertLineX;
         const totalLength = vertLength + horizLength;
         
-        // Calculate adaptive dash for SHORTENED path length
-        const adaptive = this.calculateAdaptiveDash(totalLength, dashPx, gapPx);
-        
-        // Positive offset shifts pattern backward - first dash starts before line start
-        const dashOffset = adaptive.dashOffset;
+        const phaseOffset = this._dashPhaseAt(vertLineX, vertStartY, 0, 1);
+        const adaptive = this._getDashPattern(totalLength, dashPx, gapPx, {
+            startEndpoint: localEndpoints && localEndpoints.top,
+            endEndpoint: localEndpoints && localEndpoints.right,
+            phaseOffset
+        });
         
         // Draw L-shaped connection as a series of solid segments (Figma-safe).
-        return this._emitDashedLPath(vertLineX, vertStartY, vertLineX, horizLineY, horizEndX, horizLineY, lineWidth, adaptive.dashLength, adaptive.gapLength, dashOffset, lineCap, lineJoin);
+        return this._emitDashedLPath(vertLineX, vertStartY, vertLineX, horizLineY, horizEndX, horizLineY, lineWidth, adaptive.dashLength, adaptive.gapLength, adaptive.dashOffset, lineCap, lineJoin);
     }
 
     /**
      * R — Round: smooth arc (dash)
      */
-    renderRoundSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false, localEndpoints = null) {
+    renderRoundSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false, localEndpoints = null, closeEnds = false) {
         const arcRadius = w - stem / 4;
         const centerX = w / 2;
         const centerY = -h / 2;
         
         // Arc shortening (for dash mode only if roundedCaps)
         const shortenAmount = stem * 0.25;
-        const shouldShorten = roundedCaps && localEndpoints;
+        const shouldShorten = (roundedCaps || closeEnds) && localEndpoints;
         const deltaAngleRight = shouldShorten && localEndpoints.right ? shortenAmount / arcRadius : 0;
         const deltaAngleTop = shouldShorten && localEndpoints.top ? shortenAmount / arcRadius : 0;
         
@@ -1950,25 +2014,32 @@ export class VoidExporter {
         // Calculate arc length for SHORTENED arc: L = radius * angle
         const arcAngle = endAngle - startAngle;
         const arcLength = arcRadius * arcAngle;
-        const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
+        const phaseOffset = this._dashPhaseAt(
+            centerX + arcRadius * Math.cos(startAngle),
+            centerY + arcRadius * Math.sin(startAngle),
+            -Math.sin(startAngle),
+            Math.cos(startAngle)
+        );
+        const adaptive = this._getDashPattern(arcLength, dashPx, gapPx, {
+            startEndpoint: localEndpoints && localEndpoints.right,
+            endEndpoint: localEndpoints && localEndpoints.top,
+            phaseOffset
+        });
         
-        // Positive offset shifts pattern backward - first dash starts before line start
-        const dashOffset = adaptive.dashOffset;
-        
-        return this._emitDashedArc(centerX, centerY, arcRadius, startAngle, endAngle, lineWidth, adaptive.dashLength, adaptive.gapLength, dashOffset, lineCap);
+        return this._emitDashedArc(centerX, centerY, arcRadius, startAngle, endAngle, lineWidth, adaptive.dashLength, adaptive.gapLength, adaptive.dashOffset, lineCap);
     }
 
     /**
      * B — Bend: sharp arc (dash)
      */
-    renderBendSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false, localEndpoints = null) {
+    renderBendSVGStrokeDash(x, y, w, h, stem, dashLength, gapLength, roundedCaps = false, localEndpoints = null, closeEnds = false) {
         const arcRadius = stem / 4;
         const centerX = w / 2;
         const centerY = -h / 2;
         
         // Arc shortening (for dash mode only if roundedCaps)
         const shortenAmount = stem * 0.25;
-        const shouldShorten = roundedCaps && localEndpoints;
+        const shouldShorten = (roundedCaps || closeEnds) && localEndpoints;
         const deltaAngleRight = shouldShorten && localEndpoints.right ? shortenAmount / arcRadius : 0;
         const deltaAngleTop = shouldShorten && localEndpoints.top ? shortenAmount / arcRadius : 0;
         
@@ -1984,12 +2055,19 @@ export class VoidExporter {
         // Calculate arc length for SHORTENED arc: L = radius * angle
         const arcAngle = endAngle - startAngle;
         const arcLength = arcRadius * arcAngle;
-        const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx);
+        const phaseOffset = this._dashPhaseAt(
+            centerX + arcRadius * Math.cos(startAngle),
+            centerY + arcRadius * Math.sin(startAngle),
+            -Math.sin(startAngle),
+            Math.cos(startAngle)
+        );
+        const adaptive = this._getDashPattern(arcLength, dashPx, gapPx, {
+            startEndpoint: localEndpoints && localEndpoints.right,
+            endEndpoint: localEndpoints && localEndpoints.top,
+            phaseOffset
+        });
         
-        // Positive offset shifts pattern backward - first dash starts before line start
-        const dashOffset = adaptive.dashOffset;
-        
-        return this._emitDashedArc(centerX, centerY, arcRadius, startAngle, endAngle, lineWidth, adaptive.dashLength, adaptive.gapLength, dashOffset, lineCap);
+        return this._emitDashedArc(centerX, centerY, arcRadius, startAngle, endAngle, lineWidth, adaptive.dashLength, adaptive.gapLength, adaptive.dashOffset, lineCap);
     }
 
     // ============================================
@@ -2016,9 +2094,16 @@ export class VoidExporter {
         const dashPx = strokeWidth * dashLength;
         const gapPx = this._effectiveDashGapLength(strokeWidth * gapLength, strokeWidth, lineCap);
         for (let i = 0; i < strokesNum; i++) {
-            const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx, this.getDashEndModeForIndex(i, dashChess));
             const lineX = startX + stripeOffset(i, strokeWidth, gap);
-            svg += this._emitDashedLine(lineX, -h/2 + shortenTop, lineX, h/2 - shortenBottom, strokeWidth, adaptive.dashLength, adaptive.gapLength, this.getDashOffsetForIndex(i, dashChess, adaptive), lineCap);
+            const phaseOffset = this._dashPhaseAt(lineX, -h/2 + shortenTop, 0, 1);
+            const adaptive = this._getDashPattern(lineLength, dashPx, gapPx, {
+                startEndpoint: localEndpoints && localEndpoints.top,
+                endEndpoint: localEndpoints && localEndpoints.bottom,
+                phaseOffset,
+                index: i,
+                dashChess
+            });
+            svg += this._emitDashedLine(lineX, -h/2 + shortenTop, lineX, h/2 - shortenBottom, strokeWidth, adaptive.dashLength, adaptive.gapLength, adaptive.dashOffset, lineCap);
         }
         
         // Closing lines at ends (also dashed in SD mode)
@@ -2065,9 +2150,16 @@ export class VoidExporter {
         const dashPx = strokeWidth * dashLength;
         const gapPx = this._effectiveDashGapLength(strokeWidth * gapLength, strokeWidth, lineCap);
         for (let i = 0; i < strokesNum; i++) {
-            const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx, this.getDashEndModeForIndex(i, dashChess));
             const lineX = startX + stripeOffset(i, strokeWidth, gap);
-            svg += this._emitDashedLine(lineX, -h/2 + shortenTop, lineX, h/2 - shortenBottom, strokeWidth, adaptive.dashLength, adaptive.gapLength, this.getDashOffsetForIndex(i, dashChess, adaptive), lineCap);
+            const phaseOffset = this._dashPhaseAt(lineX, -h/2 + shortenTop, 0, 1);
+            const adaptive = this._getDashPattern(lineLength, dashPx, gapPx, {
+                startEndpoint: localEndpoints && localEndpoints.top,
+                endEndpoint: localEndpoints && localEndpoints.bottom,
+                phaseOffset,
+                index: i,
+                dashChess
+            });
+            svg += this._emitDashedLine(lineX, -h/2 + shortenTop, lineX, h/2 - shortenBottom, strokeWidth, adaptive.dashLength, adaptive.gapLength, adaptive.dashOffset, lineCap);
         }
         
         // Closing lines at ends (also dashed in SD mode)
@@ -2096,7 +2188,7 @@ export class VoidExporter {
     /**
      * J — Joint: T-shaped connection with dashes (SD mode)
      */
-    renderJointSVGStrokeSD(x, y, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps = false, dashChess = false) {
+    renderJointSVGStrokeSD(x, y, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, roundedCaps = false, localEndpoints = null, closeEnds = false, dashChess = false) {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         
@@ -2112,17 +2204,31 @@ export class VoidExporter {
         const gapPx = this._effectiveDashGapLength(strokeWidth * gapLength, strokeWidth, lineCap);
         
         for (let i = 0; i < strokesNum; i++) {
-            const vertAdaptive = this.calculateAdaptiveDash(h, dashPx, gapPx, this.getDashEndModeForIndex(i, dashChess));
             const lineX = vertStartX + stripeOffset(i, strokeWidth, gap);
-            svg += this._emitDashedLine(lineX, -h/2, lineX, h/2, strokeWidth, vertAdaptive.dashLength, vertAdaptive.gapLength, this.getDashOffsetForIndex(i, dashChess, vertAdaptive), lineCap);
+            const vertPhaseOffset = this._dashPhaseAt(lineX, -h/2, 0, 1);
+            const vertAdaptive = this._getDashPattern(h, dashPx, gapPx, {
+                startEndpoint: localEndpoints && localEndpoints.top,
+                endEndpoint: localEndpoints && localEndpoints.bottom,
+                phaseOffset: vertPhaseOffset,
+                index: i,
+                dashChess
+            });
+            svg += this._emitDashedLine(lineX, -h/2, lineX, h/2, strokeWidth, vertAdaptive.dashLength, vertAdaptive.gapLength, vertAdaptive.dashOffset, lineCap);
         }
         
         // Horizontal lines
         const horizLength = w / 2 - lastVertX;
         for (let i = 0; i < strokesNum; i++) {
-            const horizAdaptive = this.calculateAdaptiveDash(horizLength, dashPx, gapPx, this.getDashEndModeForIndex(i, dashChess));
             const lineY = horizStartY + stripeOffset(i, strokeWidth, gap);
-            svg += this._emitDashedLine(lastVertX, lineY, w/2, lineY, strokeWidth, horizAdaptive.dashLength, horizAdaptive.gapLength, this.getDashOffsetForIndex(i, dashChess, horizAdaptive), lineCap);
+            const horizPhaseOffset = this._dashPhaseAt(lastVertX, lineY, 1, 0);
+            const horizAdaptive = this._getDashPattern(horizLength, dashPx, gapPx, {
+                startEndpoint: false,
+                endEndpoint: localEndpoints && localEndpoints.right,
+                phaseOffset: horizPhaseOffset,
+                index: i,
+                dashChess
+            });
+            svg += this._emitDashedLine(lastVertX, lineY, w/2, lineY, strokeWidth, horizAdaptive.dashLength, horizAdaptive.gapLength, horizAdaptive.dashOffset, lineCap);
         }
         
         return svg;
@@ -2131,7 +2237,7 @@ export class VoidExporter {
     /**
      * L — Link/Corner: L-shaped connection with dashes (SD mode)
      */
-    renderLinkSVGStrokeSD(x, y, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, strokeCapRound = false, dashChess = false, strokeJoinRound = false) {
+    renderLinkSVGStrokeSD(x, y, w, h, stem, strokesNum, strokeGapRatio, dashLength, gapLength, strokeCapRound = false, localEndpoints = null, closeEnds = false, dashChess = false, strokeJoinRound = false) {
         const totalWidth = stem / 2;
         const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth, strokesNum, strokeGapRatio);
         
@@ -2154,9 +2260,16 @@ export class VoidExporter {
             const horizLength = w / 2 - lineX;
             const totalLength = vertLength + horizLength;
             
-            const adaptive = this.calculateAdaptiveDash(totalLength, dashPx, gapPx, this.getDashEndModeForIndex(i, dashChess));
+            const phaseOffset = this._dashPhaseAt(lineX, -h/2, 0, 1);
+            const adaptive = this._getDashPattern(totalLength, dashPx, gapPx, {
+                startEndpoint: localEndpoints && localEndpoints.top,
+                endEndpoint: localEndpoints && localEndpoints.right,
+                phaseOffset,
+                index: i,
+                dashChess
+            });
             
-            svg += this._emitDashedLPath(lineX, -h/2, lineX, lineY, w/2, lineY, strokeWidth, adaptive.dashLength, adaptive.gapLength, this.getDashOffsetForIndex(i, dashChess, adaptive), lineCap, lineJoin);
+            svg += this._emitDashedLPath(lineX, -h/2, lineX, lineY, w/2, lineY, strokeWidth, adaptive.dashLength, adaptive.gapLength, adaptive.dashOffset, lineCap, lineJoin);
         }
         
         return svg;
@@ -2186,16 +2299,29 @@ export class VoidExporter {
             if (arcRadius < minRadius) arcRadius = minRadius;
             if (arcRadius <= 0) continue;
             
-            const deltaAngleRight = roundedCaps && localEndpoints && localEndpoints.right ? shortenAmount / arcRadius : 0;
-            const deltaAngleTop = roundedCaps && localEndpoints && localEndpoints.top ? shortenAmount / arcRadius : 0;
+            const shouldShorten = (roundedCaps || closeEnds) && localEndpoints;
+            const deltaAngleRight = shouldShorten && localEndpoints.right ? shortenAmount / arcRadius : 0;
+            const deltaAngleTop = shouldShorten && localEndpoints.top ? shortenAmount / arcRadius : 0;
             
             const startAngle = Math.PI / 2 + deltaAngleRight;
             const endAngle = Math.PI - deltaAngleTop;
             
             const arcLength = arcRadius * (endAngle - startAngle);
-            const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx, this.getDashEndModeForIndex(j, dashChess));
+            const phaseOffset = this._dashPhaseAt(
+                centerX + arcRadius * Math.cos(startAngle),
+                centerY + arcRadius * Math.sin(startAngle),
+                -Math.sin(startAngle),
+                Math.cos(startAngle)
+            );
+            const adaptive = this._getDashPattern(arcLength, dashPx, gapPx, {
+                startEndpoint: localEndpoints && localEndpoints.right,
+                endEndpoint: localEndpoints && localEndpoints.top,
+                phaseOffset,
+                index: j,
+                dashChess
+            });
             
-            svg += this._emitDashedArc(centerX, centerY, arcRadius, startAngle, endAngle, strokeWidth, adaptive.dashLength, adaptive.gapLength, this.getDashOffsetForIndex(j, dashChess, adaptive), lineCap);
+            svg += this._emitDashedArc(centerX, centerY, arcRadius, startAngle, endAngle, strokeWidth, adaptive.dashLength, adaptive.gapLength, adaptive.dashOffset, lineCap);
         }
         
         // Closing lines (also dashed in SD mode)
@@ -2261,16 +2387,29 @@ export class VoidExporter {
             if (arcRadius < minRadius) arcRadius = minRadius;
             if (arcRadius <= 0) continue;
             
-            const deltaAngleRight = roundedCaps && localEndpoints && localEndpoints.right ? shortenAmount / arcRadius : 0;
-            const deltaAngleTop = roundedCaps && localEndpoints && localEndpoints.top ? shortenAmount / arcRadius : 0;
+            const shouldShorten = (roundedCaps || closeEnds) && localEndpoints;
+            const deltaAngleRight = shouldShorten && localEndpoints.right ? shortenAmount / arcRadius : 0;
+            const deltaAngleTop = shouldShorten && localEndpoints.top ? shortenAmount / arcRadius : 0;
             
             const startAngle = Math.PI / 2 + deltaAngleRight;
             const endAngle = Math.PI - deltaAngleTop;
             
             const arcLength = arcRadius * (endAngle - startAngle);
-            const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx, this.getDashEndModeForIndex(j, dashChess));
+            const phaseOffset = this._dashPhaseAt(
+                centerX + arcRadius * Math.cos(startAngle),
+                centerY + arcRadius * Math.sin(startAngle),
+                -Math.sin(startAngle),
+                Math.cos(startAngle)
+            );
+            const adaptive = this._getDashPattern(arcLength, dashPx, gapPx, {
+                startEndpoint: localEndpoints && localEndpoints.right,
+                endEndpoint: localEndpoints && localEndpoints.top,
+                phaseOffset,
+                index: j,
+                dashChess
+            });
             
-            svg += this._emitDashedArc(centerX, centerY, arcRadius, startAngle, endAngle, strokeWidth, adaptive.dashLength, adaptive.gapLength, this.getDashOffsetForIndex(j, dashChess, adaptive), lineCap);
+            svg += this._emitDashedArc(centerX, centerY, arcRadius, startAngle, endAngle, strokeWidth, adaptive.dashLength, adaptive.gapLength, adaptive.dashOffset, lineCap);
         }
         
         // Closing lines (also dashed in SD mode)
