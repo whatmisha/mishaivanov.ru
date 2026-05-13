@@ -140,6 +140,7 @@ export class MathUtils {
             if (numDashes < 1) return;
             let targetLength;
             if (mode === 'full') {
+                if (safeGap > 0 && numDashes < 2) return;
                 targetLength = numDashes * safeDash + (numDashes - 1) * safeGap;
             } else {
                 if (numDashes < 2) return;
@@ -158,7 +159,7 @@ export class MathUtils {
         };
 
         const ideal = mode === 'full'
-            ? Math.max(1, Math.round((safeLine + safeGap) / cycle))
+            ? Math.max(safeGap > 0 ? 2 : 1, Math.round((safeLine + safeGap) / cycle))
             : Math.max(2, Math.round(safeLine / cycle) + 1);
         for (let n = ideal - 3; n <= ideal + 3; n++) {
             addCandidate(n);

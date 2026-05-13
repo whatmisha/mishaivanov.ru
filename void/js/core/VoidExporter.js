@@ -59,7 +59,7 @@ export class VoidExporter {
     }
 
     getDashEndModeForIndex(index, dashChess) {
-        return 'half';
+        return dashChess && index % 2 === 1 ? 'full' : 'half';
     }
 
     getDashOffsetForIndex(index, dashChess, adaptive) {
@@ -2181,12 +2181,6 @@ export class VoidExporter {
         
         const dashPx = strokeWidth * dashLength;
         const gapPx = this._effectiveDashGapLength(strokeWidth * gapLength, strokeWidth, lineCap);
-        let referenceRadius = stripeArcRadius((strokesNum - 1) / 2, outerRadius, strokeWidth, gap);
-        if (referenceRadius < minRadius) referenceRadius = minRadius;
-        const referenceStartAngle = Math.PI / 2 + (roundedCaps && localEndpoints && localEndpoints.right ? shortenAmount / referenceRadius : 0);
-        const referenceEndAngle = Math.PI - (roundedCaps && localEndpoints && localEndpoints.top ? shortenAmount / referenceRadius : 0);
-        const referenceAdaptive = this.calculateAdaptiveDash(referenceRadius * (referenceEndAngle - referenceStartAngle), dashPx, gapPx);
-        
         for (let j = 0; j < strokesNum; j++) {
             let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
             if (arcRadius < minRadius) arcRadius = minRadius;
@@ -2198,7 +2192,8 @@ export class VoidExporter {
             const startAngle = Math.PI / 2 + deltaAngleRight;
             const endAngle = Math.PI - deltaAngleTop;
             
-            const adaptive = referenceAdaptive;
+            const arcLength = arcRadius * (endAngle - startAngle);
+            const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx, this.getDashEndModeForIndex(j, dashChess));
             
             svg += this._emitDashedArc(centerX, centerY, arcRadius, startAngle, endAngle, strokeWidth, adaptive.dashLength, adaptive.gapLength, this.getDashOffsetForIndex(j, dashChess, adaptive), lineCap);
         }
@@ -2261,12 +2256,6 @@ export class VoidExporter {
         
         const dashPx = strokeWidth * dashLength;
         const gapPx = this._effectiveDashGapLength(strokeWidth * gapLength, strokeWidth, lineCap);
-        let referenceRadius = stripeArcRadius((strokesNum - 1) / 2, outerRadius, strokeWidth, gap);
-        if (referenceRadius < minRadius) referenceRadius = minRadius;
-        const referenceStartAngle = Math.PI / 2 + (roundedCaps && localEndpoints && localEndpoints.right ? shortenAmount / referenceRadius : 0);
-        const referenceEndAngle = Math.PI - (roundedCaps && localEndpoints && localEndpoints.top ? shortenAmount / referenceRadius : 0);
-        const referenceAdaptive = this.calculateAdaptiveDash(referenceRadius * (referenceEndAngle - referenceStartAngle), dashPx, gapPx);
-        
         for (let j = 0; j < strokesNum; j++) {
             let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
             if (arcRadius < minRadius) arcRadius = minRadius;
@@ -2278,7 +2267,8 @@ export class VoidExporter {
             const startAngle = Math.PI / 2 + deltaAngleRight;
             const endAngle = Math.PI - deltaAngleTop;
             
-            const adaptive = referenceAdaptive;
+            const arcLength = arcRadius * (endAngle - startAngle);
+            const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx, this.getDashEndModeForIndex(j, dashChess));
             
             svg += this._emitDashedArc(centerX, centerY, arcRadius, startAngle, endAngle, strokeWidth, adaptive.dashLength, adaptive.gapLength, this.getDashOffsetForIndex(j, dashChess, adaptive), lineCap);
         }

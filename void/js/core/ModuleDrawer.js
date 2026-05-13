@@ -167,7 +167,7 @@ export class ModuleDrawer {
     }
 
     getDashEndModeForIndex(index) {
-        return 'half';
+        return this.dashChess && index % 2 === 1 ? 'full' : 'half';
     }
 
     getDashOffsetForIndex(index, adaptive) {
@@ -1307,13 +1307,6 @@ export class ModuleDrawer {
             
             const dashPx = strokeWidth * this.dashLength;
             const gapPx = this.effectiveDashGapLength(strokeWidth * this.gapLength, strokeWidth, ctx.lineCap);
-            let referenceRadius = stripeArcRadius((this.strokesNum - 1) / 2, outerRadius, strokeWidth, gap);
-            if (referenceRadius < minRadius) referenceRadius = minRadius;
-            const referenceShouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
-            const referenceStartAngle = Math.PI / 2 + (referenceShouldShorten && localEndpoints.right ? shortenAmount / referenceRadius : 0);
-            const referenceEndAngle = Math.PI - (referenceShouldShorten && localEndpoints.top ? shortenAmount / referenceRadius : 0);
-            const referenceAdaptive = this.calculateAdaptiveDash(referenceRadius * (referenceEndAngle - referenceStartAngle), dashPx, gapPx);
-            
             for (let j = 0; j < this.strokesNum; j++) {
                 let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
                 if (arcRadius < minRadius) {
@@ -1328,7 +1321,8 @@ export class ModuleDrawer {
                     const startAngle = Math.PI / 2 + deltaAngleRight;
                     const endAngle = Math.PI - deltaAngleTop;
                     
-                    const adaptive = referenceAdaptive;
+                    const arcLength = arcRadius * (endAngle - startAngle);
+                    const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx, this.getDashEndModeForIndex(j));
                     this.strokeDashedArc(ctx, centerX, centerY, arcRadius, startAngle, endAngle, adaptive, strokeWidth, ctx.lineCap, this.getDashOffsetForIndex(j, adaptive));
                 }
             }
@@ -1554,13 +1548,6 @@ export class ModuleDrawer {
             
             const dashPx = strokeWidth * this.dashLength;
             const gapPx = this.effectiveDashGapLength(strokeWidth * this.gapLength, strokeWidth, ctx.lineCap);
-            let referenceRadius = stripeArcRadius((this.strokesNum - 1) / 2, outerRadius, strokeWidth, gap);
-            if (referenceRadius < minRadius) referenceRadius = minRadius;
-            const referenceShouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
-            const referenceStartAngle = Math.PI / 2 + (referenceShouldShorten && localEndpoints.right ? shortenAmount / referenceRadius : 0);
-            const referenceEndAngle = Math.PI - (referenceShouldShorten && localEndpoints.top ? shortenAmount / referenceRadius : 0);
-            const referenceAdaptive = this.calculateAdaptiveDash(referenceRadius * (referenceEndAngle - referenceStartAngle), dashPx, gapPx);
-            
             for (let j = 0; j < this.strokesNum; j++) {
                 let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
                 if (arcRadius < minRadius) {
@@ -1575,7 +1562,8 @@ export class ModuleDrawer {
                     const startAngle = Math.PI / 2 + deltaAngleRight;
                     const endAngle = Math.PI - deltaAngleTop;
                     
-                    const adaptive = referenceAdaptive;
+                    const arcLength = arcRadius * (endAngle - startAngle);
+                    const adaptive = this.calculateAdaptiveDash(arcLength, dashPx, gapPx, this.getDashEndModeForIndex(j));
                     this.strokeDashedArc(ctx, centerX, centerY, arcRadius, startAngle, endAngle, adaptive, strokeWidth, ctx.lineCap, this.getDashOffsetForIndex(j, adaptive));
                 }
             }
