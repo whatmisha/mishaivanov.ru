@@ -31,7 +31,10 @@ import { SlidersSetup } from './controllers/SlidersSetup.js';
 import { RandomPanelController } from './controllers/RandomPanelController.js';
 import { ColorController } from './controllers/ColorController.js';
 import { PresetsController, EXTRA_PRESET_SNAPSHOT_KEYS } from './controllers/PresetsController.js';
-import { parseSharePayloadFromHash } from './share/PresetShareCodec.js';
+import {
+    parseSharePayloadFromHash,
+    parseShortPresetSlugFromLocation
+} from './share/PresetShareCodec.js';
 
 class VoidTypeface {
     constructor() {
@@ -277,6 +280,7 @@ class VoidTypeface {
     async _finishDesktopInitAsync() {
         const h = typeof location !== 'undefined' ? (location.hash || '') : '';
         this._pendingSharePayload = parseSharePayloadFromHash(h) || null;
+        this._pendingShortPresetSlug = parseShortPresetSlugFromLocation(location) || null;
 
         // Clear stale per-module RNG caches BEFORE loadPreset repopulates them from storage / share —
         // never after a successful restore (would make shared links look re-randomized).

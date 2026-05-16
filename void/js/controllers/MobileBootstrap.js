@@ -18,7 +18,9 @@ import {
 } from '../config/timings.js';
 import {
     decodePresetShare,
-    parseSharePayloadFromHash
+    parseSharePayloadFromHash,
+    parseShortPresetSlugFromLocation,
+    slugifyPresetName
 } from '../share/PresetShareCodec.js';
 
 const MOBILE_FIXED_TEXT = 'TRY\nDESK\nTOP';
@@ -294,6 +296,7 @@ export class MobileBootstrap {
         }
 
         const sharedPreset = await this.readSharedPresetFromHash();
+        const shortPresetSlug = sharedPreset ? '' : parseShortPresetSlugFromLocation(location);
 
         if (presets.length === 0 && !sharedPreset) {
             select.innerHTML = '<option>Presets unavailable</option>';
@@ -312,7 +315,12 @@ export class MobileBootstrap {
             if (preset) this.applyMobilePreset(preset);
         });
 
-        this.applyMobilePreset(this.mobilePresetOptions[0]);
+        const initialIndex = shortPresetSlug
+            ? this.mobilePresetOptions.findIndex((preset) => preset.slug === shortPresetSlug)
+            : 0;
+        const safeInitialIndex = initialIndex >= 0 ? initialIndex : 0;
+        select.value = String(safeInitialIndex);
+        this.applyMobilePreset(this.mobilePresetOptions[safeInitialIndex]);
 
         window.addEventListener('hashchange', () => {
             void this.applySharedPresetFromCurrentHash();
@@ -407,7 +415,8 @@ export class MobileBootstrap {
                     ? raw.settings
                     : raw;
                 const name = String(raw?.name || file.replace(/\.json$/i, '')).trim();
-                presets.push({ name, settings, raw });
+                const fileSlug = file.replace(/\.json$/i, '');
+                presets.push({ name, settings, raw, slug: slugifyPresetName(fileSlug || name) });
             } catch (error) {
                 console.warn(`[MobileBootstrap] failed to load preset "${file}":`, error);
             }

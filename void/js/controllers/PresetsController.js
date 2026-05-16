@@ -15,9 +15,12 @@ import { HistoryManager } from '../history/HistoryManager.js';
 import { HISTORY_MAX_SIZE } from '../config/timings.js';
 import { DICE_CONFIG, EFFECT_RANDOM_CONFIG } from '../config/randomConfig.js';
 import {
+    buildShareUrlPrefix,
+    buildShortPresetUrl,
     decodePresetShare,
     encodePresetShareWithBudget,
-    SHARE_SOFT_LIMIT_CHARS
+    SHARE_SOFT_LIMIT_CHARS,
+    slugifyPresetName
 } from '../share/PresetShareCodec.js';
 
 export class PresetsController {
@@ -142,12 +145,17 @@ export class PresetsController {
         this.updatePresetList();
 
         const sharePayload = app._pendingSharePayload;
+        const shortPresetSlug = app._pendingShortPresetSlug;
         app._pendingSharePayload = null;
+        app._pendingShortPresetSlug = null;
         if (sharePayload) {
             const applied = await this.applySharedPresetFromEncodedFragment(sharePayload.trim());
             if (!applied) {
                 this.loadPreset('New', false);
             }
+        } else if (shortPresetSlug) {
+            const presetName = this.resolveDefaultPresetNameFromSlug(shortPresetSlug);
+            this.loadPreset(presetName || 'New', true);
         } else {
             this.loadPreset('New', false);
         }
@@ -1437,6 +1445,36 @@ export class PresetsController {
         }
     }
 
+    resolveDefaultPresetNameFromSlug(slug) {
+        const app = this.app;
+        const cleanSlug = slugifyPresetName(slug);
+        if (!cleanSlug) return '';
+
+        return app.presetManager
+            .getPresetNames()
+            .find((name) => name !== 'New' && slugifyPresetName(name) === cleanSlug) || '';
+    }
+
+    getShortLinkSlugForPreset(presetName) {
+        const app = this.app;
+        if (!presetName || presetName === 'New' || presetName === '__shared__') return '';
+        if (app.hasUnsavedChanges && presetName === app.currentPresetName) return '';
+
+        const stored = app.presetManager.loadPreset(presetName);
+        if (stored?.seeded === true) return slugifyPresetName(presetName);
+
+        const mobileContext = app.isMobile ? app.mobileBootstrap?.mobileShareContext : null;
+        if (
+            app.isMobile &&
+            mobileContext?.usesMobileDefaultText &&
+            mobileContext.currentPresetName === presetName
+        ) {
+            return slugifyPresetName(presetName);
+        }
+
+        return '';
+    }
+
     gatherPresetBlobForShare(presetName) {
         const app = this.app;
         let raw;
@@ -1518,6 +1556,28 @@ export class PresetsController {
 
     async sharePresetToClipboard(presetName) {
         const app = this.app;
+        const shortSlug = this.getShortLinkSlugForPreset(presetName);
+        if (shortSlug) {
+            const shortUrl = buildShortPresetUrl(shortSlug);
+            if (shortUrl) {
+                const copiedShort = await this.copyTextWithFallback(shortUrl);
+                if (copiedShort) {
+                    this.showShareToast('Link copied');
+                    return;
+                }
+
+                await app.modalManager.show({
+                    title: 'Copy this link',
+                    text: shortUrl,
+                    showInput: true,
+                    inputValue: shortUrl,
+                    inputPlaceholder: 'Share URL',
+                    buttons: [{ id: 'ok', text: 'Close', type: 'primary' }]
+                });
+                return;
+            }
+        }
+
         const pristine = app.pristineSettingsDefaults;
         if (!pristine) {
             await app.modalManager.showError('Share is not ready yet.');
@@ -1529,7 +1589,7 @@ export class PresetsController {
             return;
         }
 
-        const urlPrefix = `${location.origin}${location.pathname}${location.search || ''}#p=`;
+        const urlPrefix = buildShareUrlPrefix();
         let result;
         try {
             result = await encodePresetShareWithBudget(blob, pristine, {

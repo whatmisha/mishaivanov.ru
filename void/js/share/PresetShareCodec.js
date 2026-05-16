@@ -44,6 +44,7 @@ function quantizeFloat(v) {
 }
 
 const SHARE_VERSION_PREFIX = 'v1.';
+const SHORT_PRESET_QUERY_KEY = 'preset';
 
 /** Never embed in shared links */
 const STRIP_KEYS = new Set(['seeded', 'createdAt', 'updatedAt', 'id']);
@@ -316,6 +317,53 @@ export function parseSharePayloadFromHash(hash) {
     const h = hash.startsWith('#') ? hash.slice(1) : hash;
     if (!h.startsWith('p=')) return '';
     return h.slice(2).trim();
+}
+
+export function slugifyPresetName(name) {
+    return String(name || '')
+        .normalize('NFKD')
+        .replace(/[\u0300-\u036f]/gu, '')
+        .replace(/['’`]/gu, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/gu, '-')
+        .replace(/^-+|-+$/gu, '');
+}
+
+export function parseShortPresetSlugFromLocation(loc = location) {
+    const search = String(loc?.search || '');
+    if (!search || search === '?') return '';
+
+    const params = new URLSearchParams(search);
+    const named = params.get(SHORT_PRESET_QUERY_KEY);
+    if (named) return slugifyPresetName(named);
+
+    const bare = search.slice(1).trim();
+    if (!bare || bare.includes('=')) return '';
+    return slugifyPresetName(decodeURIComponent(bare));
+}
+
+export function buildShortPresetUrl(slug, loc = location) {
+    const cleanSlug = slugifyPresetName(slug);
+    if (!cleanSlug) return '';
+
+    const url = new URL(loc.href);
+    url.search = '';
+    url.hash = '';
+    url.searchParams.set(SHORT_PRESET_QUERY_KEY, cleanSlug);
+    return url.toString();
+}
+
+export function buildShareUrlPrefix(loc = location) {
+    const url = new URL(loc.href);
+    url.hash = '';
+    url.searchParams.delete(SHORT_PRESET_QUERY_KEY);
+
+    const bareSearch = String(loc.search || '').slice(1);
+    if (bareSearch && !bareSearch.includes('=')) {
+        url.search = '';
+    }
+
+    return `${url.origin}${url.pathname}${url.search || ''}#p=`;
 }
 
 export function stripSharePayloadForUrl(payload) {
