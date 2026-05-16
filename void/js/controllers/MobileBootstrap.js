@@ -3,9 +3,9 @@
  *
  * Detects mobile phones (touch + viewport heuristics + UA), then:
  * - hides desktop panels and the Save/Delete preset bar,
- * - removes preset toolbar (dropdown + share) and the bottom-bar help (?) button,
+ * - removes the desktop preset toolbar and the bottom-bar help (?) button,
  * - removes the PNG export button (desktop-only feature),
- * - enables compact preset / text / PNG controls,
+ * - enables compact preset / text / PNG / share controls,
  * - sizes the module grid so the "TRY / DESK / TOP" text fits.
  *
  * Listens to window resize: switches to desktop on widening.
@@ -16,12 +16,18 @@ import {
     MOBILE_BREAKPOINT_PX,
     TABLET_BREAKPOINT_PX
 } from '../config/timings.js';
+import {
+    decodePresetShare,
+    parseSharePayloadFromHash
+} from '../share/PresetShareCodec.js';
 
 const MOBILE_FIXED_TEXT = 'TRY\nDESK\nTOP';
 const MOBILE_PRESETS_BASE_PATH = 'presets/';
 const MOBILE_TEXT_MAX_CHARS = 48;
 const MOBILE_MIN_MODULE_SIZE = 8;
 const MOBILE_CANVAS_PADDING_RATIO = 0.1;
+const SHARE_MOBILE_TEXT_KEY = '__shareMobileText';
+const SHARE_MOBILE_USES_DEFAULT_TEXT_KEY = '__shareMobileUsesDefaultText';
 
 /** Detect a mobile phone (not tablet) by viewport + touch + User Agent. */
 export function isMobileDevice() {
@@ -48,6 +54,8 @@ export class MobileBootstrap {
         this.viewportUpdateFrame = null;
         this.pendingTextRefit = false;
         this.mobileTextEditing = false;
+        this.mobileShareContext = null;
+        this.mobilePresetOptions = [];
     }
 
     /** Initialise mobile UI; called once when the app starts on a mobile device. */
@@ -77,6 +85,7 @@ export class MobileBootstrap {
         this.initMobileTextInput();
         this.initMobileRandomize();
         this.initMobilePngExport();
+        this.initMobileShareButton();
 
         // Touch: tap a letter to cycle its alternative
         const canvas = document.getElementById('mainCanvas');
@@ -196,7 +205,7 @@ export class MobileBootstrap {
         if (!input) return;
 
         this.mobileTextEditing = false;
-        this.applyMobileText(input.value, { updateInput: true });
+        this.applyMobileText(input.value, { updateInput: true, markTextEdited: true });
         if (options.blurInput !== false && document.activeElement === input) {
             input.blur();
         }
@@ -209,6 +218,17 @@ export class MobileBootstrap {
 
         btn.addEventListener('click', () => {
             this.app.exportViewportPng?.();
+        });
+    }
+
+    initMobileShareButton() {
+        const btn = document.getElementById('mobilePresetShareBtn');
+        if (!btn) return;
+
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            void this.app.sharePresetToClipboard(this.app.currentPresetName || 'New');
         });
     }
 
@@ -273,7 +293,9 @@ export class MobileBootstrap {
             console.warn('[MobileBootstrap] failed to load mobile presets:', error);
         }
 
-        if (presets.length === 0) {
+        const sharedPreset = await this.readSharedPresetFromHash();
+
+        if (presets.length === 0 && !sharedPreset) {
             select.innerHTML = '<option>Presets unavailable</option>';
             this.refreshMobileRandomLook();
             this.calculateMobileModuleSize();
@@ -281,20 +303,87 @@ export class MobileBootstrap {
         }
 
         select.innerHTML = '';
-        presets.forEach((preset, index) => {
+        this.mobilePresetOptions = sharedPreset ? [sharedPreset, ...presets] : presets;
+        this.renderMobilePresetOptions();
+
+        select.disabled = false;
+        select.addEventListener('change', () => {
+            const preset = this.mobilePresetOptions[Number(select.value)];
+            if (preset) this.applyMobilePreset(preset);
+        });
+
+        this.applyMobilePreset(this.mobilePresetOptions[0]);
+
+        window.addEventListener('hashchange', () => {
+            void this.applySharedPresetFromCurrentHash();
+        });
+    }
+
+    renderMobilePresetOptions() {
+        const select = document.getElementById('mobilePresetSelect');
+        if (!select) return;
+
+        select.innerHTML = '';
+        this.mobilePresetOptions.forEach((preset, index) => {
             const option = document.createElement('option');
             option.value = String(index);
             option.textContent = preset.name;
             select.appendChild(option);
         });
+    }
 
-        select.disabled = false;
-        select.addEventListener('change', () => {
-            const preset = presets[Number(select.value)];
-            if (preset) this.applyMobilePreset(preset);
-        });
+    async applySharedPresetFromCurrentHash() {
+        const sharedPreset = await this.readSharedPresetFromHash();
+        if (!sharedPreset) return;
 
-        this.applyMobilePreset(presets[0]);
+        const existingIndex = this.mobilePresetOptions.findIndex((preset) => preset.isShared);
+        if (existingIndex >= 0) {
+            this.mobilePresetOptions[existingIndex] = sharedPreset;
+        } else {
+            this.mobilePresetOptions.unshift(sharedPreset);
+        }
+
+        this.renderMobilePresetOptions();
+        const select = document.getElementById('mobilePresetSelect');
+        const nextIndex = this.mobilePresetOptions.findIndex((preset) => preset === sharedPreset);
+        if (select && nextIndex >= 0) {
+            select.value = String(nextIndex);
+        }
+        this.applyMobilePreset(sharedPreset);
+    }
+
+    async readSharedPresetFromHash() {
+        const payload = parseSharePayloadFromHash(location.hash || '');
+        if (!payload || !this.app.pristineSettingsDefaults) return null;
+
+        let decoded = null;
+        try {
+            decoded = await decodePresetShare(payload.trim(), this.app.pristineSettingsDefaults);
+        } catch (error) {
+            console.warn('[MobileBootstrap] failed to decode shared preset:', error);
+        }
+        if (!decoded?.full) return null;
+
+        const shareDisplayName = String(decoded.shareDisplayName || '').trim();
+        const name = `${shareDisplayName || 'Shared preset'} *`;
+        const mobileShareText = String(decoded.full?.[SHARE_MOBILE_TEXT_KEY] || '').trim();
+        const usesMobileDefaultText = decoded.full?.[SHARE_MOBILE_USES_DEFAULT_TEXT_KEY] === true;
+        try {
+            window.history.replaceState(null, '', `${location.pathname}${location.search || ''}`);
+        } catch (_) {
+            /* ignore */
+        }
+
+        return {
+            name,
+            settings: decoded.full,
+            raw: decoded.full,
+            isShared: true,
+            shareDisplayName,
+            mobileDisplayText: usesMobileDefaultText && mobileShareText
+                ? mobileShareText
+                : ''
+        };
     }
 
     async fetchBundledPresets() {
@@ -333,6 +422,13 @@ export class MobileBootstrap {
         const s = this.app.settings;
         const settings = preset?.settings || {};
         const cacheSource = preset?.raw || {};
+        const isShared = !!preset?.isShared;
+        const currentPresetName = isShared ? '__shared__' : (preset?.name || 'New');
+        const shareDisplayName = isShared ? (preset?.shareDisplayName || '') : '';
+
+        this.app.currentPresetName = currentPresetName;
+        this.app.sharedPresetSuggestedName =
+            currentPresetName === '__shared__' ? String(shareDisplayName || '').trim() : '';
 
         Object.entries(settings).forEach(([key, value]) => {
             if (key === 'text') return;
@@ -341,7 +437,19 @@ export class MobileBootstrap {
             }
         });
 
-        this.applyMobileText(s.get('text') || MOBILE_FIXED_TEXT, { updateInput: true });
+        const originalText = String(settings.text || MOBILE_FIXED_TEXT);
+        const mobileText = isShared
+            ? String(preset.mobileDisplayText || originalText || MOBILE_FIXED_TEXT)
+            : MOBILE_FIXED_TEXT;
+
+        this.mobileShareContext = {
+            originalText,
+            usesMobileDefaultText: !isShared || !!preset.mobileDisplayText,
+            currentPresetName,
+            shareDisplayName
+        };
+
+        this.applyMobileText(mobileText, { updateInput: true, markTextEdited: false });
         s.set('textAlign', settings.textAlign || 'center');
 
         if (this.app.renderer) {
@@ -374,12 +482,32 @@ export class MobileBootstrap {
         const nextText = this.normalizeMobileText(text);
         this.app.settings.set('text', nextText);
 
+        if (options.markTextEdited && this.mobileShareContext) {
+            this.mobileShareContext.usesMobileDefaultText = false;
+        }
+
         if (options.updateInput) {
             const input = document.getElementById('mobileTextInput');
             if (input) input.value = this.flattenMobileText(nextText);
         }
 
         this.calculateMobileModuleSize();
+    }
+
+    prepareShareBlobForMobile(raw) {
+        const ctx = this.mobileShareContext;
+        if (!raw || !ctx) return raw;
+
+        delete raw[SHARE_MOBILE_TEXT_KEY];
+        delete raw[SHARE_MOBILE_USES_DEFAULT_TEXT_KEY];
+
+        if (ctx.usesMobileDefaultText) {
+            raw.text = ctx.originalText || raw.text || MOBILE_FIXED_TEXT;
+            raw[SHARE_MOBILE_TEXT_KEY] = MOBILE_FIXED_TEXT;
+            raw[SHARE_MOBILE_USES_DEFAULT_TEXT_KEY] = true;
+        }
+
+        return raw;
     }
 
     normalizeMobileText(text) {
@@ -443,6 +571,7 @@ export class MobileBootstrap {
 
     splitMobileWord(word, measure) {
         if (this.mobileLineFits(word, measure)) return [word];
+        if (word.length <= 8) return [word];
 
         const chunks = [];
         let current = '';
@@ -590,7 +719,11 @@ export class MobileBootstrap {
 
     getMobileReferenceModuleSize() {
         const { width, height } = this.getMobileAvailableSize();
-        const lines = MOBILE_FIXED_TEXT.split('\n');
+        const text = this.app.settings.get('text') || MOBILE_FIXED_TEXT;
+        const lines = String(text || MOBILE_FIXED_TEXT)
+            .split('\n')
+            .map((line) => line.trim())
+            .filter(Boolean);
         const MAX_LINE_LENGTH = Math.max(1, ...lines.map((line) => line.length));
         const NUM_LINES = Math.max(1, lines.length);
         const COLS = this.app.renderer?.cols || 5;

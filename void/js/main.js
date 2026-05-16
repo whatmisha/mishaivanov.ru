@@ -197,6 +197,15 @@ class VoidTypeface {
         // Check for mobile device
         this.isMobile = isMobileDevice();
 
+        // Preset/share state used by both desktop and mobile.
+        this.currentPresetName = 'New';
+        this.hasUnsavedChanges = false;
+        this.isInitializing = true;
+        this.isLoadingPreset = false;
+        this.isRestoringState = false;
+        this.sharedPresetSuggestedName = '';
+        this.pristineSettingsDefaults = JSON.parse(JSON.stringify(this.settings.values));
+
         // Initialize components
         this.initCanvas();
         this.initExporter();
@@ -207,15 +216,9 @@ class VoidTypeface {
             this.mobileBootstrap = new MobileBootstrap(this);
             this.mobileBootstrap.init();
         } else {
-            // Preset UI + change tracking must exist before any init that calls markAsChanged (e.g. ColorPicker onChange)
-            this.currentPresetName = 'New';
-            this.hasUnsavedChanges = false;
-            this.isInitializing = true;
-
             // Undo/Redo: per-preset history. historyManager is the HistoryManager for the active preset.
             this.presetHistories = new Map();
             this.historyManager = new HistoryManager({ maxSize: HISTORY_MAX_SIZE });
-            this.isRestoringState = false;
             this.activeSliderTransactions = new Map();
             this.activeInputTransactions = new Set();
             this.snapshotDebounceTimer = null;
@@ -223,9 +226,7 @@ class VoidTypeface {
 
             // Capture pristine settings BEFORE any DOM init and kick off seed-preset
             // import in parallel — built-in presets shipped in /presets/*.json.
-            const pristineDefaults = JSON.parse(JSON.stringify(this.settings.values));
-            this.pristineSettingsDefaults = pristineDefaults;
-            const seedsPromise = this.presetManager.loadSeedPresets(pristineDefaults);
+            const seedsPromise = this.presetManager.loadSeedPresets(this.pristineSettingsDefaults);
 
             // On desktop initialize everything as usual
             this.initPanels();
@@ -252,9 +253,7 @@ class VoidTypeface {
             // Set correct Rounded and Wobbly visibility on initialization
             this.updateRoundedCapsVisibility();
             this.updateWobblyVisibility();
-            
-            this.isLoadingPreset = false;
-            
+
             this.setupChangeTracking();
             this.initSliderHistoryHandlers();
 
@@ -481,6 +480,7 @@ class VoidTypeface {
     generatePresetName() { return this._ensurePresetsController().generatePresetName(); }
     getDisplayName(fullName) { return this._ensurePresetsController().getDisplayName(fullName); }
     updateSaveDeleteButtons() { this._ensurePresetsController().updateSaveDeleteButtons(); }
+    sharePresetToClipboard(presetName) { return this._ensurePresetsController().sharePresetToClipboard(presetName); }
 
     /**
      * Initialize color pickers

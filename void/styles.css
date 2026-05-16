@@ -202,6 +202,10 @@ h6 {
     opacity: 1;
 }
 
+.mobile-preset-share-btn {
+    display: none;
+}
+
 /* Top Link - back button */
 .top-link {
     padding: var(--spacing-md) var(--spacing-3xl);
@@ -2693,6 +2697,35 @@ button.color-dot--expandable:focus-visible {
     transform: scale(0.98);
 }
 
+.mobile-preset-share-btn {
+    align-items: center;
+    justify-content: center;
+    width: var(--button-height);
+    min-width: var(--button-height);
+    height: var(--button-height);
+    padding: 0;
+    margin: 0;
+    border: none;
+    border-radius: var(--radius-button);
+    background: var(--color-bg-panel);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.7);
+    transition: background-color var(--transition-slow), color var(--transition-fast);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-preset-share-btn:hover,
+.mobile-preset-share-btn:focus {
+    background-color: #2a2a2a;
+    color: var(--color-text);
+    outline: none;
+}
+
+.mobile-preset-share-btn:active {
+    transform: scale(0.98);
+}
+
 .preset-dropdown-menu {
     position: absolute;
     top: calc(100% + 8px);
@@ -3603,6 +3636,14 @@ textarea::-moz-selection {
     display: none !important;
 }
 
+.is-mobile .mobile-preset-share-btn {
+    position: fixed;
+    top: calc(var(--mobile-vy) + var(--spacing-3xl) + env(safe-area-inset-top, 0px));
+    right: calc(var(--mobile-vx) + var(--spacing-3xl) + env(safe-area-inset-right, 0px));
+    display: inline-flex;
+    z-index: 10000;
+}
+
 @media (max-width: 360px) {
     .is-mobile .bottom-buttons {
         width: calc(100vw - 16px);
@@ -3754,6 +3795,16 @@ html.is-mobile body {
     padding: 0 var(--spacing-3xl);
     border-radius: var(--radius-button);
     font-size: 1rem;
+}
+
+.is-mobile .void-share-toast {
+    position: fixed;
+    top: calc(var(--mobile-vy) + var(--spacing-3xl) + var(--button-height) + var(--spacing-sm) + env(safe-area-inset-top, 0px));
+    left: calc(var(--mobile-vx) + (var(--mobile-vw) / 2));
+    transform: translateX(-50%);
+    max-width: calc(var(--mobile-vw) - 32px);
+    white-space: normal;
+    text-align: center;
 }
 
 .is-mobile .bottom-buttons {

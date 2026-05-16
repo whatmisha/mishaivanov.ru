@@ -1442,6 +1442,9 @@ export class PresetsController {
         let raw;
         if (presetName === app.currentPresetName) {
             raw = this.collectPresetData({ propagateSeeded: false });
+            if (app.isMobile && app.mobileBootstrap?.prepareShareBlobForMobile) {
+                raw = app.mobileBootstrap.prepareShareBlobForMobile(raw) || raw;
+            }
         } else {
             const stored = app.presetManager.loadPreset(presetName);
             if (!stored) return null;
