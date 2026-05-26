@@ -1,0 +1,1926 @@
+{
+  "name": "Bender",
+  "settings": {
+    "stemMultiplier": 0.9,
+    "moduleSize": 32,
+    "letterSpacingMultiplier": 0,
+    "lineHeightMultiplier": 0,
+    "strokesNum": 1,
+    "strokeGapRatio": 1.05,
+    "dashEnabled": true,
+    "letterColor": "#ffffff",
+    "bgColor": "#000000",
+    "gridColor": "#80006f",
+    "text": "Ben\nDer\nBen",
+    "textAlign": "center",
+    "showGrid": true,
+    "showJoints": false,
+    "showFreeEndpoints": false,
+    "randomizeStem": false,
+    "randomizeStrokes": false,
+    "randomizeContrast": false,
+    "randomizeDashLength": false,
+    "randomizeGapLength": false,
+    "randomizeWobblyAmount": false,
+    "randomizeWobblyFrequency": false,
+    "randomizeRoundedCaps": false,
+    "randomizeCloseEnds": false,
+    "randomizeDashChess": false,
+    "randomizeAltGlyphs": false,
+    "randomizeChaosMode": false,
+    "randomizeShowGrid": false,
+    "randomizeShowJoints": false,
+    "randomizeShowFreeEndpoints": false,
+    "randomizeColorBW": false,
+    "randomizePaletteColors": true,
+    "randomPaletteColorsMin": 3,
+    "randomPaletteColorsMax": 32,
+    "colorBW": false,
+    "colorSource": "gradient",
+    "randomStemMin": 0.5,
+    "randomStemMax": 1,
+    "randomStrokesMin": 1,
+    "randomStrokesMax": 4,
+    "randomContrastMin": 0.1,
+    "randomContrastMax": 2,
+    "randomDashLengthMin": 1,
+    "randomDashLengthMax": 1.5,
+    "randomGapLengthMin": 1,
+    "randomGapLengthMax": 1.5,
+    "randomModeType": "full",
+    "randomWobblyAmountMin": 0,
+    "randomWobblyAmountMax": 10,
+    "randomWobblyFrequencyMin": 0.05,
+    "randomWobblyFrequencyMax": 0.2,
+    "colorMode": "randomGradient",
+    "colorChaos": false,
+    "paletteDiceLetter": false,
+    "paletteDiceBg": false,
+    "paletteDiceGrid": false,
+    "paletteDiceGradientStart": false,
+    "paletteDiceGradientEnd": true,
+    "colorChaosColors": 16,
+    "gradientStartColor": "#ff00dd",
+    "gradientEndColor": "#c791a2",
+    "roundedCaps": true,
+    "closeEnds": false,
+    "dashLength": 0.01,
+    "gapLength": 8,
+    "dashChess": false,
+    "useAlternativesInRandom": true,
+    "wobblyEnabled": false,
+    "wobblyAmount": 5,
+    "wobblyFrequency": 0.125,
+    "currentMode": "normal"
+  },
+  "alternativeGlyphCache": {
+    "0_0": 1,
+    "0_1": 5,
+    "0_2": 2,
+    "1_0": 2,
+    "1_1": 4,
+    "1_2": 4,
+    "2_0": 1,
+    "2_1": 4,
+    "2_2": 1
+  },
+  "moduleValueCache": {
+    "0_0_0_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_0_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_0_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_0_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_0_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_1_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_1_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_1_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_1_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_1_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_2_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_2_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_2_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_2_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_2_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_3_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_3_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_3_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_3_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_3_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_4_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_4_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_4_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_4_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_0_4_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_0_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_0_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_0_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_0_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_0_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_1_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_1_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_1_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_1_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_1_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_2_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_2_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_2_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_2_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_2_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_3_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_3_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_3_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_3_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_3_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_4_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_4_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_4_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_4_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_1_4_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_0_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_0_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_0_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_0_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_0_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_1_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_1_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_1_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_1_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_1_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_2_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_2_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_2_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_2_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_2_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_3_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_3_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_3_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_3_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_3_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_4_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_4_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_4_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_4_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "0_2_4_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_0_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_0_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_0_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_0_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_0_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_1_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_1_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_1_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_1_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_1_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_2_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_2_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_2_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_2_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_2_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_3_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_3_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_3_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_3_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_3_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_4_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_4_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_4_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_4_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_0_4_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_0_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_0_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_0_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_0_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_0_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_1_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_1_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_1_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_1_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_1_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_2_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_2_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_2_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_2_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_2_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_3_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_3_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_3_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_3_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_3_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_4_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_4_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_4_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_4_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_1_4_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_0_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_0_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_0_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_0_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_0_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_1_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_1_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_1_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_1_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_1_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_2_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_2_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_2_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_2_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_2_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_3_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_3_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_3_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_3_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_3_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_4_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_4_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_4_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_4_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "1_2_4_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_0_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_0_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_0_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_0_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_0_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_1_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_1_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_1_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_1_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_1_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_2_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_2_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_2_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_2_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_2_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_3_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_3_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_3_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_3_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_3_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_4_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_4_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_4_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_4_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_0_4_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_0_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_0_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_0_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_0_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_0_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_1_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_1_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_1_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_1_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_1_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_2_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_2_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_2_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_2_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_2_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_3_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_3_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_3_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_3_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_3_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_4_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_4_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_4_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_4_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_1_4_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_0_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_0_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_0_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_0_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_0_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_1_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_1_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_1_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_1_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_1_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_2_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_2_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_2_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_2_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_2_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_3_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_3_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_3_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_3_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_3_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_4_0": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_4_1": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_4_2": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_4_3": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    },
+    "2_2_4_4": {
+      "stem": 57.6,
+      "strokesNum": 1,
+      "strokeGapRatio": 1.05,
+      "dashLength": 0.01,
+      "gapLength": 8,
+      "useDash": false
+    }
+  },
+  "colorPalette": [],
+  "gradientPairs": [
+    {
+      "start": "#ff00dd",
+      "end": "#6e79a6"
+    },
+    {
+      "start": "#ff00dd",
+      "end": "#c166ab"
+    },
+    {
+      "start": "#ff00dd",
+      "end": "#1ec693"
+    },
+    {
+      "start": "#ff00dd",
+      "end": "#f577ea"
+    },
+    {
+      "start": "#ff00dd",
+      "end": "#ed36da"
+    },
+    {
+      "start": "#ff00dd",
+      "end": "#9775b3"
+    },
+    {
+      "start": "#ff00dd",
+      "end": "#fc7be5"
+    },
+    {
+      "start": "#ff00dd",
+      "end": "#22757f"
+    }
+  ],
+  "moduleColorCache": {},
+  "moduleGradientCache": {}
+}

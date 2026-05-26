@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "presets": [
+    "anyway.json",
+    "max-chaos.json",
+    "bender.json",
+    "bushy.json",
+    "cracks.json",
+    "ellipsis.json",
+    "white-stripes.json",
+    "tricky.json",
+    "nikitas-ropes.json",
+    "nikitas-tiles.json",
+    "pool-kuchum.json"
+  ]
+}
