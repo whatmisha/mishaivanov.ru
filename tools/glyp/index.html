@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="application-name" content="Glyp">
+    <title>Glyp — Modular Font Editor</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Top bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <span class="project-name" id="projectName">Untitled</span>
+            </div>
+            <div class="top-bar-center">
+                <button class="top-btn" id="newProjectBtn" title="New Project">New</button>
+                <button class="top-btn" id="openProjectBtn" title="Open Project">Open</button>
+                <button class="top-btn" id="saveProjectBtn" title="Save Project">Save</button>
+                <button class="top-btn" id="exportSvgBtn" title="Export SVG">SVG</button>
+                <button class="top-btn" id="exportPngBtn" title="Export PNG">PNG</button>
+            </div>
+            <div class="top-bar-right">
+                <button class="top-btn" id="settingsBtn" title="Grid Settings">Grid</button>
+            </div>
+        </div>
+
+        <!-- Main layout -->
+        <div class="main-layout">
+            <!-- Left panel: Modules -->
+            <div class="panel panel-left" id="modulesPanel">
+                <div class="panel-header">
+                    <h3>Modules</h3>
+                    <button class="panel-action-btn" id="addModuleBtn" title="Add Module">+</button>
+                </div>
+                <div class="panel-body" id="moduleList">
+                    <div class="empty-state">No modules yet.<br>Click + to add an SVG module.</div>
+                </div>
+                <div class="panel-footer">
+                    <div class="module-info">
+                        <span class="label">Rotation:</span>
+                        <span class="value" id="currentRotation">0°</span>
+                        <button class="small-btn" id="rotateCCWBtn">←</button>
+                        <button class="small-btn" id="rotateCWBtn">→</button>
+                    </div>
+                    <div class="module-info" id="eraserToggle">
+                        <button class="tool-btn" id="eraserBtn" title="Eraser (Esc)">Eraser</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center: Editor canvas -->
+            <div class="editor-area">
+                <canvas id="editorCanvas" width="600" height="600"></canvas>
+                <div class="editor-toolbar">
+                    <label class="toggle-label">
+                        <input type="checkbox" id="showGridToggle" checked>
+                        <span>Grid</span>
+                    </label>
+                    <label class="toggle-label">
+                        <input type="checkbox" id="showJointsToggle">
+                        <span>Joints</span>
+                    </label>
+                    <label class="toggle-label">
+                        <input type="checkbox" id="showEndpointsToggle">
+                        <span>Endpoints</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Right panel: Parameters + Characters -->
+            <div class="panel panel-right" id="rightPanel">
+                <!-- Characters tab -->
+                <div class="panel-section" id="charsSection">
+                    <div class="panel-header">
+                        <h3>Characters</h3>
+                        <button class="panel-action-btn" id="addCharBtn" title="Add Character">+</button>
+                    </div>
+                    <div class="char-grid" id="charGrid"></div>
+                </div>
+
+                <!-- Parameters tab -->
+                <div class="panel-section" id="paramsSection">
+                    <div class="panel-header">
+                        <h3>Parameters</h3>
+                    </div>
+                    <div class="params-body">
+                        <div class="param-row">
+                            <label>Stem</label>
+                            <input type="range" id="stemSlider" min="0.02" max="0.5" step="0.01" value="0.15">
+                            <span class="param-value" id="stemValue">0.15</span>
+                        </div>
+                        <div class="param-row">
+                            <label>Lines</label>
+                            <input type="range" id="strokesSlider" min="1" max="8" step="1" value="1">
+                            <span class="param-value" id="strokesValue">1</span>
+                        </div>
+                        <div class="param-row">
+                            <label>Contrast</label>
+                            <input type="range" id="contrastSlider" min="0.1" max="5" step="0.1" value="1">
+                            <span class="param-value" id="contrastValue">1.0</span>
+                        </div>
+                        <div class="param-row">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="roundedCapsToggle">
+                                <span>Rounded Caps</span>
+                            </label>
+                        </div>
+                        <div class="param-row">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="closeEndsToggle">
+                                <span>Close Ends</span>
+                            </label>
+                        </div>
+
+                        <div class="param-divider"></div>
+
+                        <div class="param-row">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="dashToggle">
+                                <span>Dashes</span>
+                            </label>
+                        </div>
+                        <div class="param-row dash-params" id="dashParams">
+                            <div class="param-row">
+                                <label>Dash</label>
+                                <input type="range" id="dashLengthSlider" min="0.01" max="1" step="0.01" value="0.1">
+                                <span class="param-value" id="dashLengthValue">0.10</span>
+                            </div>
+                            <div class="param-row">
+                                <label>Gap</label>
+                                <input type="range" id="gapLengthSlider" min="0.01" max="1" step="0.01" value="0.3">
+                                <span class="param-value" id="gapLengthValue">0.30</span>
+                            </div>
+                            <div class="param-row">
+                                <label class="toggle-label">
+                                    <input type="checkbox" id="dashChessToggle">
+                                    <span>Chess</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="param-divider"></div>
+
+                        <div class="param-row">
+                            <label class="toggle-label">
+                                <input type="checkbox" id="wobblyToggle">
+                                <span>Wobble</span>
+                            </label>
+                        </div>
+                        <div class="param-row wobble-params" id="wobbleParams">
+                            <div class="param-row">
+                                <label>Amount</label>
+                                <input type="range" id="wobblyAmountSlider" min="0" max="2" step="0.05" value="0.5">
+                                <span class="param-value" id="wobblyAmountValue">0.50</span>
+                            </div>
+                            <div class="param-row">
+                                <label>Freq</label>
+                                <input type="range" id="wobblyFreqSlider" min="0.01" max="0.5" step="0.01" value="0.1">
+                                <span class="param-value" id="wobblyFreqValue">0.10</span>
+                            </div>
+                        </div>
+
+                        <div class="param-divider"></div>
+
+                        <div class="param-row">
+                            <label>Color</label>
+                            <input type="color" id="colorPicker" value="#ffffff">
+                        </div>
+                        <div class="param-row">
+                            <label>BG</label>
+                            <input type="color" id="bgColorPicker" value="#1a1a1a">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alternatives tab -->
+                <div class="panel-section" id="alternativesSection">
+                    <div class="panel-header">
+                        <h3>Alternatives</h3>
+                        <button class="panel-action-btn" id="addAltBtn" title="Add Alternative">+</button>
+                    </div>
+                    <div class="alternatives-list" id="alternativesList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom: Text preview -->
+        <div class="preview-bar" id="previewBar">
+            <input type="text" id="previewText" class="preview-input" value="HELLO" placeholder="Type to preview...">
+            <canvas id="previewCanvas" width="800" height="120"></canvas>
+        </div>
+    </div>
+
+    <!-- Module Designer Modal -->
+    <div class="modal-overlay" id="moduleDesignerModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>Module Designer</h3>
+                <button class="modal-close" id="closeModuleDesigner">×</button>
+            </div>
+            <div class="modal-body module-designer-body">
+                <div class="designer-left">
+                    <canvas id="designerCanvas" width="300" height="300"></canvas>
+                    <div class="designer-rotation">
+                        <button class="small-btn" id="designerRotateCCW">←</button>
+                        <span id="designerRotation">0°</span>
+                        <button class="small-btn" id="designerRotateCW">→</button>
+                    </div>
+                </div>
+                <div class="designer-right">
+                    <div class="field">
+                        <label>Name</label>
+                        <input type="text" id="moduleNameInput" placeholder="Module name">
+                    </div>
+                    <div class="field">
+                        <label>Shortcut</label>
+                        <input type="text" id="moduleShortcutInput" maxlength="1" placeholder="Key">
+                    </div>
+                    <div class="field">
+                        <label>SVG File</label>
+                        <input type="file" id="moduleSvgInput" accept=".svg">
+                    </div>
+                    <div class="field">
+                        <label>Connections</label>
+                        <div class="connection-toggles">
+                            <label><input type="checkbox" id="connTop"> Top</label>
+                            <label><input type="checkbox" id="connRight"> Right</label>
+                            <label><input type="checkbox" id="connBottom"> Bottom</label>
+                            <label><input type="checkbox" id="connLeft"> Left</label>
+                        </div>
+                    </div>
+                    <button class="btn-primary" id="saveModuleBtn">Save Module</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grid Settings Modal -->
+    <div class="modal-overlay" id="gridSettingsModal">
+        <div class="modal modal-small">
+            <div class="modal-header">
+                <h3>Grid Settings</h3>
+                <button class="modal-close" id="closeGridSettings">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="field">
+                    <label>Project Name</label>
+                    <input type="text" id="gridProjectName" placeholder="Project name">
+                </div>
+                <div class="field-row">
+                    <div class="field">
+                        <label>Columns</label>
+                        <input type="number" id="gridCols" min="1" max="20" value="5">
+                    </div>
+                    <div class="field">
+                        <label>Rows</label>
+                        <input type="number" id="gridRows" min="1" max="20" value="5">
+                    </div>
+                </div>
+                <button class="btn-primary" id="applyGridBtn">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Character Modal -->
+    <div class="modal-overlay" id="addCharModal">
+        <div class="modal modal-small">
+            <div class="modal-header">
+                <h3>Add Character</h3>
+                <button class="modal-close" id="closeAddChar">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="field">
+                    <label>Character (Unicode)</label>
+                    <input type="text" id="newCharInput" maxlength="1" placeholder="A">
+                </div>
+                <div class="char-presets">
+                    <button class="char-preset-btn" data-chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ">Latin A-Z</button>
+                    <button class="char-preset-btn" data-chars="АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ">Cyrillic</button>
+                    <button class="char-preset-btn" data-chars="0123456789">Digits</button>
+                </div>
+                <button class="btn-primary" id="addCharConfirmBtn">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file inputs -->
+    <input type="file" id="openProjectInput" accept=".json,.glyp.json" style="display:none">
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

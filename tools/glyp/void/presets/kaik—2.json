@@ -1,0 +1,884 @@
+{
+  "name": "KAIK 2",
+  "settings": {
+    "stemMultiplier": 1.68,
+    "moduleSize": 85,
+    "letterSpacingMultiplier": 1,
+    "lineHeightMultiplier": 1,
+    "strokesNum": 58,
+    "strokeGapRatio": 4.1591981342806505,
+    "dashEnabled": true,
+    "letterColor": "#20a707",
+    "bgColor": "#8a7e59",
+    "gridColor": "#b640e8",
+    "text": "KAIK",
+    "textAlign": "center",
+    "showGrid": false,
+    "showJoints": true,
+    "showFreeEndpoints": true,
+    "randomizeStem": false,
+    "randomizeStrokes": true,
+    "randomizeContrast": true,
+    "randomizeDashLength": false,
+    "randomizeGapLength": true,
+    "randomizeWobblyAmount": false,
+    "randomizeWobblyFrequency": false,
+    "randomizeRoundedCaps": true,
+    "randomizeCloseEnds": false,
+    "randomizeDashChess": false,
+    "randomizeAltGlyphs": true,
+    "randomizeChaosMode": false,
+    "randomizeShowGrid": false,
+    "randomizeShowJoints": false,
+    "randomizeShowFreeEndpoints": false,
+    "randomizeColorBW": true,
+    "randomizePaletteColors": false,
+    "randomPaletteColorsMin": 9,
+    "randomPaletteColorsMax": 11,
+    "colorBW": false,
+    "colorSource": "gradient",
+    "randomStemMin": 0.948783901820339,
+    "randomStemMax": 1.9903101643911778,
+    "randomStrokesMin": 11,
+    "randomStrokesMax": 25,
+    "randomContrastMin": 6.800000000000001,
+    "randomContrastMax": 8,
+    "randomDashLengthMin": 1,
+    "randomDashLengthMax": 1.5,
+    "randomGapLengthMin": 0.1,
+    "randomGapLengthMax": 5,
+    "randomModeType": "full",
+    "randomWobblyAmountMin": 7,
+    "randomWobblyAmountMax": 20,
+    "randomWobblyFrequencyMin": 0.019473508945723392,
+    "randomWobblyFrequencyMax": 0.10788036890593934,
+    "colorMode": "gradient",
+    "colorChaos": false,
+    "paletteDiceLetter": false,
+    "paletteDiceBg": false,
+    "paletteDiceGrid": false,
+    "paletteDiceGradientStart": false,
+    "paletteDiceGradientEnd": false,
+    "colorChaosColors": 30,
+    "gradientStartColor": "#2bb673",
+    "gradientEndColor": "#4a712c",
+    "roundedCaps": true,
+    "closeEnds": true,
+    "dashLength": 8,
+    "gapLength": 2.3195043775351123,
+    "dashChess": true,
+    "useAlternativesInRandom": true,
+    "wobblyEnabled": false,
+    "wobblyAmount": 14,
+    "wobblyFrequency": 0.05973396385508367,
+    "currentMode": "normal"
+  },
+  "alternativeGlyphCache": {
+    "0_1": 7,
+    "0_3": 6,
+    "0_2": 0,
+    "0_0": 5
+  },
+  "moduleValueCache": {
+    "0_0_0_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 25,
+      "strokeGapRatio": 7.086343325429344,
+      "dashLength": 8,
+      "gapLength": 2.18918265202254,
+      "useDash": true
+    },
+    "0_0_0_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 22,
+      "strokeGapRatio": 7.5095579689690375,
+      "dashLength": 8,
+      "gapLength": 1.3825663873434395,
+      "useDash": true
+    },
+    "0_0_0_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 21,
+      "strokeGapRatio": 7.4710714701506795,
+      "dashLength": 8,
+      "gapLength": 2.532567559206952,
+      "useDash": true
+    },
+    "0_0_0_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 13,
+      "strokeGapRatio": 7.5396790284160335,
+      "dashLength": 8,
+      "gapLength": 0.13745276160236725,
+      "useDash": true
+    },
+    "0_0_0_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 14,
+      "strokeGapRatio": 7.159695232993533,
+      "dashLength": 8,
+      "gapLength": 0.24479479164883333,
+      "useDash": true
+    },
+    "0_0_1_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 24,
+      "strokeGapRatio": 7.5342004609784645,
+      "dashLength": 8,
+      "gapLength": 2.744874993128316,
+      "useDash": true
+    },
+    "0_0_1_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 11,
+      "strokeGapRatio": 7.52155610989644,
+      "dashLength": 8,
+      "gapLength": 4.238128995403883,
+      "useDash": true
+    },
+    "0_0_1_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 15,
+      "strokeGapRatio": 7.920049219626929,
+      "dashLength": 8,
+      "gapLength": 4.665206587299047,
+      "useDash": true
+    },
+    "0_0_1_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 20,
+      "strokeGapRatio": 7.326996316484688,
+      "dashLength": 8,
+      "gapLength": 4.480484641343537,
+      "useDash": true
+    },
+    "0_0_1_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 15,
+      "strokeGapRatio": 7.2674529607591065,
+      "dashLength": 8,
+      "gapLength": 2.7557217279798003,
+      "useDash": true
+    },
+    "0_0_2_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 12,
+      "strokeGapRatio": 7.134989843423518,
+      "dashLength": 8,
+      "gapLength": 1.0641127752929935,
+      "useDash": true
+    },
+    "0_0_2_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 21,
+      "strokeGapRatio": 7.788595176468293,
+      "dashLength": 8,
+      "gapLength": 0.6125288184732443,
+      "useDash": true
+    },
+    "0_0_2_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 19,
+      "strokeGapRatio": 7.427078859145841,
+      "dashLength": 8,
+      "gapLength": 1.1403144264411562,
+      "useDash": true
+    },
+    "0_0_2_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 20,
+      "strokeGapRatio": 7.1311905727620095,
+      "dashLength": 8,
+      "gapLength": 3.557181030203088,
+      "useDash": true
+    },
+    "0_0_2_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 15,
+      "strokeGapRatio": 6.877544086357136,
+      "dashLength": 8,
+      "gapLength": 4.9871412069946714,
+      "useDash": true
+    },
+    "0_0_3_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 14,
+      "strokeGapRatio": 7.989686836246419,
+      "dashLength": 8,
+      "gapLength": 0.5986408590390156,
+      "useDash": true
+    },
+    "0_0_3_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 20,
+      "strokeGapRatio": 7.056666327478741,
+      "dashLength": 8,
+      "gapLength": 1.3597584997040142,
+      "useDash": true
+    },
+    "0_0_3_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 21,
+      "strokeGapRatio": 7.039651120254223,
+      "dashLength": 8,
+      "gapLength": 1.0784708334038382,
+      "useDash": true
+    },
+    "0_0_3_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 18,
+      "strokeGapRatio": 6.952874066694275,
+      "dashLength": 8,
+      "gapLength": 4.920798069373315,
+      "useDash": true
+    },
+    "0_0_3_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 16,
+      "strokeGapRatio": 7.269766234479254,
+      "dashLength": 8,
+      "gapLength": 0.14597126183998138,
+      "useDash": true
+    },
+    "0_0_4_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 18,
+      "strokeGapRatio": 7.26402732801705,
+      "dashLength": 8,
+      "gapLength": 3.405344170343835,
+      "useDash": true
+    },
+    "0_0_4_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 17,
+      "strokeGapRatio": 7.230273333419764,
+      "dashLength": 8,
+      "gapLength": 0.5486738412035044,
+      "useDash": true
+    },
+    "0_0_4_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 12,
+      "strokeGapRatio": 7.18224911049231,
+      "dashLength": 8,
+      "gapLength": 3.445354863515047,
+      "useDash": true
+    },
+    "0_0_4_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 14,
+      "strokeGapRatio": 7.235006994848729,
+      "dashLength": 8,
+      "gapLength": 1.8787498111883822,
+      "useDash": true
+    },
+    "0_0_4_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 15,
+      "strokeGapRatio": 7.9251677936231975,
+      "dashLength": 8,
+      "gapLength": 2.0956925098804446,
+      "useDash": true
+    },
+    "0_1_0_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 18,
+      "strokeGapRatio": 7.8461595416691505,
+      "dashLength": 8,
+      "gapLength": 2.976803060145245,
+      "useDash": true
+    },
+    "0_1_0_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 25,
+      "strokeGapRatio": 7.856263567956569,
+      "dashLength": 8,
+      "gapLength": 1.4302256964327618,
+      "useDash": true
+    },
+    "0_1_0_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 22,
+      "strokeGapRatio": 7.435726732910166,
+      "dashLength": 8,
+      "gapLength": 2.0674417270522847,
+      "useDash": true
+    },
+    "0_1_0_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 15,
+      "strokeGapRatio": 7.590865745461248,
+      "dashLength": 8,
+      "gapLength": 3.6902453614774284,
+      "useDash": true
+    },
+    "0_1_0_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 13,
+      "strokeGapRatio": 7.481119744829214,
+      "dashLength": 8,
+      "gapLength": 3.1098551921871684,
+      "useDash": true
+    },
+    "0_1_1_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 24,
+      "strokeGapRatio": 7.882311697390098,
+      "dashLength": 8,
+      "gapLength": 2.820865100239609,
+      "useDash": true
+    },
+    "0_1_1_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 23,
+      "strokeGapRatio": 7.619571880268277,
+      "dashLength": 8,
+      "gapLength": 4.825531149556844,
+      "useDash": true
+    },
+    "0_1_1_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 22,
+      "strokeGapRatio": 7.107561472241128,
+      "dashLength": 8,
+      "gapLength": 2.5629664133548866,
+      "useDash": true
+    },
+    "0_1_1_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 23,
+      "strokeGapRatio": 7.8248097439386015,
+      "dashLength": 8,
+      "gapLength": 3.092393518925691,
+      "useDash": true
+    },
+    "0_1_1_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 24,
+      "strokeGapRatio": 6.863834250053236,
+      "dashLength": 8,
+      "gapLength": 0.3540631903880592,
+      "useDash": true
+    },
+    "0_1_2_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 16,
+      "strokeGapRatio": 7.894151814714814,
+      "dashLength": 8,
+      "gapLength": 2.956480135584628,
+      "useDash": true
+    },
+    "0_1_2_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 12,
+      "strokeGapRatio": 7.141958080009972,
+      "dashLength": 8,
+      "gapLength": 0.8488805201584209,
+      "useDash": true
+    },
+    "0_1_2_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 16,
+      "strokeGapRatio": 6.909059779333737,
+      "dashLength": 8,
+      "gapLength": 2.667851541275058,
+      "useDash": true
+    },
+    "0_1_2_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 14,
+      "strokeGapRatio": 7.700670478419663,
+      "dashLength": 8,
+      "gapLength": 2.231247992599194,
+      "useDash": true
+    },
+    "0_1_2_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 17,
+      "strokeGapRatio": 6.807399317462706,
+      "dashLength": 8,
+      "gapLength": 1.594534332281052,
+      "useDash": true
+    },
+    "0_1_3_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 18,
+      "strokeGapRatio": 6.947442543209505,
+      "dashLength": 8,
+      "gapLength": 0.16381126924872064,
+      "useDash": true
+    },
+    "0_1_3_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 12,
+      "strokeGapRatio": 7.276946800754745,
+      "dashLength": 8,
+      "gapLength": 4.484504370751996,
+      "useDash": true
+    },
+    "0_1_3_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 25,
+      "strokeGapRatio": 7.630197383647877,
+      "dashLength": 8,
+      "gapLength": 0.6510079897955815,
+      "useDash": true
+    },
+    "0_1_3_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 22,
+      "strokeGapRatio": 7.140947156552812,
+      "dashLength": 8,
+      "gapLength": 3.279854275882703,
+      "useDash": true
+    },
+    "0_1_3_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 11,
+      "strokeGapRatio": 7.283822876746981,
+      "dashLength": 8,
+      "gapLength": 2.271464563628001,
+      "useDash": true
+    },
+    "0_1_4_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 24,
+      "strokeGapRatio": 7.086187728900703,
+      "dashLength": 8,
+      "gapLength": 3.382791339526403,
+      "useDash": true
+    },
+    "0_1_4_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 22,
+      "strokeGapRatio": 7.613031420149667,
+      "dashLength": 8,
+      "gapLength": 4.153175093151889,
+      "useDash": true
+    },
+    "0_1_4_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 12,
+      "strokeGapRatio": 7.5372789753141145,
+      "dashLength": 8,
+      "gapLength": 2.2533365868356587,
+      "useDash": true
+    },
+    "0_1_4_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 12,
+      "strokeGapRatio": 7.682000114282548,
+      "dashLength": 8,
+      "gapLength": 2.5934543409163733,
+      "useDash": true
+    },
+    "0_1_4_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 18,
+      "strokeGapRatio": 7.0225462004086845,
+      "dashLength": 8,
+      "gapLength": 3.7624704800261957,
+      "useDash": true
+    },
+    "0_2_0_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 14,
+      "strokeGapRatio": 7.676360411301667,
+      "dashLength": 8,
+      "gapLength": 2.929599769981536,
+      "useDash": true
+    },
+    "0_2_0_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 19,
+      "strokeGapRatio": 7.760061473601826,
+      "dashLength": 8,
+      "gapLength": 0.23872387955590857,
+      "useDash": true
+    },
+    "0_2_0_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 17,
+      "strokeGapRatio": 7.904778377968306,
+      "dashLength": 8,
+      "gapLength": 4.531776949826782,
+      "useDash": true
+    },
+    "0_2_0_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 25,
+      "strokeGapRatio": 7.709895463498363,
+      "dashLength": 8,
+      "gapLength": 3.9737884262911587,
+      "useDash": true
+    },
+    "0_2_0_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 17,
+      "strokeGapRatio": 7.920856481047521,
+      "dashLength": 8,
+      "gapLength": 4.224903117367053,
+      "useDash": true
+    },
+    "0_2_1_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 17,
+      "strokeGapRatio": 7.22648066753985,
+      "dashLength": 8,
+      "gapLength": 4.094301044902773,
+      "useDash": true
+    },
+    "0_2_1_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 17,
+      "strokeGapRatio": 7.118338067503502,
+      "dashLength": 8,
+      "gapLength": 2.8867353378939864,
+      "useDash": true
+    },
+    "0_2_1_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 20,
+      "strokeGapRatio": 7.806752811866522,
+      "dashLength": 8,
+      "gapLength": 4.0714522352207325,
+      "useDash": true
+    },
+    "0_2_1_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 21,
+      "strokeGapRatio": 7.796346613699784,
+      "dashLength": 8,
+      "gapLength": 1.8202620695910339,
+      "useDash": true
+    },
+    "0_2_1_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 12,
+      "strokeGapRatio": 7.565764543860298,
+      "dashLength": 8,
+      "gapLength": 0.8075916203919172,
+      "useDash": true
+    },
+    "0_2_2_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 19,
+      "strokeGapRatio": 7.211036722361026,
+      "dashLength": 8,
+      "gapLength": 1.7329667132048776,
+      "useDash": true
+    },
+    "0_2_2_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 18,
+      "strokeGapRatio": 7.212216774215729,
+      "dashLength": 8,
+      "gapLength": 4.41054882417344,
+      "useDash": true
+    },
+    "0_2_2_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 17,
+      "strokeGapRatio": 7.568140180265299,
+      "dashLength": 8,
+      "gapLength": 3.414777085122395,
+      "useDash": true
+    },
+    "0_2_2_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 20,
+      "strokeGapRatio": 6.942802693548962,
+      "dashLength": 8,
+      "gapLength": 3.893532336283432,
+      "useDash": true
+    },
+    "0_2_2_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 14,
+      "strokeGapRatio": 6.9105719111836255,
+      "dashLength": 8,
+      "gapLength": 1.658595074860149,
+      "useDash": true
+    },
+    "0_2_3_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 24,
+      "strokeGapRatio": 7.489120788809885,
+      "dashLength": 8,
+      "gapLength": 1.7172954422958704,
+      "useDash": true
+    },
+    "0_2_3_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 19,
+      "strokeGapRatio": 7.70506465512416,
+      "dashLength": 8,
+      "gapLength": 2.079821153018286,
+      "useDash": true
+    },
+    "0_2_3_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 14,
+      "strokeGapRatio": 7.468553788311395,
+      "dashLength": 8,
+      "gapLength": 4.6126367862037,
+      "useDash": true
+    },
+    "0_2_3_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 15,
+      "strokeGapRatio": 7.3628986633291085,
+      "dashLength": 8,
+      "gapLength": 1.2563348479165846,
+      "useDash": true
+    },
+    "0_2_3_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 15,
+      "strokeGapRatio": 7.6744516456961085,
+      "dashLength": 8,
+      "gapLength": 4.97738663081281,
+      "useDash": true
+    },
+    "0_2_4_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 14,
+      "strokeGapRatio": 7.886515143784081,
+      "dashLength": 8,
+      "gapLength": 0.24706082405537308,
+      "useDash": true
+    },
+    "0_2_4_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 12,
+      "strokeGapRatio": 7.542810747807902,
+      "dashLength": 8,
+      "gapLength": 3.865323450256997,
+      "useDash": true
+    },
+    "0_2_4_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 11,
+      "strokeGapRatio": 6.817685732056745,
+      "dashLength": 8,
+      "gapLength": 0.9663567002331899,
+      "useDash": true
+    },
+    "0_2_4_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 17,
+      "strokeGapRatio": 7.408179198059781,
+      "dashLength": 8,
+      "gapLength": 2.4425428695061426,
+      "useDash": true
+    },
+    "0_2_4_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 23,
+      "strokeGapRatio": 7.399911214591231,
+      "dashLength": 8,
+      "gapLength": 0.6778669436690593,
+      "useDash": true
+    },
+    "0_3_0_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 23,
+      "strokeGapRatio": 7.9450590232327185,
+      "dashLength": 8,
+      "gapLength": 2.0704204807368423,
+      "useDash": true
+    },
+    "0_3_0_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 17,
+      "strokeGapRatio": 7.804326030234779,
+      "dashLength": 8,
+      "gapLength": 2.678803102063374,
+      "useDash": true
+    },
+    "0_3_0_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 18,
+      "strokeGapRatio": 7.430747917348994,
+      "dashLength": 8,
+      "gapLength": 0.5997526602018188,
+      "useDash": true
+    },
+    "0_3_0_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 11,
+      "strokeGapRatio": 6.983223590348547,
+      "dashLength": 8,
+      "gapLength": 4.730535744974353,
+      "useDash": true
+    },
+    "0_3_0_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 12,
+      "strokeGapRatio": 7.369254536946182,
+      "dashLength": 8,
+      "gapLength": 0.5730004850639666,
+      "useDash": true
+    },
+    "0_3_1_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 14,
+      "strokeGapRatio": 6.999673657535844,
+      "dashLength": 8,
+      "gapLength": 4.638502800399456,
+      "useDash": true
+    },
+    "0_3_1_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 21,
+      "strokeGapRatio": 7.59334064765405,
+      "dashLength": 8,
+      "gapLength": 1.549706330918563,
+      "useDash": true
+    },
+    "0_3_1_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 12,
+      "strokeGapRatio": 7.461686980527089,
+      "dashLength": 8,
+      "gapLength": 1.4430291519733816,
+      "useDash": true
+    },
+    "0_3_1_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 25,
+      "strokeGapRatio": 7.606108238047946,
+      "dashLength": 8,
+      "gapLength": 0.9923244720955826,
+      "useDash": true
+    },
+    "0_3_1_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 16,
+      "strokeGapRatio": 7.656227130212782,
+      "dashLength": 8,
+      "gapLength": 4.875802003886153,
+      "useDash": true
+    },
+    "0_3_2_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 16,
+      "strokeGapRatio": 7.914677785867408,
+      "dashLength": 8,
+      "gapLength": 1.2590289262871455,
+      "useDash": true
+    },
+    "0_3_2_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 22,
+      "strokeGapRatio": 7.871141559217367,
+      "dashLength": 8,
+      "gapLength": 0.3319210832569245,
+      "useDash": true
+    },
+    "0_3_2_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 17,
+      "strokeGapRatio": 7.6637179216907745,
+      "dashLength": 8,
+      "gapLength": 0.4879800666531756,
+      "useDash": true
+    },
+    "0_3_2_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 18,
+      "strokeGapRatio": 7.15350901451184,
+      "dashLength": 8,
+      "gapLength": 1.48396771988296,
+      "useDash": true
+    },
+    "0_3_2_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 21,
+      "strokeGapRatio": 7.97706111017823,
+      "dashLength": 8,
+      "gapLength": 2.1850149636403526,
+      "useDash": true
+    },
+    "0_3_3_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 22,
+      "strokeGapRatio": 7.0578177780106,
+      "dashLength": 8,
+      "gapLength": 0.2850482975275389,
+      "useDash": true
+    },
+    "0_3_3_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 18,
+      "strokeGapRatio": 7.202075483994636,
+      "dashLength": 8,
+      "gapLength": 1.8412908242622545,
+      "useDash": true
+    },
+    "0_3_3_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 25,
+      "strokeGapRatio": 7.085689073647945,
+      "dashLength": 8,
+      "gapLength": 2.3440176631832017,
+      "useDash": true
+    },
+    "0_3_3_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 19,
+      "strokeGapRatio": 7.227897199881535,
+      "dashLength": 8,
+      "gapLength": 3.6628339136335586,
+      "useDash": true
+    },
+    "0_3_3_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 15,
+      "strokeGapRatio": 7.328393298150685,
+      "dashLength": 8,
+      "gapLength": 4.2841368117577785,
+      "useDash": true
+    },
+    "0_3_4_0": {
+      "stem": 285.59999999999997,
+      "strokesNum": 24,
+      "strokeGapRatio": 6.915874796788879,
+      "dashLength": 8,
+      "gapLength": 4.563252103216973,
+      "useDash": true
+    },
+    "0_3_4_1": {
+      "stem": 285.59999999999997,
+      "strokesNum": 12,
+      "strokeGapRatio": 7.997971245359631,
+      "dashLength": 8,
+      "gapLength": 3.064159122391521,
+      "useDash": true
+    },
+    "0_3_4_2": {
+      "stem": 285.59999999999997,
+      "strokesNum": 22,
+      "strokeGapRatio": 7.385964331048104,
+      "dashLength": 8,
+      "gapLength": 3.849696180642192,
+      "useDash": true
+    },
+    "0_3_4_3": {
+      "stem": 285.59999999999997,
+      "strokesNum": 13,
+      "strokeGapRatio": 7.738475096602987,
+      "dashLength": 8,
+      "gapLength": 4.733943817352501,
+      "useDash": true
+    },
+    "0_3_4_4": {
+      "stem": 285.59999999999997,
+      "strokesNum": 22,
+      "strokeGapRatio": 7.755608294174904,
+      "dashLength": 8,
+      "gapLength": 1.4068290963068273,
+      "useDash": true
+    }
+  }
+}

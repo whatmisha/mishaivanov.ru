@@ -1,0 +1,887 @@
+/**
+ * Glyp — Modular Font Editor Styles
+ * Forked from VOID UI Framework
+ */
+
+/* ============================================
+   0. FONT FACES
+   ============================================ */
+
+@font-face {
+    font-family: 'CoFo Sans';
+    src: url('https://mishaivanov.ru/fonts/CoFoSans-Regular.woff2') format('woff2'),
+         url('https://mishaivanov.ru/fonts/CoFoSans-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+    font-display: block;
+}
+
+@font-face {
+    font-family: 'CoFo Sans';
+    src: url('https://mishaivanov.ru/fonts/CoFoSans-Medium.woff2') format('woff2'),
+         url('https://mishaivanov.ru/fonts/CoFoSans-Medium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: block;
+}
+
+/* ============================================
+   1. CSS TOKENS
+   ============================================ */
+
+:root {
+    --color-bg: #000;
+    --color-bg-panel: #1a1a1a;
+    --color-bg-input: #0a0a0a;
+    --color-text: #d2d2d2;
+    --color-text-secondary: #ccc;
+    --color-text-muted: #888;
+    --color-text-dim: #666;
+    --color-text-subtle: #555;
+    --color-border: #333;
+    --color-accent: #4a9eff;
+    --color-accent-dim: rgba(74, 158, 255, 0.2);
+    --color-success: #4caf50;
+    --color-danger: #ff4444;
+
+    --spacing-xs: 2px;
+    --spacing-sm: 4px;
+    --spacing-md: 8px;
+    --spacing-lg: 10px;
+    --spacing-xl: 12px;
+    --spacing-2xl: 15px;
+    --spacing-3xl: 20px;
+    --spacing-4xl: 30px;
+
+    --radius: 12px;
+    --radius-sm: 8px;
+    --radius-button: 20px;
+    --radius-input: 6px;
+
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.2s ease;
+    --transition-slow: 0.3s ease;
+
+    --easing-standard: cubic-bezier(0.4, 0.0, 0.2, 1);
+    --easing-decelerate: cubic-bezier(0.0, 0.0, 0.2, 1);
+
+    --panel-width: 280px;
+    --top-bar-height: 50px;
+    --preview-height: 140px;
+}
+
+/* ============================================
+   2. BASE STYLES
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'CoFo Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--color-bg);
+    height: 100vh;
+    color: var(--color-text);
+    overflow: hidden;
+    font-size: 13px;
+}
+
+b, strong { font-weight: 500; }
+h1, h2, h3, h4 { font-weight: 500; }
+
+/* ============================================
+   3. LAYOUT
+   ============================================ */
+
+.container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Top Bar */
+.top-bar {
+    height: var(--top-bar-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--spacing-3xl);
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+    z-index: 100;
+}
+
+.top-bar-left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+.top-bar-center {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.top-bar-right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.project-name {
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--color-text);
+    cursor: default;
+}
+
+.top-btn {
+    padding: var(--spacing-md) var(--spacing-xl);
+    background: transparent;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.top-btn:hover {
+    background: var(--color-bg-panel);
+    color: var(--color-text);
+    border-color: var(--color-text-dim);
+}
+
+/* Main Layout */
+.main-layout {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    min-height: 0;
+}
+
+/* ============================================
+   4. PANELS
+   ============================================ */
+
+.panel {
+    width: var(--panel-width);
+    background: var(--color-bg-panel);
+    border-right: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.panel-right {
+    border-right: none;
+    border-left: 1px solid var(--color-border);
+    overflow-y: auto;
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-xl) var(--spacing-2xl);
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.panel-header h3 {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--color-text-muted);
+}
+
+.panel-action-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.panel-action-btn:hover {
+    background: var(--color-accent-dim);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-lg);
+}
+
+.panel-footer {
+    padding: var(--spacing-lg) var(--spacing-2xl);
+    border-top: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.panel-section {
+    border-bottom: 1px solid var(--color-border);
+}
+
+.panel-section:last-child {
+    border-bottom: none;
+}
+
+/* ============================================
+   5. MODULE LIST
+   ============================================ */
+
+.module-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+}
+
+.module-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.module-item.active {
+    background: var(--color-accent-dim);
+    outline: 1px solid var(--color-accent);
+}
+
+.module-item-preview {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-input);
+    overflow: hidden;
+}
+
+.module-item-preview canvas {
+    width: 100%;
+    height: 100%;
+}
+
+.module-item-name {
+    flex: 1;
+    font-size: 12px;
+    color: var(--color-text);
+}
+
+.module-item-shortcut {
+    font-size: 11px;
+    color: var(--color-text-dim);
+    background: var(--color-bg-input);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.module-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+}
+
+.module-info:last-child {
+    margin-bottom: 0;
+}
+
+.module-info .label {
+    font-size: 11px;
+    color: var(--color-text-dim);
+}
+
+.module-info .value {
+    font-size: 12px;
+    color: var(--color-text);
+    font-weight: 500;
+}
+
+/* ============================================
+   6. EDITOR AREA
+   ============================================ */
+
+.editor-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: var(--color-bg);
+    min-width: 0;
+}
+
+.editor-area canvas {
+    display: block;
+    max-width: 100%;
+    max-height: calc(100% - 40px);
+}
+
+.editor-toolbar {
+    position: absolute;
+    bottom: var(--spacing-lg);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: var(--spacing-xl);
+    padding: var(--spacing-md) var(--spacing-2xl);
+    background: var(--color-bg-panel);
+    border-radius: var(--radius-button);
+    border: 1px solid var(--color-border);
+}
+
+/* ============================================
+   7. PARAMETERS
+   ============================================ */
+
+.params-body {
+    padding: var(--spacing-lg) var(--spacing-2xl);
+}
+
+.param-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+}
+
+.param-row:last-child {
+    margin-bottom: 0;
+}
+
+.param-row label {
+    font-size: 11px;
+    color: var(--color-text-dim);
+    min-width: 50px;
+}
+
+.param-row input[type="range"] {
+    flex: 1;
+    height: 4px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: var(--color-border);
+    border-radius: 2px;
+    outline: none;
+}
+
+.param-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--color-text);
+    cursor: pointer;
+    border: none;
+}
+
+.param-row input[type="range"]::-webkit-slider-thumb:hover {
+    background: var(--color-accent);
+}
+
+.param-value {
+    font-size: 11px;
+    color: var(--color-text-muted);
+    min-width: 30px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.param-divider {
+    height: 1px;
+    background: var(--color-border);
+    margin: var(--spacing-xl) 0;
+}
+
+.dash-params,
+.wobble-params {
+    display: none;
+    flex-direction: column;
+    padding-left: var(--spacing-xl);
+    gap: 0;
+}
+
+.dash-params.visible,
+.wobble-params.visible {
+    display: flex;
+}
+
+/* ============================================
+   8. CHARACTER GRID
+   ============================================ */
+
+.char-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: var(--spacing-xs);
+    padding: var(--spacing-lg);
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.char-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-input);
+    background: var(--color-bg-input);
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    transition: all var(--transition-fast);
+    border: 1px solid transparent;
+}
+
+.char-cell:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--color-text);
+}
+
+.char-cell.active {
+    background: var(--color-accent-dim);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.char-cell.has-glyph {
+    color: var(--color-text);
+}
+
+/* ============================================
+   9. ALTERNATIVES
+   ============================================ */
+
+.alternatives-list {
+    padding: var(--spacing-lg);
+}
+
+.alt-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background var(--transition-fast);
+    margin-bottom: var(--spacing-sm);
+}
+
+.alt-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.alt-item.active {
+    background: var(--color-accent-dim);
+    outline: 1px solid var(--color-accent);
+}
+
+.alt-item-label {
+    font-size: 12px;
+    color: var(--color-text);
+}
+
+.alt-item-delete {
+    margin-left: auto;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--color-text-dim);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+}
+
+.alt-item:hover .alt-item-delete {
+    opacity: 1;
+}
+
+.alt-item-delete:hover {
+    color: var(--color-danger);
+}
+
+/* ============================================
+   10. PREVIEW BAR
+   ============================================ */
+
+.preview-bar {
+    height: var(--preview-height);
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+}
+
+.preview-input {
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-3xl);
+    background: var(--color-bg-panel);
+    border: none;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+}
+
+.preview-input::placeholder {
+    color: var(--color-text-dim);
+}
+
+.preview-bar canvas {
+    flex: 1;
+    width: 100%;
+    display: block;
+}
+
+/* ============================================
+   11. MODALS
+   ============================================ */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.modal-overlay.visible {
+    display: flex;
+}
+
+.modal {
+    background: var(--color-bg-panel);
+    border-radius: var(--radius);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.8);
+    width: 600px;
+    max-width: 90vw;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-small {
+    width: 380px;
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-2xl) var(--spacing-3xl);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.modal-header h3 {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.modal-close {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background var(--transition-fast);
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-text);
+}
+
+.modal-body {
+    padding: var(--spacing-3xl);
+    overflow-y: auto;
+}
+
+/* Module Designer Modal */
+.module-designer-body {
+    display: flex;
+    gap: var(--spacing-3xl);
+}
+
+.designer-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-lg);
+}
+
+.designer-left canvas {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+}
+
+.designer-rotation {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-lg);
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+.designer-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+}
+
+/* ============================================
+   12. FORM ELEMENTS
+   ============================================ */
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.field label {
+    font-size: 11px;
+    color: var(--color-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.field input[type="text"],
+.field input[type="number"] {
+    padding: var(--spacing-md) var(--spacing-xl);
+    background: var(--color-bg-input);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-input);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    transition: border-color var(--transition-fast);
+}
+
+.field input:focus {
+    border-color: var(--color-accent);
+}
+
+.field-row {
+    display: flex;
+    gap: var(--spacing-xl);
+}
+
+.field-row .field {
+    flex: 1;
+}
+
+.connection-toggles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-md);
+}
+
+.connection-toggles label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    font-size: 12px;
+    color: var(--color-text);
+    cursor: pointer;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.btn-primary {
+    padding: var(--spacing-lg) var(--spacing-3xl);
+    background: var(--color-accent);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-button);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background var(--transition-fast);
+    margin-top: var(--spacing-lg);
+}
+
+.btn-primary:hover {
+    background: #3a8eef;
+}
+
+.small-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+}
+
+.small-btn:hover {
+    background: var(--color-accent-dim);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.tool-btn {
+    padding: var(--spacing-sm) var(--spacing-xl);
+    background: transparent;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    font-family: inherit;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.tool-btn:hover {
+    background: var(--color-accent-dim);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+.tool-btn.active {
+    background: var(--color-accent-dim);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+/* ============================================
+   13. TOGGLES & CHECKBOXES
+   ============================================ */
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--color-text);
+}
+
+.toggle-label input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--color-accent);
+    cursor: pointer;
+}
+
+input[type="color"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-input);
+    cursor: pointer;
+    padding: 2px;
+    background: var(--color-bg-input);
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 3px;
+}
+
+/* ============================================
+   14. MISC
+   ============================================ */
+
+.empty-state {
+    padding: var(--spacing-3xl);
+    text-align: center;
+    color: var(--color-text-dim);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.char-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    margin: var(--spacing-lg) 0;
+}
+
+.char-preset-btn {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: var(--color-bg-input);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-input);
+    color: var(--color-text-muted);
+    font-family: inherit;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.char-preset-btn:hover {
+    background: var(--color-accent-dim);
+    border-color: var(--color-accent);
+    color: var(--color-accent);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-dim);
+}

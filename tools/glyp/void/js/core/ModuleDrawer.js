@@ -1,0 +1,1796 @@
+/**
+ * ModuleDrawer - rendering base modules of Void typeface
+ * 
+ * Supports modes:
+ * - fill (Solid): single line
+ * - stripes: multiple lines with gaps
+ * - dash: dashed line
+ * - sd: stripes + dash (multiple dashed lines)
+ * 
+ * All modules are drawn using Stroke method (outlined lines)
+ */
+
+import { MathUtils } from '../utils/MathUtils.js';
+import { WobblyEffect } from '../effects/WobblyEffect.js';
+import { GradientStrokeEffect } from '../effects/GradientStrokeEffect.js';
+import {
+    computeStripeLayout,
+    closeEndsLineCap,
+    stripeBandWidth,
+    stripeOffset,
+    stripeArcRadius
+} from './geometry/StrokeGeometry.js';
+
+export class ModuleDrawer {
+    constructor(mode = 'fill') {
+        this.mode = mode; // 'fill', 'stripes' or 'dash'
+        this.strokesNum = 2; // number of stripes for stripes mode
+        this.strokeGapRatio = 1.0; // stroke to gap ratio
+        this.cornerRadius = 0; // corner radius (in pixels)
+        this.roundedCaps = false; // rounded line caps (Rounded)
+        /** UI "Round Caps" toggle; not overridden per-module in VoidRenderer.drawLetter — used so L elbows can stay round joins with butt caps on interior strokes */
+        this.roundCapsPreference = false;
+        /** L only: false when a neighbor connects on a non-exit side (T-junction — no round join at elbow) */
+        this.linkElbowAllowRound = true;
+        this.dashLength = 0.10; // dash length for dash mode (multiplier of stem)
+        this.gapLength = 0.30; // gap length for dash mode (multiplier of stem)
+        this.dashChess = false; // chessboard pattern for dash mode (alternating dash start)
+        this.endpointSides = null; // object {top, right, bottom, left} - sides with endpoints
+        this.closeEnds = false; // closing lines at ends in Stripes mode
+        this.dashPhaseOriginX = 0;
+        this.dashPhaseOriginY = 0;
+        
+        // Wobbly effect
+        this.wobblyEffect = new WobblyEffect();
+        // World-space offset for current module (set before drawing)
+        this.wobblyWorldOffsetX = 0;
+        this.wobblyWorldOffsetY = 0;
+        
+        // Gradient stroke effect
+        this.gradientEffect = new GradientStrokeEffect();
+    }
+
+    /**
+     * Set rendering mode
+     */
+    setMode(mode) {
+        this.mode = mode;
+    }
+
+    /**
+     * Set parameters for stripes mode
+     */
+    setStripesParams(strokesNum, strokeGapRatio) {
+        this.strokesNum = strokesNum;
+        this.strokeGapRatio = strokeGapRatio;
+    }
+
+    /**
+     * Set corner radius
+     */
+    setCornerRadius(radius) {
+        this.cornerRadius = radius;
+    }
+
+    /**
+     * Set rounded line caps
+     */
+    setRoundedCaps(enabled) {
+        this.roundCapsPreference = enabled || false;
+        this.roundedCaps = this.roundCapsPreference;
+    }
+
+    /**
+     * Set parameters for dash mode
+     */
+    setDashParams(dashLength, gapLength, dashChess = false) {
+        this.dashLength = dashLength;
+        this.gapLength = gapLength;
+        this.dashChess = dashChess;
+    }
+
+    /**
+     * Set closing lines at ends (for Stripes mode)
+     */
+    setCloseEnds(enabled) {
+        this.closeEnds = enabled || false;
+    }
+
+    /**
+     * Set wobbly effect parameters
+     * @param {boolean} enabled - whether wobbly effect is active
+     * @param {number} amplitude - displacement strength in pixels
+     * @param {number} frequency - noise scale  
+     */
+    setWobblyParams(enabled, amplitude, frequency) {
+        this.wobblyEffect.setParams(enabled, amplitude, frequency);
+    }
+
+    /**
+     * Get wobbly effect instance (for seed control etc.)
+     * @returns {WobblyEffect}
+     */
+    getWobblyEffect() {
+        return this.wobblyEffect;
+    }
+
+    /**
+     * Set world-space offset for wobbly noise consistency
+     * Must be called before drawModule() with the module's absolute position
+     * @param {number} x - absolute X position of module center
+     * @param {number} y - absolute Y position of module center
+     */
+    setWobblyWorldOffset(x, y) {
+        this.wobblyWorldOffsetX = x;
+        this.wobblyWorldOffsetY = y;
+    }
+
+    /**
+     * Set gradient stroke parameters
+     * @param {boolean} enabled - whether gradient stroke is active
+     * @param {string} startColor - gradient start color (hex)
+     * @param {string} endColor - gradient end color (hex)
+     */
+    setGradientParams(enabled, startColor, endColor) {
+        this.gradientEffect.setParams(enabled, startColor, endColor);
+    }
+
+    /**
+     * Wrap canvas context with effect proxies if enabled
+     * @param {CanvasRenderingContext2D} ctx - real canvas context
+     * @returns {CanvasRenderingContext2D|Proxy} - proxy or original ctx
+     */
+    _getDrawCtx(ctx) {
+        let drawCtx = ctx;
+        
+        // First wrap with gradient proxy (inner layer)
+        if (this.gradientEffect.enabled) {
+            drawCtx = this.gradientEffect.createProxy(drawCtx);
+        }
+        
+        // Then wrap with wobbly proxy (outer layer, operates on gradient proxy)
+        if (this.wobblyEffect.enabled && this.wobblyEffect.amplitude > 0) {
+            drawCtx = this.wobblyEffect.createProxy(drawCtx, this.wobblyWorldOffsetX, this.wobblyWorldOffsetY);
+        }
+        
+        return drawCtx;
+    }
+
+    /**
+     * Calculate adaptive Gap for Dash mode
+     * Line starts and ends with dash of dashLength
+     * @param {number} lineLength - line length in pixels
+     * @param {number} dashLength - dash length in pixels
+     * @param {number} gapLength - initial gap length (used for estimation)
+     * @returns {Object} {dashLength, gapLength, numDashes, dashOffset} - adaptive parameters
+     */
+    calculateAdaptiveDash(lineLength, dashLength, gapLength, endMode = 'half') {
+        return MathUtils.calculateAdaptiveDash(lineLength, dashLength, gapLength, endMode);
+    }
+
+    calculateEndpointDash(lineLength, dashLength, gapLength, options = {}) {
+        return MathUtils.calculateEndpointDash(lineLength, dashLength, gapLength, options);
+    }
+
+    getDashEndModeForIndex(index) {
+        return this.dashChess && index % 2 === 1 ? 'full' : 'half';
+    }
+
+    getDashBaseOffsetForIndex(index, dashLength) {
+        return this.dashChess && index % 2 === 1 ? 0 : dashLength / 2;
+    }
+
+    dashPhaseAt(localX, localY, localDirX, localDirY, moduleX, moduleY, w, h, angle) {
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        const centerX = moduleX + w / 2;
+        const centerY = moduleY + h / 2;
+        const globalX = centerX + localX * cos - localY * sin;
+        const globalY = centerY + localX * sin + localY * cos;
+        const dirX = localDirX * cos - localDirY * sin;
+        const dirY = localDirX * sin + localDirY * cos;
+        return (globalX - this.dashPhaseOriginX) * dirX + (globalY - this.dashPhaseOriginY) * dirY;
+    }
+
+    getDashPattern(lineLength, dashLength, gapLength, options = {}) {
+        const index = options.index || 0;
+        const phaseOffset = (Number.isFinite(options.phaseOffset) ? options.phaseOffset : 0) +
+            this.getDashBaseOffsetForIndex(index, dashLength);
+        return this.calculateEndpointDash(lineLength, dashLength, gapLength, {
+            startEndpoint: options.startEndpoint,
+            endEndpoint: options.endEndpoint,
+            endMode: this.getDashEndModeForIndex(index),
+            phaseOffset
+        });
+    }
+
+    applyAdaptiveDash(ctx, adaptive, dashOffset = adaptive.dashOffset) {
+        ctx.setLineDash([adaptive.dashLength, adaptive.gapLength]);
+        ctx.lineDashOffset = dashOffset;
+    }
+
+    minVisibleDashLength(lineWidth, lineCap) {
+        return lineCap === 'round' ? lineWidth * 0.35 : 0;
+    }
+
+    effectiveDashGapLength(gapLength, lineWidth, lineCap) {
+        return gapLength + (lineCap === 'round' ? lineWidth : 0);
+    }
+
+    dashRanges(totalLength, adaptive, lineWidth, lineCap, dashOffset = adaptive.dashOffset) {
+        return MathUtils.computeDashRanges(
+            totalLength,
+            adaptive.dashLength,
+            adaptive.gapLength,
+            dashOffset,
+            this.minVisibleDashLength(lineWidth, lineCap)
+        );
+    }
+
+    strokeDashedLine(ctx, x1, y1, x2, y2, adaptive, lineWidth, lineCap, dashOffset = adaptive.dashOffset) {
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const len = Math.hypot(dx, dy);
+        if (len <= 0) return;
+        const nx = dx / len;
+        const ny = dy / len;
+        const ranges = this.dashRanges(len, adaptive, lineWidth, lineCap, dashOffset);
+        ctx.setLineDash([]);
+        for (const [a, b] of ranges) {
+            ctx.beginPath();
+            ctx.moveTo(x1 + nx * a, y1 + ny * a);
+            ctx.lineTo(x1 + nx * b, y1 + ny * b);
+            ctx.stroke();
+        }
+    }
+
+    strokeDashedArc(ctx, centerX, centerY, radius, startAngle, endAngle, adaptive, lineWidth, lineCap, dashOffset = adaptive.dashOffset) {
+        const arcLength = Math.max(0, radius * (endAngle - startAngle));
+        if (arcLength <= 0) return;
+        const ranges = this.dashRanges(arcLength, adaptive, lineWidth, lineCap, dashOffset);
+        ctx.setLineDash([]);
+        for (const [a, b] of ranges) {
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, startAngle + a / radius, startAngle + b / radius);
+            ctx.stroke();
+        }
+    }
+
+    /**
+     * Calculate gap and strokeWidth for the current stripes settings.
+     * Thin instance-bound wrapper around the pure helper in
+     * core/geometry/StrokeGeometry.js (shared with VoidExporter).
+     */
+    calculateGapAndStrokeWidth(totalWidth) {
+        return computeStripeLayout(totalWidth, this.strokesNum, this.strokeGapRatio);
+    }
+
+    /**
+     * Draw a straight line segment in current mode
+     * @param {CanvasRenderingContext2D} ctx
+     * @param {number} x1 - start X
+     * @param {number} y1 - start Y
+     * @param {number} x2 - end X
+     * @param {number} y2 - end Y
+     * @param {number} stem - stem width
+     * @param {Object} options - {shortenStart, shortenEnd, isVertical, baseOffset}
+     */
+    drawLineSegment(ctx, x1, y1, x2, y2, stem, options = {}) {
+        const {
+            shortenStart = 0,
+            shortenEnd = 0,
+            isVertical = true,
+            baseOffset = 0,
+            startEndpoint = false,
+            endEndpoint = false,
+            dashIndex = 0,
+            phaseOffset = 0
+        } = options;
+        const lineWidth = stem / 2;
+        
+        // Calculate direction vector
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const len = Math.sqrt(dx * dx + dy * dy);
+        const nx = dx / len;
+        const ny = dy / len;
+        
+        // Apply shortening
+        const startX = x1 + nx * shortenStart;
+        const startY = y1 + ny * shortenStart;
+        const endX = x2 - nx * shortenEnd;
+        const endY = y2 - ny * shortenEnd;
+        const actualLength = len - shortenStart - shortenEnd;
+        
+        if (this.mode === 'fill') {
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+        } else if (this.mode === 'stripes') {
+            const totalWidth = lineWidth;
+            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            
+            ctx.lineWidth = strokeWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            ctx.setLineDash([]);
+            
+            // Perpendicular direction for offset
+            const px = -ny;
+            const py = nx;
+            
+            const stripeShortenStart = (this.roundedCaps || this.closeEnds) ? strokeWidth / 2 : shortenStart;
+            const stripeShortenEnd = (this.roundedCaps || this.closeEnds) ? strokeWidth / 2 : shortenEnd;
+            
+            for (let i = 0; i < this.strokesNum; i++) {
+                const offset = baseOffset + stripeOffset(i, strokeWidth, gap);
+                const lx1 = startX + px * offset + nx * (stripeShortenStart - shortenStart);
+                const ly1 = startY + py * offset + ny * (stripeShortenStart - shortenStart);
+                const lx2 = endX + px * offset - nx * (stripeShortenEnd - shortenEnd);
+                const ly2 = endY + py * offset + ny * (stripeShortenEnd - shortenEnd);
+                
+                ctx.beginPath();
+                ctx.moveTo(lx1, ly1);
+                ctx.lineTo(lx2, ly2);
+                ctx.stroke();
+            }
+        } else if (this.mode === 'dash') {
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            
+            const dashPx = stem * this.dashLength;
+            const gapPx = this.effectiveDashGapLength(stem * this.gapLength, lineWidth, ctx.lineCap);
+            const adaptive = this.getDashPattern(actualLength, dashPx, gapPx, {
+                startEndpoint,
+                endEndpoint,
+                phaseOffset,
+                index: dashIndex
+            });
+            
+            this.strokeDashedLine(ctx, startX, startY, endX, endY, adaptive, lineWidth, ctx.lineCap);
+            
+            ctx.setLineDash([]);
+            ctx.lineDashOffset = 0;
+        } else if (this.mode === 'sd') {
+            const totalWidth = lineWidth;
+            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            
+            ctx.lineWidth = strokeWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            
+            // Perpendicular direction for offset
+            const px = -ny;
+            const py = nx;
+            
+            const stripeShortenStart = (this.roundedCaps || this.closeEnds) ? strokeWidth / 2 : shortenStart;
+            const stripeShortenEnd = (this.roundedCaps || this.closeEnds) ? strokeWidth / 2 : shortenEnd;
+            const stripeLength = actualLength - (stripeShortenStart - shortenStart) - (stripeShortenEnd - shortenEnd);
+            
+            const dashPx = strokeWidth * this.dashLength;
+            const gapPx = this.effectiveDashGapLength(strokeWidth * this.gapLength, strokeWidth, ctx.lineCap);
+            for (let i = 0; i < this.strokesNum; i++) {
+                const adaptive = this.getDashPattern(stripeLength, dashPx, gapPx, {
+                    startEndpoint,
+                    endEndpoint,
+                    phaseOffset,
+                    index: i
+                });
+                
+                const offset = baseOffset + stripeOffset(i, strokeWidth, gap);
+                const lx1 = startX + px * offset + nx * (stripeShortenStart - shortenStart);
+                const ly1 = startY + py * offset + ny * (stripeShortenStart - shortenStart);
+                const lx2 = endX + px * offset - nx * (stripeShortenEnd - shortenEnd);
+                const ly2 = endY + py * offset + ny * (stripeShortenEnd - shortenEnd);
+                
+                this.strokeDashedLine(ctx, lx1, ly1, lx2, ly2, adaptive, strokeWidth, ctx.lineCap);
+            }
+            
+            ctx.setLineDash([]);
+            ctx.lineDashOffset = 0;
+        }
+    }
+
+    /**
+     * Draw an arc segment in current mode
+     * @param {CanvasRenderingContext2D} ctx
+     * @param {number} centerX - arc center X
+     * @param {number} centerY - arc center Y
+     * @param {number} radius - arc radius (for fill mode)
+     * @param {number} startAngle - start angle in radians
+     * @param {number} endAngle - end angle in radians
+     * @param {number} stem - stem width
+     * @param {Object} options - {shortenStart, shortenEnd, outerRadius}
+     */
+    drawArcSegment(ctx, centerX, centerY, radius, startAngle, endAngle, stem, options = {}) {
+        const { shortenStart = 0, shortenEnd = 0 } = options;
+        const lineWidth = stem / 2;
+        const minRadius = Math.max(lineWidth / 2, 0.1);
+        
+        // Apply shortening as angle delta
+        const deltaStart = radius > 0 ? shortenStart / radius : 0;
+        const deltaEnd = radius > 0 ? shortenEnd / radius : 0;
+        const actualStartAngle = startAngle + deltaStart;
+        const actualEndAngle = endAngle - deltaEnd;
+        
+        if (radius < minRadius) radius = minRadius;
+        
+        if (this.mode === 'fill') {
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            ctx.setLineDash([]);
+            
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, actualStartAngle, actualEndAngle);
+            ctx.stroke();
+        } else if (this.mode === 'stripes') {
+            const totalWidth = lineWidth;
+            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            const outerRadius = options.outerRadius || radius + lineWidth / 2 - strokeWidth / 2;
+            
+            ctx.lineWidth = strokeWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            ctx.setLineDash([]);
+            
+            const stripeShortenAmount = (this.roundedCaps || this.closeEnds) ? strokeWidth / 2 : 0;
+            
+            for (let j = 0; j < this.strokesNum; j++) {
+                let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
+                if (arcRadius < minRadius) arcRadius = minRadius;
+                if (arcRadius <= 0) continue;
+                
+                const deltaStartStripe = stripeShortenAmount / arcRadius;
+                const deltaEndStripe = stripeShortenAmount / arcRadius;
+                const stripeStartAngle = startAngle + (shortenStart > 0 ? deltaStart : deltaStartStripe);
+                const stripeEndAngle = endAngle - (shortenEnd > 0 ? deltaEnd : deltaEndStripe);
+                
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, arcRadius, stripeStartAngle, stripeEndAngle);
+                ctx.stroke();
+            }
+        } else if (this.mode === 'dash') {
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            
+            const arcAngle = actualEndAngle - actualStartAngle;
+            const arcLength = radius * arcAngle;
+            const dashPx = stem * this.dashLength;
+            const gapPx = this.effectiveDashGapLength(stem * this.gapLength, lineWidth, ctx.lineCap);
+            const adaptive = this.getDashPattern(arcLength, dashPx, gapPx, {
+                startEndpoint: options.startEndpoint,
+                endEndpoint: options.endEndpoint,
+                phaseOffset: options.phaseOffset || 0,
+                index: options.dashIndex || 0
+            });
+            
+            this.strokeDashedArc(ctx, centerX, centerY, radius, actualStartAngle, actualEndAngle, adaptive, lineWidth, ctx.lineCap);
+            
+            ctx.setLineDash([]);
+            ctx.lineDashOffset = 0;
+        } else if (this.mode === 'sd') {
+            const totalWidth = lineWidth;
+            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            const outerRadius = options.outerRadius || radius + lineWidth / 2 - strokeWidth / 2;
+            
+            ctx.lineWidth = strokeWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            
+            const stripeShortenAmount = (this.roundedCaps || this.closeEnds) ? strokeWidth / 2 : 0;
+            const dashPx = strokeWidth * this.dashLength;
+            const gapPx = this.effectiveDashGapLength(strokeWidth * this.gapLength, strokeWidth, ctx.lineCap);
+            for (let j = 0; j < this.strokesNum; j++) {
+                let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
+                if (arcRadius < minRadius) arcRadius = minRadius;
+                if (arcRadius <= 0) continue;
+                
+                const deltaStartStripe = stripeShortenAmount / arcRadius;
+                const deltaEndStripe = stripeShortenAmount / arcRadius;
+                const stripeStartAngle = startAngle + (shortenStart > 0 ? deltaStart : deltaStartStripe);
+                const stripeEndAngle = endAngle - (shortenEnd > 0 ? deltaEnd : deltaEndStripe);
+                
+                const arcAngle = stripeEndAngle - stripeStartAngle;
+                const arcLength = arcRadius * arcAngle;
+                const adaptive = this.getDashPattern(arcLength, dashPx, gapPx, {
+                    startEndpoint: options.startEndpoint,
+                    endEndpoint: options.endEndpoint,
+                    phaseOffset: options.phaseOffset || 0,
+                    index: j
+                });
+                this.strokeDashedArc(ctx, centerX, centerY, arcRadius, stripeStartAngle, stripeEndAngle, adaptive, strokeWidth, ctx.lineCap);
+            }
+            
+            ctx.setLineDash([]);
+            ctx.lineDashOffset = 0;
+        }
+    }
+
+    /**
+     * Draw closing lines at endpoints (for stripes/sd modes)
+     * @param {CanvasRenderingContext2D} ctx
+     * @param {Array} points - array of {x, y} points to connect
+     * @param {number} strokeWidth - line width
+     * @param {number} dashPx - dash length (0 for solid)
+     * @param {number} gapPx - gap length
+     */
+    drawClosingLine(ctx, points, strokeWidth, dashPx = 0, gapPx = 0) {
+        if (points.length < 2) return;
+        
+        ctx.lineWidth = strokeWidth;
+        ctx.lineCap = closeEndsLineCap(this.roundedCaps);
+        
+        const lineLength = Math.sqrt(
+            Math.pow(points[1].x - points[0].x, 2) + 
+            Math.pow(points[1].y - points[0].y, 2)
+        );
+        
+        if (dashPx > 0 && gapPx > 0) {
+            const adaptive = this.calculateAdaptiveDash(lineLength, dashPx, gapPx);
+            this.applyAdaptiveDash(ctx, adaptive);
+        } else {
+            ctx.setLineDash([]);
+        }
+        
+        ctx.beginPath();
+        ctx.moveTo(points[0].x, points[0].y);
+        ctx.lineTo(points[1].x, points[1].y);
+        ctx.stroke();
+        
+        ctx.setLineDash([]);
+        ctx.lineDashOffset = 0;
+    }
+
+    /**
+     * Render module by code
+     * @param {number} customStrokesNum - custom number of stripes (for random mode)
+     */
+    drawModule(ctx, type, rotation, x, y, w, h, stem, color, customStrokesNum = null) {
+        const angle = rotation * Math.PI / 2;
+        
+        // For random mode update only strokesNum, keeping current mode (sd for dash)
+        const originalStrokesNum = this.strokesNum;
+        
+        if (customStrokesNum !== null) {
+            this.strokesNum = customStrokesNum;
+        }
+        
+        // Set world-space offset for wobbly noise (module center in absolute coords)
+        this.wobblyWorldOffsetX = x + w / 2;
+        this.wobblyWorldOffsetY = y + h / 2;
+        
+        // Wrap context with wobbly proxy if effect is enabled
+        const drawCtx = this._getDrawCtx(ctx);
+        
+        ctx.save();
+        ctx.fillStyle = color;
+        ctx.strokeStyle = color;
+        
+        switch (type) {
+            case 'S':
+                this.drawStraight(drawCtx, x, y, w, h, angle, stem);
+                break;
+            case 'C':
+                this.drawCentral(drawCtx, x, y, w, h, angle, stem);
+                break;
+            case 'J':
+                this.drawJoint(drawCtx, x, y, w, h, angle, stem);
+                break;
+            case 'L':
+                this.drawLink(drawCtx, x, y, w, h, angle, stem);
+                break;
+            case 'R':
+                this.drawRound(drawCtx, x, y, w, h, angle, stem);
+                break;
+            case 'B':
+                this.drawBend(drawCtx, x, y, w, h, angle, stem);
+                break;
+            case 'E':
+                // Empty - don't draw anything
+                break;
+        }
+        
+        // Restore original values
+        if (customStrokesNum !== null) {
+            this.strokesNum = originalStrokesNum;
+        }
+        
+        ctx.restore();
+    }
+
+    /**
+     * Helper method: get local endpoint sides considering rotation
+     * @param {number} rotation - module rotation (0-3)
+     * @returns {Object} {top, right, bottom, left} - local sides with endpoints
+     */
+    getLocalEndpointSides(rotation) {
+        if (!this.endpointSides) return null;
+        
+        // Convert global sides to local considering rotation
+        const sides = ['top', 'right', 'bottom', 'left'];
+        const local = { top: false, right: false, bottom: false, left: false };
+        
+        Object.keys(this.endpointSides).forEach(globalSide => {
+            if (this.endpointSides[globalSide]) {
+                const globalIndex = sides.indexOf(globalSide);
+                const localIndex = (globalIndex - rotation + 4) % 4;
+                const localSide = sides[localIndex];
+                local[localSide] = true;
+            }
+        });
+        
+        return local;
+    }
+
+    /**
+     * S — Straight: vertical line on the left
+     */
+    drawStraight(ctx, x, y, w, h, angle, stem) {
+        ctx.save();
+        ctx.translate(x + w / 2, y + h / 2);
+        ctx.rotate(angle);
+        
+        // Get local endpoints considering rotation
+        const rotation = Math.round(angle / (Math.PI / 2)) % 4;
+        const localEndpoints = this.getLocalEndpointSides(rotation);
+        
+        // Shortening by 0.5 * stem weight (if roundedCaps or closeEnds enabled, and there are endpoints)
+        const shouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
+        const shortenTop = shouldShorten && localEndpoints.top ? stem * 0.25 : 0;
+        const shortenBottom = shouldShorten && localEndpoints.bottom ? stem * 0.25 : 0;
+        
+        if (this.mode === 'fill') {
+            // Solid mode: single vertical line
+            const lineX = -w / 2 + stem / 4;
+            const lineWidth = stem / 2;
+            
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            ctx.setLineDash([]);
+            
+            ctx.beginPath();
+            ctx.moveTo(lineX, -h / 2 + shortenTop);
+            ctx.lineTo(lineX, h / 2 - shortenBottom);
+            ctx.stroke();
+        } else if (this.mode === 'stripes') {
+            // Stripes mode: multiple parallel lines
+            const totalWidth = stem / 2;
+            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            const startX = -w / 2 + strokeWidth / 2;
+            
+            // For stripes mode shorten by half line width (if Round or Close Ends)
+            const shouldShortenStripes = (this.roundedCaps || this.closeEnds) && localEndpoints;
+            const shortenTopStripes = shouldShortenStripes && localEndpoints.top ? strokeWidth / 2 : 0;
+            const shortenBottomStripes = shouldShortenStripes && localEndpoints.bottom ? strokeWidth / 2 : 0;
+            
+            ctx.lineWidth = strokeWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            ctx.setLineDash([]);
+            
+            for (let i = 0; i < this.strokesNum; i++) {
+                const lineX = startX + stripeOffset(i, strokeWidth, gap);
+                ctx.beginPath();
+                ctx.moveTo(lineX, -h / 2 + shortenTopStripes);
+                ctx.lineTo(lineX, h / 2 - shortenBottomStripes);
+                ctx.stroke();
+            }
+            
+            // Closing lines at ends (if closeEnds enabled and there are endpoints)
+            // Close Ends: square cap when Round disabled, round cap when Round enabled
+            if (this.closeEnds && localEndpoints) {
+                const firstLineX = startX;
+                const lastLineX = startX + stripeOffset(this.strokesNum - 1, strokeWidth, gap);
+                
+                ctx.lineCap = closeEndsLineCap(this.roundedCaps);
+                
+                if (localEndpoints.top) {
+                    const y = -h / 2 + shortenTopStripes;
+                    ctx.beginPath();
+                    ctx.moveTo(firstLineX, y);
+                    ctx.lineTo(lastLineX, y);
+                    ctx.stroke();
+                }
+                
+                if (localEndpoints.bottom) {
+                    const y = h / 2 - shortenBottomStripes;
+                    ctx.beginPath();
+                    ctx.moveTo(firstLineX, y);
+                    ctx.lineTo(lastLineX, y);
+                    ctx.stroke();
+                }
+            }
+        } else if (this.mode === 'dash') {
+            // Dash mode: single dashed line with adaptive gap
+            const lineX = -w / 2 + stem / 4;
+            const lineWidth = stem / 2;
+            
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            
+            const lineLength = h - shortenTop - shortenBottom;
+            const dashPx = stem * this.dashLength;
+            const gapPx = this.effectiveDashGapLength(stem * this.gapLength, lineWidth, ctx.lineCap);
+            const phaseOffset = this.dashPhaseAt(lineX, -h / 2 + shortenTop, 0, 1, x, y, w, h, angle);
+            const adaptive = this.getDashPattern(lineLength, dashPx, gapPx, {
+                startEndpoint: localEndpoints && localEndpoints.top,
+                endEndpoint: localEndpoints && localEndpoints.bottom,
+                phaseOffset
+            });
+            
+            this.strokeDashedLine(ctx, lineX, -h / 2 + shortenTop, lineX, h / 2 - shortenBottom, adaptive, lineWidth, ctx.lineCap);
+            
+            ctx.setLineDash([]);
+            ctx.lineDashOffset = 0;
+        } else if (this.mode === 'sd') {
+            // SD mode: multiple parallel dashed lines
+            const totalWidth = stem / 2;
+            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            const startX = -w / 2 + strokeWidth / 2;
+            
+            // For SD mode shorten by half line width (if Round or Close Ends)
+            const shouldShortenSD = (this.roundedCaps || this.closeEnds) && localEndpoints;
+            const shortenTopSD = shouldShortenSD && localEndpoints.top ? strokeWidth / 2 : 0;
+            const shortenBottomSD = shouldShortenSD && localEndpoints.bottom ? strokeWidth / 2 : 0;
+            
+            ctx.lineWidth = strokeWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            
+            const lineLength = h - shortenTopSD - shortenBottomSD;
+            // In SD mode dash/gap calculated relative to strokeWidth (single line width)
+            const dashPx = strokeWidth * this.dashLength;
+            const gapPx = this.effectiveDashGapLength(strokeWidth * this.gapLength, strokeWidth, ctx.lineCap);
+            for (let i = 0; i < this.strokesNum; i++) {
+                const lineX = startX + stripeOffset(i, strokeWidth, gap);
+                const phaseOffset = this.dashPhaseAt(lineX, -h / 2 + shortenTopSD, 0, 1, x, y, w, h, angle);
+                const adaptive = this.getDashPattern(lineLength, dashPx, gapPx, {
+                    startEndpoint: localEndpoints && localEndpoints.top,
+                    endEndpoint: localEndpoints && localEndpoints.bottom,
+                    phaseOffset,
+                    index: i
+                });
+                this.strokeDashedLine(ctx, lineX, -h / 2 + shortenTopSD, lineX, h / 2 - shortenBottomSD, adaptive, strokeWidth, ctx.lineCap);
+            }
+            
+            ctx.setLineDash([]);
+            ctx.lineDashOffset = 0;
+            
+            // Closing lines at ends (if closeEnds enabled and there are endpoints)
+            // Close Ends: square cap when Round disabled, round cap when Round enabled
+            if (this.closeEnds && localEndpoints) {
+                const firstLineX = startX;
+                const lastLineX = startX + stripeOffset(this.strokesNum - 1, strokeWidth, gap);
+                const closeLineLength = lastLineX - firstLineX;
+                
+                ctx.lineCap = closeEndsLineCap(this.roundedCaps);
+                
+                // Closing lines are also dashed in SD mode
+                const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
+                this.applyAdaptiveDash(ctx, closeAdaptive);
+                
+                if (localEndpoints.top) {
+                    const y = -h / 2 + shortenTopSD;
+                    ctx.beginPath();
+                    ctx.moveTo(firstLineX, y);
+                    ctx.lineTo(lastLineX, y);
+                    ctx.stroke();
+                }
+                
+                if (localEndpoints.bottom) {
+                    const y = h / 2 - shortenBottomSD;
+                    ctx.beginPath();
+                    ctx.moveTo(firstLineX, y);
+                    ctx.lineTo(lastLineX, y);
+                    ctx.stroke();
+                }
+                
+                ctx.setLineDash([]);
+                ctx.lineDashOffset = 0;
+            }
+        }
+        
+        ctx.restore();
+    }
+
+    /**
+     * C — Central: vertical stroke through module centre
+     */
+    drawCentral(ctx, x, y, w, h, angle, stem) {
+        ctx.save();
+        ctx.translate(x + w / 2, y + h / 2);
+        ctx.rotate(angle);
+        
+        // Get local endpoints considering rotation
+        const rotation = Math.round(angle / (Math.PI / 2)) % 4;
+        const localEndpoints = this.getLocalEndpointSides(rotation);
+        
+        // Shortening by 0.5 * stem weight (if roundedCaps or closeEnds enabled, and there are endpoints)
+        const shouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
+        const shortenTop = shouldShorten && localEndpoints.top ? stem * 0.25 : 0;
+        const shortenBottom = shouldShorten && localEndpoints.bottom ? stem * 0.25 : 0;
+        
+        if (this.mode === 'fill') {
+            // Solid mode: single vertical line in center
+            const lineX = 0;
+            const lineWidth = stem / 2;
+            
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            ctx.setLineDash([]);
+            
+            ctx.beginPath();
+            ctx.moveTo(lineX, -h / 2 + shortenTop);
+            ctx.lineTo(lineX, h / 2 - shortenBottom);
+            ctx.stroke();
+        } else if (this.mode === 'stripes') {
+            // Stripes mode: multiple parallel lines, centered
+            const totalWidth = stem / 2;
+            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            const totalLineWidth = stripeBandWidth(this.strokesNum, strokeWidth, gap);
+            const startX = -totalLineWidth / 2 + strokeWidth / 2;
+            
+            // Shorten by half line width (if Round or Close Ends)
+            const shouldShortenStripes = (this.roundedCaps || this.closeEnds) && localEndpoints;
+            const shortenTopStripes = shouldShortenStripes && localEndpoints.top ? strokeWidth / 2 : 0;
+            const shortenBottomStripes = shouldShortenStripes && localEndpoints.bottom ? strokeWidth / 2 : 0;
+            
+            ctx.lineWidth = strokeWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            ctx.setLineDash([]);
+            
+            for (let i = 0; i < this.strokesNum; i++) {
+                const lineX = startX + stripeOffset(i, strokeWidth, gap);
+                ctx.beginPath();
+                ctx.moveTo(lineX, -h / 2 + shortenTopStripes);
+                ctx.lineTo(lineX, h / 2 - shortenBottomStripes);
+                ctx.stroke();
+            }
+            
+            if (this.closeEnds && localEndpoints) {
+                const firstLineX = startX;
+                const lastLineX = startX + stripeOffset(this.strokesNum - 1, strokeWidth, gap);
+                
+                ctx.lineCap = 'butt';
+                
+                if (localEndpoints.top) {
+                    const y = -h / 2 + shortenTopStripes;
+                    ctx.beginPath();
+                    ctx.moveTo(firstLineX, y);
+                    ctx.lineTo(lastLineX, y);
+                    ctx.stroke();
+                }
+                
+                if (localEndpoints.bottom) {
+                    const y = h / 2 - shortenBottomStripes;
+                    ctx.beginPath();
+                    ctx.moveTo(firstLineX, y);
+                    ctx.lineTo(lastLineX, y);
+                    ctx.stroke();
+                }
+            }
+        } else if (this.mode === 'dash') {
+            // Dash mode: single dashed line in center
+            const lineX = 0;
+            const lineWidth = stem / 2;
+            
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            
+            const lineLength = h - shortenTop - shortenBottom;
+            const dashPx = stem * this.dashLength;
+            const gapPx = this.effectiveDashGapLength(stem * this.gapLength, lineWidth, ctx.lineCap);
+            const phaseOffset = this.dashPhaseAt(lineX, -h / 2 + shortenTop, 0, 1, x, y, w, h, angle);
+            const adaptive = this.getDashPattern(lineLength, dashPx, gapPx, {
+                startEndpoint: localEndpoints && localEndpoints.top,
+                endEndpoint: localEndpoints && localEndpoints.bottom,
+                phaseOffset
+            });
+            
+            this.strokeDashedLine(ctx, lineX, -h / 2 + shortenTop, lineX, h / 2 - shortenBottom, adaptive, lineWidth, ctx.lineCap);
+            
+            ctx.setLineDash([]);
+            ctx.lineDashOffset = 0;
+        } else if (this.mode === 'sd') {
+            // SD mode: multiple parallel dashed lines, centered
+            const totalWidth = stem / 2;
+            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            const totalLineWidth = stripeBandWidth(this.strokesNum, strokeWidth, gap);
+            const startX = -totalLineWidth / 2 + strokeWidth / 2;
+            
+            const shouldShortenSD = (this.roundedCaps || this.closeEnds) && localEndpoints;
+            const shortenTopSD = shouldShortenSD && localEndpoints.top ? strokeWidth / 2 : 0;
+            const shortenBottomSD = shouldShortenSD && localEndpoints.bottom ? strokeWidth / 2 : 0;
+            
+            ctx.lineWidth = strokeWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            
+            const lineLength = h - shortenTopSD - shortenBottomSD;
+            const dashPx = strokeWidth * this.dashLength;
+            const gapPx = this.effectiveDashGapLength(strokeWidth * this.gapLength, strokeWidth, ctx.lineCap);
+            for (let i = 0; i < this.strokesNum; i++) {
+                const lineX = startX + stripeOffset(i, strokeWidth, gap);
+                const phaseOffset = this.dashPhaseAt(lineX, -h / 2 + shortenTopSD, 0, 1, x, y, w, h, angle);
+                const adaptive = this.getDashPattern(lineLength, dashPx, gapPx, {
+                    startEndpoint: localEndpoints && localEndpoints.top,
+                    endEndpoint: localEndpoints && localEndpoints.bottom,
+                    phaseOffset,
+                    index: i
+                });
+                this.strokeDashedLine(ctx, lineX, -h / 2 + shortenTopSD, lineX, h / 2 - shortenBottomSD, adaptive, strokeWidth, ctx.lineCap);
+            }
+            
+            ctx.setLineDash([]);
+            ctx.lineDashOffset = 0;
+            
+            // Close Ends: square cap when Round disabled, round cap when Round enabled
+            if (this.closeEnds && localEndpoints) {
+                const firstLineX = startX;
+                const lastLineX = startX + stripeOffset(this.strokesNum - 1, strokeWidth, gap);
+                const closeLineLength = lastLineX - firstLineX;
+                
+                ctx.lineCap = closeEndsLineCap(this.roundedCaps);
+                
+                // Closing lines are also dashed in SD mode
+                const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
+                this.applyAdaptiveDash(ctx, closeAdaptive);
+                
+                if (localEndpoints.top) {
+                    const y = -h / 2 + shortenTopSD;
+                    ctx.beginPath();
+                    ctx.moveTo(firstLineX, y);
+                    ctx.lineTo(lastLineX, y);
+                    ctx.stroke();
+                }
+                
+                if (localEndpoints.bottom) {
+                    const y = h / 2 - shortenBottomSD;
+                    ctx.beginPath();
+                    ctx.moveTo(firstLineX, y);
+                    ctx.lineTo(lastLineX, y);
+                    ctx.stroke();
+                }
+                
+                ctx.setLineDash([]);
+                ctx.lineDashOffset = 0;
+            }
+        }
+        
+        ctx.restore();
+    }
+
+    /**
+     * J — Joint: T junction
+     */
+    drawJoint(ctx, x, y, w, h, angle, stem) {
+        ctx.save();
+        ctx.translate(x + w / 2, y + h / 2);
+        ctx.rotate(angle);
+        
+        // Get local endpoints considering rotation
+        const rotation = Math.round(angle / (Math.PI / 2)) % 4;
+        const localEndpoints = this.getLocalEndpointSides(rotation);
+        
+        const lineWidth = stem / 2;
+        ctx.lineWidth = lineWidth;
+        ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+        ctx.lineJoin = this.roundedCaps ? 'round' : 'miter';
+        
+        if (this.mode === 'fill') {
+            // Solid mode: T-shaped connection
+            const vertLineX = -w / 2 + stem / 4;
+            const horizLineY = 0;
+            
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.moveTo(vertLineX, -h / 2);
+            ctx.lineTo(vertLineX, h / 2);
+            ctx.moveTo(-w / 2, horizLineY);
+            ctx.lineTo(w / 2, horizLineY);
+            ctx.stroke();
+        } else if (this.mode === 'stripes') {
+            // Stripes mode
+            const totalWidth = stem / 2;
+            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            
+            ctx.lineWidth = strokeWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            ctx.setLineDash([]);
+            
+            const vertStartX = -w / 2 + strokeWidth / 2;
+            const totalLineWidth = stripeBandWidth(this.strokesNum, strokeWidth, gap);
+            const horizStartY = -totalLineWidth / 2 + strokeWidth / 2;
+            const lastVertX = vertStartX + stripeOffset(this.strokesNum - 1, strokeWidth, gap);
+            
+            for (let i = 0; i < this.strokesNum; i++) {
+                const lineX = vertStartX + stripeOffset(i, strokeWidth, gap);
+                ctx.beginPath();
+                ctx.moveTo(lineX, -h / 2);
+                ctx.lineTo(lineX, h / 2);
+                ctx.stroke();
+            }
+            
+            for (let i = 0; i < this.strokesNum; i++) {
+                const lineY = horizStartY + stripeOffset(i, strokeWidth, gap);
+                ctx.beginPath();
+                ctx.moveTo(lastVertX, lineY);
+                ctx.lineTo(w / 2, lineY);
+                ctx.stroke();
+            }
+        } else if (this.mode === 'dash') {
+            // Dash mode
+            ctx.lineWidth = lineWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            
+            const vertLineX = -w / 2 + stem / 4;
+            const horizLineY = 0;
+            
+            const shouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
+            const shortenTop = shouldShorten && localEndpoints.top ? stem * 0.25 : 0;
+            const shortenBottom = shouldShorten && localEndpoints.bottom ? stem * 0.25 : 0;
+            const shortenRight = shouldShorten && localEndpoints.right ? stem * 0.25 : 0;
+            
+            const dashPx = stem * this.dashLength;
+            const gapPx = this.effectiveDashGapLength(stem * this.gapLength, lineWidth, ctx.lineCap);
+            
+            const vertLength = h - shortenTop - shortenBottom;
+            const vertPhaseOffset = this.dashPhaseAt(vertLineX, -h / 2 + shortenTop, 0, 1, x, y, w, h, angle);
+            const vertAdaptive = this.getDashPattern(vertLength, dashPx, gapPx, {
+                startEndpoint: localEndpoints && localEndpoints.top,
+                endEndpoint: localEndpoints && localEndpoints.bottom,
+                phaseOffset: vertPhaseOffset
+            });
+            
+            this.strokeDashedLine(ctx, vertLineX, -h / 2 + shortenTop, vertLineX, h / 2 - shortenBottom, vertAdaptive, lineWidth, ctx.lineCap);
+            
+            const horizStartX = vertLineX;
+            const horizEndX = w / 2 - shortenRight;
+            const horizLength = horizEndX - horizStartX;
+            const horizPhaseOffset = this.dashPhaseAt(horizStartX, horizLineY, 1, 0, x, y, w, h, angle);
+            const horizAdaptive = this.getDashPattern(horizLength, dashPx, gapPx, {
+                startEndpoint: false,
+                endEndpoint: localEndpoints && localEndpoints.right,
+                phaseOffset: horizPhaseOffset
+            });
+            
+            this.strokeDashedLine(ctx, horizStartX, horizLineY, horizEndX, horizLineY, horizAdaptive, lineWidth, ctx.lineCap);
+            
+            ctx.setLineDash([]);
+            ctx.lineDashOffset = 0;
+        } else if (this.mode === 'sd') {
+            // SD mode: stripes + dash for Joint
+            const totalWidth = stem / 2;
+            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            
+            ctx.lineWidth = strokeWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            
+            const vertStartX = -w / 2 + strokeWidth / 2;
+            const totalLineWidth = stripeBandWidth(this.strokesNum, strokeWidth, gap);
+            const horizStartY = -totalLineWidth / 2 + strokeWidth / 2;
+            const lastVertX = vertStartX + stripeOffset(this.strokesNum - 1, strokeWidth, gap);
+            
+            const dashPx = strokeWidth * this.dashLength;
+            const gapPx = this.effectiveDashGapLength(strokeWidth * this.gapLength, strokeWidth, ctx.lineCap);
+            
+            // Vertical lines
+            for (let i = 0; i < this.strokesNum; i++) {
+                const lineX = vertStartX + stripeOffset(i, strokeWidth, gap);
+                const vertPhaseOffset = this.dashPhaseAt(lineX, -h / 2, 0, 1, x, y, w, h, angle);
+                const vertAdaptive = this.getDashPattern(h, dashPx, gapPx, {
+                    startEndpoint: localEndpoints && localEndpoints.top,
+                    endEndpoint: localEndpoints && localEndpoints.bottom,
+                    phaseOffset: vertPhaseOffset,
+                    index: i
+                });
+                this.strokeDashedLine(ctx, lineX, -h / 2, lineX, h / 2, vertAdaptive, strokeWidth, ctx.lineCap);
+            }
+            
+            // Horizontal lines
+            const horizLength = w / 2 - lastVertX;
+            for (let i = 0; i < this.strokesNum; i++) {
+                const lineY = horizStartY + stripeOffset(i, strokeWidth, gap);
+                const horizPhaseOffset = this.dashPhaseAt(lastVertX, lineY, 1, 0, x, y, w, h, angle);
+                const horizAdaptive = this.getDashPattern(horizLength, dashPx, gapPx, {
+                    startEndpoint: false,
+                    endEndpoint: localEndpoints && localEndpoints.right,
+                    phaseOffset: horizPhaseOffset,
+                    index: i
+                });
+                this.strokeDashedLine(ctx, lastVertX, lineY, w / 2, lineY, horizAdaptive, strokeWidth, ctx.lineCap);
+            }
+            
+            ctx.setLineDash([]);
+            ctx.lineDashOffset = 0;
+        }
+        
+        ctx.restore();
+    }
+
+    /**
+     * L — Link/Corner: L junction
+     */
+    drawLink(ctx, x, y, w, h, angle, stem) {
+        ctx.save();
+        ctx.translate(x + w / 2, y + h / 2);
+        ctx.rotate(angle);
+        
+        // Get local endpoints considering rotation
+        const rotation = Math.round(angle / (Math.PI / 2)) % 4;
+        const localEndpoints = this.getLocalEndpointSides(rotation);
+        
+        const lineWidth = stem / 2;
+        ctx.lineWidth = lineWidth;
+        const joinRound = this.roundedCaps ||
+            (this.roundCapsPreference && this.linkElbowAllowRound);
+        ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+        ctx.lineJoin = joinRound ? 'round' : 'miter';
+        
+        if (this.mode === 'fill') {
+            // Solid mode: L-shaped connection
+            const vertLineX = -w / 2 + stem / 4;
+            const horizLineY = h / 2 - stem / 4;
+            
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.moveTo(vertLineX, -h / 2);
+            ctx.lineTo(vertLineX, horizLineY);
+            ctx.lineTo(w / 2, horizLineY);
+            ctx.stroke();
+        } else if (this.mode === 'stripes') {
+            // Stripes mode
+            const totalWidth = stem / 2;
+            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            
+            ctx.lineWidth = strokeWidth;
+            const joinRoundS = this.roundedCaps ||
+                (this.roundCapsPreference && this.linkElbowAllowRound);
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            ctx.lineJoin = joinRoundS ? 'round' : 'miter';
+            ctx.setLineDash([]);
+            
+            const vertStartX = -w / 2 + strokeWidth / 2;
+            const horizStartY = h / 2 - stem / 2 + strokeWidth / 2;
+            
+            for (let i = 0; i < this.strokesNum; i++) {
+                const lineX = vertStartX + stripeOffset(i, strokeWidth, gap);
+                const reverseIndex = this.strokesNum - 1 - i;
+                const lineY = horizStartY + stripeOffset(reverseIndex, strokeWidth, gap);
+                
+                ctx.beginPath();
+                ctx.moveTo(lineX, -h / 2);
+                ctx.lineTo(lineX, lineY);
+                ctx.lineTo(w / 2, lineY);
+                ctx.stroke();
+            }
+        } else if (this.mode === 'dash') {
+            // Dash mode
+            const vertLineX = -w / 2 + stem / 4;
+            const horizLineY = h / 2 - stem / 4;
+            
+            const joinRoundD = this.roundedCaps ||
+                (this.roundCapsPreference && this.linkElbowAllowRound);
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            ctx.lineJoin = joinRoundD ? 'round' : 'miter';
+            
+            const shouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
+            const shortenTop = shouldShorten && localEndpoints.top ? stem * 0.25 : 0;
+            const shortenRight = shouldShorten && localEndpoints.right ? stem * 0.25 : 0;
+            
+            const dashPx = stem * this.dashLength;
+            const gapPx = this.effectiveDashGapLength(stem * this.gapLength, lineWidth, ctx.lineCap);
+            
+            const vertStartY = -h / 2 + shortenTop;
+            const horizEndX = w / 2 - shortenRight;
+            const vertLength = h / 2 + horizLineY - shortenTop;
+            const horizLength = horizEndX - vertLineX;
+            const totalLength = vertLength + horizLength;
+            
+            const phaseOffset = this.dashPhaseAt(vertLineX, vertStartY, 0, 1, x, y, w, h, angle);
+            const adaptive = this.getDashPattern(totalLength, dashPx, gapPx, {
+                startEndpoint: localEndpoints && localEndpoints.top,
+                endEndpoint: localEndpoints && localEndpoints.right,
+                phaseOffset
+            });
+            
+            this.applyAdaptiveDash(ctx, adaptive);
+            
+            ctx.beginPath();
+            ctx.moveTo(vertLineX, vertStartY);
+            ctx.lineTo(vertLineX, horizLineY);
+            ctx.lineTo(horizEndX, horizLineY);
+            ctx.stroke();
+            
+            ctx.setLineDash([]);
+            ctx.lineDashOffset = 0;
+        } else if (this.mode === 'sd') {
+            // SD mode: stripes + dash for Link (L-shaped)
+            const totalWidth = stem / 2;
+            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            
+            ctx.lineWidth = strokeWidth;
+            const joinRoundSD = this.roundedCaps ||
+                (this.roundCapsPreference && this.linkElbowAllowRound);
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            ctx.lineJoin = joinRoundSD ? 'round' : 'miter';
+            
+            const vertStartX = -w / 2 + strokeWidth / 2;
+            const horizStartY = h / 2 - stem / 2 + strokeWidth / 2;
+            
+            const dashPx = strokeWidth * this.dashLength;
+            const gapPx = this.effectiveDashGapLength(strokeWidth * this.gapLength, strokeWidth, ctx.lineCap);
+            
+            for (let i = 0; i < this.strokesNum; i++) {
+                const lineX = vertStartX + stripeOffset(i, strokeWidth, gap);
+                const reverseIndex = this.strokesNum - 1 - i;
+                const lineY = horizStartY + stripeOffset(reverseIndex, strokeWidth, gap);
+                
+                const vertLength = h / 2 + lineY;
+                const horizLength = w / 2 - lineX;
+                const totalLength = vertLength + horizLength;
+                
+                const phaseOffset = this.dashPhaseAt(lineX, -h / 2, 0, 1, x, y, w, h, angle);
+                const adaptive = this.getDashPattern(totalLength, dashPx, gapPx, {
+                    startEndpoint: localEndpoints && localEndpoints.top,
+                    endEndpoint: localEndpoints && localEndpoints.right,
+                    phaseOffset,
+                    index: i
+                });
+                this.applyAdaptiveDash(ctx, adaptive);
+                
+                ctx.beginPath();
+                ctx.moveTo(lineX, -h / 2);
+                ctx.lineTo(lineX, lineY);
+                ctx.lineTo(w / 2, lineY);
+                ctx.stroke();
+            }
+            
+            ctx.setLineDash([]);
+            ctx.lineDashOffset = 0;
+        }
+        
+        ctx.restore();
+    }
+
+    /**
+     * R — Round: smooth arc (radius ~= module span)
+     * Legacy Processing `arc()` expects DIAMETERS; Canvas `arc()` uses RADII.
+     * Stroke rendering uses an arc ring slice instead of filled pie.
+     * Legacy mapping: arc(w/2,-h/2,w*2-stem,h*2-stem) -> radius ~= w - stem/2
+     */
+    drawRound(ctx, x, y, w, h, angle, stem) {
+        ctx.save();
+        ctx.translate(x + w / 2, y + h / 2);
+        ctx.rotate(angle);
+        
+        // Get local endpoints considering rotation
+        const rotation = Math.round(angle / (Math.PI / 2)) % 4;
+        const localEndpoints = this.getLocalEndpointSides(rotation);
+        
+        const lineWidth = stem / 2;
+        ctx.lineWidth = lineWidth;
+        ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+        
+        if (this.mode === 'fill') {
+            // Solid mode: single arc
+            let arcRadius = w - stem / 4;
+            const minRadius = Math.max(lineWidth / 2, 0.1);
+            if (arcRadius < minRadius) {
+                arcRadius = minRadius;
+            }
+            
+            const shortenAmount = stem * 0.25;
+            const shouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
+            const deltaAngleRight = shouldShorten && localEndpoints.right ? shortenAmount / arcRadius : 0;
+            const deltaAngleTop = shouldShorten && localEndpoints.top ? shortenAmount / arcRadius : 0;
+            
+            const startAngle = Math.PI / 2 + deltaAngleRight;
+            const endAngle = Math.PI - deltaAngleTop;
+            
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.arc(w / 2, -h / 2, arcRadius, startAngle, endAngle);
+            ctx.stroke();
+        } else if (this.mode === 'stripes') {
+            // Stripes mode
+            const totalWidth = stem / 2;
+            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            
+            ctx.lineWidth = strokeWidth;
+            ctx.setLineDash([]);
+            
+            const outerRadius = w - strokeWidth / 2;
+            const minRadius = Math.max(strokeWidth / 2, 0.1);
+            const shortenAmount = strokeWidth / 2;
+            
+            for (let j = 0; j < this.strokesNum; j++) {
+                let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
+                if (arcRadius < minRadius) {
+                    arcRadius = minRadius;
+                }
+                if (arcRadius > 0) {
+                    // Shorten arcs if Round or Close Ends
+                    const shouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
+                    const deltaAngleRight = shouldShorten && localEndpoints.right ? shortenAmount / arcRadius : 0;
+                    const deltaAngleTop = shouldShorten && localEndpoints.top ? shortenAmount / arcRadius : 0;
+                    
+                    const startAngle = Math.PI / 2 + deltaAngleRight;
+                    const endAngle = Math.PI - deltaAngleTop;
+                    
+                    ctx.beginPath();
+                    ctx.arc(w / 2, -h / 2, arcRadius, startAngle, endAngle);
+                    ctx.stroke();
+                }
+            }
+            
+            // Close Ends: square cap when Round disabled, round cap when Round enabled
+            if (this.closeEnds && localEndpoints && this.strokesNum > 0) {
+                const centerX = w / 2;
+                const centerY = -h / 2;
+                const firstRadius = outerRadius;
+                let lastRadius = stripeArcRadius(this.strokesNum - 1, outerRadius, strokeWidth, gap);
+                if (lastRadius < minRadius) {
+                    lastRadius = minRadius;
+                }
+                
+                ctx.lineCap = closeEndsLineCap(this.roundedCaps);
+                
+                if (localEndpoints.right) {
+                    const deltaAngleFirst = shortenAmount / firstRadius;
+                    const deltaAngleLast = shortenAmount / lastRadius;
+                    const angle1 = Math.PI / 2 + deltaAngleFirst;
+                    const angle2 = Math.PI / 2 + deltaAngleLast;
+                    const x1 = centerX + firstRadius * Math.cos(angle1);
+                    const y1 = centerY + firstRadius * Math.sin(angle1);
+                    const x2 = centerX + lastRadius * Math.cos(angle2);
+                    const y2 = centerY + lastRadius * Math.sin(angle2);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                }
+                
+                if (localEndpoints.top) {
+                    const deltaAngleFirst = shortenAmount / firstRadius;
+                    const deltaAngleLast = shortenAmount / lastRadius;
+                    const angle1 = Math.PI - deltaAngleFirst;
+                    const angle2 = Math.PI - deltaAngleLast;
+                    const x1 = centerX + firstRadius * Math.cos(angle1);
+                    const y1 = centerY + firstRadius * Math.sin(angle1);
+                    const x2 = centerX + lastRadius * Math.cos(angle2);
+                    const y2 = centerY + lastRadius * Math.sin(angle2);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                }
+            }
+        } else if (this.mode === 'dash') {
+            // Dash mode
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            let arcRadius = w - stem / 4;
+            const minRadius = Math.max(lineWidth / 2, 0.1);
+            if (arcRadius < minRadius) {
+                arcRadius = minRadius;
+            }
+            
+            const centerX = w / 2;
+            const centerY = -h / 2;
+            
+            const shortenAmount = stem * 0.25;
+            const shouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
+            const deltaAngleRight = shouldShorten && localEndpoints.right ? shortenAmount / arcRadius : 0;
+            const deltaAngleTop = shouldShorten && localEndpoints.top ? shortenAmount / arcRadius : 0;
+            
+            const startAngle = Math.PI / 2 + deltaAngleRight;
+            const endAngle = Math.PI - deltaAngleTop;
+            
+            const dashPx = stem * this.dashLength;
+            const gapPx = this.effectiveDashGapLength(stem * this.gapLength, lineWidth, ctx.lineCap);
+            
+            const arcAngle = endAngle - startAngle;
+            const arcLength = arcRadius * arcAngle;
+            const phaseOffset = this.dashPhaseAt(
+                centerX + arcRadius * Math.cos(startAngle),
+                centerY + arcRadius * Math.sin(startAngle),
+                -Math.sin(startAngle),
+                Math.cos(startAngle),
+                x,
+                y,
+                w,
+                h,
+                angle
+            );
+            const adaptive = this.getDashPattern(arcLength, dashPx, gapPx, {
+                startEndpoint: localEndpoints && localEndpoints.right,
+                endEndpoint: localEndpoints && localEndpoints.top,
+                phaseOffset
+            });
+            
+            this.strokeDashedArc(ctx, centerX, centerY, arcRadius, startAngle, endAngle, adaptive, lineWidth, ctx.lineCap);
+            
+            ctx.setLineDash([]);
+            ctx.lineDashOffset = 0;
+        } else if (this.mode === 'sd') {
+            // SD mode: stripes + dash for Round
+            const totalWidth = stem / 2;
+            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            
+            ctx.lineWidth = strokeWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            
+            const outerRadius = w - strokeWidth / 2;
+            const minRadius = Math.max(strokeWidth / 2, 0.1);
+            const shortenAmount = strokeWidth / 2;
+            
+            const centerX = w / 2;
+            const centerY = -h / 2;
+            
+            const dashPx = strokeWidth * this.dashLength;
+            const gapPx = this.effectiveDashGapLength(strokeWidth * this.gapLength, strokeWidth, ctx.lineCap);
+            for (let j = 0; j < this.strokesNum; j++) {
+                let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
+                if (arcRadius < minRadius) {
+                    arcRadius = minRadius;
+                }
+                if (arcRadius > 0) {
+                    // Shorten arcs if Round or Close Ends
+                    const shouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
+                    const deltaAngleRight = shouldShorten && localEndpoints.right ? shortenAmount / arcRadius : 0;
+                    const deltaAngleTop = shouldShorten && localEndpoints.top ? shortenAmount / arcRadius : 0;
+                    
+                    const startAngle = Math.PI / 2 + deltaAngleRight;
+                    const endAngle = Math.PI - deltaAngleTop;
+                    
+                    const arcLength = arcRadius * (endAngle - startAngle);
+                    const phaseOffset = this.dashPhaseAt(
+                        centerX + arcRadius * Math.cos(startAngle),
+                        centerY + arcRadius * Math.sin(startAngle),
+                        -Math.sin(startAngle),
+                        Math.cos(startAngle),
+                        x,
+                        y,
+                        w,
+                        h,
+                        angle
+                    );
+                    const adaptive = this.getDashPattern(arcLength, dashPx, gapPx, {
+                        startEndpoint: localEndpoints && localEndpoints.right,
+                        endEndpoint: localEndpoints && localEndpoints.top,
+                        phaseOffset,
+                        index: j
+                    });
+                    this.strokeDashedArc(ctx, centerX, centerY, arcRadius, startAngle, endAngle, adaptive, strokeWidth, ctx.lineCap);
+                }
+            }
+            
+            ctx.setLineDash([]);
+            ctx.lineDashOffset = 0;
+            
+            // Close Ends: square cap when Round disabled, round cap when Round enabled
+            if (this.closeEnds && localEndpoints && this.strokesNum > 0) {
+                const firstRadius = outerRadius;
+                let lastRadius = stripeArcRadius(this.strokesNum - 1, outerRadius, strokeWidth, gap);
+                if (lastRadius < minRadius) {
+                    lastRadius = minRadius;
+                }
+                
+                ctx.lineCap = closeEndsLineCap(this.roundedCaps);
+                
+                // Closing lines are also dashed in SD mode
+                const closeLineLength = firstRadius - lastRadius;
+                const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
+                this.applyAdaptiveDash(ctx, closeAdaptive);
+                
+                if (localEndpoints.right) {
+                    const deltaAngleFirst = shortenAmount / firstRadius;
+                    const deltaAngleLast = shortenAmount / lastRadius;
+                    const angle1 = Math.PI / 2 + deltaAngleFirst;
+                    const angle2 = Math.PI / 2 + deltaAngleLast;
+                    const x1 = centerX + firstRadius * Math.cos(angle1);
+                    const y1 = centerY + firstRadius * Math.sin(angle1);
+                    const x2 = centerX + lastRadius * Math.cos(angle2);
+                    const y2 = centerY + lastRadius * Math.sin(angle2);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                }
+                
+                if (localEndpoints.top) {
+                    const deltaAngleFirst = shortenAmount / firstRadius;
+                    const deltaAngleLast = shortenAmount / lastRadius;
+                    const angle1 = Math.PI - deltaAngleFirst;
+                    const angle2 = Math.PI - deltaAngleLast;
+                    const x1 = centerX + firstRadius * Math.cos(angle1);
+                    const y1 = centerY + firstRadius * Math.sin(angle1);
+                    const x2 = centerX + lastRadius * Math.cos(angle2);
+                    const y2 = centerY + lastRadius * Math.sin(angle2);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                }
+                
+                ctx.setLineDash([]);
+                ctx.lineDashOffset = 0;
+            }
+        }
+        
+        ctx.restore();
+    }
+
+    /**
+     * B — Bend: tighter arc (radius ~= half module)
+     * Legacy Processing sketch: arc(w/2,-h/2,stem,stem,HALF_PI,PI)
+     * Passing `stem` doubles as diameter => radius stem/2
+     * NOTE: Outer radius stays stem/2 (fill-mode parity), not w/2.
+     */
+    drawBend(ctx, x, y, w, h, angle, stem) {
+        ctx.save();
+        ctx.translate(x + w / 2, y + h / 2);
+        ctx.rotate(angle);
+        
+        // Get local endpoints considering rotation
+        const rotation = Math.round(angle / (Math.PI / 2)) % 4;
+        const localEndpoints = this.getLocalEndpointSides(rotation);
+        
+        const lineWidth = stem / 2;
+        ctx.lineWidth = lineWidth;
+        ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+        
+        if (this.mode === 'fill') {
+            // Solid mode: single small arc
+            let arcRadius = stem / 4;
+            const minRadius = Math.max(lineWidth / 2, 0.1);
+            if (arcRadius < minRadius) {
+                arcRadius = minRadius;
+            }
+            
+            const shortenAmount = stem * 0.25;
+            const shouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
+            const deltaAngleRight = shouldShorten && localEndpoints.right ? shortenAmount / arcRadius : 0;
+            const deltaAngleTop = shouldShorten && localEndpoints.top ? shortenAmount / arcRadius : 0;
+            
+            const startAngle = Math.PI / 2 + deltaAngleRight;
+            const endAngle = Math.PI - deltaAngleTop;
+            
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.arc(w / 2, -h / 2, arcRadius, startAngle, endAngle);
+            ctx.stroke();
+        } else if (this.mode === 'stripes') {
+            // Stripes mode
+            const totalWidth = stem / 2;
+            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            
+            ctx.lineWidth = strokeWidth;
+            ctx.setLineDash([]);
+            
+            const outerRadius = stem / 2 - strokeWidth / 2;
+            const minRadius = Math.max(strokeWidth / 2, 0.1);
+            const shortenAmount = strokeWidth / 2;
+            
+            for (let j = 0; j < this.strokesNum; j++) {
+                let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
+                if (arcRadius < minRadius) {
+                    arcRadius = minRadius;
+                }
+                if (arcRadius > 0) {
+                    // Shorten arcs if Round or Close Ends
+                    const shouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
+                    const deltaAngleRight = shouldShorten && localEndpoints.right ? shortenAmount / arcRadius : 0;
+                    const deltaAngleTop = shouldShorten && localEndpoints.top ? shortenAmount / arcRadius : 0;
+                    
+                    const startAngle = Math.PI / 2 + deltaAngleRight;
+                    const endAngle = Math.PI - deltaAngleTop;
+                    
+                    ctx.beginPath();
+                    ctx.arc(w / 2, -h / 2, arcRadius, startAngle, endAngle);
+                    ctx.stroke();
+                }
+            }
+            
+            // Close Ends: square cap when Round disabled, round cap when Round enabled
+            if (this.closeEnds && localEndpoints && this.strokesNum > 0) {
+                const centerX = w / 2;
+                const centerY = -h / 2;
+                const firstRadius = outerRadius;
+                let lastRadius = stripeArcRadius(this.strokesNum - 1, outerRadius, strokeWidth, gap);
+                if (lastRadius < minRadius) {
+                    lastRadius = minRadius;
+                }
+                
+                ctx.lineCap = closeEndsLineCap(this.roundedCaps);
+                
+                if (localEndpoints.right) {
+                    const deltaAngleFirst = shortenAmount / firstRadius;
+                    const deltaAngleLast = shortenAmount / lastRadius;
+                    const angle1 = Math.PI / 2 + deltaAngleFirst;
+                    const angle2 = Math.PI / 2 + deltaAngleLast;
+                    const x1 = centerX + firstRadius * Math.cos(angle1);
+                    const y1 = centerY + firstRadius * Math.sin(angle1);
+                    const x2 = centerX + lastRadius * Math.cos(angle2);
+                    const y2 = centerY + lastRadius * Math.sin(angle2);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                }
+                
+                if (localEndpoints.top) {
+                    const deltaAngleFirst = shortenAmount / firstRadius;
+                    const deltaAngleLast = shortenAmount / lastRadius;
+                    const angle1 = Math.PI - deltaAngleFirst;
+                    const angle2 = Math.PI - deltaAngleLast;
+                    const x1 = centerX + firstRadius * Math.cos(angle1);
+                    const y1 = centerY + firstRadius * Math.sin(angle1);
+                    const x2 = centerX + lastRadius * Math.cos(angle2);
+                    const y2 = centerY + lastRadius * Math.sin(angle2);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                }
+            }
+        } else if (this.mode === 'dash') {
+            // Dash mode
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            let arcRadius = stem / 4;
+            const minRadius = Math.max(lineWidth / 2, 0.1);
+            if (arcRadius < minRadius) {
+                arcRadius = minRadius;
+            }
+            
+            const centerX = w / 2;
+            const centerY = -h / 2;
+            
+            const shortenAmount = stem * 0.25;
+            const shouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
+            const deltaAngleRight = shouldShorten && localEndpoints.right ? shortenAmount / arcRadius : 0;
+            const deltaAngleTop = shouldShorten && localEndpoints.top ? shortenAmount / arcRadius : 0;
+            
+            const startAngle = Math.PI / 2 + deltaAngleRight;
+            const endAngle = Math.PI - deltaAngleTop;
+            
+            const dashPx = stem * this.dashLength;
+            const gapPx = this.effectiveDashGapLength(stem * this.gapLength, lineWidth, ctx.lineCap);
+            
+            const arcAngle = endAngle - startAngle;
+            const arcLength = arcRadius * arcAngle;
+            const phaseOffset = this.dashPhaseAt(
+                centerX + arcRadius * Math.cos(startAngle),
+                centerY + arcRadius * Math.sin(startAngle),
+                -Math.sin(startAngle),
+                Math.cos(startAngle),
+                x,
+                y,
+                w,
+                h,
+                angle
+            );
+            const adaptive = this.getDashPattern(arcLength, dashPx, gapPx, {
+                startEndpoint: localEndpoints && localEndpoints.right,
+                endEndpoint: localEndpoints && localEndpoints.top,
+                phaseOffset
+            });
+            
+            this.strokeDashedArc(ctx, centerX, centerY, arcRadius, startAngle, endAngle, adaptive, lineWidth, ctx.lineCap);
+            
+            ctx.setLineDash([]);
+            ctx.lineDashOffset = 0;
+        } else if (this.mode === 'sd') {
+            // SD mode: stripes + dash for Bend
+            const totalWidth = stem / 2;
+            const { gap, strokeWidth } = this.calculateGapAndStrokeWidth(totalWidth);
+            
+            ctx.lineWidth = strokeWidth;
+            ctx.lineCap = this.roundedCaps ? 'round' : 'butt';
+            
+            const outerRadius = stem / 2 - strokeWidth / 2;
+            const minRadius = Math.max(strokeWidth / 2, 0.1);
+            const shortenAmount = strokeWidth / 2;
+            
+            const centerX = w / 2;
+            const centerY = -h / 2;
+            
+            const dashPx = strokeWidth * this.dashLength;
+            const gapPx = this.effectiveDashGapLength(strokeWidth * this.gapLength, strokeWidth, ctx.lineCap);
+            for (let j = 0; j < this.strokesNum; j++) {
+                let arcRadius = stripeArcRadius(j, outerRadius, strokeWidth, gap);
+                if (arcRadius < minRadius) {
+                    arcRadius = minRadius;
+                }
+                if (arcRadius > 0) {
+                    // Shorten arcs if Round or Close Ends
+                    const shouldShorten = (this.roundedCaps || this.closeEnds) && localEndpoints;
+                    const deltaAngleRight = shouldShorten && localEndpoints.right ? shortenAmount / arcRadius : 0;
+                    const deltaAngleTop = shouldShorten && localEndpoints.top ? shortenAmount / arcRadius : 0;
+                    
+                    const startAngle = Math.PI / 2 + deltaAngleRight;
+                    const endAngle = Math.PI - deltaAngleTop;
+                    
+                    const arcLength = arcRadius * (endAngle - startAngle);
+                    const phaseOffset = this.dashPhaseAt(
+                        centerX + arcRadius * Math.cos(startAngle),
+                        centerY + arcRadius * Math.sin(startAngle),
+                        -Math.sin(startAngle),
+                        Math.cos(startAngle),
+                        x,
+                        y,
+                        w,
+                        h,
+                        angle
+                    );
+                    const adaptive = this.getDashPattern(arcLength, dashPx, gapPx, {
+                        startEndpoint: localEndpoints && localEndpoints.right,
+                        endEndpoint: localEndpoints && localEndpoints.top,
+                        phaseOffset,
+                        index: j
+                    });
+                    this.strokeDashedArc(ctx, centerX, centerY, arcRadius, startAngle, endAngle, adaptive, strokeWidth, ctx.lineCap);
+                }
+            }
+            
+            ctx.setLineDash([]);
+            ctx.lineDashOffset = 0;
+            
+            // Close Ends: square cap when Round disabled, round cap when Round enabled
+            if (this.closeEnds && localEndpoints && this.strokesNum > 0) {
+                const firstRadius = outerRadius;
+                let lastRadius = stripeArcRadius(this.strokesNum - 1, outerRadius, strokeWidth, gap);
+                if (lastRadius < minRadius) {
+                    lastRadius = minRadius;
+                }
+                
+                ctx.lineCap = closeEndsLineCap(this.roundedCaps);
+                
+                // Closing lines are also dashed in SD mode
+                const closeLineLength = firstRadius - lastRadius;
+                const closeAdaptive = this.calculateAdaptiveDash(closeLineLength, dashPx, gapPx);
+                this.applyAdaptiveDash(ctx, closeAdaptive);
+                
+                if (localEndpoints.right) {
+                    const deltaAngleFirst = shortenAmount / firstRadius;
+                    const deltaAngleLast = shortenAmount / lastRadius;
+                    const angle1 = Math.PI / 2 + deltaAngleFirst;
+                    const angle2 = Math.PI / 2 + deltaAngleLast;
+                    const x1 = centerX + firstRadius * Math.cos(angle1);
+                    const y1 = centerY + firstRadius * Math.sin(angle1);
+                    const x2 = centerX + lastRadius * Math.cos(angle2);
+                    const y2 = centerY + lastRadius * Math.sin(angle2);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                }
+                
+                if (localEndpoints.top) {
+                    const deltaAngleFirst = shortenAmount / firstRadius;
+                    const deltaAngleLast = shortenAmount / lastRadius;
+                    const angle1 = Math.PI - deltaAngleFirst;
+                    const angle2 = Math.PI - deltaAngleLast;
+                    const x1 = centerX + firstRadius * Math.cos(angle1);
+                    const y1 = centerY + firstRadius * Math.sin(angle1);
+                    const x2 = centerX + lastRadius * Math.cos(angle2);
+                    const y2 = centerY + lastRadius * Math.sin(angle2);
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+                }
+                
+                ctx.setLineDash([]);
+                ctx.lineDashOffset = 0;
+            }
+        }
+        
+        ctx.restore();
+    }
+}
