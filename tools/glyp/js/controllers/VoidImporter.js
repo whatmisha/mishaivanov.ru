@@ -4,9 +4,6 @@
  * and imports glyph data from VoidAlphabet.js format.
  */
 
-import { ModuleRegistry } from '../core/ModuleRegistry.js';
-import { GlyphStore } from '../core/GlyphStore.js';
-
 export class VoidImporter {
     /**
      * Create VOID's 7 standard modules as normalized path definitions.
@@ -75,7 +72,7 @@ export class VoidImporter {
                         { type: 'L', args: [1, 1] }
                     ]
                 }],
-                connections: { top: true, right: false, bottom: false, left: false }
+                connections: { top: true, right: true, bottom: false, left: false }
             },
             {
                 id: 'void_R',
@@ -88,7 +85,7 @@ export class VoidImporter {
                         { type: 'C', args: [0, 0.55, 0.45, 1, 1, 1] }
                     ]
                 }],
-                connections: { top: true, right: false, bottom: false, left: false }
+                connections: { top: true, right: true, bottom: false, left: false }
             },
             {
                 id: 'void_B',
@@ -101,7 +98,7 @@ export class VoidImporter {
                         { type: 'C', args: [0.5, 0.28, 0.72, 0.5, 1, 0.5] }
                     ]
                 }],
-                connections: { top: true, right: false, bottom: false, left: false }
+                connections: { top: true, right: true, bottom: false, left: false }
             }
         ];
     }

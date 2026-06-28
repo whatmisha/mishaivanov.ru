@@ -7,8 +7,6 @@ import { ProjectManager } from './core/ProjectManager.js';
 import { ModuleDesigner } from './editor/ModuleDesigner.js';
 import { GridEditor } from './editor/GridEditor.js';
 import { TextPreview } from './editor/TextPreview.js';
-import { SVGPathParser } from './core/SVGPathParser.js';
-import { JointDetector } from './core/JointDetector.js';
 import { MathUtils } from './utils/MathUtils.js';
 
 class GlypApp {

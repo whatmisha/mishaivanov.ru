@@ -6,8 +6,6 @@
 
 import { PathGeometry } from './geometry/PathGeometry.js';
 import { SVGPathParser } from './SVGPathParser.js';
-import { JointDetector } from './JointDetector.js';
-import { MathUtils } from '../utils/MathUtils.js';
 
 export class ParametricRenderer {
     constructor() {

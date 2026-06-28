@@ -2,8 +2,6 @@
  * ColorPicker — simple color selection widget.
  */
 
-import { ColorUtils } from '../utils/ColorUtils.js';
-
 export class ColorPicker {
     constructor(element, options = {}) {
         this.element = element;

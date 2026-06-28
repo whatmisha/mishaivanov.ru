@@ -2,8 +2,6 @@
  * ColorController — manages color modes (solid, gradient, random).
  */
 
-import { ColorUtils } from '../utils/ColorUtils.js';
-
 export class ColorController {
     constructor() {
         this.mode = 'solid'; // 'solid' | 'gradient' | 'random'
