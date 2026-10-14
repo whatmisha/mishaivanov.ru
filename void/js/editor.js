@@ -10,6 +10,7 @@
 
 import GlyphEditor from './core/GlyphEditor.js';
 import { ModuleDrawer } from './core/ModuleDrawer.js';
+import { VoidExporter } from './core/VoidExporter.js';
 import DualSenseController from './editor/DualSenseController.js';
 
 // Separate keys for editor (don't overlap with main app)
@@ -56,6 +57,7 @@ class GlyphEditorApp {
         document.getElementById('importBtn').addEventListener('click', () => this.showImportDialog());
         document.getElementById('importFileInput').addEventListener('change', (e) => this.handleFileImport(e));
         document.getElementById('exportBtn').addEventListener('click', () => this.showExportModal());
+        document.getElementById('exportSvgBtn').addEventListener('click', () => this.exportAlphabetSVG());
         document.getElementById('clearAllBtn').addEventListener('click', () => this.clearAll());
         document.getElementById('newGlyphBtn').addEventListener('click', () => this.createNewGlyph());
         
@@ -1216,7 +1218,7 @@ class GlyphEditorApp {
      * Export VoidAlphabet.js file
      */
     showExportModal() {
-        const editedGlyphs = this.getEditedGlyphs();
+        const editedGlyphs = this.getExportGlyphs();
         const code = this.generateFullVoidAlphabetFile(editedGlyphs);
         
         // Download file
@@ -1224,10 +1226,94 @@ class GlyphEditorApp {
     }
     
     /**
+     * Include the current grid even while its debounced autosave is pending.
+     */
+    getExportGlyphs() {
+        const editedGlyphs = this.getEditedGlyphs();
+        if (this.selectedChar) {
+            const key = this.selectedAlternativeIndex === null ? 'base' : String(this.selectedAlternativeIndex);
+            const glyphString = this.editor.updateGlyphString();
+            const variants = editedGlyphs[this.selectedChar] || {};
+            if (!this.isEmptyGlyph(glyphString) || this.selectedChar === ' ') {
+                variants[key] = glyphString;
+            } else {
+                delete variants[key];
+            }
+            editedGlyphs[this.selectedChar] = variants;
+        }
+        return editedGlyphs;
+    }
+
+    /**
+     * Export the editor's alphabet and alternatives as editable vector groups.
+     */
+    exportAlphabetSVG() {
+        const svg = this.generateAlphabetSVG(this.getExportGlyphs());
+        if (!svg) {
+            alert('Draw or import glyphs to export.');
+            return;
+        }
+        this.downloadFile('VoidAlphabet.svg', svg, 'image/svg+xml;charset=utf-8');
+    }
+
+    generateAlphabetSVG(editedGlyphs) {
+        const glyphs = [];
+        const charGroup = char => /[A-Z]/.test(char) ? 0 : /[А-ЯЁ]/.test(char) ? 1 : /[0-9]/.test(char) ? 2 : 3;
+        const chars = Object.keys(editedGlyphs).sort((a, b) =>
+            charGroup(a) - charGroup(b) || a.localeCompare(b, charGroup(a) === 1 ? 'ru' : 'en')
+        );
+        for (const char of chars) {
+            const variants = editedGlyphs[char];
+            if (variants.base && (char === ' ' || !this.isEmptyGlyph(variants.base))) {
+                glyphs.push({ char, variant: 'base', glyph: variants.base });
+            }
+            Object.keys(variants).filter(key => key !== 'base').sort((a, b) => Number(a) - Number(b)).forEach(key => {
+                if (variants[key] && !this.isEmptyGlyph(variants[key])) {
+                    glyphs.push({ char, variant: key, glyph: variants[key] });
+                }
+            });
+        }
+        if (glyphs.length === 0) return '';
+
+        const moduleSize = this.editor.moduleSize;
+        const gridSize = this.editor.gridSize;
+        const glyphSize = moduleSize * gridSize;
+        const gap = moduleSize;
+        const columns = Math.min(8, glyphs.length);
+        const rows = Math.ceil(glyphs.length / columns);
+        const width = columns * (glyphSize + gap) + gap;
+        const height = rows * (glyphSize + gap) + gap;
+        const exporter = new VoidExporter(null);
+        const escapeXML = value => value.replace(/[&<>"']/g, char => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;'
+        })[char]);
+        let svg = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none" stroke="#000000">\n`;
+        svg += '  <title>Void Alphabet</title>\n';
+        glyphs.forEach(({ char, variant, glyph }, index) => {
+            const x = gap + (index % columns) * (glyphSize + gap);
+            const y = gap + Math.floor(index / columns) * (glyphSize + gap);
+            const codePoint = Array.from(char, c => c.codePointAt(0).toString(16)).join('-');
+            const label = `${char === ' ' ? 'Space' : char} — ${variant === 'base' ? 'Base' : `Alternate ${variant}`}`;
+            svg += `  <g id="glyph-${codePoint}-${escapeXML(variant)}" data-char="${escapeXML(char)}" data-variant="${escapeXML(variant)}" transform="translate(${x}, ${y})">\n    <title>${escapeXML(label)}</title>\n`;
+            for (let row = 0; row < gridSize; row++) {
+                for (let col = 0; col < gridSize; col++) {
+                    const offset = (row * gridSize + col) * 2;
+                    svg += exporter.renderModuleToSVG(
+                        glyph[offset], Number(glyph[offset + 1]), col * moduleSize, row * moduleSize,
+                        moduleSize, moduleSize, moduleSize, 'fill', 1, 1
+                    );
+                }
+            }
+            svg += '  </g>\n';
+        });
+        return svg + '</svg>\n';
+    }
+
+    /**
      * Download file
      */
-    downloadFile(filename, content) {
-        const blob = new Blob([content], { type: 'text/javascript' });
+    downloadFile(filename, content, mimeType = 'text/javascript') {
+        const blob = new Blob([content], { type: mimeType });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
